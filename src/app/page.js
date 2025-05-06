@@ -1,71 +1,72 @@
 "use client";
-import Head from 'next/head'
-import { useEffect } from 'react'
+import Head from "next/head";
+import { useEffect } from "react";
+import Script from "next/script";
 
 export default function Home() {
   useEffect(() => {
     // Mobile menu toggle
-    const mobileMenuButton = document.getElementById('mobile-menu-button')
-    const mobileMenu = document.getElementById('mobile-menu')
+    const mobileMenuButton = document.getElementById("mobile-menu-button");
+    const mobileMenu = document.getElementById("mobile-menu");
     if (mobileMenuButton && mobileMenu) {
-      mobileMenuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden')
-      })
-      mobileMenu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-          mobileMenu.classList.add('hidden')
-        })
-      })
+      mobileMenuButton.addEventListener("click", () => {
+        mobileMenu.classList.toggle("hidden");
+      });
+      mobileMenu.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+          mobileMenu.classList.add("hidden");
+        });
+      });
     }
 
     // Navbar scroll behavior
-    const navbar = document.getElementById('navbar')
-    const logo = navbar.querySelector('.logo')
-    const navLinks = navbar.querySelectorAll('.nav-link')
+    const navbar = document.getElementById("navbar");
+    const logo = navbar.querySelector(".logo");
+    const navLinks = navbar.querySelectorAll(".nav-link");
     const onScroll = () => {
       if (window.scrollY > 50) {
-        navbar.classList.add('bg-white', 'shadow-md')
-        navbar.classList.remove('bg-transparent')
+        navbar.classList.add("bg-white", "shadow-md");
+        navbar.classList.remove("bg-transparent");
         if (logo) {
-          logo.classList.remove('text-white')
-          logo.classList.add('text-gray-800')
+          logo.classList.remove("text-white");
+          logo.classList.add("text-gray-800");
         }
-        navLinks.forEach(link => {
-          link.classList.remove('text-white')
-          link.classList.add('text-gray-800')
-        })
+        navLinks.forEach((link) => {
+          link.classList.remove("text-white");
+          link.classList.add("text-gray-800");
+        });
       } else {
-        navbar.classList.remove('bg-white', 'shadow-md')
-        navbar.classList.add('bg-transparent')
+        navbar.classList.remove("bg-white", "shadow-md");
+        navbar.classList.add("bg-transparent");
         if (logo) {
-          logo.classList.add('text-white')
-          logo.classList.remove('text-gray-800')
+          logo.classList.add("text-white");
+          logo.classList.remove("text-gray-800");
         }
-        navLinks.forEach(link => {
-          link.classList.add('text-white')
-          link.classList.remove('text-gray-800')
-        })
+        navLinks.forEach((link) => {
+          link.classList.add("text-white");
+          link.classList.remove("text-gray-800");
+        });
       }
-    }
-    window.addEventListener('scroll', onScroll)
+    };
+    window.addEventListener("scroll", onScroll);
 
     // Fade-in animations
     const handleFadeIn = () => {
-      document.querySelectorAll('.fade-in').forEach(el => {
-        const rect = el.getBoundingClientRect()
+      document.querySelectorAll(".fade-in").forEach((el) => {
+        const rect = el.getBoundingClientRect();
         if (rect.top < window.innerHeight * 0.9) {
-          el.classList.add('visible')
+          el.classList.add("visible");
         }
-      })
-    }
-    window.addEventListener('scroll', handleFadeIn)
-    handleFadeIn()
+      });
+    };
+    window.addEventListener("scroll", handleFadeIn);
+    handleFadeIn();
 
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('scroll', handleFadeIn)
-    }
-  }, [])
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", handleFadeIn);
+    };
+  }, []);
 
   return (
     <>
@@ -73,8 +74,6 @@ export default function Home() {
         <title>Ambe Wellness</title>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        {/* Font Awesome */}
-        <script src="https://kit.fontawesome.com/cb7d5cdf70.js" crossOrigin="anonymous"></script>
         {/* Google Fonts */}
         <link
           href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
@@ -82,8 +81,17 @@ export default function Home() {
         />
       </Head>
 
+      <Script
+        src="https://kit.fontawesome.com/cb7d5cdf70.js"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
+
       {/* Header / Navbar */}
-      <header id="navbar" className="fixed w-full z-20 top-0 left-0 bg-transparent">
+      <header
+        id="navbar"
+        className="fixed w-full z-20 top-0 left-0 bg-transparent"
+      >
         <nav>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
@@ -96,20 +104,35 @@ export default function Home() {
               {/* Desktop Navigation */}
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">
-                  <a href="#about" className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium">
+                  <a
+                    href="#about"
+                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
+                  >
                     About Us
                   </a>
-                  <a href="#how-it-works" className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium">
+                  <a
+                    href="#how-it-works"
+                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
+                  >
                     How It Works
                   </a>
-                  <a href="#services" className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium">
+                  <a
+                    href="#services"
+                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
+                  >
                     Services
                   </a>
-                  <a href="#contact" className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium">
+                  <a
+                    href="#contact"
+                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
+                  >
                     Contact Us
                   </a>
                   {/* Sign In Button */}
-                  <a href="/login" className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium">
+                  <a
+                    href="/login"
+                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
+                  >
                     Sign In
                   </a>
                 </div>
@@ -120,8 +143,19 @@ export default function Home() {
                   id="mobile-menu-button"
                   className="bg-transparent inline-flex items-center justify-center p-2 rounded-md text-white hover:text-green-600 focus:outline-none"
                 >
-                  <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                    <path className="inline-flex" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <svg
+                    className="h-6 w-6"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      className="inline-flex"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -130,19 +164,34 @@ export default function Home() {
           {/* Mobile Menu */}
           <div id="mobile-menu" className="md:hidden hidden bg-white">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <a href="#about" className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="#about"
+                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
+              >
                 About Us
               </a>
-              <a href="#how-it-works" className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="#how-it-works"
+                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
+              >
                 How It Works
               </a>
-              <a href="#services" className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="#services"
+                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
+              >
                 Services
               </a>
-              <a href="#contact" className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="#contact"
+                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
+              >
                 Contact Us
               </a>
-              <a href="/login" className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium">
+              <a
+                href="/login"
+                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
+              >
                 Sign In
               </a>
             </div>
@@ -153,20 +202,29 @@ export default function Home() {
       <main className="bg-white text-gray-800">
         {/* Hero Section */}
         <section className="relative h-screen flex items-center justify-center">
-          <video className="absolute inset-0 w-full h-full object-cover" autoPlay muted loop>
+          <video
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay
+            muted
+            loop
+          >
             <source src="/videos/hero_background.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <div
             className="gradient-overlay absolute inset-0"
-            style={{ background: 'linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0))' }}
+            style={{
+              background:
+                "linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0))",
+            }}
           ></div>
           <div className="relative z-10 text-center px-4 fade-in">
             <h1 className="text-4xl md:text-6xl font-bold mb-4 text-gray-800">
               Start Your Journey to Wellness
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-gray-700">
-              Personalized remedies from licensed experts to enhance your lifestyle.
+              Personalized remedies from licensed experts to enhance your
+              lifestyle.
             </p>
             <a
               href="#services"
@@ -180,11 +238,15 @@ export default function Home() {
         {/* How It Works Section */}
         <section id="how-it-works" className="py-16 bg-white fade-in">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold mb-12 text-green-600 text-center">How It Works</h2>
+            <h2 className="text-3xl font-bold mb-12 text-green-600 text-center">
+              How It Works
+            </h2>
             <div className="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 md:space-x-6">
               <div className="text-center border-2 border-green-600 p-8 md:p-6 rounded-full w-56 h-56 flex flex-col justify-center items-center transition-transform transform hover:scale-105">
                 <i className="fas fa-search fa-3x text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-green-600">Discover</h3>
+                <h3 className="text-xl font-semibold mb-2 text-green-600">
+                  Discover
+                </h3>
                 <p className="text-gray-700 text-sm text-center">
                   Explore our range of wellness services tailored to your needs.
                 </p>
@@ -195,9 +257,12 @@ export default function Home() {
               </div>
               <div className="text-center border-2 border-green-600 p-8 md:p-6 rounded-full w-56 h-56 flex flex-col justify-center items-center transition-transform transform hover:scale-105">
                 <i className="fas fa-user-friends fa-3x text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-green-600">Connect</h3>
+                <h3 className="text-xl font-semibold mb-2 text-green-600">
+                  Connect
+                </h3>
                 <p className="text-gray-700 text-sm text-center">
-                  Get matched with licensed experts for personalized consultations.
+                  Get matched with licensed experts for personalized
+                  consultations.
                 </p>
               </div>
               <div className="text-center">
@@ -206,7 +271,9 @@ export default function Home() {
               </div>
               <div className="text-center border-2 border-green-600 p-8 md:p-6 rounded-full w-56 h-56 flex flex-col justify-center items-center transition-transform transform hover:scale-105">
                 <i className="fas fa-seedling fa-3x text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-green-600">Grow</h3>
+                <h3 className="text-xl font-semibold mb-2 text-green-600">
+                  Grow
+                </h3>
                 <p className="text-gray-700 text-sm text-center">
                   Embark on your wellness journey and achieve your best self.
                 </p>
@@ -219,18 +286,26 @@ export default function Home() {
         <section
           id="about"
           className="relative py-16 parallax"
-          style={{ backgroundImage: "url('/images/about_us.webp')", backgroundSize: 'cover', backgroundAttachment: 'fixed' }}
+          style={{
+            backgroundImage: "url('/images/about_us.webp')",
+            backgroundSize: "cover",
+            backgroundAttachment: "fixed",
+          }}
         >
           <div className="absolute inset-0 bg-black opacity-50"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-8 text-green-600">About Ambe Wellness</h2>
+            <h2 className="text-3xl font-bold mb-8 text-green-600">
+              About Ambe Wellness
+            </h2>
             <p className="text-lg text-gray-100 max-w-2xl mx-auto">
-              Ambe Wellness connects you with a diverse team of licensed experts who offer personalized remedies
-              tailored to enhance your lifestyle, guiding you on the path to becoming your best self.
+              Ambe Wellness connects you with a diverse team of licensed experts
+              who offer personalized remedies tailored to enhance your
+              lifestyle, guiding you on the path to becoming your best self.
             </p>
             <p className="text-lg text-gray-100 mt-4 max-w-2xl mx-auto">
-              Our mission is to empower individuals by providing access to holistic wellness solutions that are both
-              effective and personalized.
+              Our mission is to empower individuals by providing access to
+              holistic wellness solutions that are both effective and
+              personalized.
             </p>
           </div>
         </section>
@@ -238,34 +313,45 @@ export default function Home() {
         {/* Services Section */}
         <section id="services" className="py-16 fade-in">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12 text-green-600">Our Services</h2>
+            <h2 className="text-3xl font-bold text-center mb-12 text-green-600">
+              Our Services
+            </h2>
             <div className="flex flex-wrap justify-center gap-8">
               <div className="service-card bg-white p-4 rounded-full flex flex-col items-center justify-center">
                 <i className="fas fa-leaf service-icon text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">Custom Remedies</h3>
+                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">
+                  Custom Remedies
+                </h3>
                 <p className="text-gray-700 text-center">
                   Tailored solutions to address your unique wellness needs.
                 </p>
               </div>
               <div className="service-card bg-white p-4 rounded-full flex flex-col items-center justify-center">
                 <i className="fas fa-heartbeat service-icon text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">Lifestyle Programs</h3>
+                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">
+                  Lifestyle Programs
+                </h3>
                 <p className="text-gray-700 text-center">
                   Structured programs to enhance your daily life and habits.
                 </p>
               </div>
               <div className="service-card bg-white p-4 rounded-full flex flex-col items-center justify-center">
                 <i className="fas fa-user-md service-icon text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">Expert Consultations</h3>
+                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">
+                  Expert Consultations
+                </h3>
                 <p className="text-gray-700 text-center">
                   One-on-one sessions with licensed wellness professionals.
                 </p>
               </div>
               <div className="service-card bg-white p-4 rounded-full flex flex-col items-center justify-center">
                 <i className="fas fa-spa service-icon text-green-600 mb-4"></i>
-                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">Wellness Workshops</h3>
+                <h3 className="text-xl font-semibold mb-2 text-center text-green-600">
+                  Wellness Workshops
+                </h3>
                 <p className="text-gray-700 text-center">
-                  Interactive sessions to learn and grow in a supportive environment.
+                  Interactive sessions to learn and grow in a supportive
+                  environment.
                 </p>
               </div>
             </div>
@@ -275,11 +361,18 @@ export default function Home() {
         {/* Contact Us Section */}
         <section id="contact" className="bg-gray-50 py-16 fade-in">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12 text-green-600">Contact Us</h2>
+            <h2 className="text-3xl font-bold text-center mb-12 text-green-600">
+              Contact Us
+            </h2>
             <div className="md:flex md:justify-center">
               <form className="w-full md:w-1/2 bg-white p-8 rounded-lg shadow-md">
                 <div className="mb-4">
-                  <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">Name</label>
+                  <label
+                    htmlFor="name"
+                    className="block text-gray-700 font-semibold mb-2"
+                  >
+                    Name
+                  </label>
                   <input
                     type="text"
                     id="name"
@@ -288,7 +381,12 @@ export default function Home() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">Email</label>
+                  <label
+                    htmlFor="email"
+                    className="block text-gray-700 font-semibold mb-2"
+                  >
+                    Email
+                  </label>
                   <input
                     type="email"
                     id="email"
@@ -297,7 +395,12 @@ export default function Home() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">Message</label>
+                  <label
+                    htmlFor="message"
+                    className="block text-gray-700 font-semibold mb-2"
+                  >
+                    Message
+                  </label>
                   <textarea
                     id="message"
                     rows="5"
@@ -305,7 +408,10 @@ export default function Home() {
                     placeholder="Your Message"
                   ></textarea>
                 </div>
-                <button type="submit" className="bg-green-600 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-md">
+                <button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-md"
+                >
                   Send Message
                 </button>
               </form>
@@ -319,32 +425,48 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="md:flex md:justify-between">
             <div className="mb-6 md:mb-0">
-              <h4 className="text-xl font-semibold mb-4 text-green-600">Quick Links</h4>
+              <h4 className="text-xl font-semibold mb-4 text-green-600">
+                Quick Links
+              </h4>
               <ul>
                 <li>
-                  <a href="#about" className="text-gray-700 hover:text-green-600">
+                  <a
+                    href="#about"
+                    className="text-gray-700 hover:text-green-600"
+                  >
                     About Us
                   </a>
                 </li>
                 <li>
-                  <a href="#how-it-works" className="text-gray-700 hover:text-green-600">
+                  <a
+                    href="#how-it-works"
+                    className="text-gray-700 hover:text-green-600"
+                  >
                     How It Works
                   </a>
                 </li>
                 <li>
-                  <a href="#services" className="text-gray-700 hover:text-green-600">
+                  <a
+                    href="#services"
+                    className="text-gray-700 hover:text-green-600"
+                  >
                     Services
                   </a>
                 </li>
                 <li>
-                  <a href="#contact" className="text-gray-700 hover:text-green-600">
+                  <a
+                    href="#contact"
+                    className="text-gray-700 hover:text-green-600"
+                  >
                     Contact Us
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="text-xl font-semibold mb-4 text-green-600">Contact Us</h4>
+              <h4 className="text-xl font-semibold mb-4 text-green-600">
+                Contact Us
+              </h4>
               <p className="text-gray-700">Email: info@ambewellness.com</p>
               <p className="text-gray-700">Phone: (123) 456-7890</p>
               <div className="flex space-x-4 mt-4">
@@ -366,5 +488,5 @@ export default function Home() {
         </div>
       </footer>
     </>
-  )
+  );
 }
