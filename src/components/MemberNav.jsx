@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { HomeIcon, ChatBubbleLeftEllipsisIcon,
          ShoppingCartIcon, UserCircleIcon } from '@heroicons/react/24/outline';
@@ -20,28 +18,28 @@ export default function MemberNav({ currentPath }) {
           {tabs.map(({ label, href, Icon }) => {
             const isActive = currentPath === href;
             return (
-              <Link key={href} href={href}>
-                <a className="group flex items-center space-x-1 px-2 py-1 rounded-md transition">
-                  <Icon
-                    className={`h-5 w-5 transition-colors ${
-                      isActive
-                        ? 'text-green-600'
-                        : 'text-gray-400 group-hover:text-green-500'
-                    }`}
-                  />
-                  <span
-                    className={`text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'text-green-600'
-                        : 'text-gray-600 group-hover:text-green-500'
-                    }`}
-                  >
-                    {label}
-                  </span>
-                  {isActive && (
-                    <span className="block h-0.5 w-full bg-green-600 absolute bottom-0 inset-x-0" />
-                  )}
-                </a>
+              <Link
+                key={href}
+                href={href}
+                className={`group relative flex items-center space-x-1 px-2 py-1 rounded-md transition ${
+                  isActive
+                    ? 'text-green-600'
+                    : 'text-gray-600 hover:text-green-500'
+                }`}
+              >
+                <Icon
+                  className={`h-5 w-5 transition-colors ${
+                    isActive
+                      ? 'text-green-600'
+                      : 'text-gray-400 group-hover:text-green-500'
+                  }`}
+                />
+                <span className="text-sm font-medium">
+                  {label}
+                </span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 mx-auto h-0.5 w-6 bg-green-600" />
+                )}
               </Link>
             );
           })}
