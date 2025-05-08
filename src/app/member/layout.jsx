@@ -25,16 +25,15 @@ export default function MemberLayout({ children }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       <MemberNav currentPath={pathname} />
-      <main className="flex-1 max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {/* Wrap your page content in a nice card/layout */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+      <main className="flex-1 w-full px-6 md:px-12 lg:px-24 xl:px-32 py-12">
+        {/* Fluid full-width container */}
+        <div className="w-full p-8">
           {children}
         </div>
       </main>
-      {/* optional footer */}
-      <footer className="text-center text-gray-500 text-sm py-4">
+      <footer className="text-center text-gray-500 text-sm py-6">
         © {new Date().getFullYear()} Ambe Wellness
       </footer>
     </div>
