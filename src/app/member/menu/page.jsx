@@ -2,72 +2,69 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, db } from '../../../lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../../../lib/firebase';
+import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { BellIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import {
+  UserIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  ClipboardDocumentCheckIcon,
+  CalendarIcon,
+  CreditCardIcon,
+  QuestionMarkCircleIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+  ChevronRightIcon,
+  PencilIcon
+} from '@heroicons/react/24/outline';
 
 export default function MemberMenuPage() {
   const router = useRouter();
   const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [photoURL, setPhotoURL] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
+  const [profile, setProfile] = useState({ name: '', email: '', photoURL: '' });
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => {
-      if (!u) return router.push('/login');
-      setUser(u);
-      setPhotoURL(u.photoURL || '');
-      setDisplayName(u.displayName || '');
-      setEmail(u.email || '');
-      setLoading(false);
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.push('/login');
+      } else {
+        setProfile({
+          name: user.displayName || '',
+          email: user.email || '',
+          photoURL: user.photoURL || ''
+        });
+        setLoading(false);
+      }
     });
     return () => unsub();
   }, [router]);
 
-  const handleChangePhoto = () => {
-    fileInputRef.current?.click();
-  };
-
-  const uploadPhoto = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  const handlePhotoClick = () => fileInputRef.current?.click();
+  const handlePhotoChange = async (e) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const file = e.target.files?.[0]; if (!file) return;
     const storage = getStorage();
     const picRef = storageRef(storage, `images/${user.uid}/profile_picture.png`);
     try {
       await deleteObject(picRef).catch(() => {});
       await uploadBytes(picRef, file);
       const url = await getDownloadURL(picRef);
-      await auth.currentUser.updateProfile({ photoURL: url });
-      setPhotoURL(url);
+      await updateProfile(user, { photoURL: url });
+      setProfile(p => ({ ...p, photoURL: url }));
     } catch (err) {
-      console.error(err);
-      alert('Error uploading photo');
+      console.error('Photo upload error:', err);
+      alert('Failed to update photo');
     }
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await auth.signOut();
     router.push('/');
   };
-
-  const menuItems = [
-    { label: 'Name', route: '/member/menu/edit-name' },
-    { label: 'Email', route: '/member/menu/edit-email' },
-    { label: 'Password', route: '/member/menu/edit-password' },
-    { label: 'Change Photo', action: handleChangePhoto },
-    { label: 'Questionnaire Results', route: '/member/menu/questionnaire/results' },
-    { label: 'Consultation History', route: '/member/consult' },
-    { label: 'Purchase History', route: '/member/menu/purchase-history' },
-    { label: 'Support', route: '/member/menu/support' },
-    { label: 'Notifications Settings', route: '/member/notifications-settings' },
-    { label: 'Delete Account', route: '/member/menu/delete-account' },
-    { label: 'Logout', action: handleLogout }
-  ];
 
   if (loading) {
     return (
@@ -77,60 +74,92 @@ export default function MemberMenuPage() {
     );
   }
 
+  const menuSections = [
+    {
+      title: 'Account',
+      items: [
+        { label: 'Name', icon: UserIcon, route: '/member/menu/edit-name', value: profile.name },
+        { label: 'Email', icon: EnvelopeIcon, route: '/member/menu/edit-email', value: profile.email },
+        { label: 'Password', icon: LockClosedIcon, route: '/member/menu/edit-password' }
+      ]
+    },
+    {
+      title: 'Actions',
+      items: [
+        { label: 'Questionnaire Results', icon: ClipboardDocumentCheckIcon, route: '/member/menu/questionnaire/results' },
+        { label: 'Consultation History', icon: CalendarIcon, route: '/member/consult/history' },
+        { label: 'Purchase History', icon: CreditCardIcon, route: '/member/menu/purchase-history' }
+      ]
+    },
+    {
+      title: 'Settings',
+      items: [
+        { label: 'Notifications', icon: Cog6ToothIcon, route: '/member/notifications-settings' }
+      ]
+    },
+    {
+      title: 'Support',
+      items: [
+        { label: 'Help & Support', icon: QuestionMarkCircleIcon, route: '/member/menu/support' }
+      ]
+    },
+    {
+      title: 'Other',
+      items: [
+        { label: 'Logout', icon: ArrowRightOnRectangleIcon, action: handleLogout }
+      ]
+    }
+  ];
+
   return (
-    <div className="w-full space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold text-gray-800">Menu</h1>
+    <div className="max-w-lg mx-auto p-6 space-y-8">
+      {/* Profile Section */}
+      <div className="flex flex-col items-center space-y-4">
+        <img
+          src={profile.photoURL}
+          alt="Profile"
+          className="h-28 w-28 rounded-full object-cover"
+        />
         <button
-          onClick={() => router.push('/member/notifications')}
-          className="p-2 rounded-full hover:bg-gray-100 transition"
+          onClick={handlePhotoClick}
+          className="inline-flex items-center space-x-2 text-green-600 hover:underline"
         >
-          <BellIcon className="h-6 w-6 text-gray-600" />
+          <PencilIcon className="h-5 w-5" />
+          <span>Change Photo</span>
         </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoChange}
+        />
       </div>
 
-      {/* Profile Header */}
-      <div className="bg-white shadow-lg rounded-xl p-6 flex items-center space-x-6">
-        <div className="relative">
-          <img
-            src={photoURL}
-            alt="Profile"
-            className="h-20 w-20 rounded-full object-cover"
-          />
-          <button
-            onClick={handleChangePhoto}
-            className="absolute bottom-0 right-0 bg-green-600 p-1 rounded-full shadow-md hover:bg-green-700 transition"
-          >
-            <ChevronRightIcon className="h-4 w-4 text-white" />
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={uploadPhoto}
-          />
+      {/* Menu Sections Vertical */}
+      {menuSections.map((section, idx) => (
+        <div key={idx}>
+          <h3 className="text-sm uppercase font-semibold text-gray-600 mb-4">{section.title}</h3>
+          <div className="bg-white shadow rounded-lg">
+            {section.items.map((item, i) => (
+              <button
+                key={i}
+                onClick={item.route ? () => router.push(item.route) : item.action}
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition"
+              >
+                <div className="flex items-center space-x-3">
+                  <item.icon className="h-5 w-5 text-gray-600" />
+                  <div className="text-left">
+                    <p className="text-gray-800">{item.label}</p>
+                    {item.value && <p className="text-gray-500 text-sm">{item.value}</p>}
+                  </div>
+                </div>
+                <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+              </button>
+            ))}
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">{displayName}</h2>
-          <p className="text-gray-600">{email}</p>
-        </div>
-      </div>
-
-      {/* Menu Items */}
-      <div className="bg-white shadow-md rounded-xl divide-y divide-gray-200">
-        {menuItems.map((item, idx) => (
-          <button
-            key={idx}
-            onClick={item.route ? () => router.push(item.route) : item.action}
-            className="w-full text-left px-6 py-4 flex justify-between items-center hover:bg-gray-50 transition"
-          >
-            <span className="font-medium text-gray-800">{item.label}</span>
-            <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-          </button>
-        ))}
-      </div>
+      ))}
     </div>
   );
 }
