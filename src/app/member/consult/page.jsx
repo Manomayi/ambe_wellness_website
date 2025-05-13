@@ -1,17 +1,24 @@
 // src/app/member/consult/page.jsx
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, collection, getDoc, getDocs, query, orderBy } from 'firebase/firestore';
-import { auth, db } from '../../../lib/firebase';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import {
+  doc,
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { auth, db } from "../../../lib/firebase";
 import {
   ChatBubbleLeftEllipsisIcon,
   CalendarDaysIcon,
   EllipsisVerticalIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/solid';
+  ArrowRightIcon,
+} from "@heroicons/react/24/solid";
 
 export default function MemberConsultPage() {
   const router = useRouter();
@@ -23,34 +30,34 @@ export default function MemberConsultPage() {
 
   // Fetch patient & related data
   const fetchData = async (uid) => {
-    const snap = await getDoc(doc(db, 'patients', uid));
+    const snap = await getDoc(doc(db, "patients", uid));
     const pt = snap.exists() ? snap.data() : {};
     setPatient(pt);
 
     if (pt.subscription?.active) {
-      const drSnap = await getDoc(doc(db, 'doctors', pt.doctor.uid));
+      const drSnap = await getDoc(doc(db, "doctors", pt.doctor.uid));
       setDoctor(drSnap.exists() ? drSnap.data() : null);
 
       const upSnap = await getDocs(
-        query(collection(db, 'patients', uid, 'appointments_upcoming'))
+        query(collection(db, "patients", uid, "appointments_upcoming"))
       );
-      setUpcoming(upSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setUpcoming(upSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
       const histSnap = await getDocs(
         query(
-          collection(db, 'patients', uid, 'appointments_history'),
-          orderBy('time', 'desc')
+          collection(db, "patients", uid, "appointments_history"),
+          orderBy("time", "desc")
         )
       );
-      setHistory(histSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setHistory(histSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
     }
 
     setLoading(false);
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, user => {
-      if (!user) return router.push('/login');
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (!user) return router.push("/login");
       fetchData(user.uid);
     });
     return unsub;
@@ -59,7 +66,10 @@ export default function MemberConsultPage() {
   const formatTime = (ts) => {
     const d = ts.toDate ? ts.toDate() : ts;
     return d.toLocaleString(undefined, {
-      month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
     });
   };
 
@@ -74,11 +84,13 @@ export default function MemberConsultPage() {
   const subActive = patient.subscription?.active;
   const firstDone = patient.is_first_consultation_completed;
   const appt = upcoming[0] || null;
-  const now = appt && (() => {
-    const t = appt.time.toDate();
-    const n = new Date();
-    return n >= t && n <= new Date(t.getTime() + 3600000);
-  })();
+  const now =
+    appt &&
+    (() => {
+      const t = appt.time.toDate();
+      const n = new Date();
+      return n >= t && n <= new Date(t.getTime() + 3600000);
+    })();
 
   return (
     <div className="w-full">
@@ -89,10 +101,11 @@ export default function MemberConsultPage() {
       {!subActive && (
         <div className="bg-white shadow-lg rounded-xl p-8 lg:p-12 mb-12">
           <p className="text-lg text-gray-700 mb-6">
-            You don’t have an active subscription. Complete the questionnaire to start.
+            You don’t have an active subscription. Complete the questionnaire to
+            start.
           </p>
           <button
-            onClick={() => router.push('/member/menu/questionnaire')}
+            onClick={() => router.push("/member/menu/questionnaire")}
             className="inline-flex items-center space-x-2 bg-green-600 border border-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition"
           >
             <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
@@ -105,8 +118,10 @@ export default function MemberConsultPage() {
       {subActive && (
         <div className="space-y-12">
           {/* My Expert Section */}
+          <p className="text-sm uppercase font-semibold text-gray-600 mb-4">
+            My Expert
+          </p>
           <section className="bg-white shadow-xl rounded-xl p-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">My Expert</h2>
             {doctor && (
               <div className="flex flex-col md:flex-row items-center">
                 <img
@@ -120,18 +135,19 @@ export default function MemberConsultPage() {
                   </h3>
                   <p className="text-gray-600 mb-6">General Practitioner</p>
                   <div className="flex flex-col sm:flex-row gap-4">
-                    {/** Button template **/}
                     <button
                       onClick={() => {
                         if (firstDone) {
                           const params = new URLSearchParams({
                             expertUid: patient.doctor.uid,
                             expertName: `Dr. ${doctor.first_name} ${doctor.last_name}`,
-                            expertPhotoUrl: doctor.profile_picture
+                            expertPhotoUrl: doctor.profile_picture,
                           });
-                          router.push(`/member/consult/message_expert?${params.toString()}`);
+                          router.push(
+                            `/member/consult/message_expert?${params.toString()}`
+                          );
                         } else {
-                          router.push('/member/menu/questionnaire');
+                          router.push("/member/menu/questionnaire");
                         }
                       }}
                       className="flex-1 flex items-center justify-center space-x-2 bg-green-600 border border-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
@@ -140,18 +156,11 @@ export default function MemberConsultPage() {
                       <span>Message</span>
                     </button>
                     <button
-                      onClick={() => router.push('/member/consult/schedule')}
+                      onClick={() => router.push("/member/consult/schedule")}
                       className="flex-1 flex items-center justify-center space-x-2 bg-green-600 border border-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
                     >
                       <CalendarDaysIcon className="h-5 w-5" />
                       <span>Schedule</span>
-                    </button>
-                    <button
-                      onClick={() => router.push('/member/request-doctor')}
-                      className="flex-1 flex items-center justify-center space-x-2 bg-green-600 border border-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
-                    >
-                      <EllipsisVerticalIcon className="h-5 w-5" />
-                      <span>More</span>
                     </button>
                   </div>
                 </div>
@@ -161,40 +170,45 @@ export default function MemberConsultPage() {
 
           {/* Upcoming / Happening Now */}
           {appt && (
-            <section className="bg-white shadow-xl rounded-xl p-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                {now ? 'Happening Now' : 'Upcoming Appointment'}
-              </h2>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Dr. {appt.doctor_name}
-                  </h3>
-                  <p className="text-gray-600">{formatTime(appt.time)}</p>
+            <>
+              <p className="text-sm uppercase font-semibold text-gray-600 mb-4">
+                {now ? "Happening Now" : "Upcoming Appointment"}
+              </p>
+              <section className="bg-white shadow-xl rounded-xl p-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Dr. {appt.doctor_name}
+                    </h3>
+                    <p className="text-gray-600">{formatTime(appt.time)}</p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      now
+                        ? router.push(`/member/consult/join/${appt.id}`)
+                        : router.push(`/member/consult/edit/${appt.id}`)
+                    }
+                    className="flex items-center space-x-2 bg-green-600 border border-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
+                  >
+                    <ArrowRightIcon className="h-5 w-5" />
+                    <span>{now ? "Join Now" : "Edit"}</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => now
-                    ? router.push(`/member/consult/join/${appt.id}`)
-                    : router.push(`/member/consult/edit/${appt.id}`)
-                  }
-                  className="flex items-center space-x-2 bg-green-600 border border-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
-                >
-                  <ArrowRightIcon className="h-5 w-5" />
-                  <span>{now ? 'Join Now' : 'Edit'}</span>
-                </button>
-              </div>
-            </section>
+              </section>
+            </>
           )}
 
           {/* Appointment History */}
           {history.length > 0 && (
-            <section className="bg-white shadow-xl rounded-xl p-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">History</h2>
-              <div className="flex flex-col space-y-4">
-                {history.map(app => (
+            <>
+              <p className="text-sm uppercase font-semibold text-gray-600 mb-4">
+                History
+              </p>
+              <section className="space-y-4">
+                {history.map((app) => (
                   <div
                     key={app.id}
-                    className="border-l-4 border-green-600 bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center hover:shadow-md transition"
+                    className="bg-white border-l-4 border-green-600 p-4 rounded-lg shadow-sm flex justify-between items-center hover:shadow-md transition"
                   >
                     <div>
                       <p className="font-medium text-gray-800">
@@ -203,15 +217,17 @@ export default function MemberConsultPage() {
                       <p className="text-gray-600">{formatTime(app.time)}</p>
                     </div>
                     <button
-                      onClick={() => router.push(`/member/consult/report/${app.id}`)}
+                      onClick={() =>
+                        router.push(`/member/consult/report/${app.id}`)
+                      }
                       className="flex items-center justify-center bg-green-600 border border-green-600 text-white p-2 rounded-full shadow hover:bg-green-700 transition"
                     >
                       <ArrowRightIcon className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
-              </div>
-            </section>
+              </section>
+            </>
           )}
         </div>
       )}
