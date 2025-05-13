@@ -78,9 +78,9 @@ export default function MemberMenuPage() {
     {
       title: 'Account',
       items: [
-        { label: 'Name', icon: UserIcon, route: '/member/menu/edit-name', value: profile.name },
-        { label: 'Email', icon: EnvelopeIcon, route: '/member/menu/edit-email', value: profile.email },
-        { label: 'Password', icon: LockClosedIcon, route: '/member/menu/edit-password' }
+        { label: 'Name', icon: UserIcon, route: '/member/menu/name', value: profile.name },
+        { label: 'Email', icon: EnvelopeIcon, route: '/member/menu/email', value: profile.email },
+        { label: 'Password', icon: LockClosedIcon, route: '/member/menu/password' }
       ]
     },
     {
@@ -88,7 +88,7 @@ export default function MemberMenuPage() {
       items: [
         { label: 'Questionnaire Results', icon: ClipboardDocumentCheckIcon, route: '/member/menu/questionnaire/results' },
         { label: 'Consultation History', icon: CalendarIcon, route: '/member/consult/history' },
-        { label: 'Purchase History', icon: CreditCardIcon, route: '/member/menu/purchase-history' }
+        { label: 'Purchase History', icon: CreditCardIcon, route: '/member/menu/purchase_history' }
       ]
     },
     {

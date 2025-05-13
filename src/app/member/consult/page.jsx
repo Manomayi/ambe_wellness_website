@@ -122,10 +122,18 @@ export default function MemberConsultPage() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/** Button template **/}
                     <button
-                      onClick={() => firstDone
-                        ? router.push('/member/consult/message')
-                        : router.push('/member/menu/questionnaire')
-                      }
+                      onClick={() => {
+                        if (firstDone) {
+                          const params = new URLSearchParams({
+                            expertUid: patient.doctor.uid,
+                            expertName: `Dr. ${doctor.first_name} ${doctor.last_name}`,
+                            expertPhotoUrl: doctor.profile_picture
+                          });
+                          router.push(`/member/consult/message_expert?${params.toString()}`);
+                        } else {
+                          router.push('/member/menu/questionnaire');
+                        }
+                      }}
                       className="flex-1 flex items-center justify-center space-x-2 bg-green-600 border border-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition"
                     >
                       <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
