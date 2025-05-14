@@ -1,10 +1,10 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { auth, db } from '../../../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter }            from 'next/navigation';
+import Link                     from 'next/link';
+import { auth, db }             from '../../../lib/firebase';
+import { onAuthStateChanged }   from 'firebase/auth';
+import { doc, getDoc }          from 'firebase/firestore';
 import {
   BellIcon,
   ClipboardListIcon,
@@ -18,102 +18,116 @@ import {
 export default function MemberHomePage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
-  const [patient, setPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [patient,   setPatient]   = useState(null);
+  const [loading,   setLoading]   = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      setFirstName(user.displayName?.split(' ')[0] || '');
-      getDoc(doc(db, 'patients', user.uid))
-        .then((snapshot) => {
-          setPatient(snapshot.exists() ? snapshot.data() : {});
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    });
-    return () => unsubscribe();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
-      </div>
-    );
-  }
-
-  const tasks = [];
+  // always declare your tasks hook before any early return:
   const doneQ = patient?.is_free_questionnaire_completed;
   const setC  = patient?.is_consultation_set;
   const sub   = patient?.subscription?.active;
-
-  if (!doneQ) {
-    tasks.push({
-      href: '/member/menu/questionnaire',
-      Icon: ClipboardListIcon,
-      title: 'COMPLETE QUESTIONNAIRE',
-      desc: 'Receive your personalized report.',
-      color: 'green'
-    });
-  } else {
-    tasks.push({
-      href: '/member/menu/questionnaire/results',
-      Icon: ChartBarIcon,
-      title: 'View Results',
-      desc: 'See your constitution report.',
-      color: 'indigo'
-    });
-  }
-
-  if (doneQ && !setC) {
-    if (sub) {
-      tasks.push({
-        href: '/member/consult/schedule',
-        Icon: CalendarIcon,
-        title: 'Schedule Consultation',
-        desc: 'Book time with your expert.',
-        color: 'blue'
+  const tasks = useMemo(() => {
+    const arr = [];
+    if (!doneQ) {
+      arr.push({
+        href:  '/member/menu/questionnaire',
+        Icon:  ClipboardListIcon,
+        title: 'Complete Questionnaire',
+        desc:  'Receive your personalized report.',
+        color: 'green',
       });
     } else {
-      tasks.push({
-        href: '/member/menu/payment',
-        Icon: CreditCardIcon,
-        title: 'SUBSCRIBE TO CONSULT',
-        desc: 'Activate a plan to schedule.',
-        color: 'yellow'
+      arr.push({
+        href:  '/member/menu/questionnaire/results',
+        Icon:  ChartBarIcon,
+        title: 'View Results',
+        desc:  'See your constitution report.',
+        color: 'indigo',
       });
     }
+    if (doneQ && !setC) {
+      if (sub) {
+        arr.push({
+          href:  '/member/consult/schedule',
+          Icon:  CalendarIcon,
+          title: 'Schedule Consultation',
+          desc:  'Book time with your expert.',
+          color: 'blue',
+        });
+      } else {
+        arr.push({
+          href:  '/member/menu/payment',
+          Icon:  CreditCardIcon,
+          title: 'Subscribe To Consult',
+          desc:  'Activate a plan to schedule.',
+          color: 'yellow',
+        });
+      }
+    }
+    return arr;
+  }, [doneQ, setC, sub]);
+
+  // pull in all color classes so Tailwind JIT doesn't purge them:
+  const _tailwindGuarantee = (
+    <div className="
+      hidden
+      border-green-600 border-indigo-600 border-blue-600 border-yellow-600
+      bg-green-600 bg-indigo-600 bg-blue-600 bg-yellow-600
+      text-green-600 text-indigo-600 text-blue-600 text-yellow-600
+    "/>
+  );
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, user => {
+      if (!user) return router.push('/login');
+      setFirstName(user.displayName?.split(' ')[0] || '');
+      getDoc(doc(db, 'patients', user.uid))
+        .then(snap => setPatient(snap.exists() ? snap.data() : {}))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    });
+    return () => unsub();
+  }, [router]);
+
+  // now it’s safe to early‐return your spinner
+  if (loading) {
+    return (
+      <>
+        {_tailwindGuarantee}
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-green-600 border-t-transparent" />
+        </div>
+      </>
+    );
   }
 
   return (
-    <div className="w-full space-y-12">
+    <div className="space-y-12">
+      {_tailwindGuarantee}
+
       {/* Greeting & Notifications */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Hello {firstName}</h1>
-        <button
-          onClick={() => router.push('/member/notifications')}
-          className="p-2 rounded-full hover:bg-gray-100 transition"
-        >
-          <BellIcon className="h-6 w-6 text-gray-600" />
-        </button>
+        <h1 className="text-3xl font-bold text-gray-800">Hello {firstName},</h1>
+      
       </div>
 
       {/* THINGS TO DO */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-600 uppercase mb-4">Things to Do</h2>
+        <h2 className="text-sm font-semibold text-gray-600 uppercase mb-4">
+          Things to Do
+        </h2>
         <div className="flex flex-col space-y-4">
           {tasks.map(({ href, Icon, title, desc, color }) => (
             <Link
               key={href}
               href={href}
-              className={`block bg-white shadow-md rounded-xl p-6 flex items-center justify-between border-l-4 border-${color}-600 hover:shadow-lg transition`}
+              className={`
+                block bg-white shadow-md rounded-xl p-6 flex items-center justify-between
+                border-l-4 hover:shadow-lg transition
+                border-${color}-600
+              `}
             >
               <div className="flex items-center space-x-4">
-                <div className={`flex-shrink-0 bg-${color}-600 rounded-full p-3`}>
+                <div className={`rounded-full p-3 bg-${color}-600 flex-shrink-0`}>
                   <Icon className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -133,13 +147,15 @@ export default function MemberHomePage() {
 
       {/* COMING SOON */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-600 uppercase mb-4">Coming Soon</h2>
+        <h2 className="text-sm font-semibold text-gray-600 uppercase mb-4">
+          Coming Soon
+        </h2>
         <Link
           href="/member/courses"
           className="block bg-white shadow-md rounded-xl p-6 flex items-center justify-between border-l-4 border-purple-600 hover:shadow-lg transition"
         >
           <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 bg-purple-600 rounded-full p-3">
+            <div className="bg-purple-600 rounded-full p-3 flex-shrink-0">
               <VideoCameraIcon className="h-6 w-6 text-white" />
             </div>
             <div>

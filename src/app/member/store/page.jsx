@@ -61,7 +61,7 @@ export default function MemberStorePage() {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="space-y-12">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-semibold text-gray-800">Store</h1>

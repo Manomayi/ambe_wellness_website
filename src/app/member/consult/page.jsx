@@ -93,7 +93,7 @@ export default function MemberConsultPage() {
     })();
 
   return (
-    <div className="w-full">
+    <div className="space-y-12">
       {/* Page Title */}
       <h1 className="text-3xl font-semibold text-gray-800 mb-8">Consult</h1>
 
@@ -217,9 +217,16 @@ export default function MemberConsultPage() {
                       <p className="text-gray-600">{formatTime(app.time)}</p>
                     </div>
                     <button
-                      onClick={() =>
-                        router.push(`/member/consult/report/${app.id}`)
-                      }
+                      onClick={() => {
+                        const params = new URLSearchParams({
+                          doctorName: app.doctor_name,
+                        });
+                        router.push(
+                          `/member/consult/report/${
+                            app.id
+                          }?${params.toString()}`
+                        );
+                      }}
                       className="flex items-center justify-center bg-green-600 border border-green-600 text-white p-2 rounded-full shadow hover:bg-green-700 transition"
                     >
                       <ArrowRightIcon className="h-4 w-4" />
@@ -233,4 +240,4 @@ export default function MemberConsultPage() {
       )}
     </div>
   );
-} 
+}

@@ -89,7 +89,7 @@ export default function ScheduleConsultationPage() {
   }
 
   return (
-    <div className="max-w-3xl w-full mx-auto p-6 space-y-6">
+    <div className="space-y-12">
       <h1 className="text-2xl font-semibold text-gray-800">Schedule Consultation</h1>
 
       <div>

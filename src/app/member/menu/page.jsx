@@ -1,10 +1,17 @@
+// src/app/member/menu/page.jsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../../lib/firebase';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -15,8 +22,8 @@ import {
   QuestionMarkCircleIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
-  ChevronRightIcon,
-  PencilIcon
+  PencilIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 
 export default function MemberMenuPage() {
@@ -24,7 +31,11 @@ export default function MemberMenuPage() {
   const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState({ name: '', email: '', photoURL: '' });
+  const [profile, setProfile] = useState({
+    name: '',
+    email: '',
+    photoURL: '',
+  });
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -34,7 +45,7 @@ export default function MemberMenuPage() {
         setProfile({
           name: user.displayName || '',
           email: user.email || '',
-          photoURL: user.photoURL || ''
+          photoURL: user.photoURL || '',
         });
         setLoading(false);
       }
@@ -46,7 +57,8 @@ export default function MemberMenuPage() {
   const handlePhotoChange = async (e) => {
     const user = auth.currentUser;
     if (!user) return;
-    const file = e.target.files?.[0]; if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
     const storage = getStorage();
     const picRef = storageRef(storage, `images/${user.uid}/profile_picture.png`);
     try {
@@ -54,7 +66,7 @@ export default function MemberMenuPage() {
       await uploadBytes(picRef, file);
       const url = await getDownloadURL(picRef);
       await updateProfile(user, { photoURL: url });
-      setProfile(p => ({ ...p, photoURL: url }));
+      setProfile((p) => ({ ...p, photoURL: url }));
     } catch (err) {
       console.error('Photo upload error:', err);
       alert('Failed to update photo');
@@ -69,7 +81,7 @@ export default function MemberMenuPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-green-600 border-t-transparent" />
       </div>
     );
   }
@@ -78,46 +90,84 @@ export default function MemberMenuPage() {
     {
       title: 'Account',
       items: [
-        { label: 'Name', icon: UserIcon, route: '/member/menu/name', value: profile.name },
-        { label: 'Email', icon: EnvelopeIcon, route: '/member/menu/email', value: profile.email },
-        { label: 'Password', icon: LockClosedIcon, route: '/member/menu/password' }
-      ]
+        {
+          label: 'Name',
+          icon: UserIcon,
+          route: '/member/menu/name',
+          value: profile.name,
+        },
+        {
+          label: 'Email',
+          icon: EnvelopeIcon,
+          route: '/member/menu/email',
+          value: profile.email,
+        },
+        {
+          label: 'Password',
+          icon: LockClosedIcon,
+          route: '/member/menu/password',
+        },
+      ],
     },
     {
       title: 'Actions',
       items: [
-        { label: 'Questionnaire Results', icon: ClipboardDocumentCheckIcon, route: '/member/menu/questionnaire/results' },
-        { label: 'Consultation History', icon: CalendarIcon, route: '/member/consult/history' },
-        { label: 'Purchase History', icon: CreditCardIcon, route: '/member/menu/purchase_history' }
-      ]
+        {
+          label: 'Questionnaire Results',
+          icon: ClipboardDocumentCheckIcon,
+          route: '/member/menu/questionnaire/results',
+        },
+        {
+          label: 'Consultation History',
+          icon: CalendarIcon,
+          route: '/member/consult/history',
+        },
+        {
+          label: 'Purchase History',
+          icon: CreditCardIcon,
+          route: '/member/menu/purchase_history',
+        },
+      ],
     },
     {
       title: 'Settings',
       items: [
-        { label: 'Notifications', icon: Cog6ToothIcon, route: '/member/notifications-settings' }
-      ]
+        {
+          label: 'Notifications',
+          icon: Cog6ToothIcon,
+          route: '/member/notifications-settings',
+        },
+      ],
     },
     {
       title: 'Support',
       items: [
-        { label: 'Help & Support', icon: QuestionMarkCircleIcon, route: '/member/menu/support' }
-      ]
+        {
+          label: 'Help & Support',
+          icon: QuestionMarkCircleIcon,
+          route: '/member/menu/support',
+        },
+      ],
     },
     {
       title: 'Other',
       items: [
-        { label: 'Logout', icon: ArrowRightOnRectangleIcon, action: handleLogout }
-      ]
-    }
+        {
+          label: 'Logout',
+          icon: ArrowRightOnRectangleIcon,
+          action: handleLogout,
+        },
+      ],
+    },
   ];
 
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-8">
-      {/* Profile Section */}
+    <div className="space-y-12">
+      {/* Profile */}
       <div className="flex flex-col items-center space-y-4">
         <img
           src={profile.photoURL}
-          alt="Profile"
+          alt={profile.name}
           className="h-28 w-28 rounded-full object-cover"
         />
         <button
@@ -136,27 +186,53 @@ export default function MemberMenuPage() {
         />
       </div>
 
-      {/* Menu Sections Vertical */}
+      {/* Menu Sections */}
       {menuSections.map((section, idx) => (
         <div key={idx}>
-          <h3 className="text-sm uppercase font-semibold text-gray-600 mb-4">{section.title}</h3>
-          <div className="bg-white shadow rounded-lg">
-            {section.items.map((item, i) => (
-              <button
-                key={i}
-                onClick={item.route ? () => router.push(item.route) : item.action}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition"
-              >
-                <div className="flex items-center space-x-3">
-                  <item.icon className="h-5 w-5 text-gray-600" />
-                  <div className="text-left">
-                    <p className="text-gray-800">{item.label}</p>
-                    {item.value && <p className="text-gray-500 text-sm">{item.value}</p>}
+          <h3 className="text-sm uppercase font-semibold text-gray-600 mb-4">
+            {section.title}
+          </h3>
+          <div className="space-y-4">
+            {section.items.map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={i}
+                  onClick={() =>
+                    item.route ? router.push(item.route) : item.action()
+                  }
+                  className="
+                    w-full
+                    bg-white
+                    shadow-md
+                    rounded-xl
+                    p-6
+                    flex
+                    items-center
+                    justify-between
+                    border-l-4
+                    border-green-600
+                    hover:shadow-lg
+                    transition
+                  "
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-green-600 p-3 rounded-full flex-shrink-0">
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-800 text-left">{item.label}</p>
+                      {item.value && (
+                        <p className="text-gray-600 text-sm">{item.value}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-              </button>
-            ))}
+                  <div className="bg-green-600 p-2 rounded-full flex-shrink-0">
+                    <ArrowRightIcon className="h-4 w-4 text-white" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
