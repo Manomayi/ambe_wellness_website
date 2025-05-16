@@ -52,7 +52,7 @@ export default function PurchaseHistoryPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
+    <div className="space-y-12">
       <h1 className="text-2xl font-semibold text-gray-800">Purchase History</h1>
 
       {purchases.length === 0 ? (
