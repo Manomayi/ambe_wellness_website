@@ -79,7 +79,7 @@ export default function ExpertMessagesPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <h1 className="text-2xl font-semibold text-gray-800">Messages</h1>
 
       {chats.length === 0 ? (

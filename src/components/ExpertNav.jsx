@@ -29,7 +29,7 @@ export default function ExpertNav() {
     { label: 'Home',          href: '/expert/home',          Icon: HomeIcon },
     { label: 'Calendar',      href: '/expert/consultations', Icon: CalendarDaysIcon },
     { label: 'Messages',      href: '/expert/messages',      Icon: ChatBubbleLeftEllipsisIcon },
-    { label: 'Patients',      href: '/expert/patients',      Icon: UsersIcon },
+    { label: 'Members',      href: '/expert/members',      Icon: UsersIcon },
     {
       label: 'Menu',
       href: '/expert/menu',

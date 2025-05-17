@@ -1,21 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
   doc,
   getDoc,
   getDocs,
   query,
-  orderBy
-} from 'firebase/firestore';
-import {
-  ChevronRightIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
+  orderBy,
+} from "firebase/firestore";
+import { ChevronRightIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function ExpertConsultationsPage() {
   const router = useRouter();
@@ -28,32 +25,35 @@ export default function ExpertConsultationsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     const user = auth.currentUser;
-    if (!user) return router.push('/login');
+    if (!user) return router.push("/login");
 
     const uid = user.uid;
 
     // 1. Reports to finish
     try {
-      const repSnap = await getDoc(doc(db, 'doctors', uid, 'appointments', 'reports_to_finish'));
+      const repSnap = await getDoc(
+        doc(db, "doctors", uid, "appointments", "reports_to_finish")
+      );
       if (repSnap.exists()) {
         const data = repSnap.data();
         setReportsCount(Array.isArray(data.reports) ? data.reports.length : 0);
       }
     } catch (e) {
-      console.error('Err loading reports:', e);
+      console.error("Err loading reports:", e);
     }
 
     // 2. Upcoming appointments
     try {
       const apptSnap = await getDocs(
         query(
-          collection(db, 'doctors', uid, 'appointments_upcoming'),
-          orderBy('time', 'asc')
+          collection(db, "doctors", uid, "appointments_upcoming"),
+          orderBy("time", "asc")
         )
       );
       const now = Date.now();
-      const docs = apptSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      let curr = null, upc = [];
+      const docs = apptSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      let curr = null,
+        upc = [];
       for (let a of docs) {
         const t = a.time?.toDate?.().getTime() ?? 0;
         if (now >= t && now <= t + 3600_000) {
@@ -65,27 +65,27 @@ export default function ExpertConsultationsPage() {
       setCurrent(curr);
       setUpcoming(upc);
     } catch (e) {
-      console.error('Err loading appointments:', e);
+      console.error("Err loading appointments:", e);
     }
 
     setLoading(false);
   }, [router]);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, user => {
-      if (!user) return router.push('/login');
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (!user) return router.push("/login");
       loadData();
     });
     return unsub;
   }, [loadData, router]);
 
-  const fmt = ts => {
+  const fmt = (ts) => {
     const d = ts?.toDate?.() ?? ts;
     return d.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric'
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
     });
   };
 
@@ -98,15 +98,15 @@ export default function ExpertConsultationsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header + refresh */}
+    <div className="space-y-12">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Consultations</h1>
         <button
-          onClick={loadData}
-          className="p-2 rounded-full hover:bg-gray-100 transition"
+          onClick={() => router.push("/expert/consultations/history")}
+          className="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded transition"
         >
-          <ArrowPathIcon className="h-6 w-6 text-gray-600" />
+          HISTORY
         </button>
       </div>
 
@@ -117,7 +117,7 @@ export default function ExpertConsultationsPage() {
             Reports to Finish
           </p>
           <button
-            onClick={() => router.push('/expert/reports-to-finish')}
+            onClick={() => router.push("/expert/reports-to-finish")}
             className="w-full bg-white border-l-4 border-red-500 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
           >
             <div>
@@ -125,7 +125,7 @@ export default function ExpertConsultationsPage() {
                 Reports to finish
               </p>
               <p className="text-gray-600">
-                You have {reportsCount} report{reportsCount>1?'s':''}
+                You have {reportsCount} report{reportsCount > 1 ? "s" : ""}
               </p>
             </div>
             <ChevronRightIcon className="h-5 w-5 text-gray-400" />
@@ -165,7 +165,7 @@ export default function ExpertConsultationsPage() {
             Upcoming
           </p>
           <div className="space-y-4">
-            {upcoming.map(a => (
+            {upcoming.map((a) => (
               <button
                 key={a.id}
                 onClick={() =>

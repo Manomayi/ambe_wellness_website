@@ -61,18 +61,8 @@ export default function ExpertHomePage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Ambe</h1>
-        <button
-          onClick={() => router.push('/expert/notifications')}
-          className="p-2 rounded-full hover:bg-gray-100 transition"
-        >
-          <BellIcon className="h-6 w-6 text-gray-600" />
-        </button>
-      </div>
-
+    <div className="space-y-12">
+      
       {/* Greeting */}
       <p className="text-4xl font-normal text-yellow-500">
         Hello Dr. {lastName},
