@@ -1,9 +1,24 @@
 "use client";
-import Head from "next/head";
-import { useEffect } from "react";
-import Script from "next/script";
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import Script from 'next/script';
+import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import TextField from '@/components/TextField';
+import Button from '@/components/Button';
+
 
 export default function Home() {
+  const router = useRouter();
+
+  // Sign‐in form state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   useEffect(() => {
     // Mobile menu toggle
     const mobileMenuButton = document.getElementById("mobile-menu-button");
@@ -68,13 +83,50 @@ export default function Home() {
     };
   }, []);
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      // 1) Auth
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+
+      // 2) Fetch role doc
+      const [docSnapDoctor, docSnapPatient] = await Promise.all([
+        getDoc(doc(db, 'doctors', user.uid)),
+        getDoc(doc(db, 'patients', user.uid)),
+      ]);
+      const roleDoc = docSnapDoctor.exists()
+        ? docSnapDoctor
+        : docSnapPatient.exists()
+        ? docSnapPatient
+        : null;
+      if (!roleDoc) throw new Error('No user record found');
+      const userData = roleDoc.data();
+      const role = userData.role;
+
+      // 3) Persist basic info
+      localStorage.setItem('firstName', userData.firstName);
+      localStorage.setItem('lastName', userData.lastName);
+      localStorage.setItem('role', role);
+
+      // 4) Redirect
+      router.push(role === 'Patient' ? '/member' : '/expert');
+    } catch (err) {
+      console.error(err);
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Head>
         <title>Ambe Wellness</title>
         <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        {/* Google Fonts */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link
           href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
           rel="stylesheet"
@@ -87,151 +139,155 @@ export default function Home() {
         strategy="afterInteractive"
       />
 
-      {/* Header / Navbar */}
+      {/* Navbar */}
       <header
-        id="navbar"
-        className="fixed w-full z-20 top-0 left-0 bg-transparent"
+  id="navbar"
+  className="fixed top-0 left-0 w-full z-20 bg-transparent transition"
+>
+  <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16">
+    {/* Logo */}
+    <a href="#" className="logo text-2xl font-bold text-white">
+      Ambe Wellness
+    </a>
+
+    {/* Desktop nav */}
+    <nav className="hidden md:flex items-center space-x-4">
+      <a href="#about" className="nav-link text-white hover:text-green-600">
+        About Us
+      </a>
+      <a href="#how-it-works" className="nav-link text-white hover:text-green-600">
+        How It Works
+      </a>
+      <a href="#services" className="nav-link text-white hover:text-green-600">
+        Services
+      </a>
+      <a href="#contact" className="nav-link text-white hover:text-green-600">
+        Contact Us
+      </a>
+      <a
+        href="/signup"
+        className="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition"
       >
-        <nav>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo */}
-              <div className="flex-shrink-0">
-                <a href="#" className="logo text-2xl font-bold text-white">
-                  Ambe Wellness
-                </a>
-              </div>
-              {/* Desktop Navigation */}
-              <div className="hidden md:block">
-                <div className="ml-10 flex items-baseline space-x-4">
-                  <a
-                    href="#about"
-                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
-                  >
-                    About Us
-                  </a>
-                  <a
-                    href="#how-it-works"
-                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
-                  >
-                    How It Works
-                  </a>
-                  <a
-                    href="#services"
-                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
-                  >
-                    Services
-                  </a>
-                  <a
-                    href="#contact"
-                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
-                  >
-                    Contact Us
-                  </a>
-                  {/* Sign In Button */}
-                  <a
-                    href="/login"
-                    className="nav-link text-white hover:text-green-600 px-3 py-2 rounded-md text-md font-medium"
-                  >
-                    Sign In
-                  </a>
-                </div>
-              </div>
-              {/* Mobile Menu Button */}
-              <div className="-mr-2 flex md:hidden">
-                <button
-                  id="mobile-menu-button"
-                  className="bg-transparent inline-flex items-center justify-center p-2 rounded-md text-white hover:text-green-600 focus:outline-none"
-                >
-                  <svg
-                    className="h-6 w-6"
-                    stroke="currentColor"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      className="inline-flex"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* Mobile Menu */}
-          <div id="mobile-menu" className="md:hidden hidden bg-white">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <a
-                href="#about"
-                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
-              >
-                About Us
-              </a>
-              <a
-                href="#how-it-works"
-                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
-              >
-                How It Works
-              </a>
-              <a
-                href="#services"
-                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
-              >
-                Services
-              </a>
-              <a
-                href="#contact"
-                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
-              >
-                Contact Us
-              </a>
-              <a
-                href="/login"
-                className="block text-gray-800 hover:text-green-600 px-3 py-2 rounded-md text-base font-medium"
-              >
-                Sign In
-              </a>
-            </div>
-          </div>
-        </nav>
-      </header>
+        Sign Up
+      </a>
+    </nav>
+
+    {/* Mobile menu button */}
+    <div className="md:hidden">
+      <button
+        id="mobile-menu-button"
+        className="inline-flex items-center justify-center p-2 text-white hover:text-green-600 focus:outline-none"
+      >
+        {/* simple hamburger icon */}
+        <svg
+          className="h-6 w-6"
+          stroke="currentColor"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {/* Mobile menu drawer */}
+  <div id="mobile-menu" className="md:hidden hidden bg-white">
+    <div className="px-2 pt-2 pb-3 space-y-1">
+      <a
+        href="#about"
+        className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
+      >
+        About Us
+      </a>
+      <a
+        href="#how-it-works"
+        className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
+      >
+        How It Works
+      </a>
+      <a
+        href="#services"
+        className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
+      >
+        Services
+      </a>
+      <a
+        href="#contact"
+        className="block px-3 py-2 rounded-md text-base font-medium text-gray-800 hover:bg-gray-100"
+      >
+        Contact Us
+      </a>
+      <a
+        href="/signup"
+        className="block px-3 py-2 rounded-md font-bold bg-green-600 text-white hover:bg-green-700 transition"
+      >
+        Sign Up
+      </a>
+    </div>
+  </div>
+</header>
 
       <main className="bg-white text-gray-800">
         {/* Hero Section */}
-        <section className="relative h-screen flex items-center justify-center">
+        <section className="relative h-screen flex items-center">
           <video
             className="absolute inset-0 w-full h-full object-cover"
-            autoPlay
-            muted
-            loop
+            autoPlay muted loop
           >
             <source src="/videos/hero_background.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
           </video>
           <div
-            className="gradient-overlay absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0))",
-            }}
-          ></div>
-          <div className="relative z-10 text-center px-4 fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-gray-800">
-              Start Your Journey to Wellness
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-gray-700">
-              Personalized remedies from licensed experts to enhance your
-              lifestyle.
-            </p>
-            <a
-              href="#services"
-              className="bg-green-600 hover:bg-green-600 text-white font-semibold px-8 py-3 rounded-md transition-transform transform hover:scale-105"
-            >
-              Get Started
-            </a>
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to top, rgba(255,255,255,1),rgba(255,255,255,0))' }}
+          />
+
+          <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+            {/* Left: marketing text */}
+            <div className="flex flex-col justify-center text-center md:text-left fade-in">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 text-shadow">
+                Start Your Journey to Wellness
+              </h1>
+              <p className="text-xl md:text-2xl text-white mb-8 text-shadow">
+                Personalized remedies from licensed experts to enhance your lifestyle.
+              </p>
+              
+            </div>
+
+            {/* Right: sign-in form */}
+            <div className="flex items-center justify-center">
+              <form
+                onSubmit={handleLogin}
+                className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg"
+              >
+                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+                  Sign In
+                </h2>
+                <TextField
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  error={error}
+                />
+                <TextField
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  error={null}
+                />
+                {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+                <Button disabled={loading}>
+                  {loading ? 'Loading…' : 'Login'}
+                </Button>
+              </form>
+            </div>
           </div>
         </section>
 
