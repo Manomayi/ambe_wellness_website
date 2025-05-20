@@ -103,7 +103,7 @@ export default function ExpertMessagesPage() {
               >
                 <div>
                   <p className="font-medium text-gray-800">{c.memberName}</p>
-                  <p className="text-gray-600 text-sm mt-1 truncate">
+                  <p className="text-gray-600 text-sm text-left mt-1 truncate">
                     {prefix}{c.lastMessage}
                   </p>
                 </div>
