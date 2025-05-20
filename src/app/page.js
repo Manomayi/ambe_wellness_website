@@ -165,7 +165,7 @@ export default function Home() {
         Contact Us
       </a>
       <a
-        href="/signup"
+        href="/sign_up"
         className="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition"
       >
         Sign Up
@@ -224,7 +224,7 @@ export default function Home() {
         Contact Us
       </a>
       <a
-        href="/signup"
+        href="/sign_up"
         className="block px-3 py-2 rounded-md font-bold bg-green-600 text-white hover:bg-green-700 transition"
       >
         Sign Up
