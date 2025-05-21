@@ -88,7 +88,7 @@ export default function EditPasswordPage() {
               type={showCurrent ? 'text' : 'password'}
               value={currentPwd}
               onChange={e => setCurrentPwd(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
             />
             <button
               type="button"
@@ -106,7 +106,7 @@ export default function EditPasswordPage() {
               type={showNew ? 'text' : 'password'}
               value={newPwd}
               onChange={e => setNewPwd(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
             />
             <button
               type="button"
@@ -124,7 +124,7 @@ export default function EditPasswordPage() {
               type={showConfirm ? 'text' : 'password'}
               value={confirmPwd}
               onChange={e => setConfirmPwd(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
             />
             <button
               type="button"

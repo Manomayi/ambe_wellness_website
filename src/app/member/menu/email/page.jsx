@@ -81,7 +81,7 @@ export default function EditEmailPage() {
             type="email"
             value={currentEmail}
             disabled
-            className="w-full p-2 border border-gray-300 bg-gray-100 rounded-lg"
+            className="w-full p-2 border border-gray-300 bg-white rounded-lg"
           />
         </div>
         <div>
@@ -90,7 +90,7 @@ export default function EditEmailPage() {
             type="email"
             value={newEmail}
             onChange={e => setNewEmail(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+            className="w-full p-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
           />
         </div>
         {requiresReauth && (

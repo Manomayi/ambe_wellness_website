@@ -16,7 +16,6 @@ import { auth, db } from "../../../lib/firebase";
 import {
   ChatBubbleLeftEllipsisIcon,
   CalendarDaysIcon,
-  EllipsisVerticalIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/solid";
 
@@ -27,6 +26,10 @@ export default function MemberConsultPage() {
   const [doctor, setDoctor] = useState(null);
   const [upcoming, setUpcoming] = useState([]);
   const [history, setHistory] = useState([]);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAppt, setSelectedAppt] = useState(null);
 
   // Fetch patient & related data
   const fetchData = async (uid) => {
@@ -99,8 +102,8 @@ export default function MemberConsultPage() {
 
       {/* Inactive subscription */}
       {!subActive && (
-        <div className="bg-white shadow-lg rounded-xl p-8 lg:p-12 mb-12">
-          <p className="text-lg text-gray-700 mb-6">
+        <div className="bg-white shadow-lg rounded-xl p-8 mb-12">
+          <p className="text-lg text-gray-700 mb-6 text-center">
             You don’t have an active subscription. Complete the questionnaire to
             start.
           </p>
@@ -183,14 +186,17 @@ export default function MemberConsultPage() {
                     <p className="text-gray-600">{formatTime(appt.time)}</p>
                   </div>
                   <button
-                    onClick={() =>
-                      now
-                        ? router.push(`/member/consult/join/${appt.id}`)
-                        : router.push(`/member/consult/edit/${appt.id}`)
-                    }
+                    onClick={() => {
+                      if (now) {
+                        router.push(`/member/consult/join/${appt.id}`);
+                      } else {
+                        // Open edit modal
+                        setSelectedAppt(appt);
+                        setModalOpen(true);
+                      }
+                    }}
                     className="flex items-center space-x-2 bg-green-600 border border-green-600 text-white px-5 py-2 rounded-lg shadow hover:bg-green-700 transition"
                   >
-                    <ArrowRightIcon className="h-5 w-5" />
                     <span>{now ? "Join Now" : "Edit"}</span>
                   </button>
                 </div>
@@ -222,9 +228,7 @@ export default function MemberConsultPage() {
                           doctorName: app.doctor_name,
                         });
                         router.push(
-                          `/member/consult/report/${
-                            app.id
-                          }?${params.toString()}`
+                          `/member/consult/report/${app.id}?${params.toString()}`
                         );
                       }}
                       className="flex items-center justify-center bg-green-600 border border-green-600 text-white p-2 rounded-full shadow hover:bg-green-700 transition"
@@ -236,6 +240,48 @@ export default function MemberConsultPage() {
               </section>
             </>
           )}
+        </div>
+      )}
+
+      {/* --- Modal Dialog --- */}
+      {modalOpen && selectedAppt && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold mb-4">
+              {formatTime(selectedAppt.time)}
+            </h3>
+            <button
+              className="w-full py-2 text-left hover:bg-gray-100 rounded"
+              onClick={() => {
+                setModalOpen(false);
+                router.push("/member/consult/schedule");
+              }}
+            >
+              Reschedule
+            </button>
+            <button
+              className="w-full py-2 text-left hover:bg-gray-100 rounded mt-2"
+              onClick={() => {
+                setModalOpen(false);
+                // TODO: call your cancellation logic here
+                alert("Consultation cancelled");
+              }}
+            >
+              Cancel Consultation
+            </button>
+            <button
+              className="mt-4 w-full text-center text-gray-500 hover:underline"
+              onClick={() => setModalOpen(false)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>
