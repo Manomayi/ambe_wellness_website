@@ -53,7 +53,7 @@ export default function ExpertMemberProfilesPage() {
             <button
               key={m.uid}
               onClick={() =>
-                router.push(`/expert/member-profiles/${m.uid}?name=${encodeURIComponent(m.name)}`)
+                router.push(`/expert/members/${m.uid}?name=${encodeURIComponent(m.name)}`)
               }
               className="w-full bg-white shadow rounded-lg flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition"
             >

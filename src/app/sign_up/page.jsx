@@ -358,6 +358,7 @@ export default function SignUpPage() {
     if (!validate()) return;
     setStep(s => Math.min(s + 1, flow.length - 1));
   };
+  
   const onBack = () => setStep(s => Math.max(s - 1, 0));
 
   const handleSubmit = useCallback(async () => {

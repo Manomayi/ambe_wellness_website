@@ -75,8 +75,8 @@ export default function ExpertFeedbackPage() {
                   className="h-12 w-12 rounded-full object-cover"
                 />
                 <div>
-                  <p className="text-gray-800 font-medium">{f.member_name}</p>
-                  <p className="text-gray-600">{f.feedback}</p>
+                  <p className="text-gray-800 text-left font-semibold">{f.member_name}</p>
+                  <p className="text-gray-600 text-left">{f.feedback}</p>
                 </div>
               </div>
               <span className="text-2xl font-bold text-gray-800">

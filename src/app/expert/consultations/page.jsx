@@ -1,4 +1,5 @@
-"use client";
+// src/app/expert/consultations/page.jsx
+'use client';
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -12,24 +13,28 @@ import {
   query,
   orderBy,
 } from "firebase/firestore";
-import { ChevronRightIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 
 export default function ExpertConsultationsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-
   const [reportsCount, setReportsCount] = useState(0);
   const [current, setCurrent] = useState(null);
   const [upcoming, setUpcoming] = useState([]);
+
+  // --- Modal state ---
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedAppt, setSelectedAppt] = useState(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     const user = auth.currentUser;
     if (!user) return router.push("/login");
-
     const uid = user.uid;
 
-    // 1. Reports to finish
+    // reports to finish
     try {
       const repSnap = await getDoc(
         doc(db, "doctors", uid, "appointments", "reports_to_finish")
@@ -42,7 +47,7 @@ export default function ExpertConsultationsPage() {
       console.error("Err loading reports:", e);
     }
 
-    // 2. Upcoming appointments
+    // upcoming + current
     try {
       const apptSnap = await getDocs(
         query(
@@ -52,15 +57,11 @@ export default function ExpertConsultationsPage() {
       );
       const now = Date.now();
       const docs = apptSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      let curr = null,
-        upc = [];
+      let curr = null, upc = [];
       for (let a of docs) {
         const t = a.time?.toDate?.().getTime() ?? 0;
-        if (now >= t && now <= t + 3600_000) {
-          curr = a;
-        } else {
-          upc.push(a);
-        }
+        if (now >= t && now <= t + 3600_000) curr = a;
+        else upc.push(a);
       }
       setCurrent(curr);
       setUpcoming(upc);
@@ -98,99 +99,144 @@ export default function ExpertConsultationsPage() {
   }
 
   return (
-    <div className="space-y-12">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Consultations</h1>
-        <button
-          onClick={() => router.push("/expert/consultations/history")}
-          className="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded transition"
-        >
-          HISTORY
-        </button>
+    <>
+      <div className="space-y-12">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">Consultations</h1>
+          <button
+            onClick={() => router.push("/expert/consultations/history")}
+            className="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded transition"
+          >
+            HISTORY
+          </button>
+        </div>
+
+        {/* Reports to finish */}
+        {reportsCount > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm uppercase font-semibold text-gray-600">
+              Reports to Finish
+            </p>
+            <button
+              onClick={() => router.push("/expert/reports-to-finish")}
+              className="w-full bg-white border-l-4 border-red-500 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
+            >
+              <div>
+                <p className="text-lg font-semibold text-gray-800">
+                  Reports to finish
+                </p>
+                <p className="text-gray-600">
+                  You have {reportsCount} report{reportsCount > 1 ? "s" : ""}
+                </p>
+              </div>
+              <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+            </button>
+          </div>
+        )}
+
+        {/* Happening Now */}
+        {current && (
+          <div className="space-y-2">
+            <p className="text-sm uppercase font-semibold text-gray-600">
+              Happening Now
+            </p>
+            <button
+              onClick={() =>
+                router.push(`/expert/consultations/join/${current.id}`)
+              }
+              className="w-full bg-white border-l-4 border-blue-600 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
+            >
+              <div>
+                <p className="text-lg font-semibold text-gray-800">
+                  {current.patient_name}
+                </p>
+                <p className="text-gray-600">{fmt(current.time)}</p>
+              </div>
+              <span className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded">
+                Join
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* Upcoming */}
+        {upcoming.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm uppercase font-semibold text-gray-600">
+              Upcoming
+            </p>
+            <div className="space-y-4">
+              {upcoming.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => {
+                    setSelectedAppt(a);
+                    setModalOpen(true);
+                  }}
+                  className="w-full bg-white border-l-4 border-green-600 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
+                >
+                  <div>
+                    <p className="text-left font-semibold text-gray-800">
+                      {a.patient_name}
+                    </p>
+                    <p className="text-gray-600 text-left">{fmt(a.time)}</p>
+                  </div>
+                  <span className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded">
+                    Edit
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reportsCount === 0 && !current && upcoming.length === 0 && (
+          <p className="text-gray-600">No consultations to show.</p>
+        )}
       </div>
 
-      {/* Reports to finish */}
-      {reportsCount > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm uppercase font-semibold text-gray-600">
-            Reports to Finish
-          </p>
-          <button
-            onClick={() => router.push("/expert/reports-to-finish")}
-            className="w-full bg-white border-l-4 border-red-500 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
+      {/* --- Modal Dialog --- */}
+      {modalOpen && selectedAppt && (
+        <div
+          className="fixed inset-0 backdrop-blur-xs bg-black/10 flex items-center justify-center z-50"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div>
-              <p className="text-lg font-semibold text-gray-800">
-                Reports to finish
-              </p>
-              <p className="text-gray-600">
-                You have {reportsCount} report{reportsCount > 1 ? "s" : ""}
-              </p>
-            </div>
-            <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-          </button>
-        </div>
-      )}
-
-      {/* Happening Now */}
-      {current && (
-        <div className="space-y-2">
-          <p className="text-sm uppercase font-semibold text-gray-600">
-            Happening Now
-          </p>
-          <button
-            onClick={() =>
-              router.push(`/expert/consultations/join/${current.id}`)
-            }
-            className="w-full bg-white border-l-4 border-blue-600 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
-          >
-            <div>
-              <p className="text-lg font-semibold text-gray-800">
-                {current.patient_name}
-              </p>
-              <p className="text-gray-600">{fmt(current.time)}</p>
-            </div>
-            <span className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded">
-              Join
-            </span>
-          </button>
-        </div>
-      )}
-
-      {/* Upcoming */}
-      {upcoming.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm uppercase font-semibold text-gray-600">
-            Upcoming
-          </p>
-          <div className="space-y-4">
-            {upcoming.map((a) => (
-              <button
-                key={a.id}
-                onClick={() =>
-                  router.push(`/expert/consultations/edit/${a.id}`)
-                }
-                className="w-full bg-white border-l-4 border-green-600 shadow rounded-lg p-4 flex justify-between items-center hover:shadow-md transition"
-              >
-                <div>
-                  <p className="text-lg font-semibold text-gray-800">
-                    {a.patient_name}
-                  </p>
-                  <p className="text-gray-600">{fmt(a.time)}</p>
-                </div>
-                <span className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded">
-                  Edit
-                </span>
-              </button>
-            ))}
+            <h3 className="text-lg font-bold mb-4">
+              {fmt(selectedAppt.time)}
+            </h3>
+            <button
+              className="w-full py-2 text-left hover:bg-gray-100 rounded"
+              onClick={() => {
+                setModalOpen(false);
+                router.push("/schedule_consultation");
+              }}
+            >
+              Reschedule
+            </button>
+            <button
+              className="w-full py-2 text-left hover:bg-gray-100 rounded mt-2"
+              onClick={() => {
+                setModalOpen(false);
+                // TODO: call your cancellation logic here
+                alert("Consultation cancelled");
+              }}
+            >
+              Cancel Consultation
+            </button>
+            <button
+              className="mt-4 w-full text-center text-gray-500 hover:underline"
+              onClick={() => setModalOpen(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
-
-      {reportsCount === 0 && !current && upcoming.length === 0 && (
-        <p className="text-gray-600">No consultations to show.</p>
-      )}
-    </div>
+    </>
   );
 }
