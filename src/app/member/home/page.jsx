@@ -7,7 +7,7 @@ import { onAuthStateChanged }   from 'firebase/auth';
 import { doc, getDoc }          from 'firebase/firestore';
 import {
   BellIcon,
-  ClipboardListIcon,
+  ClipboardIcon,
   ChartBarIcon,
   CalendarIcon,
   CreditCardIcon,
@@ -28,9 +28,10 @@ export default function MemberHomePage() {
   const tasks = useMemo(() => {
     const arr = [];
     if (!doneQ) {
+      console.log('!doneQ');
       arr.push({
         href:  '/member/menu/questionnaire',
-        Icon:  ClipboardListIcon,
+        Icon:  ClipboardIcon,
         title: 'Complete Questionnaire',
         desc:  'Receive your personalized report.',
         color: 'green',
@@ -45,6 +46,7 @@ export default function MemberHomePage() {
       });
     }
     if (doneQ && !setC) {
+      console.log('doneQ && !setC');
       if (sub) {
         arr.push({
           href:  '/member/consult/schedule',
