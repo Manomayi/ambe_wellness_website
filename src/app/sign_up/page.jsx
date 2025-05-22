@@ -1,120 +1,177 @@
 // src/app/signup/page.jsx
-'use client';
+"use client";
 
-import React, { useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  createUserWithEmailAndPassword,
-  updateProfile
-} from 'firebase/auth';
-import {
-  doc,
-  setDoc
-} from 'firebase/firestore';
+import React, { useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
 import {
   getStorage,
   ref as storageRef,
   uploadBytes,
-  getDownloadURL
-} from 'firebase/storage';
-import { auth, db } from '@/lib/firebase';
-import { ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+  getDownloadURL,
+} from "firebase/storage";
+import { auth, db } from "@/lib/firebase";
+import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+
+const END_POINT = "https://panacea-api-qq0r.onrender.com";
+
+async function createUserOnServer({
+  firstName,
+  lastName,
+  email,
+  password,
+  role,
+  specialty,
+  licenseNumber,
+  address,
+  licenseDoc,
+  idDoc,
+}) {
+  const form = new FormData();
+  form.append("first_name", firstName);
+  form.append("last_name", lastName);
+  form.append("email", email);
+  form.append("password", password);
+  form.append("role", role);
+  // send empty string so fcm_token is never undefined
+  form.append("fcm_token", "");
+
+  if (role === "Expert") {
+    form.append("expert_field", specialty);
+    form.append("phone_number", licenseNumber);
+    form.append("street_number", address);
+    form.append("street_name", "");
+    form.append("city", "");
+    form.append("state", "");
+    form.append("zip_code", "");
+    form.append("country", "");
+  }
+
+  // only “documents” fields go to your server
+  if (licenseDoc) form.append("documents", licenseDoc);
+  if (idDoc) form.append("documents", idDoc);
+
+  const res = await fetch(`${END_POINT}/sign_up/create_user`, {
+    method: "POST",
+    body: form,
+  });
+
+  if (res.status !== 201) {
+    let err = {};
+    try {
+      err = await res.json();
+    } catch {}
+    throw new Error(
+      `Server returned ${res.status}: ${err.message || JSON.stringify(err)}`
+    );
+  }
+}
 
 export default function SignUpPage() {
   const router = useRouter();
-
-  // Step index
   const [step, setStep] = useState(0);
 
-  // Role & fields
-  const [role, setRole] = useState(''); // '' until chosen
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [licenseNumber, setLicenseNumber] = useState('');
-  const [specialty, setSpecialty] = useState('');
-  const [address, setAddress] = useState('');
+  // fields & errors
+  const [role, setRole] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [specialty, setSpecialty] = useState("");
+  const [address, setAddress] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
   const [licenseDoc, setLicenseDoc] = useState(null);
   const [idDoc, setIdDoc] = useState(null);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Errors
-  const [firstNameError, setFirstNameError] = useState('');
-  const [lastNameError, setLastNameError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [licenseNumberError, setLicenseNumberError] = useState('');
-  const [specialtyError, setSpecialtyError] = useState('');
-  const [addressError, setAddressError] = useState('');
-  const [photoError, setPhotoError] = useState('');
-  const [licenseDocError, setLicenseDocError] = useState('');
-  const [idDocError, setIdDocError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [firstNameError, setFirstNameError] = useState("");
+  const [lastNameError, setLastNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [licenseNumberError, setLicenseNumberError] = useState("");
+  const [specialtyError, setSpecialtyError] = useState("");
+  const [addressError, setAddressError] = useState("");
+  const [photoError, setPhotoError] = useState("");
+  const [licenseDocError, setLicenseDocError] = useState("");
+  const [idDocError, setIdDocError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const fileInputPhoto = useRef();
   const fileInputLicense = useRef();
   const fileInputId = useRef();
 
-  // Build dynamic flow
   const flow = [
     {
-      key: 'choose',
+      key: "choose",
       component: (
         <>
           <h2 className="text-xl font-bold mb-4">I am a …</h2>
           <div className="flex space-x-4">
-            {['Member','Expert'].map(t => (
+            {["Member", "Expert"].map((t) => (
               <button
                 key={t}
-                onClick={() => setRole(t)}
+                onClick={() => {
+                  setRole(t);
+                  setSubmitError("");
+                }}
                 className={`flex-1 p-4 border rounded ${
-                  role===t
-                    ? 'bg-green-600 text-white'
-                    : 'bg-white text-gray-800'
+                  role === t
+                    ? "bg-green-600 text-white"
+                    : "bg-white text-gray-800"
                 }`}
               >
                 {t}
               </button>
             ))}
           </div>
+          {submitError && <p className="text-red-600 mt-2">{submitError}</p>}
         </>
       ),
       validate: () => {
         if (!role) {
-          setSubmitError('Please select Member or Expert.');
+          setSubmitError("Please choose Member or Expert");
           return false;
         }
-        setSubmitError('');
         return true;
-      }
+      },
     },
     {
-      key: 'personal',
+      key: "personal",
       component: (
         <>
-          <h2 className="text-xl font-bold mb-4">Personal Info</h2>
+          <h2 className="text-xl font-bold mb-4">Your Information</h2>
           <div className="space-y-4">
             <label className="block">
               <span>First Name</span>
               <input
                 className="w-full border p-2 rounded"
                 value={firstName}
-                onChange={e => { setFirstName(e.target.value); setFirstNameError(''); }}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setFirstNameError("");
+                }}
               />
-              {firstNameError && <p className="text-red-600 text-sm">{firstNameError}</p>}
+              {firstNameError && (
+                <p className="text-red-600 text-sm">{firstNameError}</p>
+              )}
             </label>
             <label className="block">
               <span>Last Name</span>
               <input
                 className="w-full border p-2 rounded"
                 value={lastName}
-                onChange={e => { setLastName(e.target.value); setLastNameError(''); }}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  setLastNameError("");
+                }}
               />
-              {lastNameError && <p className="text-red-600 text-sm">{lastNameError}</p>}
+              {lastNameError && (
+                <p className="text-red-600 text-sm">{lastNameError}</p>
+              )}
             </label>
             <label className="block">
               <span>Email</span>
@@ -122,9 +179,14 @@ export default function SignUpPage() {
                 type="email"
                 className="w-full border p-2 rounded"
                 value={email}
-                onChange={e => { setEmail(e.target.value); setEmailError(''); }}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError("");
+                }}
               />
-              {emailError && <p className="text-red-600 text-sm">{emailError}</p>}
+              {emailError && (
+                <p className="text-red-600 text-sm">{emailError}</p>
+              )}
             </label>
           </div>
         </>
@@ -132,175 +194,180 @@ export default function SignUpPage() {
       validate: () => {
         let ok = true;
         if (!firstName.trim()) {
-          setFirstNameError('First name is required');
+          setFirstNameError("Required");
           ok = false;
         }
         if (!lastName.trim()) {
-          setLastNameError('Last name is required');
+          setLastNameError("Required");
           ok = false;
         }
         if (!email.trim()) {
-          setEmailError('Email is required');
+          setEmailError("Required");
           ok = false;
         } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-          setEmailError('Invalid email');
+          setEmailError("Invalid");
           ok = false;
         }
         return ok;
-      }
+      },
     },
-    // expert details only
-    ...(role==='Expert' ? [{
-      key: 'expert',
-      component: (
-        <>
-          <h2 className="text-xl font-bold mb-4">Expert Details</h2>
-          <div className="space-y-4">
-            <label className="block">
-              <span>License Number</span>
-              <input
-                className="w-full border p-2 rounded"
-                value={licenseNumber}
-                onChange={e => { setLicenseNumber(e.target.value); setLicenseNumberError(''); }}
-              />
-              {licenseNumberError && <p className="text-red-600 text-sm">{licenseNumberError}</p>}
-            </label>
-            <label className="block">
-              <span>Specialty</span>
-              <input
-                className="w-full border p-2 rounded"
-                value={specialty}
-                onChange={e => { setSpecialty(e.target.value); setSpecialtyError(''); }}
-              />
-              {specialtyError && <p className="text-red-600 text-sm">{specialtyError}</p>}
-            </label>
-          </div>
-        </>
-      ),
-      validate: () => {
-        let ok = true;
-        if (!licenseNumber.trim()) {
-          setLicenseNumberError('License # is required');
-          ok = false;
-        }
-        if (!specialty.trim()) {
-          setSpecialtyError('Specialty is required');
-          ok = false;
-        }
-        return ok;
-      }
-    }] : []),
-    // address
+    ...(role === "Expert"
+      ? [
+          {
+            key: "expert",
+            component: (
+              <>
+                <h2 className="text-xl font-bold mb-4">Expert Details</h2>
+                <label className="block mb-4">
+                  <span>License Number</span>
+                  <input
+                    className="w-full border p-2 rounded"
+                    value={licenseNumber}
+                    onChange={(e) => {
+                      setLicenseNumber(e.target.value);
+                      setLicenseNumberError("");
+                    }}
+                  />
+                  {licenseNumberError && (
+                    <p className="text-red-600 text-sm">{licenseNumberError}</p>
+                  )}
+                </label>
+                <label className="block">
+                  <span>Specialty</span>
+                  <input
+                    className="w-full border p-2 rounded"
+                    value={specialty}
+                    onChange={(e) => {
+                      setSpecialty(e.target.value);
+                      setSpecialtyError("");
+                    }}
+                  />
+                  {specialtyError && (
+                    <p className="text-red-600 text-sm">{specialtyError}</p>
+                  )}
+                </label>
+              </>
+            ),
+            validate: () => {
+              let ok = true;
+              if (!licenseNumber.trim()) {
+                setLicenseNumberError("Required");
+                ok = false;
+              }
+              if (!specialty.trim()) {
+                setSpecialtyError("Required");
+                ok = false;
+              }
+              return ok;
+            },
+          },
+        ]
+      : []),
     {
-      key: 'address',
-      component: (
-        <>
-          <h2 className="text-xl font-bold mb-4">Address</h2>
-          <label className="block">
-            <span>Address</span>
-            <input
-              className="w-full border p-2 rounded"
-              value={address}
-              onChange={e => { setAddress(e.target.value); setAddressError(''); }}
-              placeholder="Street, City, ZIP…"
-            />
-            {addressError && <p className="text-red-600 text-sm">{addressError}</p>}
-          </label>
-        </>
-      ),
-      validate: () => {
-        if (!address.trim()) {
-          setAddressError('Address is required');
-          return false;
-        }
-        return true;
-      }
-    },
-    // photo
-    {
-      key: 'photo',
+      key: "photo",
       component: (
         <>
           <h2 className="text-xl font-bold mb-4">Profile Photo</h2>
+          <button
+            onClick={() => fileInputPhoto.current.click()}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Upload Photo
+          </button>
           <input
             type="file"
             accept="image/*"
             ref={fileInputPhoto}
-            onChange={e => {
+            className="hidden"
+            onChange={(e) => {
               setPhotoFile(e.target.files[0]);
-              setPhotoError('');
+              setPhotoError("");
             }}
           />
-          {photoError && <p className="text-red-600 text-sm">{photoError}</p>}
-          {photoFile && <p className="mt-2 text-sm">Selected: {photoFile.name}</p>}
+          {photoError && <p className="text-red-600">{photoError}</p>}
+          {photoFile && (
+            <img
+              src={URL.createObjectURL(photoFile)}
+              className="h-24 w-24 rounded-full mt-2"
+            />
+          )}
         </>
       ),
       validate: () => {
         if (!photoFile) {
-          setPhotoError('Please upload a profile photo');
+          setPhotoError("Required");
           return false;
         }
         return true;
-      }
+      },
     },
-    // docs for expert only
-    ...(role==='Expert' ? [{
-      key: 'docs',
-      component: (
-        <>
-          <h2 className="text-xl font-bold mb-4">Upload Documents</h2>
-          <p className="text-sm">License Document:</p>
-          <input
-            type="file"
-            accept="application/pdf,image/*"
-            ref={fileInputLicense}
-            onChange={e => {
-              setLicenseDoc(e.target.files[0]);
-              setLicenseDocError('');
-            }}
-          />
-          {licenseDocError && <p className="text-red-600 text-sm">{licenseDocError}</p>}
-          <p className="text-sm mt-4">ID / Passport:</p>
-          <input
-            type="file"
-            accept="application/pdf,image/*"
-            ref={fileInputId}
-            onChange={e => {
-              setIdDoc(e.target.files[0]);
-              setIdDocError('');
-            }}
-          />
-          {idDocError && <p className="text-red-600 text-sm">{idDocError}</p>}
-        </>
-      ),
-      validate: () => {
-        let ok = true;
-        if (!licenseDoc) {
-          setLicenseDocError('Please upload license doc');
-          ok = false;
-        }
-        if (!idDoc) {
-          setIdDocError('Please upload ID/passport');
-          ok = false;
-        }
-        return ok;
-      }
-    }] : []),
-    // password
+    ...(role === "Expert"
+      ? [
+          {
+            key: "docs",
+            component: (
+              <>
+                <h2 className="text-xl font-bold mb-4">Upload Documents</h2>
+                <label>License Doc</label>
+                <input
+                  type="file"
+                  ref={fileInputLicense}
+                  onChange={(e) => {
+                    setLicenseDoc(e.target.files[0]);
+                    setLicenseDocError("");
+                  }}
+                />
+                {licenseDocError && (
+                  <p className="text-red-600">{licenseDocError}</p>
+                )}
+                <label className="mt-4">ID / Passport</label>
+                <input
+                  type="file"
+                  ref={fileInputId}
+                  onChange={(e) => {
+                    setIdDoc(e.target.files[0]);
+                    setIdDocError("");
+                  }}
+                />
+                {idDocError && <p className="text-red-600">{idDocError}</p>}
+              </>
+            ),
+            validate: () => {
+              let ok = true;
+              if (!licenseDoc) {
+                setLicenseDocError("Required");
+                ok = false;
+              }
+              if (!idDoc) {
+                setIdDocError("Required");
+                ok = false;
+              }
+              return ok;
+            },
+          },
+        ]
+      : []),
     {
-      key: 'password',
+      key: "password",
       component: (
         <>
           <h2 className="text-xl font-bold mb-4">Set Password</h2>
-          <label className="block mb-2">
+          <p className="text-gray-600 text-sm mb-2">
+            Your password must be at least 8 characters long and include at
+            least one letter and one special character (@, #, $, %, &, *, !).
+          </p>
+          <label className="block mb-4">
             <span>Password</span>
             <input
               type="password"
               className="w-full border p-2 rounded"
               value={password}
-              onChange={e => { setPassword(e.target.value); setPasswordError(''); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setPasswordError("");
+              }}
             />
-            {passwordError && <p className="text-red-600 text-sm">{passwordError}</p>}
+            {passwordError && <p className="text-red-600">{passwordError}</p>}
           </label>
           <label className="block">
             <span>Confirm Password</span>
@@ -308,155 +375,184 @@ export default function SignUpPage() {
               type="password"
               className="w-full border p-2 rounded"
               value={confirmPassword}
-              onChange={e => { setConfirmPassword(e.target.value); setConfirmPasswordError(''); }}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setConfirmPasswordError("");
+              }}
             />
-            {confirmPasswordError && <p className="text-red-600 text-sm">{confirmPasswordError}</p>}
+            {confirmPasswordError && (
+              <p className="text-red-600">{confirmPasswordError}</p>
+            )}
           </label>
         </>
       ),
       validate: () => {
         let ok = true;
-        if (password.length < 6) {
-          setPasswordError('At least 6 chars');
+        if (!/^(?=.*[A-Za-z])(?=.*[@#$%&*!]).{8,}$/.test(password)) {
+          setPasswordError("Must be ≥8 chars, include letter & special char");
           ok = false;
         }
         if (confirmPassword !== password) {
-          setConfirmPasswordError('Does not match');
+          setConfirmPasswordError("Does not match");
           ok = false;
         }
         return ok;
-      }
+      },
     },
-    // confirmation
     {
-      key: 'confirm',
+      key: "confirm",
       component: (
         <>
           <h2 className="text-xl font-bold mb-4">Confirm & Create Account</h2>
-          <ul className="list-disc list-inside space-y-1 text-gray-700">
-            <li><strong>Role:</strong> {role}</li>
-            <li><strong>Name:</strong> {firstName} {lastName}</li>
-            <li><strong>Email:</strong> {email}</li>
-            <li><strong>Address:</strong> {address}</li>
-            {role==='Expert' && (
-              <>
-                <li><strong>License #:</strong> {licenseNumber}</li>
-                <li><strong>Field:</strong> {specialty}</li>
-                <li><strong>Docs:</strong> {licenseDoc?.name}, {idDoc?.name}</li>
-              </>
+          <ul className="list-disc list-inside text-gray-700 mb-4">
+            <li>
+              <strong>Role:</strong> {role}
+            </li>
+            <li>
+              <strong>Name:</strong> {firstName} {lastName}
+            </li>
+            <li>
+              <strong>Email:</strong> {email}
+            </li>
+            {role === "Expert" && (
+              <li>
+                <strong>License #:</strong> {licenseNumber}
+              </li>
             )}
-            <li><strong>Photo:</strong> {photoFile?.name}</li>
+            {role === "Expert" && (
+              <li>
+                <strong>Field:</strong> {specialty}
+              </li>
+            )}
+            <li>
+              <strong>Photo:</strong> {photoFile?.name}
+            </li>
           </ul>
+          {photoFile && (
+            <img
+              src={URL.createObjectURL(photoFile)}
+              className="h-32 w-32 rounded-full mb-4"
+            />
+          )}
         </>
       ),
-      validate: () => true
-    }
+      validate: () => true,
+    },
   ];
 
-  const onNext = () => {
-    const { validate } = flow[step];
-    if (!validate()) return;
-    setStep(s => Math.min(s + 1, flow.length - 1));
+  const onNext = async () => {
+    if (await flow[step].validate())
+      setStep((s) => Math.min(s + 1, flow.length - 1));
   };
-  
-  const onBack = () => setStep(s => Math.max(s - 1, 0));
+  const onBack = () => setStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = useCallback(async () => {
     setLoading(true);
-    setSubmitError('');
+    setSubmitError("");
     try {
-      // create auth
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = user.uid;
+      await createUserOnServer({
+        firstName,
+        lastName,
+        email,
+        password,
+        role,
+        specialty,
+        licenseNumber,
+        address,
+        licenseDoc,
+        idDoc,
+      });
 
-      // upload photo
-      let photoURL = '';
+      // now sign in & upload profile pic
+      await signInWithEmailAndPassword(auth, email, password);
+
+      // 3) Persist basic info
+      localStorage.setItem("firstName", firstName);
+      localStorage.setItem("lastName", lastName);
+      // your server is creating role "Doctor" or "Patient"
+      // but in your client you use "expert"/"patient" or similar
+      const storedRole = role === "Expert" ? "doctor" : "patient";
+      localStorage.setItem("role", storedRole);
+
       if (photoFile) {
         const storage = getStorage();
-        const pRef = storageRef(storage, `images/${uid}/profile.png`);
-        await uploadBytes(pRef, photoFile);
-        photoURL = await getDownloadURL(pRef);
-        await updateProfile(user, { photoURL });
+        const ref = storageRef(
+          storage,
+          `images/${auth.currentUser.uid}/profile.png`
+        );
+        await uploadBytes(ref, photoFile);
+        const url = await getDownloadURL(ref);
+        await updateProfile(auth.currentUser, { photoURL: url });
+        await updateDoc(
+          doc(
+            db,
+            role === "Expert" ? "doctors" : "patients",
+            auth.currentUser.uid
+          ),
+          {
+            profile_picture: url,
+          }
+        );
       }
 
-      // upload docs if expert
-      const docsURLs = {};
-      if (role==='Expert') {
-        const storage = getStorage();
-        const lRef = storageRef(storage, `docs/${uid}/license`);
-        await uploadBytes(lRef, licenseDoc);
-        docsURLs.licenseURL = await getDownloadURL(lRef);
-
-        const iRef = storageRef(storage, `docs/${uid}/id`);
-        await uploadBytes(iRef, idDoc);
-        docsURLs.idURL = await getDownloadURL(iRef);
-      }
-
-      // write firestore
-      const base = {
-        firstName, lastName, email,
-        address, photoURL,
-        ...docsURLs,
-        role: role==='Expert' ? 'doctor' : 'patient'
-      };
-      if (role==='Expert') {
-        await setDoc(doc(db, 'doctors', uid), {
-          licenseNumber, specialty, ...base
-        });
-      } else {
-        await setDoc(doc(db, 'patients', uid), base);
-      }
-
-      // done
-      router.push(role==='Expert' ? '/expert' : '/member');
-    } catch (e) {
-      console.error(e);
-      setSubmitError(e.message || 'Failed to sign up');
+      router.push(role === "Expert" ? "/expert" : "/member");
+    } catch (err) {
+      console.error(err);
+      setSubmitError(err.message || "Sign up failed");
     } finally {
       setLoading(false);
     }
   }, [
-    role, firstName, lastName, email, password, address,
-    photoFile, licenseDoc, idDoc, licenseNumber, specialty
+    firstName,
+    lastName,
+    email,
+    password,
+    role,
+    specialty,
+    licenseNumber,
+    address,
+    photoFile,
+    licenseDoc,
+    idDoc,
+    router,
   ]);
 
-  // render
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-8 px-4">
       <div className="w-full max-w-xl bg-white p-8 rounded-lg shadow space-y-6">
-        {/* any submit error */}
-        {submitError && <p className="text-red-600 text-center">{submitError}</p>}
+        {submitError && (
+          <p className="text-red-600 text-center">{submitError}</p>
+        )}
 
-        {/* current step */}
         {flow[step].component}
 
-        {/* nav */}
         <div className="flex justify-between items-center mt-6">
-          {step>0
-            ? <button
-                onClick={onBack}
-                className="flex items-center text-gray-600 hover:text-gray-800"
-              >
-                <ArrowLeftIcon className="h-5 w-5 mr-1"/> Back
-              </button>
-            : <div/>
-          }
-
-          {step < flow.length - 1
-            ? <button
-                onClick={onNext}
-                className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Next <ArrowRightIcon className="h-5 w-5 ml-1"/>
-              </button>
-            : <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50"
-              >
-                {loading ? 'Creating…' : 'Sign Up'}
-              </button>
-          }
+          {step > 0 ? (
+            <button
+              onClick={onBack}
+              className="flex items-center text-gray-600 hover:text-gray-800"
+            >
+              <ArrowLeftIcon className="h-5 w-5 mr-1" /> Back
+            </button>
+          ) : (
+            <div />
+          )}
+          {step < flow.length - 1 ? (
+            <button
+              onClick={onNext}
+              className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Next <ArrowRightIcon className="h-5 w-5 ml-1" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              {loading ? "Creating…" : "Sign Up"}
+            </button>
+          )}
         </div>
       </div>
     </div>
