@@ -102,7 +102,7 @@ export default function MemberConsultPage() {
 
       {/* Inactive subscription */}
       {!subActive && (
-        <div className="bg-white shadow-lg rounded-xl p-8 mb-12">
+        <div className="bg-white shadow-lg rounded-xl p-8 mb-12 text-center">
           <p className="text-lg text-gray-700 mb-6 text-center">
             You don’t have an active subscription. Complete the questionnaire to
             start.
@@ -111,8 +111,7 @@ export default function MemberConsultPage() {
             onClick={() => router.push("/member/menu/questionnaire")}
             className="inline-flex items-center space-x-2 bg-green-600 border border-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition"
           >
-            <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
-            <span>Start Questionnaire</span>
+            <span className="uppercase font-bold text-sm">Start Questionnaire</span>
           </button>
         </div>
       )}
