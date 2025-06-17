@@ -1,10 +1,11 @@
+// src/app/member/consult/appointment/[id]/page.jsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import AgoraRTC from "agora-rtc-sdk-ng";
-import { auth } from "../../../../../lib/firebase";
+import { auth, db } from "../../../../../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import {
   CameraIcon,
   VideoCameraIcon,
@@ -16,9 +17,11 @@ import {
 
 export default function AppointmentPage() {
   const router = useRouter();
-  const { id } = useParams(); // appointment id (unused for Agora UID)
+  const { id } = useParams();
+
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const agoraSDK = useRef(null);
 
   const [client, setClient] = useState(null);
   const [localAudioTrack, setLocalAudioTrack] = useState(null);
@@ -26,21 +29,12 @@ export default function AppointmentPage() {
   const [joined, setJoined] = useState(false);
   const [cameraDevices, setCameraDevices] = useState([]);
   const [currentCamIdx, setCurrentCamIdx] = useState(0);
-
-  // draggable local preview
-  const [position, setPosition] = useState({ x: 20, y: 20 });
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [dragging, setDragging] = useState(false);
-
-  // toggles
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [muted, setMuted] = useState(false);
 
   const APP_ID = "5da06d9793194eb18bf1f343365871ca";
   const CHANNEL = "panacea_flutter";
-  const TOKEN = null; // fetch and fill if you use a token
 
-  // redirect if not authed
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (!user) router.push("/login");
@@ -48,24 +42,26 @@ export default function AppointmentPage() {
     return unsub;
   }, [router]);
 
-  // Agora init & join
   useEffect(() => {
     let _client;
     let _audioTrack;
     let _videoTrack;
 
     const init = async () => {
+      const { default: AgoraRTC } = await import("agora-rtc-sdk-ng");
+      agoraSDK.current = AgoraRTC;
+
       _client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
       setClient(_client);
 
-      // get camera list
+      const infoSnap = await getDoc(doc(db, "agora", "info"));
+      const token = infoSnap.exists() ? infoSnap.data().token : null;
+
       const cams = await AgoraRTC.getCameras();
       setCameraDevices(cams.map((c) => c.deviceId));
 
-      // join channel (uid = 0 like your Flutter code)
-      await _client.join(APP_ID, CHANNEL, TOKEN, 0);
+      await _client.join(APP_ID, CHANNEL, token, Number(id));
 
-      // create & publish tracks
       _audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
       _videoTrack = await AgoraRTC.createCameraVideoTrack({
         cameraId: cams[0].deviceId,
@@ -78,21 +74,14 @@ export default function AppointmentPage() {
       setLocalVideoTrack(_videoTrack);
       setJoined(true);
 
-      // handle remote
       _client.on("user-published", async (user, mediaType) => {
         await _client.subscribe(user, mediaType);
-        if (mediaType === "video") {
-          user.videoTrack.play(remoteVideoRef.current);
-        }
-        if (mediaType === "audio") {
-          user.audioTrack.play();
-        }
+        if (mediaType === "video") user.videoTrack.play(remoteVideoRef.current);
+        if (mediaType === "audio") user.audioTrack.play();
       });
 
-      _client.on("user-unpublished", (user, mediaType) => {
-        if (mediaType === "video") {
-          remoteVideoRef.current.innerHTML = "";
-        }
+      _client.on("user-unpublished", (_, mediaType) => {
+        if (mediaType === "video") remoteVideoRef.current.innerHTML = "";
       });
     };
 
@@ -115,44 +104,18 @@ export default function AppointmentPage() {
         }
       })();
     };
-  }, []);
-
-  // draggable handlers
-  useEffect(() => {
-    const handleMove = (e) => {
-      if (!dragging) return;
-      setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y,
-      });
-    };
-    const handleUp = () => setDragging(false);
-
-    window.addEventListener("pointermove", handleMove);
-    window.addEventListener("pointerup", handleUp);
-    return () => {
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerup", handleUp);
-    };
-  }, [dragging, dragOffset]);
-
-  const onDragStart = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    setDragging(true);
-  };
+  }, [id]);
 
   const switchCamera = async () => {
     if (!client || cameraDevices.length < 2) return;
     const next = (currentCamIdx + 1) % cameraDevices.length;
     setCurrentCamIdx(next);
 
-    // unpublish old
     await client.unpublish([localVideoTrack]);
     localVideoTrack.stop();
     localVideoTrack.close();
 
-    // create & publish new
+    const AgoraRTC = agoraSDK.current;
     const newTrack = await AgoraRTC.createCameraVideoTrack({
       cameraId: cameraDevices[next],
     });
@@ -179,36 +142,21 @@ export default function AppointmentPage() {
 
   return (
     <div className="h-screen w-screen bg-black relative overflow-hidden">
-      {/* Remote full-screen */}
       <div
         ref={remoteVideoRef}
         className="absolute inset-0 bg-black"
         style={{ objectFit: "cover" }}
       />
-
-      {/* Draggable local preview */}
-      {joined && (
+      <div
+        className="absolute top-4 right-4 w-24 h-36 bg-black/50"
+        style={{ display: joined ? "block" : "none" }}
+      >
         <div
-          onPointerDown={onDragStart}
-          className="absolute bg-black/50"
-          style={{
-            left: position.x,
-            top: position.y,
-            width: 100,
-            height: 150,
-            cursor: "move",
-            zIndex: 10,
-          }}
-        >
-          <div
-            ref={localVideoRef}
-            className="w-full h-full"
-            style={{ objectFit: "cover" }}
-          />
-        </div>
-      )}
-
-      {/* Controls */}
+          ref={localVideoRef}
+          className="w-full h-full"
+          style={{ objectFit: "cover" }}
+        />
+      </div>
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-6 z-20">
         <button
           onClick={switchCamera}
@@ -216,7 +164,6 @@ export default function AppointmentPage() {
         >
           <CameraIcon className="h-6 w-6 text-white" />
         </button>
-
         <button
           onClick={toggleVideo}
           className="p-3 bg-gray-800 bg-opacity-60 rounded-full"
@@ -227,14 +174,12 @@ export default function AppointmentPage() {
             <VideoCameraIcon className="h-6 w-6 text-white" />
           )}
         </button>
-
         <button
           onClick={leaveCall}
           className="p-3 bg-red-600 rounded-full"
         >
           <PhoneXMarkIcon className="h-6 w-6 text-white" />
         </button>
-
         <button
           onClick={toggleMute}
           className="p-3 bg-gray-800 bg-opacity-60 rounded-full"
