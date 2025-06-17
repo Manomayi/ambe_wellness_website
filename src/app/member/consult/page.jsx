@@ -187,7 +187,7 @@ export default function MemberConsultPage() {
                   <button
                     onClick={() => {
                       if (now) {
-                        router.push(`/member/consult/join/${appt.id}`);
+                        router.push(`/member/consult/appointment/${appt.id}`);
                       } else {
                         // Open edit modal
                         setSelectedAppt(appt);
