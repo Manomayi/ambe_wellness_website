@@ -57,7 +57,7 @@ export default function MemberHomePage() {
         });
       } else {
         arr.push({
-          href:  '/member/menu/payment',
+          href:  '/member/payment',
           Icon:  CreditCardIcon,
           title: 'Subscribe To Consult',
           desc:  'Activate a plan to schedule.',
