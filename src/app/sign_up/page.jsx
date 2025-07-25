@@ -133,7 +133,7 @@ export default function SignUpPage() {
       ),
       validate: () => {
         if (!role) {
-          setSubmitError("Please choose Member or Expert");
+          setSubmitError("Please choose User or Expert");
           return false;
         }
         return true;
@@ -214,10 +214,10 @@ export default function SignUpPage() {
     ...(role === "Expert"
       ? [
           {
-            key: "expert",
+            key: "doctor",
             component: (
               <>
-                <h2 className="text-xl font-bold mb-4">Expert Details</h2>
+                <h2 className="text-xl font-bold mb-4">Doctor Details</h2>
                 <label className="block mb-4">
                   <span>License Number</span>
                   <input
@@ -469,9 +469,9 @@ export default function SignUpPage() {
       // 3) Persist basic info
       localStorage.setItem("firstName", firstName);
       localStorage.setItem("lastName", lastName);
-      // your server is creating role "Doctor" or "Patient"
-      // but in your client you use "expert"/"patient" or similar
-      const storedRole = role === "Expert" ? "doctor" : "patient";
+      // your server is creating role "Doctor" or "User"
+      // but in your client you use "doctor"/"user" or similar
+      const storedRole = role === "Expert" ? "doctor" : "user";
       localStorage.setItem("role", storedRole);
 
       if (photoFile) {
@@ -486,7 +486,7 @@ export default function SignUpPage() {
         await updateDoc(
           doc(
             db,
-            role === "Expert" ? "doctors" : "patients",
+            role === "Expert" ? "doctors" : "users",
             auth.currentUser.uid
           ),
           {
@@ -495,7 +495,7 @@ export default function SignUpPage() {
         );
       }
 
-      router.push(role === "Expert" ? "/expert" : "/member");
+      router.push(role === "Expert" ? "/doctor" : "/user");
     } catch (err) {
       console.error(err);
       setSubmitError(err.message || "Sign up failed");

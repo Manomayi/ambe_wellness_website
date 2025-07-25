@@ -2,6 +2,8 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth }   from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 //import { getMessaging } from 'firebase/messaging';
 
 const firebaseConfig = {
@@ -27,4 +29,6 @@ const app = !getApps().length
 
 export const auth      = getAuth(app);
 export const db        = getFirestore(app);
+export const functions = getFunctions(app, 'us-central1');
+export const storage   = getStorage(app);
 //export const messaging = getMessaging(app);
