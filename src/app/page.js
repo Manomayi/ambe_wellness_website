@@ -49,7 +49,7 @@ export default function Home() {
             </h1>
             
             <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-full text-lg font-medium transition duration-300">
-              Become a member
+              Become a user
             </button>
           </div>
         </div>

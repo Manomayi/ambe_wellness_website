@@ -23,7 +23,7 @@ npm run lint
 
 ## Architecture Overview
 
-This is a wellness consultation platform built with Next.js 15 App Router. The application has two main user types: **doctors** (healthcare providers) and **users** (patients).
+This is a wellness consultation platform built with Next.js 15 App Router. The application has two main user types: **doctors** (healthcare providers) and **users** (patients seeking consultations).
 
 ### Tech Stack
 - **Frontend**: Next.js 15.2.4 with React 19.0.0 (JavaScript/JSX, no TypeScript)
@@ -34,11 +34,29 @@ This is a wellness consultation platform built with Next.js 15 App Router. The a
 - **Animations**: Framer Motion
 - **Timezone Handling**: moment-timezone
 
-### Key Directories
-- `/src/app/doctor/` - Doctor portal with consultations, user management, and messaging
-- `/src/app/user/` - User portal with consultation booking, payment, and store
-- `/src/components/` - Shared UI components (Button, TextField, navigation components)
-- `/src/lib/firebase.js` - Firebase configuration and initialization
+### Project Structure
+```
+src/
+├── app/
+│   ├── (auth)/                # Authentication route group
+│   │   ├── login/
+│   │   └── signup/
+│   ├── (dashboard)/           # Protected routes
+│   │   ├── doctor/
+│   │   └── user/
+│   └── globals.css
+├── components/
+│   ├── common/               # Shared UI components
+│   ├── navigation/           # Nav components
+│   ├── auth/                 # Auth components
+│   ├── chat/                 # Chat components
+│   └── video/                # Video components
+├── contexts/                 # React contexts
+├── lib/
+│   └── firebase/
+│       └── config.js        # Firebase configuration
+└── styles/
+```
 
 ### Environment Variables Required
 ```
@@ -54,20 +72,21 @@ NEXT_PUBLIC_API_ENDPOINT
 
 ### Important Patterns
 1. **Path Aliases**: Use `@/` for imports from src directory (configured in jsconfig.json)
-2. **Navigation**: Separate navigation components for doctors (DoctorNav) and users (UserNav)
-3. **Authentication**: Firebase Auth is used throughout - check authentication state before accessing protected routes
-4. **Real-time Features**: Agora SDK is used for video consultations between doctors and users
-5. **Timezone Support**: All scheduling uses moment-timezone to handle doctor/user timezone differences
+2. **Route Groups**: Using Next.js 13+ route groups for layout separation
+3. **Navigation**: Separate navigation components for doctors (DoctorNav) and users (UserNav)
+4. **Authentication**: Firebase Auth is used throughout - check authentication state before accessing protected routes
+5. **Real-time Features**: Agora SDK is used for video consultations between doctors and users
+6. **Timezone Support**: All scheduling uses moment-timezone to handle doctor/user timezone differences
 
 ### Terminology
-- **doctor** - Healthcare providers (previously called "expert")
-- **user** - Patients/clients (previously called "member" or "patient")
-- All database collections and code now use consistent doctor/user terminology
+- **doctor** - Healthcare providers offering consultations
+- **user** - Patients/clients seeking wellness consultations
+- All database collections, components, and routes use consistent doctor/user terminology
 
 ### User Flow
 1. **User Onboarding**: 
    - Sign up → Complete health questionnaire → Get matched with doctor
-   - Subscription required for consultations
+   - Subscription required for consultations ($50/month)
 2. **Consultations**: 
    - Schedule based on doctor's availability (with timezone conversion)
    - Video calls via Agora SDK
@@ -78,13 +97,20 @@ NEXT_PUBLIC_API_ENDPOINT
 4. **Store**: 
    - Browse and purchase wellness products
    - Cart and checkout with Stripe integration
+   - Subscription discounts ($50 off) and referral discounts (25%)
+5. **Referral Program**:
+   - Users get unique referral codes
+   - Both referrer and referee get 25% off next order
+   - Track referral stats and available credits
 
 ### Doctor Features
+- Dashboard with consultation overview
 - Schedule management with timezone support
 - User management and consultation history
 - Video consultations with screen sharing
 - Messaging system with assigned users
 - Profile verification system
+- Feedback and ratings from users
 
 ### User Features
 - Health questionnaire and doctor matching
@@ -92,7 +118,9 @@ NEXT_PUBLIC_API_ENDPOINT
 - Video consultations
 - Messaging with assigned doctor (post-first consultation)
 - Store with personalized product recommendations
-- Subscription management
+- Subscription management ($50/month)
+- Cart and checkout with discounts
+- Referral program with tracking
 - "Things to do" dashboard with dynamic task management
 
 ### Health Field Mapping
@@ -114,11 +142,23 @@ const HEALTH_FIELD_LABELS = {
 ```
 
 ### Recent Major Updates
-1. **Terminology Refactoring**: All instances of "expert" changed to "doctor" and "member/patient" changed to "user"
-2. **Timezone Support**: Added moment-timezone for proper handling of doctor/user timezone differences in scheduling
-3. **Home Page Redesign**: Implemented "Things to do" and "What's new" sections with dynamic task management
-4. **Health Field Mapping**: Proper translation of health field enums from database to human-readable labels
-5. **Directory Structure**: Renamed all directories and routes to use doctor/user terminology
+1. **Project Restructuring**: 
+   - Implemented route groups for auth and dashboard
+   - Reorganized components by function
+   - Updated all import paths
+2. **Terminology Consistency**: 
+   - All "expert" references changed to "doctor"
+   - All "member/patient" references changed to "user"
+   - Updated all function names, variables, and comments
+3. **Enhanced Features**:
+   - Added referral system with credit tracking
+   - Improved cart with subscription and referral discounts
+   - Better checkout flow with address management
+   - Colorful UI updates on home and store pages
+4. **UI Improvements**:
+   - Darker text throughout for better readability
+   - Prominent cart button in store
+   - Reorganized menu structure with new sections
 
 ### Current Limitations
 - No testing framework configured
@@ -126,5 +166,7 @@ const HEALTH_FIELD_LABELS = {
 - Standard Next.js ESLint configuration only
 
 ### Pending Features
-- Referral system (user and doctor referrals)
-- Subscription management system enhancements
+- Doctor referral system
+- Course section (coming soon)
+- Enhanced subscription management
+- User activity tracking

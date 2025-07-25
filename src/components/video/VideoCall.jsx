@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase';
+import { functions } from '@/lib/firebase/config';
 import {
   MicrophoneIcon,
   VideoCameraIcon,
