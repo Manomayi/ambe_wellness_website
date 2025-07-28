@@ -94,7 +94,7 @@ export default function Home() {
                   Chief Strategy Officer,<br />National Tech Firm
                 </h4>
                 <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
-                  For the first time in 20 years of nonstop output, I found a wellness system that didn't just slow me down—it woke me up. Ambé's personalized protocols gave me energy I didn't know I was missing, and helped me show up sharper, calmer, and more focused than ever before.
+                  For the first time in 20 years of nonstop output, I found a wellness system that didn&apos;t just slow me down—it woke me up. Ambé&apos;s personalized protocols gave me energy I didn&apos;t know I was missing, and helped me show up sharper, calmer, and more focused than ever before.
                 </p>
                 <p className="text-center font-semibold mt-4" style={{ color: '#353535' }}>David</p>
               </div>
@@ -108,7 +108,7 @@ export default function Home() {
                   Operations Supervisor,<br />Regional Distribution Center
                 </h4>
                 <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
-                  Between shift work and stress, I was running on empty. Ambé didn't hand me a generic plan—they listened. My sleep, digestion, and moods have all leveled out. I finally feel in control of my health, and my team noticed the difference too.
+                  Between shift work and stress, I was running on empty. Ambé didn&apos;t hand me a generic plan—they listened. My sleep, digestion, and moods have all leveled out. I finally feel in control of my health, and my team noticed the difference too.
                 </p>
                 <p className="text-center font-semibold mt-4" style={{ color: '#353535' }}>Joshua</p>
               </div>
@@ -122,7 +122,7 @@ export default function Home() {
                   Warehouse Associate,<br />National Retail Chain
                 </h4>
                 <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
-                  I never thought wellness was made for someone like me. Ambé changed that. They spoke my language, respected my time, and helped my body stop hurting every day. It's not just medicine—it's care that fits real life.
+                  I never thought wellness was made for someone like me. Ambé changed that. They spoke my language, respected my time, and helped my body stop hurting every day. It&apos;s not just medicine—it&apos;s care that fits real life.
                 </p>
                 <p className="text-center font-semibold mt-4" style={{ color: '#353535' }}>Rosario</p>
               </div>
@@ -145,7 +145,7 @@ export default function Home() {
             Time Tested and Results Driven
           </div>
           <p className="text-center text-lg mb-16 max-w-5xl mx-auto" style={{ color: '#535353' }}>
-            Dr. Google is scary. We get it. You've tried the threads—the threads on the threads... It's time for something real, built around you. Clarity is a form of care.
+            Dr. Google is scary. We get it. You&apos;ve tried the threads—the threads on the threads... It&apos;s time for something real, built around you. Clarity is a form of care.
           </p>
           
           {/* Three Columns */}
@@ -172,7 +172,7 @@ export default function Home() {
                 Tired of one-size-fits-all<br />supplements?
               </h3>
               <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
-                At Ambé, every formula is tailored to your unique mind-body type. No algorithms. No shortcuts. Just real doctors creating real, time-tested protocols—just for you. We don't do "standard." Ambé formulas are hand-built by doctors to reflect your specific constitution, habits, and environment. You deserve precision—not guesswork.
+                At Ambé, every formula is tailored to your unique mind-body type. No algorithms. No shortcuts. Just real doctors creating real, time-tested protocols—just for you. We don&apos;t do &quot;standard.&quot; Ambé formulas are hand-built by doctors to reflect your specific constitution, habits, and environment. You deserve precision—not guesswork.
               </p>
             </div>
 
