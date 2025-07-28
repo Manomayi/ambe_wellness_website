@@ -2,6 +2,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import Button from '@/components/common/Button';
+import VideoBackground from '@/components/common/VideoBackground';
 
 export default function Home() {
 
@@ -9,119 +11,193 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 px-8 py-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <div className="text-2xl font-bold text-white">AMBE®</div>
-            <div className="flex items-center gap-8">
-              <a href="#" className="text-white hover:text-gray-200 text-sm">Enterprise</a>
-              <a href="#" className="text-white hover:text-gray-200 text-sm">Usership</a>
+      <nav className="absolute top-0 left-0 right-0 z-50 py-6 border-b border-white">
+        <div className="max-w-7xl mx-auto lg:px-16">
+          <div className="flex justify-between items-center">
+            {/* Logo */}
+            <h1 className="text-4xl font-bold font-richmond" style={{ color: '#FFD3AC' }}>
+              AMBE
+            </h1>
+            
+            {/* Right side navigation */}
+            <div className="flex items-center gap-12">
+              <Link href="#" className="text-sm" style={{ color: 'white' }}>
+                Enterprise
+              </Link>
+              <Link href="#" className="text-sm" style={{ color: 'white' }}>
+                Membership
+              </Link>
+              <button className="border border-white px-6 py-2 rounded-full text-sm hover:bg-white hover:text-black transition-colors" style={{ color: 'white' }}>
+                Download App
+              </button>
+              
+              {/* Divider */}
+              <div className="h-8 w-px bg-white opacity-50"></div>
+              
+              <Link href="/login" className="text-sm" style={{ color: 'white' }}>
+                Sign in
+              </Link>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="bg-white text-black px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-100">
-              Download App
-            </button>
-            <Link href="/login" className="text-white hover:text-gray-200 text-sm">
-              Sign in
-            </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/videos/hero_background.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <section className="relative h-screen flex items-center overflow-hidden">
+        {/* Video Background */}
+        <VideoBackground />
         
-        <div className="relative z-10 max-w-7xl mx-auto px-8">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-6xl font-light mb-8 leading-tight text-white">
-              Holistic-Doctor led care<br />pay as you like
-            </h1>
-            
-            <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-full text-lg font-medium transition duration-300">
-              Become a user
-            </button>
+        {/* Dark Overlay - temporarily commented out for debugging */}
+        {/* <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div> */}
+        
+        <div className="relative w-full flex justify-center">
+          <div className="w-full max-w-7xl px-8 lg:px-16">
+            <div className="max-w-3xl">
+              <h1 className="text-6xl font-light mb-4 leading-tight text-white font-richmond" style={{ color: 'white' }}>
+                Integrative-Doctor led care<br />Pay as you like
+              </h1>
+              <p className="text-white mb-2 text-xl font-light" style={{ color: 'white' }}>
+                Evidence based holistic care with heart<br />
+                Tailored only for you
+              </p>
+              <p className="text-white mb-8 text-base" style={{ color: 'white' }}>
+                Tele-Wellness
+              </p>
+              <p className="text-white mb-8 text-base font-bold" style={{ color: 'white' }}>
+                Developed at Stanford
+              </p>
+              
+              <Button>
+                BOOK NOW
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Trusted By Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-8 text-center">
-          <p className="text-gray-500 text-sm mb-12">Trusted by American Apparel</p>
-          <p className="text-3xl text-gray-800 max-w-4xl mx-auto font-light leading-relaxed">
-            &ldquo;From the moment I joined AMBE and had my consultation with Dr. Schoepfer, I knew I was in good hands. He took time to ask me questions about my health concerns, really listened to me and created a comprehensive plan for me. I highly recommend this to anyone looking to improve their health and wellness.&rdquo;
-          </p>
+      <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="mb-12">
+            <h2 className="text-4xl font-light mb-2" style={{ color: '#353535' }}>Trusted by:</h2>
+            <h3 className="text-5xl font-bold mb-4" style={{ color: '#353535' }}>American Apparel™</h3>
+            <p className="text-lg" style={{ color: '#535353' }}>Pioneers In Corporate Wellness: A Better Way To Grow</p>
+          </div>
+          
+          {/* Testimonials Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            {/* David Testimonial */}
+            <div className="relative flex justify-center">
+              <div className="rounded-full p-8 flex flex-col items-center" style={{ backgroundColor: '#FFD3AC', width: '400px', height: '400px' }}>
+                <div className="w-16 h-16 bg-white rounded-full mb-3 flex-shrink-0"></div>
+                <h4 className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
+                  Chief Strategy Officer,<br />National Tech Firm
+                </h4>
+                <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
+                  For the first time in 20 years of nonstop output, I found a wellness system that didn't just slow me down—it woke me up. Ambé's personalized protocols gave me energy I didn't know I was missing, and helped me show up sharper, calmer, and more focused than ever before.
+                </p>
+                <p className="text-center font-semibold mt-4" style={{ color: '#353535' }}>David</p>
+              </div>
+            </div>
+
+            {/* Joshua Testimonial */}
+            <div className="relative flex justify-center">
+              <div className="rounded-full p-8 flex flex-col items-center" style={{ backgroundColor: '#FFD3AC', width: '400px', height: '400px' }}>
+                <div className="w-16 h-16 bg-white rounded-full mb-3 flex-shrink-0"></div>
+                <h4 className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
+                  Operations Supervisor,<br />Regional Distribution Center
+                </h4>
+                <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
+                  Between shift work and stress, I was running on empty. Ambé didn't hand me a generic plan—they listened. My sleep, digestion, and moods have all leveled out. I finally feel in control of my health, and my team noticed the difference too.
+                </p>
+                <p className="text-center font-semibold mt-4" style={{ color: '#353535' }}>Joshua</p>
+              </div>
+            </div>
+
+            {/* Rosario Testimonial */}
+            <div className="relative flex justify-center">
+              <div className="rounded-full p-8 flex flex-col items-center" style={{ backgroundColor: '#FFD3AC', width: '400px', height: '400px' }}>
+                <div className="w-16 h-16 bg-white rounded-full mb-3 flex-shrink-0"></div>
+                <h4 className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
+                  Warehouse Associate,<br />National Retail Chain
+                </h4>
+                <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
+                  I never thought wellness was made for someone like me. Ambé changed that. They spoke my language, respected my time, and helped my body stop hurting every day. It's not just medicine—it's care that fits real life.
+                </p>
+                <p className="text-center font-semibold mt-4" style={{ color: '#353535' }}>Rosario</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bio-Markers Stats */}
+          <div className="text-center">
+            <p className="text-4xl" style={{ color: '#353535' }}>
+              <span className="font-bold underline">55</span> <span className="font-light">Million Bio-Markers analysed</span>
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* For People Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Time Tested Section */}
+      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
         <div className="max-w-7xl mx-auto px-8">
-          <h2 className="text-4xl font-light text-center mb-4">For People</h2>
-          <p className="text-gray-600 text-center mb-16 max-w-2xl mx-auto">
-            We&apos;re building a new health system, one that puts you in control. Get healthy, happy and wise.
+          <div className="text-4xl font-light text-center mb-6" style={{ color: '#353535' }}>
+            Time Tested and Results Driven
+          </div>
+          <p className="text-center text-lg mb-16 max-w-5xl mx-auto" style={{ color: '#535353' }}>
+            Dr. Google is scary. We get it. You've tried the threads—the threads on the threads... It's time for something real, built around you. Clarity is a form of care.
           </p>
           
-          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            <div>
-              <div className="mb-8">
-                <h3 className="text-2xl font-light mb-3">Personalized care team</h3>
-                <p className="text-gray-600">
-                  Your care team includes doctors, health coaches, nutritionists, fitness trainers and more.
-                </p>
+          {/* Three Columns */}
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {/* Column 1 */}
+            <div className="text-center bg-white p-6">
+              <div className="mb-6 h-24 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
               </div>
-              
-              <div className="mb-8">
-                <h3 className="text-2xl font-light mb-3">Clinically backed programs</h3>
-                <p className="text-gray-600">
-                  Evidence-based programs designed by medical professionals for lasting results.
-                </p>
-              </div>
-              
-              <div>
-                <h3 className="text-2xl font-light mb-3">24/7 access</h3>
-                <p className="text-gray-600">
-                  Connect with your care team anytime through chat, video calls, or in-person visits.
-                </p>
-              </div>
+              <h3 className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
+                Conflicted by fad-driven advice and<br />endless tests without real insight?
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                Ambé cuts through the noise with time-tested, evidence-based care and real credentials—thousands of years of wisdom versus a few years of fragmented information in holistic medicine.
+              </p>
             </div>
-            
-            <div className="bg-white p-8 rounded-2xl shadow-lg">
-              <h4 className="text-xl font-semibold mb-6">What&apos;s included:</h4>
-              <ul className="space-y-4">
-                <li className="flex items-start">
-                  <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Unlimited doctor consultations</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Personalized health plans</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Mental health support</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Nutrition guidance</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <span className="text-gray-700">Fitness programs</span>
-                </li>
-              </ul>
+
+            {/* Column 2 */}
+            <div className="text-center bg-white p-6">
+              <div className="mb-6 h-24 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
+              </div>
+              <h3 className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
+                Tired of one-size-fits-all<br />supplements?
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                At Ambé, every formula is tailored to your unique mind-body type. No algorithms. No shortcuts. Just real doctors creating real, time-tested protocols—just for you. We don't do "standard." Ambé formulas are hand-built by doctors to reflect your specific constitution, habits, and environment. You deserve precision—not guesswork.
+              </p>
             </div>
+
+            {/* Column 3 */}
+            <div className="text-center bg-white p-6">
+              <div className="mb-6 h-24 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
+              </div>
+              <h3 className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
+                Being overcharged by underqualified,<br />self-professed experts?
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                The human psychology of valuing only that which we pay a lot for can be remedied with proven results. By setting an example—by making high-quality health care available to everyone. We hope, that most will benefit.
+              </p>
+            </div>
+          </div>
+
+          {/* Book Now Button */}
+          <div className="text-center">
+            <Button className="mb-4">
+              BOOK NOW
+            </Button>
+            <p className="text-sm" style={{ color: '#535353' }}>
+              Two minutes. No commitment. Much clarity.
+            </p>
           </div>
         </div>
       </section>
@@ -187,7 +263,7 @@ export default function Home() {
 
       {/* Comparison Section */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-8">
+        <div className="max-w-7xl mx-auto px-8">
           <h2 className="text-3xl font-light text-center mb-12">
             How we compare
           </h2>
@@ -289,7 +365,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="py-20 bg-green-600">
-        <div className="max-w-4xl mx-auto px-8 text-center">
+        <div className="max-w-7xl mx-auto px-8 text-center">
           <h2 className="text-4xl font-light text-white mb-6">
             Take control of your health today
           </h2>

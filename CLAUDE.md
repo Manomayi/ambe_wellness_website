@@ -141,24 +141,53 @@ const HEALTH_FIELD_LABELS = {
 };
 ```
 
+### Design System
+1. **Colors** (from design-tokens.js):
+   - Primary Peach: `#FFD3AC`
+   - Dark Charcoal: `#353535`
+   - Background: `#E5E5E5`
+   - Body Text: `#535353`
+   - Grid Box: `#F4F4F4`
+   - White: `#FFFFFF`
+
+2. **Typography**:
+   - Heading Font: Richmond Text (Google Fonts)
+   - Body Font: System fonts (Basis Grotesque Arabic Pro fallback)
+   - Font Sizes: H1 (35px), H2 (19px), Body (16px)
+
+3. **Layout**:
+   - Container Width: `max-w-7xl` (1280px)
+   - Standard Padding: `px-8` on mobile, `lg:px-16` on desktop
+   - Section Padding: `py-20`
+
+4. **Components**:
+   - **Button**: Rounded full with peach background, charcoal text, hover inverts colors
+   - **Navigation**: Transparent background, white text/borders, fixed positioning
+   - **Video Background**: Full-screen hero with text overlay
+
 ### Recent Major Updates
-1. **Project Restructuring**: 
-   - Implemented route groups for auth and dashboard
-   - Reorganized components by function
-   - Updated all import paths
-2. **Terminology Consistency**: 
-   - All "expert" references changed to "doctor"
-   - All "member/patient" references changed to "user"
-   - Updated all function names, variables, and comments
-3. **Enhanced Features**:
-   - Added referral system with credit tracking
-   - Improved cart with subscription and referral discounts
-   - Better checkout flow with address management
-   - Colorful UI updates on home and store pages
-4. **UI Improvements**:
-   - Darker text throughout for better readability
-   - Prominent cart button in store
-   - Reorganized menu structure with new sections
+1. **Complete Homepage Redesign**:
+   - Implemented new design system with brand colors and typography
+   - Created reusable Button component with consistent styling
+   - Added video background hero section with overlay text
+   - Redesigned navigation with transparent background and white elements
+   
+2. **New Homepage Sections**:
+   - **Hero Banner**: Video background with "Integrative-Doctor led care" messaging
+   - **Testimonials Section**: American Apparel testimonials in circular peach cards
+   - **Time Tested Section**: Three-column layout with benefits and BOOK NOW CTA
+   
+3. **UI/UX Improvements**:
+   - Consistent use of design tokens throughout
+   - White text on video backgrounds with inline styles for specificity
+   - Proper spacing and alignment across all sections
+   - Responsive grid layouts for testimonials and features
+
+4. **Technical Enhancements**:
+   - Created VideoBackground component for hero section
+   - Added design-tokens.js for centralized color/typography management
+   - Updated Tailwind config with custom colors and fonts
+   - Fixed CSS inheritance issues with inline styles for critical elements
 
 ### Current Limitations
 - No testing framework configured
