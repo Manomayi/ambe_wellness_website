@@ -25,7 +25,7 @@ module.exports = {
         'grid-box': '#F4F4F4',
       },
       fontFamily: {
-        'richmond': ['Richmond Text', 'serif'],
+        'richmond': ['Playfair Display', 'serif'],
         'basis': ['Basis Grotesque Arabic Pro', 'sans-serif'],
       },
       fontSize: {

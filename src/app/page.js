@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
+import Navigation from '@/components/navigation/Navigation';
 
 export default function Home() {
 
@@ -12,39 +13,10 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 py-6 border-b border-white">
-        <div className="max-w-7xl mx-auto lg:px-16">
-          <div className="flex justify-between items-center">
-            {/* Logo */}
-            <h1 className="text-4xl font-bold font-richmond" style={{ color: '#FFD3AC' }}>
-              AMBE
-            </h1>
-            
-            {/* Right side navigation */}
-            <div className="flex items-center gap-12">
-              <Link href="#" className="text-sm" style={{ color: 'white' }}>
-                Enterprise
-              </Link>
-              <Link href="#" className="text-sm" style={{ color: 'white' }}>
-                Membership
-              </Link>
-              <button className="border border-white px-6 py-2 rounded-full text-sm hover:bg-white hover:text-black transition-colors" style={{ color: 'white' }}>
-                Download App
-              </button>
-              
-              {/* Divider */}
-              <div className="h-8 w-px bg-white opacity-50"></div>
-              
-              <Link href="/login" className="text-sm" style={{ color: 'white' }}>
-                Sign in
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center overflow-hidden">
+      <section className="relative h-[75vh] flex items-center overflow-hidden">
         {/* Video Background */}
         <VideoBackground />
         
@@ -54,9 +26,9 @@ export default function Home() {
         <div className="relative w-full flex justify-center">
           <div className="w-full max-w-7xl px-8 lg:px-16">
             <div className="max-w-3xl">
-              <h1 className="text-6xl font-light mb-4 leading-tight text-white font-richmond" style={{ color: 'white' }}>
+              <div className="text-6xl font-light mb-4 leading-tight text-white" style={{ color: 'white', fontFamily: 'Playfair Display, serif' }}>
                 Integrative-Doctor led care<br />Pay as you like
-              </h1>
+              </div>
               <p className="text-white mb-2 text-xl font-light" style={{ color: 'white' }}>
                 Evidence based holistic care with heart<br />
                 Tailored only for you
@@ -80,8 +52,8 @@ export default function Home() {
       <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-8">
           <div className="mb-12">
-            <h2 className="text-4xl font-light mb-2" style={{ color: '#353535' }}>Trusted by:</h2>
-            <h3 className="text-5xl font-bold mb-4" style={{ color: '#353535' }}>American Apparel™</h3>
+            <div className="text-4xl font-light mb-2" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>Trusted by:</div>
+            <div className="text-5xl font-bold mb-4" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>American Apparel™</div>
             <p className="text-lg" style={{ color: '#535353' }}>Pioneers In Corporate Wellness: A Better Way To Grow</p>
           </div>
           
@@ -91,9 +63,9 @@ export default function Home() {
             <div className="relative flex justify-center">
               <div className="rounded-full p-8 flex flex-col items-center" style={{ backgroundColor: '#FFD3AC', width: '400px', height: '400px' }}>
                 <div className="w-16 h-16 bg-white rounded-full mb-3 flex-shrink-0"></div>
-                <h4 className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
+                <div className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
                   Chief Strategy Officer,<br />National Tech Firm
-                </h4>
+                </div>
                 <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
                   For the first time in 20 years of nonstop output, I found a wellness system that didn&apos;t just slow me down—it woke me up. Ambé&apos;s personalized protocols gave me energy I didn&apos;t know I was missing, and helped me show up sharper, calmer, and more focused than ever before.
                 </p>
@@ -105,9 +77,9 @@ export default function Home() {
             <div className="relative flex justify-center">
               <div className="rounded-full p-8 flex flex-col items-center" style={{ backgroundColor: '#FFD3AC', width: '400px', height: '400px' }}>
                 <div className="w-16 h-16 bg-white rounded-full mb-3 flex-shrink-0"></div>
-                <h4 className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
+                <div className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
                   Operations Supervisor,<br />Regional Distribution Center
-                </h4>
+                </div>
                 <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
                   Between shift work and stress, I was running on empty. Ambé didn&apos;t hand me a generic plan—they listened. My sleep, digestion, and moods have all leveled out. I finally feel in control of my health, and my team noticed the difference too.
                 </p>
@@ -119,9 +91,9 @@ export default function Home() {
             <div className="relative flex justify-center">
               <div className="rounded-full p-8 flex flex-col items-center" style={{ backgroundColor: '#FFD3AC', width: '400px', height: '400px' }}>
                 <div className="w-16 h-16 bg-white rounded-full mb-3 flex-shrink-0"></div>
-                <h4 className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
+                <div className="text-lg font-semibold text-center mb-3 h-12 flex items-center" style={{ color: '#353535' }}>
                   Warehouse Associate,<br />National Retail Chain
-                </h4>
+                </div>
                 <p className="text-sm text-center leading-relaxed flex-1 flex items-start" style={{ color: '#353535' }}>
                   I never thought wellness was made for someone like me. Ambé changed that. They spoke my language, respected my time, and helped my body stop hurting every day. It&apos;s not just medicine—it&apos;s care that fits real life.
                 </p>
@@ -142,7 +114,7 @@ export default function Home() {
       {/* Time Tested Section */}
       <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-4xl font-light text-center mb-6" style={{ color: '#353535' }}>
+          <div className="text-4xl font-light text-center mb-6" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
             Time Tested and Results Driven
           </div>
           <p className="text-center text-lg mb-16 max-w-5xl mx-auto" style={{ color: '#535353' }}>
@@ -156,9 +128,9 @@ export default function Home() {
               <div className="mb-6 h-24 flex items-center justify-center">
                 <div className="w-20 h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
               </div>
-              <h3 className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Conflicted by fad-driven advice and<br />endless tests without real insight?
-              </h3>
+              </div>
               <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
                 Ambé cuts through the noise with time-tested, evidence-based care and real credentials—thousands of years of wisdom versus a few years of fragmented information in holistic medicine.
               </p>
@@ -169,9 +141,9 @@ export default function Home() {
               <div className="mb-6 h-24 flex items-center justify-center">
                 <div className="w-20 h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
               </div>
-              <h3 className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Tired of one-size-fits-all<br />supplements?
-              </h3>
+              </div>
               <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
                 At Ambé, every formula is tailored to your unique mind-body type. No algorithms. No shortcuts. Just real doctors creating real, time-tested protocols—just for you. We don&apos;t do &quot;standard.&quot; Ambé formulas are hand-built by doctors to reflect your specific constitution, habits, and environment. You deserve precision—not guesswork.
               </p>
@@ -182,9 +154,9 @@ export default function Home() {
               <div className="mb-6 h-24 flex items-center justify-center">
                 <div className="w-20 h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
               </div>
-              <h3 className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Being overcharged by underqualified,<br />self-professed experts?
-              </h3>
+              </div>
               <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
                 The human psychology of valuing only that which we pay a lot for can be remedied with proven results. By setting an example—by making high-quality health care available to everyone. We hope, that most will benefit.
               </p>
@@ -206,7 +178,7 @@ export default function Home() {
       {/* The Ambé Difference Section */}
       <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-5xl font-light mb-16" style={{ color: '#353535' }}>
+          <div className="text-5xl font-light mb-16" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
             The Ambé Difference
           </div>
 
@@ -221,9 +193,9 @@ export default function Home() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
+                <div className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
                   Precision You Can<br />Trust
-                </h3>
+                </div>
                 <p className="text-sm" style={{ color: '#353535' }}>
                   Doctors cross- trained in time tested and modern science
                 </p>
@@ -240,9 +212,9 @@ export default function Home() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
+                <div className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
                   Care You Can<br />Feel
-                </h3>
+                </div>
                 <p className="text-sm" style={{ color: '#353535' }}>
                   Plans crafted around your whole self & labs
                 </p>
@@ -260,9 +232,9 @@ export default function Home() {
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
+                <div className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
                   Ethics You Can Stand<br />Behind
-                </h3>
+                </div>
                 <p className="text-sm" style={{ color: '#353535' }}>
                   Fair-trade sourcing, real transparency
                 </p>
@@ -275,19 +247,19 @@ export default function Home() {
             <div className="flex items-center">
               {/* White circle with text content - all the way to the left */}
               <div className="bg-white rounded-full p-14 flex flex-col justify-center text-center shadow-lg w-[500px] h-[500px] flex-shrink-0">
-                <h3 className="text-2xl font-semibold mb-6" style={{ color: '#353535' }}>
+                <div className="text-2xl font-semibold mb-6" style={{ color: '#353535' }}>
                   1. Clinical Precision
-                </h3>
+                </div>
                 
                 <div className="mb-6">
-                  <h4 className="font-semibold mb-2" style={{ color: '#353535' }}>What We Do</h4>
+                  <div className="font-semibold mb-2" style={{ color: '#353535' }}>What We Do</div>
                   <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
                     Doctors trained in traditional and ayurvedic medicine and modern integrative science. Recognize interactions between herbal and pharmaceutical protocols.
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-2" style={{ color: '#353535' }}>Why It Matters</h4>
+                  <div className="font-semibold mb-2" style={{ color: '#353535' }}>Why It Matters</div>
                   <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
                     Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric).
                   </p>
@@ -323,7 +295,7 @@ export default function Home() {
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Book</h3>
+                  <div className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Book</div>
                   <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
                     Book now, and fill out your secured details to be matched with a doctor specific to your unique needs.
                   </p>
@@ -340,7 +312,7 @@ export default function Home() {
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Video Call</h3>
+                  <div className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Video Call</div>
                   <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
                     Video chat with your specialist.
                   </p>
@@ -360,7 +332,7 @@ export default function Home() {
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Get Care + Unlimited Text</h3>
+                  <div className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Get Care + Unlimited Text</div>
                   <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
                     Get customized diet, cleanse, lifestyle, exercise, yoga, and meditation plans by your specialist — plus unlimited texting.
                   </p>
@@ -377,7 +349,7 @@ export default function Home() {
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Monthly Video Follow Up</h3>
+                  <div className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Monthly Video Follow Up</div>
                   <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
                     Monthly video call — essential care takes persistence.
                   </p>
@@ -391,7 +363,7 @@ export default function Home() {
       {/* Meet the Experts Section */}
       <section className="py-20 bg-gray-100">
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-5xl font-light text-center mb-4 text-charcoal">
+          <div className="text-5xl font-light text-center mb-4" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
             Meet the Experts
           </div>
           <p className="text-center text-lg mb-16 max-w-5xl mx-auto text-body">
@@ -486,7 +458,7 @@ export default function Home() {
       {/* How We Compare Section */}
       <section className="py-20 bg-grid-box">
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-5xl font-light mb-4 text-charcoal">
+          <div className="text-5xl font-light mb-4" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
             How We Compare
           </div>
           <p className="text-lg mb-16 text-body">
@@ -657,9 +629,9 @@ export default function Home() {
 
             {/* Right Content */}
             <div className="flex-1">
-              <h2 className="text-3xl font-semibold mb-6" style={{ color: '#353535' }}>
+              <div className="text-3xl font-semibold mb-6" style={{ color: '#353535' }}>
                 Bio markers and holistic integration
-              </h2>
+              </div>
               <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
                 Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don't catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.
               </p>
@@ -694,7 +666,7 @@ export default function Home() {
                     </p>
                     
                     {/* Main Quote */}
-                    <div className="text-4xl font-light leading-tight mb-12" style={{ color: '#353535' }}>
+                    <div className="text-4xl font-light leading-tight mb-12" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
                       With loving support, we can blossom into<br />
                       our full potential.
                     </div>
