@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
@@ -294,10 +295,12 @@ export default function Home() {
               </div>
               
               {/* Arc segments image - bigger and close to the right of circle */}
-              <img 
+              <Image 
                 src="/arc_segments.png" 
                 alt="Arc Segments" 
-                className="w-[800px] h-[800px] object-contain"
+                width={800}
+                height={800}
+                className="object-contain"
               />
             </div>
           </div>
@@ -312,9 +315,11 @@ export default function Home() {
             <div className="space-y-16">
               {/* Step 1 - Book */}
               <div className="flex items-center gap-8">
-                <img 
+                <Image 
                   src="/step1.png" 
                   alt="Step 1" 
+                  width={160}
+                  height={128}
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
@@ -327,9 +332,11 @@ export default function Home() {
 
               {/* Step 2 - Video Call */}
               <div className="flex items-center gap-8">
-                <img 
+                <Image 
                   src="/step2.png" 
                   alt="Step 2" 
+                  width={160}
+                  height={128}
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
@@ -345,9 +352,11 @@ export default function Home() {
             <div className="space-y-16">
               {/* Step 3 - Get Care + Unlimited Text */}
               <div className="flex items-center gap-8">
-                <img 
+                <Image 
                   src="/step3.png" 
                   alt="Step 3" 
+                  width={160}
+                  height={128}
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
@@ -360,9 +369,11 @@ export default function Home() {
 
               {/* Step 4 - Monthly Video Follow Up */}
               <div className="flex items-center gap-8">
-                <img 
+                <Image 
                   src="/step4.png" 
                   alt="Step 4" 
+                  width={160}
+                  height={128}
                   className="w-40 h-32 object-contain flex-shrink-0"
                 />
                 <div className="flex-1">
@@ -464,7 +475,7 @@ export default function Home() {
                 Medicine and Surgery
               </p>
               <p className="text-sm font-medium text-charcoal">
-                OBGYN and women's health
+                OBGYN and women&apos;s health
               </p>
             </div>
           </div>
