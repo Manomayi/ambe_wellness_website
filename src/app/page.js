@@ -633,7 +633,7 @@ export default function Home() {
                 Bio markers and holistic integration
               </div>
               <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
-                Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don't catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.
+                Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don&apos;t catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.
               </p>
             </div>
           </div>
@@ -651,7 +651,7 @@ export default function Home() {
               <div className="relative">
                 {/* Quote Icon - positioned at the top border */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 -top-10 w-20 h-20 rounded-full flex items-center justify-center z-10" style={{ backgroundColor: '#E5E5E5' }}>
-                  <span className="text-4xl" style={{ color: '#FFD3AC' }}>"</span>
+                  <span className="text-4xl" style={{ color: '#FFD3AC' }}>&ldquo;</span>
                 </div>
                 
                 {/* Container */}
@@ -659,7 +659,7 @@ export default function Home() {
                   <div className="max-w-4xl mx-auto text-center">
                     {/* First paragraph */}
                     <p className="text-lg mb-4" style={{ color: '#353535' }}>
-                      We're doctors, entrepreneurs and researchers with decades of experience.
+                      We&apos;re doctors, entrepreneurs and researchers with decades of experience.
                     </p>
                     <p className="text-lg mb-12" style={{ color: '#353535' }}>
                       Ambé is built for the soul of the modern man.
