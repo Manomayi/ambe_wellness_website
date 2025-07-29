@@ -176,18 +176,32 @@ const HEALTH_FIELD_LABELS = {
    - **Hero Banner**: Video background with "Integrative-Doctor led care" messaging
    - **Testimonials Section**: American Apparel testimonials in circular peach cards
    - **Time Tested Section**: Three-column layout with benefits and BOOK NOW CTA
+   - **The Ambé Difference**: Clinical precision circle with peach arc segments (using arc_segments.png)
+   - **Steps Section**: Four-step process with circular designs (step1-4.png)
+   - **Meet the Experts**: Doctor profiles in white containers on gray background
+   - **How We Compare**: Comparison table with peach boxes in AMBE column
    
 3. **UI/UX Improvements**:
    - Consistent use of design tokens throughout
    - White text on video backgrounds with inline styles for specificity
    - Proper spacing and alignment across all sections
    - Responsive grid layouts for testimonials and features
+   - Removed "For Businesses" and "Enterprise Benefits" sections
+   - Removed "Take control of your health today" CTA section
 
 4. **Technical Enhancements**:
    - Created VideoBackground component for hero section
    - Added design-tokens.js for centralized color/typography management
    - Updated Tailwind config with custom colors and fonts
    - Fixed CSS inheritance issues with inline styles for critical elements
+   - Added Tailwind arbitrary value support for colors (e.g., bg-[#FFD3AC])
+   
+5. **Footer Redesign**:
+   - Video background (same parallax effect as navbar)
+   - Two-row layout with minimal spacing
+   - Top row: Enterprise, Membership, Download App, Sign In, Contact (justified)
+   - Bottom row: "2025 Ambe All Rights Reserved" (left) and "Terms" (right)
+   - White text with inline styles to ensure color consistency
 
 ### Current Limitations
 - No testing framework configured

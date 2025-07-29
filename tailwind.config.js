@@ -17,6 +17,12 @@ module.exports = {
         'ambe-white': '#FFFFFF',
         'ambe-body': '#535353',
         'ambe-grid': '#F4F4F4',
+        
+        // Shorter aliases for easier use
+        'peach': '#FFD3AC',
+        'charcoal': '#353535',
+        'body': '#535353',
+        'grid-box': '#F4F4F4',
       },
       fontFamily: {
         'richmond': ['Richmond Text', 'serif'],

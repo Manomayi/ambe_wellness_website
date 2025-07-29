@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { CheckIcon } from '@heroicons/react/24/solid';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
 
@@ -202,58 +202,174 @@ export default function Home() {
         </div>
       </section>
 
-      {/* For Businesses Section */}
-      <section className="py-20 bg-white">
+      {/* The Ambé Difference Section */}
+      <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-8">
-          <h2 className="text-4xl font-light text-center mb-4">For Businesses</h2>
-          <p className="text-gray-600 text-center mb-16 max-w-2xl mx-auto">
-            Transform your workplace with comprehensive wellness solutions that drive results.
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center">
-              <div className="text-5xl font-light text-orange-500 mb-2">87%</div>
-              <p className="text-gray-600">Employee satisfaction increase</p>
+          <div className="text-5xl font-light mb-16" style={{ color: '#353535' }}>
+            The Ambé Difference
+          </div>
+
+          {/* Three Feature Cards */}
+          <div className="grid md:grid-cols-3 gap-8 mb-32">
+            {/* Precision You Can Trust */}
+            <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
+              <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L2 7V12C2 17.5 5.25 22.5 12 24C18.75 22.5 22 17.5 22 12V7L12 2Z" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 12L11 14L15 10" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
+                  Precision You Can<br />Trust
+                </h3>
+                <p className="text-sm" style={{ color: '#353535' }}>
+                  Doctors cross- trained in time tested and modern science
+                </p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-5xl font-light text-orange-500 mb-2">3.2x</div>
-              <p className="text-gray-600">ROI on wellness investment</p>
+
+            {/* Care You Can Feel */}
+            <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
+              <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 10V7C7 6.46957 7.21071 5.96086 7.58579 5.58579C7.96086 5.21071 8.46957 5 9 5H15C15.5304 5 16.0391 5.21071 16.4142 5.58579C16.7893 5.96086 17 6.46957 17 7V10" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M5 11C5 10.4696 5.21071 9.96086 5.58579 9.58579C5.96086 9.21071 6.46957 9 7 9H17C17.5304 9 18.0391 9.21071 18.4142 9.58579C18.7893 9.96086 19 10.4696 19 11V13C19 17.4183 15.4183 21 11 21H9" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 5V9" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
+                  Care You Can<br />Feel
+                </h3>
+                <p className="text-sm" style={{ color: '#353535' }}>
+                  Plans crafted around your whole self & labs
+                </p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-5xl font-light text-orange-500 mb-2">45%</div>
-              <p className="text-gray-600">Reduction in sick days</p>
+
+            {/* Ethics You Can Stand Behind */}
+            <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
+              <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="2" width="8" height="4" rx="1" stroke="#353535" strokeWidth="2"/>
+                  <path d="M16 6V10C16 10.7956 15.6839 11.5587 15.1213 12.1213C14.5587 12.6839 13.7956 13 13 13H11C10.2044 13 9.44129 12.6839 8.87868 12.1213C8.31607 11.5587 8 10.7956 8 10V6" stroke="#353535" strokeWidth="2"/>
+                  <path d="M4 7H20" stroke="#353535" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M8 7V19C8 20.1046 8.89543 21 10 21H14C15.1046 21 16 20.1046 16 19V7" stroke="#353535" strokeWidth="2"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
+                  Ethics You Can Stand<br />Behind
+                </h3>
+                <p className="text-sm" style={{ color: '#353535' }}>
+                  Fair-trade sourcing, real transparency
+                </p>
+              </div>
             </div>
           </div>
-          
-          <div className="bg-gray-50 p-12 rounded-2xl">
-            <h3 className="text-2xl font-semibold mb-8 text-center">Enterprise Benefits</h3>
-            <div className="grid md:grid-cols-2 gap-x-12 gap-y-6">
-              <div className="flex items-start">
-                <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+
+          {/* Circular Diagram Section */}
+          <div className="relative">
+            <div className="flex items-center">
+              {/* White circle with text content - all the way to the left */}
+              <div className="bg-white rounded-full p-14 flex flex-col justify-center text-center shadow-lg w-[500px] h-[500px] flex-shrink-0">
+                <h3 className="text-2xl font-semibold mb-6" style={{ color: '#353535' }}>
+                  1. Clinical Precision
+                </h3>
+                
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-2" style={{ color: '#353535' }}>What We Do</h4>
+                  <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                    Doctors trained in traditional and ayurvedic medicine and modern integrative science. Recognize interactions between herbal and pharmaceutical protocols.
+                  </p>
+                </div>
+
                 <div>
-                  <h4 className="font-semibold mb-1">Dedicated Account Management</h4>
-                  <p className="text-gray-600 text-sm">Personal support for seamless implementation and ongoing success</p>
+                  <h4 className="font-semibold mb-2" style={{ color: '#353535' }}>Why It Matters</h4>
+                  <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                    Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric).
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start">
-                <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold mb-1">Custom Wellness Programs</h4>
-                  <p className="text-gray-600 text-sm">Tailored solutions based on your company&apos;s unique needs</p>
+              
+              {/* Arc segments image - bigger and close to the right of circle */}
+              <img 
+                src="/arc_segments.png" 
+                alt="Arc Segments" 
+                className="w-[800px] h-[800px] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Steps Section - no title */}
+      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="grid md:grid-cols-2 gap-x-32 gap-y-16">
+            {/* Left Column - Steps 1 & 2 */}
+            <div className="space-y-16">
+              {/* Step 1 - Book */}
+              <div className="flex items-center gap-8">
+                <img 
+                  src="/step1.png" 
+                  alt="Step 1" 
+                  className="w-40 h-32 object-contain flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Book</h3>
+                  <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
+                    Book now, and fill out your secured details to be matched with a doctor specific to your unique needs.
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start">
-                <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold mb-1">Analytics Dashboard</h4>
-                  <p className="text-gray-600 text-sm">Track engagement, outcomes, and ROI in real-time</p>
+
+              {/* Step 2 - Video Call */}
+              <div className="flex items-center gap-8">
+                <img 
+                  src="/step2.png" 
+                  alt="Step 2" 
+                  className="w-40 h-32 object-contain flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Video Call</h3>
+                  <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
+                    Video chat with your specialist.
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start">
-                <CheckIcon className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold mb-1">Flexible Pricing</h4>
-                  <p className="text-gray-600 text-sm">Scalable plans that grow with your organization</p>
+            </div>
+
+            {/* Right Column - Steps 3 & 4 */}
+            <div className="space-y-16">
+              {/* Step 3 - Get Care + Unlimited Text */}
+              <div className="flex items-center gap-8">
+                <img 
+                  src="/step3.png" 
+                  alt="Step 3" 
+                  className="w-40 h-32 object-contain flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Get Care + Unlimited Text</h3>
+                  <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
+                    Get customized diet, cleanse, lifestyle, exercise, yoga, and meditation plans by your specialist — plus unlimited texting.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 4 - Monthly Video Follow Up */}
+              <div className="flex items-center gap-8">
+                <img 
+                  src="/step4.png" 
+                  alt="Step 4" 
+                  className="w-40 h-32 object-contain flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h3 className="text-2xl font-semibold mb-2" style={{ color: '#353535' }}>Monthly Video Follow Up</h3>
+                  <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
+                    Monthly video call — essential care takes persistence.
+                  </p>
                 </div>
               </div>
             </div>
@@ -261,101 +377,229 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparison Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Meet the Experts Section */}
+      <section className="py-20 bg-gray-100">
         <div className="max-w-7xl mx-auto px-8">
-          <h2 className="text-3xl font-light text-center mb-12">
-            How we compare
-          </h2>
+          <div className="text-5xl font-light text-center mb-4 text-charcoal">
+            Meet the Experts
+          </div>
+          <p className="text-center text-lg mb-16 max-w-5xl mx-auto text-body">
+            Licensed. Global. Guided by science. Every Ambé practitioner is trained in traditional medicine and modern clinical frameworks–bringing deep expertise to every personalized plan.
+          </p>
           
+          {/* Doctors Grid */}
+          <div className="grid md:grid-cols-4 gap-6">
+            {/* Dr. Smita Bhatia */}
+            <div className="bg-white p-8 text-center">
+              <div className="w-48 h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="text-xl font-semibold mb-1 text-charcoal">
+                Dr. Smita Bhatia
+              </div>
+              <p className="text-sm mb-1 text-body">MBBS</p>
+              <p className="text-sm mb-2 text-body">BAMS</p>
+              <p className="text-sm mb-1 text-body">
+                Doctor of Ayurvedic
+              </p>
+              <p className="text-sm mb-1 text-body">
+                Medicine and Surgery
+              </p>
+              <p className="text-sm font-medium text-charcoal">
+                Oncology Director
+              </p>
+            </div>
+
+            {/* Dr. Jeremy Stone */}
+            <div className="bg-white p-8 text-center">
+              <div className="w-48 h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="text-xl font-semibold mb-1 text-charcoal">
+                Dr. Jeremy Stone
+              </div>
+              <p className="text-sm mb-1 text-body">MBBS</p>
+              <p className="text-sm mb-2 text-body">BAMS</p>
+              <p className="text-sm mb-1 text-body">
+                Doctor of Ayurvedic
+              </p>
+              <p className="text-sm mb-1 text-body">
+                Medicine and Surgery
+              </p>
+              <p className="text-sm font-medium text-charcoal">
+                Metabolic and
+              </p>
+              <p className="text-sm font-medium text-charcoal">
+                musculoskeletal specialist
+              </p>
+            </div>
+
+            {/* Dr. Anandibai Joshi */}
+            <div className="bg-white p-8 text-center">
+              <div className="w-48 h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="text-xl font-semibold mb-1 text-charcoal">
+                Dr. Anandibai Joshi
+              </div>
+              <p className="text-sm mb-1 text-body">MBBS</p>
+              <p className="text-sm mb-2 text-body">BAMS</p>
+              <p className="text-sm mb-1 text-body">
+                Doctor of Ayurvedic
+              </p>
+              <p className="text-sm mb-1 text-body">
+                Medicine and Surgery
+              </p>
+              <p className="text-sm font-medium text-charcoal">
+                Psychology specialist
+              </p>
+            </div>
+
+            {/* Dr. Indira Hinduja */}
+            <div className="bg-white p-8 text-center">
+              <div className="w-48 h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="text-xl font-semibold mb-1 text-charcoal">
+                Dr. Indira Hinduja
+              </div>
+              <p className="text-sm mb-1 text-body">MBBS</p>
+              <p className="text-sm mb-2 text-body">BAMS</p>
+              <p className="text-sm mb-1 text-body">
+                Doctor of Ayurvedic
+              </p>
+              <p className="text-sm mb-1 text-body">
+                Medicine and Surgery
+              </p>
+              <p className="text-sm font-medium text-charcoal">
+                OBGYN and women's health
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* How We Compare Section */}
+      <section className="py-20 bg-grid-box">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="text-5xl font-light mb-4 text-charcoal">
+            How We Compare
+          </div>
+          <p className="text-lg mb-16 text-body">
+            No hidden fees, ever.
+          </p>
+          
+          {/* Comparison Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b-2 border-gray-300">
-                  <th className="text-left py-4 px-4 font-medium"></th>
-                  <th className="text-center py-4 px-4">
-                    <div className="font-semibold">AMBE</div>
+                <tr>
+                  <th className="text-left py-4 pr-8 font-normal"></th>
+                  <th className="px-6 py-4">
+                    <div className="text-4xl font-bold text-[#FFD3AC]">AMBE</div>
                   </th>
-                  <th className="text-center py-4 px-4">
-                    <div className="font-normal text-gray-600">Insurance-based care</div>
+                  <th className="px-6 py-4 text-center font-normal text-charcoal">
+                    OUR<br />COMPETITORS
                   </th>
-                  <th className="text-center py-4 px-4">
-                    <div className="font-normal text-gray-600">Concierge medicine</div>
+                  <th className="px-6 py-4 text-center font-normal text-charcoal">
+                    OTHERS
+                  </th>
+                  <th className="px-6 py-4 text-center font-normal text-charcoal">
+                    NUTRITIONIST
+                  </th>
+                  <th className="px-6 py-4 text-center font-normal text-charcoal">
+                    BIOMARKER<br />RESULTS
+                  </th>
+                  <th className="px-6 py-4 text-center font-normal text-charcoal">
+                    GENE RESULTS
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-4">Holistic care approach</td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+                {/* Integrative Doctors */}
+                <tr className="border-t border-gray-200">
+                  <td className="py-6 pr-8 text-lg text-charcoal">
+                    Integrative Doctors
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-32 h-16 rounded-2xl bg-[#FFD3AC]">
+                      <CheckIcon className="w-6 h-6 text-charcoal" />
+                    </div>
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
-                  </td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-charcoal">$ 500/Visit</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-4">24/7 access to care team</td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+
+                {/* 1 on 1 Video */}
+                <tr className="border-t border-gray-200">
+                  <td className="py-6 pr-8 text-lg text-charcoal">
+                    1 on 1 Video
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-32 h-16 rounded-2xl bg-[#FFD3AC]">
+                      <CheckIcon className="w-6 h-6 text-charcoal" />
+                    </div>
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-charcoal">$ 500/Visit</td>
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-32 h-16 rounded-2xl bg-[#FFD3AC]">
+                      <CheckIcon className="w-6 h-6 text-charcoal" />
+                    </div>
                   </td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-4">Transparent pricing</td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+
+                {/* Unlimited Texting */}
+                <tr className="border-t border-gray-200">
+                  <td className="py-6 pr-8 text-lg text-charcoal">
+                    Unlimited Texting
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-32 h-16 rounded-2xl bg-[#FFD3AC]">
+                      <CheckIcon className="w-6 h-6 text-charcoal" />
+                    </div>
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-4">Preventive focus</td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+
+                {/* Time Tested */}
+                <tr className="border-t border-gray-200">
+                  <td className="py-6 pr-8 text-lg text-charcoal">
+                    Time Tested
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-32 h-16 rounded-2xl bg-[#FFD3AC]">
+                      <CheckIcon className="w-6 h-6 text-charcoal" />
+                    </div>
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
+                  <td className="px-6 py-6 text-center text-charcoal">Infrequently</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
                 </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-4">Affordable for everyone</td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+
+                {/* Bio markers tested */}
+                <tr className="border-t border-gray-200">
+                  <td className="py-6 pr-8 text-lg text-charcoal">
+                    Bio markers tested
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-[#FFD3AC]">
+                      <span className="text-sm text-charcoal">100 tests = $100</span>
+                    </div>
                   </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
+                  <td className="px-6 py-6 text-center text-sm text-charcoal">100 tests =<br />min $300</td>
+                  <td className="px-6 py-6 text-center text-charcoal">$250</td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
+                  <td className="px-6 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-32 h-16 rounded-2xl bg-[#FFD3AC]">
+                      <CheckIcon className="w-6 h-6 text-charcoal" />
+                    </div>
                   </td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <td className="py-4 px-4">No insurance required</td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
-                  <td className="text-center py-4 px-4">
-                    <XMarkIcon className="w-5 h-5 text-gray-400 mx-auto" />
-                  </td>
-                  <td className="text-center py-4 px-4">
-                    <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />
-                  </td>
+                  <td className="px-6 py-6 text-center text-xl text-charcoal">X</td>
                 </tr>
               </tbody>
             </table>
@@ -363,78 +607,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-green-600">
-        <div className="max-w-7xl mx-auto px-8 text-center">
-          <h2 className="text-4xl font-light text-white mb-6">
-            Take control of your health today
-          </h2>
-          <p className="text-xl text-white mb-8">
-            Join thousands of users who are living healthier, happier lives.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-green-600 px-8 py-4 rounded-full text-lg font-medium hover:bg-gray-100 transition duration-300">
-              Start your journey
-            </button>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-white hover:text-green-600 transition duration-300">
-              Book a consultation
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="grid md:grid-cols-5 gap-8 mb-8">
-            <div className="md:col-span-2">
-              <h3 className="text-3xl font-bold mb-4">AMBE®</h3>
-              <p className="text-gray-400 mb-6">
-                Revolutionizing healthcare with a holistic approach to wellness.
+      <footer className="relative">
+        <VideoBackground />
+        <div className="relative z-10 py-8">
+          <div className="max-w-7xl mx-auto px-8">
+            {/* First row - navigation links */}
+            <div className="flex justify-between mb-4">
+              <Link href="/enterprise" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                Enterprise
+              </Link>
+              <Link href="/membership" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                Membership
+              </Link>
+              <Link href="/download" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                Download App
+              </Link>
+              <Link href="/signin" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                Sign In
+              </Link>
+              <Link href="/contact" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                Contact
+              </Link>
+            </div>
+            
+            {/* Second row - copyright and terms */}
+            <div className="flex justify-between items-center">
+              <p style={{ color: 'white' }} className="text-sm">
+                2025 Ambe All Rights Reserved
               </p>
-              <div className="flex gap-4">
-                <a href="#" className="text-gray-400 hover:text-white">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/></svg>
-                </a>
-              </div>
+              <Link href="/terms" style={{ color: 'white' }} className="text-sm hover:opacity-80 transition-opacity">
+                Terms
+              </Link>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Features</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">Enterprise</a></li>
-                <li><a href="#" className="hover:text-white">Download App</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">About Us</a></li>
-                <li><a href="#" className="hover:text-white">Careers</a></li>
-                <li><a href="#" className="hover:text-white">Press</a></li>
-                <li><a href="#" className="hover:text-white">Partners</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Help Center</a></li>
-                <li><a href="#" className="hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
-            <p>&copy; 2024 AMBE Health Inc. All rights reserved.</p>
-            <p>Made with ❤️ for your wellness journey</p>
           </div>
         </div>
       </footer>
