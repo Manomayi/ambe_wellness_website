@@ -618,43 +618,143 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Education Section */}
+      <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
+        <div className="max-w-7xl mx-auto px-8">
+          {/* Tab Navigation */}
+          <div className="flex justify-center gap-4 mb-12">
+            <button className="px-6 py-2 rounded-full text-sm" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+              Do You Need Labs for HRT?
+            </button>
+            <button className="px-8 py-3 rounded-full text-sm" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+              Bio markers and holistic integration
+            </button>
+            <button className="px-6 py-2 rounded-full text-sm" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+              How We Personalize Every Formula
+            </button>
+            <button className="px-6 py-2 rounded-full text-sm" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+              Prevent contraindicated therapies with Pharmaceuticals
+            </button>
+            <button className="px-6 py-2 rounded-full text-sm" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+              Mislabeled Therapies to Watch Out For
+            </button>
+          </div>
 
-      {/* Footer */}
-      <footer className="relative">
-        <VideoBackground />
-        <div className="relative z-10 py-8">
-          <div className="max-w-7xl mx-auto px-8">
-            {/* First row - navigation links */}
-            <div className="flex justify-between mb-4">
-              <Link href="/enterprise" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                Enterprise
-              </Link>
-              <Link href="/membership" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                Membership
-              </Link>
-              <Link href="/download" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                Download App
-              </Link>
-              <Link href="/signin" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                Sign In
-              </Link>
-              <Link href="/contact" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                Contact
-              </Link>
+          {/* Content Section */}
+          <div className="flex gap-12 items-center">
+            {/* Left Image */}
+            <div className="flex-1">
+              <div className="relative overflow-hidden h-[400px] w-full" style={{ borderRadius: '0 150px 0 150px' }}>
+                <Image 
+                  src="/hands.png" 
+                  alt="Hands holding light" 
+                  width={600}
+                  height={400}
+                  className="object-cover w-full h-full"
+                />
+              </div>
             </div>
-            
-            {/* Second row - copyright and terms */}
-            <div className="flex justify-between items-center">
-              <p style={{ color: 'white' }} className="text-sm">
-                2025 Ambe All Rights Reserved
+
+            {/* Right Content */}
+            <div className="flex-1">
+              <h2 className="text-3xl font-semibold mb-6" style={{ color: '#353535' }}>
+                Bio markers and holistic integration
+              </h2>
+              <p className="text-base leading-relaxed" style={{ color: '#535353' }}>
+                Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don't catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.
               </p>
-              <Link href="/terms" style={{ color: 'white' }} className="text-sm hover:opacity-80 transition-opacity">
-                Terms
-              </Link>
             </div>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Quote Section and Footer - Combined with single video background */}
+      <section className="relative">
+        <VideoBackground />
+        <div className="relative z-10">
+          {/* Quote Section */}
+          <div className="py-24">
+            {/* Quote Container */}
+            <div className="max-w-5xl mx-auto px-8">
+              <div className="relative">
+                {/* Quote Icon - positioned at the top border */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 -top-10 w-20 h-20 rounded-full flex items-center justify-center z-10" style={{ backgroundColor: '#E5E5E5' }}>
+                  <span className="text-4xl" style={{ color: '#FFD3AC' }}>"</span>
+                </div>
+                
+                {/* Container */}
+                <div className="rounded-3xl pt-20 pb-16 px-12" style={{ backgroundColor: 'rgba(244, 244, 244, 0.7)' }}>
+                  <div className="max-w-4xl mx-auto text-center">
+                    {/* First paragraph */}
+                    <p className="text-lg mb-4" style={{ color: '#353535' }}>
+                      We're doctors, entrepreneurs and researchers with decades of experience.
+                    </p>
+                    <p className="text-lg mb-12" style={{ color: '#353535' }}>
+                      Ambé is built for the soul of the modern man.
+                    </p>
+                    
+                    {/* Main Quote */}
+                    <div className="text-4xl font-light leading-tight mb-12" style={{ color: '#353535' }}>
+                      With loving support, we can blossom into<br />
+                      our full potential.
+                    </div>
+
+                    {/* Attribution */}
+                    <p className="text-right text-lg" style={{ color: '#353535' }}>
+                      -Founder
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Environmental Message Container */}
+            <div className="max-w-5xl mx-auto px-8 mt-16">
+              <div className="rounded-3xl py-12 px-12" style={{ backgroundColor: 'rgba(244, 244, 244, 0.7)' }}>
+                <p className="text-base leading-relaxed text-center" style={{ color: '#353535' }}>
+                  Ten trees planted per member, per month = 120 trees per year per member. Our health depends<br />
+                  on the health of Mother Nature — trees are proven to be the #1 way to purify and nourish the<br />
+                  environment and help avert.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer className="py-8">
+            <div className="max-w-7xl mx-auto px-8">
+              {/* First row - navigation links */}
+              <div className="flex justify-between mb-4">
+                <Link href="/enterprise" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                  Enterprise
+                </Link>
+                <Link href="/membership" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                  Membership
+                </Link>
+                <Link href="/download" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                  Download App
+                </Link>
+                <Link href="/signin" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                  Sign In
+                </Link>
+                <Link href="/contact" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
+                  Contact
+                </Link>
+              </div>
+              
+              {/* Second row - copyright and terms */}
+              <div className="flex justify-between items-center">
+                <p style={{ color: 'white' }} className="text-sm">
+                  2025 Ambe All Rights Reserved
+                </p>
+                <Link href="/terms" style={{ color: 'white' }} className="text-sm hover:opacity-80 transition-opacity">
+                  Terms
+                </Link>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </section>
 
     </div>
   );
