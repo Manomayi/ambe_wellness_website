@@ -208,6 +208,18 @@ const HEALTH_FIELD_LABELS = {
 - No TypeScript - pure JavaScript/JSX
 - Standard Next.js ESLint configuration only
 
+### HTML/Styling Rules
+- **NEVER use HTML heading tags (h1, h2, h3, h4, h5, h6)**
+- **Always use `<div>` elements with Tailwind text size classes instead** (e.g., `text-2xl`, `text-3xl`, `text-4xl`, etc.)
+- This ensures consistent styling control across the application
+
+### Fonts
+- **Richmond font** is used for section titles only (via `font-richmond` class)
+- To add Richmond font files:
+  1. Place Richmond font files (.woff2, .woff, .ttf) in `/public/fonts/` directory
+  2. Uncomment the @font-face rule in `globals.css`
+  3. The font stack is: Richmond → Playfair Display (fallback) → serif
+
 ### Pending Features
 - Doctor referral system
 - Course section (coming soon)

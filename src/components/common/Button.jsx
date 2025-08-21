@@ -15,6 +15,7 @@ export default function Button({
   
   const variantStyles = {
     primary: `bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white`,
+    light: `bg-[#FFD3AC] text-[#353535] hover:bg-white hover:text-[#353535]`,
   };
   
   const widthStyles = fullWidth ? 'w-full' : '';

@@ -1,6 +1,88 @@
 @import "tailwindcss";
 
-/* Import Google Fonts - Using Playfair Display as Richmond Text alternative */
+/* Import Richmond Text fonts - for section titles */
+@font-face {
+  font-family: 'Richmond';
+  src: url('/fonts/Richmond-Text-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond';
+  src: url('/fonts/Richmond-Text-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond';
+  src: url('/fonts/Richmond-Text-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond';
+  src: url('/fonts/Richmond-Text-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Richmond Display fonts - available for future use */
+@font-face {
+  font-family: 'Richmond Display';
+  src: url('/fonts/Richmond-Display-UltraLight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Display';
+  src: url('/fonts/Richmond-Display-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Display';
+  src: url('/fonts/Richmond-Display-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Display';
+  src: url('/fonts/Richmond-Display-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Display';
+  src: url('/fonts/Richmond-Display-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Richmond Display';
+  src: url('/fonts/Richmond-Display-UltraBlack.otf') format('opentype');
+  font-weight: 950;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Temporary: Using Playfair Display as fallback until Richmond font files are added */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -48,6 +130,7 @@ p, .body-text {
   color: var(--ambe-body);
   line-height: 1.6;
 }
+
 
 /* Allow elements to inherit their specified colors */
 * {

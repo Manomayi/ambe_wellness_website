@@ -20,9 +20,9 @@ export default function Navigation() {
           {/* Right side navigation */}
           <div className="flex items-center gap-12">
             <Link 
-              href="#" 
+              href="/enterprise" 
               className="text-sm" 
-              style={{ color: 'white' }}
+              style={{ color: pathname === '/enterprise' ? '#FFD3AC' : 'white' }}
             >
               Enterprise
             </Link>

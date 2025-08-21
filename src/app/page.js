@@ -6,6 +6,8 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
 import Navigation from '@/components/navigation/Navigation';
+import { sectionTitleClasses, bannerTitleClasses } from '@/lib/styles/constants';
+import Footer from '@/components/common/Footer';
 
 export default function Home() {
 
@@ -26,7 +28,7 @@ export default function Home() {
         <div className="relative w-full flex justify-center">
           <div className="w-full max-w-7xl px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className="text-6xl font-light mb-4 leading-tight text-white" style={{ color: 'white', fontFamily: 'Playfair Display, serif' }}>
+              <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
                 Integrative-Doctor led care<br />Pay as you like
               </div>
               <p className="text-white mb-2 text-xl font-light" style={{ color: 'white' }}>
@@ -52,8 +54,8 @@ export default function Home() {
       <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-8">
           <div className="mb-12">
-            <div className="text-4xl font-light mb-2" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>Trusted by:</div>
-            <div className="text-5xl font-bold mb-4" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>American Apparel™</div>
+            <div className={sectionTitleClasses + " mb-2"}>Trusted by:</div>
+            <div className={sectionTitleClasses + " font-bold mb-4"}>American Apparel™</div>
             <p className="text-lg" style={{ color: '#535353' }}>Pioneers In Corporate Wellness: A Better Way To Grow</p>
           </div>
           
@@ -114,7 +116,7 @@ export default function Home() {
       {/* Time Tested Section */}
       <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-4xl font-light text-center mb-6" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
+          <div className={sectionTitleClasses + " text-center mb-6"}>
             Time Tested and Results Driven
           </div>
           <p className="text-center text-lg mb-16 max-w-5xl mx-auto" style={{ color: '#535353' }}>
@@ -176,16 +178,16 @@ export default function Home() {
       </section>
 
       {/* The Ambé Difference Section */}
-      <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
+      {/* <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-5xl font-light mb-16" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
+          <div className={sectionTitleClasses + " mb-16"}>
             The Ambé Difference
           </div>
 
           {/* Three Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-32">
+          {/* <div className="grid md:grid-cols-3 gap-8 mb-32">
             {/* Precision You Can Trust */}
-            <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
+            {/* <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
               <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 2L2 7V12C2 17.5 5.25 22.5 12 24C18.75 22.5 22 17.5 22 12V7L12 2Z" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -200,10 +202,10 @@ export default function Home() {
                   Doctors cross- trained in time tested and modern science
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Care You Can Feel */}
-            <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
+            {/* <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
               <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M7 10V7C7 6.46957 7.21071 5.96086 7.58579 5.58579C7.96086 5.21071 8.46957 5 9 5H15C15.5304 5 16.0391 5.21071 16.4142 5.58579C16.7893 5.96086 17 6.46957 17 7V10" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -219,10 +221,10 @@ export default function Home() {
                   Plans crafted around your whole self & labs
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {/* Ethics You Can Stand Behind */}
-            <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
+            {/* <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
               <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="8" y="2" width="8" height="4" rx="1" stroke="#353535" strokeWidth="2"/>
@@ -240,13 +242,13 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Circular Diagram Section */}
-          <div className="relative">
+          {/* <div className="relative">
             <div className="flex items-center">
               {/* White circle with text content - all the way to the left */}
-              <div className="bg-white rounded-full p-14 flex flex-col justify-center text-center shadow-lg w-[500px] h-[500px] flex-shrink-0">
+              {/* <div className="bg-white rounded-full p-14 flex flex-col justify-center text-center shadow-lg w-[500px] h-[500px] flex-shrink-0">
                 <div className="text-2xl font-semibold mb-6" style={{ color: '#353535' }}>
                   1. Clinical Precision
                 </div>
@@ -264,11 +266,11 @@ export default function Home() {
                     Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric).
                   </p>
                 </div>
-              </div>
+              </div> */}
               
               {/* Arc segments image - bigger and close to the right of circle */}
-              <Image 
-                src="/arc_segments.png" 
+              {/* <Image 
+                src="/images/home/arc_segments.png" 
                 alt="Arc Segments" 
                 width={800}
                 height={800}
@@ -277,7 +279,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Steps Section - no title */}
       <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
@@ -288,7 +290,7 @@ export default function Home() {
               {/* Step 1 - Book */}
               <div className="flex items-center gap-8">
                 <Image 
-                  src="/step1.png" 
+                  src="/images/home/step1.png" 
                   alt="Step 1" 
                   width={160}
                   height={128}
@@ -305,7 +307,7 @@ export default function Home() {
               {/* Step 2 - Video Call */}
               <div className="flex items-center gap-8">
                 <Image 
-                  src="/step2.png" 
+                  src="/images/home/step2.png" 
                   alt="Step 2" 
                   width={160}
                   height={128}
@@ -325,7 +327,7 @@ export default function Home() {
               {/* Step 3 - Get Care + Unlimited Text */}
               <div className="flex items-center gap-8">
                 <Image 
-                  src="/step3.png" 
+                  src="/images/home/step3.png" 
                   alt="Step 3" 
                   width={160}
                   height={128}
@@ -342,7 +344,7 @@ export default function Home() {
               {/* Step 4 - Monthly Video Follow Up */}
               <div className="flex items-center gap-8">
                 <Image 
-                  src="/step4.png" 
+                  src="/images/home/step4.png" 
                   alt="Step 4" 
                   width={160}
                   height={128}
@@ -363,7 +365,7 @@ export default function Home() {
       {/* Meet the Experts Section */}
       <section className="py-20 bg-gray-100">
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-5xl font-light text-center mb-4" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
+          <div className={sectionTitleClasses + " text-center mb-4"}>
             Meet the Experts
           </div>
           <p className="text-center text-lg mb-16 max-w-5xl mx-auto text-body">
@@ -458,7 +460,7 @@ export default function Home() {
       {/* How We Compare Section */}
       <section className="py-20 bg-grid-box">
         <div className="max-w-7xl mx-auto px-8">
-          <div className="text-5xl font-light mb-4" style={{ color: '#353535', fontFamily: 'Playfair Display, serif' }}>
+          <div className={sectionTitleClasses + " mb-4"}>
             How We Compare
           </div>
           <p className="text-lg mb-16 text-body">
@@ -618,7 +620,7 @@ export default function Home() {
             <div className="flex-1">
               <div className="relative overflow-hidden h-[400px] w-full" style={{ borderRadius: '0 150px 0 150px' }}>
                 <Image 
-                  src="/hands.png" 
+                  src="/images/home/hands.png" 
                   alt="Hands holding light" 
                   width={600}
                   height={400}
@@ -693,38 +695,7 @@ export default function Home() {
           </div>
 
           {/* Footer */}
-          <footer className="py-8">
-            <div className="max-w-7xl mx-auto px-8">
-              {/* First row - navigation links */}
-              <div className="flex justify-between mb-4">
-                <Link href="/enterprise" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                  Enterprise
-                </Link>
-                <Link href="/membership" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                  Membership
-                </Link>
-                <Link href="/download" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                  Download App
-                </Link>
-                <Link href="/signin" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                  Sign In
-                </Link>
-                <Link href="/contact" style={{ color: 'white' }} className="hover:opacity-80 transition-opacity">
-                  Contact
-                </Link>
-              </div>
-              
-              {/* Second row - copyright and terms */}
-              <div className="flex justify-between items-center">
-                <p style={{ color: 'white' }} className="text-sm">
-                  2025 Ambe All Rights Reserved
-                </p>
-                <Link href="/terms" style={{ color: 'white' }} className="text-sm hover:opacity-80 transition-opacity">
-                  Terms
-                </Link>
-              </div>
-            </div>
-          </footer>
+          <Footer />
         </div>
       </section>
 

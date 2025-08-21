@@ -4,6 +4,7 @@ module.exports = {
     './src/pages/**/*.{js,jsx}',
     './src/components/**/*.{js,jsx}',
     './src/app/**/*.{js,jsx}',
+    './src/lib/**/*.{js,jsx}',
   ],
   theme: {
     extend: {
@@ -25,7 +26,7 @@ module.exports = {
         'grid-box': '#F4F4F4',
       },
       fontFamily: {
-        'richmond': ['Playfair Display', 'serif'],
+        'richmond': ['Richmond', 'Playfair Display', 'serif'],
         'basis': ['Basis Grotesque Arabic Pro', 'sans-serif'],
       },
       fontSize: {
