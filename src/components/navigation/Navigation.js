@@ -33,6 +33,13 @@ export default function Navigation() {
             >
               Membership
             </Link>
+            <Link 
+              href="/resources" 
+              className="text-sm" 
+              style={{ color: pathname === '/resources' ? '#FFD3AC' : 'white' }}
+            >
+              Resources
+            </Link>
             <button className="border border-white px-6 py-2 rounded-full text-sm hover:bg-white hover:text-black transition-colors" style={{ color: 'white' }}>
               Download App
             </button>

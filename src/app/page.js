@@ -22,10 +22,10 @@ export default function Home() {
         {/* Video Background */}
         <VideoBackground />
         
-        {/* Dark Overlay - temporarily commented out for debugging */}
-        {/* <div className="absolute inset-0 bg-black bg-opacity-50 z-10"></div> */}
+        {/* Semi-transparent black overlay */}
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
         
-        <div className="relative w-full flex justify-center">
+        <div className="relative z-20 w-full flex justify-center">
           <div className="w-full max-w-7xl px-8 lg:px-16">
             <div className="max-w-3xl">
               <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
@@ -645,6 +645,8 @@ export default function Home() {
       {/* Quote Section and Footer - Combined with single video background */}
       <section className="relative">
         <VideoBackground />
+        {/* Semi-transparent black overlay */}
+        <div className="absolute inset-0 bg-black/40 z-[1]"></div>
         <div className="relative z-10">
           {/* Quote Section */}
           <div className="py-24">
