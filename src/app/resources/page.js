@@ -35,7 +35,7 @@ export default function Resources() {
               </p>
               <p className="text-white mb-8 text-lg font-light" style={{ color: 'white' }}>
                 Eating well, detoxifying the body, and minimizing exposure to toxins and plastics can 
-                significantly reduce these risks. Let's reframe health as an act of love.
+                significantly reduce these risks. Let&apos;s reframe health as an act of love.
               </p>
               
               <Button>
@@ -678,11 +678,11 @@ export default function Resources() {
                   <p className="text-center leading-relaxed" style={{ color: '#535353' }}>
                     All content and resources provided by AMBE are intended for **educational purposes only**. They do not constitute 
                     medical advice, diagnosis, or treatment. Any cleanse, detox program, or health regimen should be undertaken only under 
-                    the supervision of AMBE's team of qualified wellness practitioners or other vetted professionals with appropriate experience**.
+                    the supervision of AMBE&apos;s team of qualified wellness practitioners or other vetted professionals with appropriate experience**.
                   </p>
                   
                   <p className="text-center leading-relaxed" style={{ color: '#535353' }}>
-                    This ensures that your individual constitution ("Prakriti"), health status, and unique needs are addressed safely.
+                    This ensures that your individual constitution (&quot;Prakriti&quot;), health status, and unique needs are addressed safely.
                   </p>
                   
                   <p className="text-center leading-relaxed" style={{ color: '#535353' }}>

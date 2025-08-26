@@ -55,7 +55,7 @@ export default function Enterprise() {
                 We pioneered large-scale corporate wellness with a track record 
                 that speaks for itself. At American Apparel, we delivered 
                 personalized care to over 5,000 employees during one of the 
-                industry's most demanding periods—improving retention, morale, 
+                industry&apos;s most demanding periods—improving retention, morale, 
                 and culture across a highly diverse workforce. From warehouse 
                 workers who started their day with a Red Bull and a tamale to top 
                 executives, our tailored approach delivered immediate, 
@@ -118,7 +118,7 @@ export default function Enterprise() {
                 Custom Programs for Complex Needs
               </div>
               <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
-                We delivered during American Apparel's most turbulent period: 
+                We delivered during American Apparel&apos;s most turbulent period: 
                 leadership upheavals, union negotiations, layoffs. Our tailored 
                 wellness programs reduced friction and secured cohesion.
               </p>
@@ -189,7 +189,7 @@ export default function Enterprise() {
               </div>
               <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
                 Our dedicated community arts and wellness center near 
-                American Apparel's headquarters wasn't just an add-on—it was an 
+                American Apparel&apos;s headquarters wasn&apos;t just an add-on—it was an 
                 essential part of our approach. By bridging the workplace and the 
                 surrounding community, we deepened trust, built connection, and 
                 delivered lasting impact during a time of extraordinary change.
@@ -255,7 +255,7 @@ export default function Enterprise() {
                 so strong their former HR Director joined our team, validating our 
                 approach. As the world changed, so did we—adapting our proven 
                 model for both digital delivery and in-person community studios 
-                to ensure lasting, resilient wellness support wherever it's needed.
+                to ensure lasting, resilient wellness support wherever it&apos;s needed.
               </p>
             </div>
           </div>
@@ -334,7 +334,7 @@ export default function Enterprise() {
                 }}
               >
                 <div className={sectionTitleClasses + " mb-8"}>
-                  Let's Design a New Standard
+                  Let&apos;s Design a New Standard
                 </div>
                 <p className="text-xl mb-12 max-w-3xl mx-auto" style={{ color: '#535353' }}>
                   Ready to raise the bar? Contact us to see how Ambé can become your next-gen wellness partner—transforming 
