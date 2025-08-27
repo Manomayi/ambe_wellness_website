@@ -150,7 +150,14 @@ export default function Home() {
             {/* Column 1 */}
             <div className="text-center bg-white p-6">
               <div className="mb-6 h-20 sm:h-24 flex items-center justify-center">
-                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
+                <div className="relative w-14 sm:w-16 h-14 sm:h-16">
+                  <Image
+                    src="/images/time-tested/conflicted.png"
+                    alt="Conflicted"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               </div>
               <div className="text-lg sm:text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Conflicted by fad-driven advice and<br className="hidden sm:block" />
@@ -164,7 +171,14 @@ export default function Home() {
             {/* Column 2 */}
             <div className="text-center bg-white p-6">
               <div className="mb-6 h-20 sm:h-24 flex items-center justify-center">
-                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
+                <div className="relative w-14 sm:w-16 h-14 sm:h-16">
+                  <Image
+                    src="/images/time-tested/tired.png"
+                    alt="Tired"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               </div>
               <div className="text-lg sm:text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Tired of one-size-fits-all<br className="hidden sm:block" />
@@ -178,7 +192,14 @@ export default function Home() {
             {/* Column 3 */}
             <div className="text-center bg-white p-6">
               <div className="mb-6 h-20 sm:h-24 flex items-center justify-center">
-                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-lg border-2" style={{ borderColor: '#FFD3AC' }}></div>
+                <div className="relative w-14 sm:w-16 h-14 sm:h-16">
+                  <Image
+                    src="/images/time-tested/overcharged.png"
+                    alt="Overcharged"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               </div>
               <div className="text-lg sm:text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Being overcharged by underqualified,<br className="hidden sm:block" />
