@@ -14,7 +14,7 @@ export default function Enterprise() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-[75vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[75vh] flex items-center overflow-hidden py-20">
         {/* Video Background */}
         <VideoBackground />
         
@@ -22,12 +22,12 @@ export default function Enterprise() {
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         
         <div className="relative z-20 w-full flex justify-center">
-          <div className="w-full max-w-7xl px-8 lg:px-16">
+          <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
+              <div className={bannerTitleClasses + " mb-4 leading-tight text-3xl sm:text-4xl md:text-5xl xl:text-6xl"} style={{ color: 'white' }}>
                 Pioneers of Corporate Wellness
               </div>
-              <p className="text-white mb-8 text-xl font-light" style={{ color: 'white' }}>
+              <p className="text-white mb-8 text-base sm:text-lg md:text-xl font-light" style={{ color: 'white' }}>
                 We led the way before &apos;employee experience&apos; was a buzzword. When 
                 companies needed an edge, we delivered relief, support, and 
                 transformative wellness for everyone—from the loading dock to the 
@@ -43,15 +43,15 @@ export default function Enterprise() {
       </section>
 
       {/* Proven Track Record Section */}
-      <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex items-center gap-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 xl:gap-16">
             {/* Left Content */}
-            <div className="flex-1">
-              <div className={sectionTitleClasses + " mb-8"}>
+            <div className="w-full lg:flex-1">
+              <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Proven Track Record
               </div>
-              <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
+              <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 We pioneered large-scale corporate wellness with a track record 
                 that speaks for itself. At American Apparel, we delivered 
                 personalized care to over 5,000 employees during one of the 
@@ -64,9 +64,9 @@ export default function Enterprise() {
             </div>
 
             {/* Right Content - Doctor image with unique corner styling */}
-            <div className="flex-1 relative">
+            <div className="w-full lg:flex-1 relative">
               <div 
-                className="relative h-[300px] overflow-hidden"
+                className="relative h-[250px] sm:h-[300px] md:h-[350px] xl:h-[300px] overflow-hidden mx-auto max-w-md lg:max-w-none"
                 style={{
                   borderTopLeftRadius: '0px',      // Square (90 degrees)
                   borderTopRightRadius: '120px',   // Very rounded
@@ -88,13 +88,13 @@ export default function Enterprise() {
       </section>
 
       {/* Custom Programs Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex items-center gap-16">
+      <section className="py-12 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 xl:gap-16">
             {/* Left Content - Image with unique corner styling */}
-            <div className="flex-1 relative">
+            <div className="w-full lg:flex-1 relative">
               <div 
-                className="relative h-[300px] overflow-hidden"
+                className="relative h-[250px] sm:h-[300px] md:h-[350px] xl:h-[300px] overflow-hidden mx-auto max-w-md lg:max-w-none"
                 style={{
                   borderTopLeftRadius: '0px',      // Square (90 degrees)
                   borderTopRightRadius: '120px',   // Very rounded
@@ -113,11 +113,11 @@ export default function Enterprise() {
             </div>
 
             {/* Right Content */}
-            <div className="flex-1">
-              <div className={sectionTitleClasses + " mb-8"}>
+            <div className="w-full lg:flex-1">
+              <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Custom Programs for Complex Needs
               </div>
-              <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
+              <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 We delivered during American Apparel&apos;s most turbulent period: 
                 leadership upheavals, union negotiations, layoffs. Our tailored 
                 wellness programs reduced friction and secured cohesion.
@@ -128,36 +128,36 @@ export default function Enterprise() {
       </section>
 
       {/* Personalized Holistic Care Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
           {/* Title and Subtitle */}
-          <div className="text-center mb-16">
-            <div className={sectionTitleClasses + " mb-4"}>
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <div className={sectionTitleClasses + " mb-4 text-2xl sm:text-3xl md:text-4xl"}>
               Personalized, Holistic Care
             </div>
-            <p className="text-lg" style={{ color: '#535353' }}>
+            <p className="text-base sm:text-lg px-4 sm:px-0" style={{ color: '#535353' }}>
               Our integrated approach ensures equitable, accessible wellness for all.
             </p>
           </div>
 
           {/* Three Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Card 1 - Personalized Care */}
-            <div className="bg-white p-8 text-center">
-              <div className="mb-8 flex justify-center">
-                <span className="text-6xl" style={{ color: '#FFD3AC' }}>🤲</span>
+            <div className="bg-white p-6 sm:p-8 text-center">
+              <div className="mb-6 sm:mb-8 flex justify-center">
+                <span className="text-5xl sm:text-6xl" style={{ color: '#FFD3AC' }}>🤲</span>
               </div>
-              <div className="text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-xl sm:text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Personalized care for every employee - not cookie cutter
               </div>
             </div>
 
             {/* Card 2 - Multilingual Instructors */}
-            <div className="bg-white p-8 text-center">
-              <div className="mb-8 flex justify-center">
-                <span className="text-6xl" style={{ color: '#FFD3AC' }}>🗣️</span>
+            <div className="bg-white p-6 sm:p-8 text-center">
+              <div className="mb-6 sm:mb-8 flex justify-center">
+                <span className="text-5xl sm:text-6xl" style={{ color: '#FFD3AC' }}>🗣️</span>
               </div>
-              <div className="text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-xl sm:text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Multilingual instructors and culturally attuned offerings
               </div>
               <p className="text-base" style={{ color: '#535353' }}>
@@ -166,11 +166,11 @@ export default function Enterprise() {
             </div>
 
             {/* Card 3 - Holistic Modalities */}
-            <div className="bg-white p-8 text-center">
-              <div className="mb-8 flex justify-center">
-                <span className="text-6xl" style={{ color: '#FFD3AC' }}>🌿</span>
+            <div className="bg-white p-6 sm:p-8 text-center sm:col-span-2 lg:col-span-1">
+              <div className="mb-6 sm:mb-8 flex justify-center">
+                <span className="text-5xl sm:text-6xl" style={{ color: '#FFD3AC' }}>🌿</span>
               </div>
-              <div className="text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-xl sm:text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
                 A broad range of holistic modalities—from wellness tech to movement-based therapies
               </div>
             </div>
@@ -179,15 +179,15 @@ export default function Enterprise() {
       </section>
 
       {/* Community & Corporate Integration Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex items-center gap-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 xl:gap-16">
             {/* Left Content */}
-            <div className="flex-1">
-              <div className={sectionTitleClasses + " mb-8"}>
+            <div className="w-full lg:flex-1 order-2 lg:order-1">
+              <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Community & Corporate Integration
               </div>
-              <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
+              <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 Our dedicated community arts and wellness center near 
                 American Apparel&apos;s headquarters wasn&apos;t just an add-on—it was an 
                 essential part of our approach. By bridging the workplace and the 
@@ -197,9 +197,9 @@ export default function Enterprise() {
             </div>
 
             {/* Right Image */}
-            <div className="flex-1">
+            <div className="w-full lg:flex-1 order-1 lg:order-2">
               <div 
-                className="relative h-[300px] overflow-hidden"
+                className="relative h-[250px] sm:h-[300px] md:h-[350px] xl:h-[300px] overflow-hidden mx-auto max-w-md lg:max-w-none"
                 style={{
                   borderTopLeftRadius: '0px',      // Square (90 degrees)
                   borderTopRightRadius: '120px',   // Very rounded
@@ -221,13 +221,13 @@ export default function Enterprise() {
       </section>
 
       {/* Legacy & Evolution Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex items-center gap-16">
+      <section className="py-12 sm:py-16 md:py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 xl:gap-16">
             {/* Left Image */}
-            <div className="flex-1">
+            <div className="w-full lg:flex-1">
               <div 
-                className="relative h-[300px] overflow-hidden"
+                className="relative h-[250px] sm:h-[300px] md:h-[350px] xl:h-[300px] overflow-hidden mx-auto max-w-md lg:max-w-none"
                 style={{
                   borderTopLeftRadius: '120px',    // Very rounded
                   borderTopRightRadius: '0px',     // Square (90 degrees)
@@ -246,11 +246,11 @@ export default function Enterprise() {
             </div>
 
             {/* Right Content */}
-            <div className="flex-1">
-              <div className={sectionTitleClasses + " mb-8"}>
+            <div className="w-full lg:flex-1">
+              <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Legacy & Evolution
               </div>
-              <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
+              <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 Our work at American Apparel left a lasting mark. The impact was 
                 so strong their former HR Director joined our team, validating our 
                 approach. As the world changed, so did we—adapting our proven 
@@ -263,48 +263,48 @@ export default function Enterprise() {
       </section>
 
       {/* Bring Ambe to Your Company Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex items-center gap-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 xl:gap-16">
             {/* Left Content */}
-            <div className="flex-1 flex flex-col justify-center">
-              <div className={sectionTitleClasses + " mb-8"}>
+            <div className="w-full lg:flex-1 flex flex-col justify-center order-2 lg:order-1">
+              <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Bring Ambe to Your Company
               </div>
-              <p className="text-lg leading-relaxed" style={{ color: '#535353' }}>
+              <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 We offer high-impact, cost-effective wellness programs designed 
                 to deliver real results for organizations.
               </p>
             </div>
 
             {/* Right Benefits */}
-            <div className="flex-1 space-y-8">
+            <div className="w-full lg:flex-1 space-y-6 sm:space-y-8 order-1 lg:order-2">
               {/* Benefit 1 */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
-                  <span className="text-2xl">🎯</span>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+                  <span className="text-xl sm:text-2xl">🎯</span>
                 </div>
-                <p className="text-base leading-relaxed pt-2" style={{ color: '#535353' }}>
+                <p className="text-sm sm:text-base leading-relaxed pt-1 sm:pt-2" style={{ color: '#535353' }}>
                   Fully customized solutions tailored to your workforce
                 </p>
               </div>
 
               {/* Benefit 2 */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
-                  <span className="text-2xl">💰</span>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+                  <span className="text-xl sm:text-2xl">💰</span>
                 </div>
-                <p className="text-base leading-relaxed pt-2" style={{ color: '#535353' }}>
+                <p className="text-sm sm:text-base leading-relaxed pt-1 sm:pt-2" style={{ color: '#535353' }}>
                   Lean, high-return services that maximize value
                 </p>
               </div>
 
               {/* Benefit 3 */}
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
-                  <span className="text-2xl">👥</span>
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+                  <span className="text-xl sm:text-2xl">👥</span>
                 </div>
-                <p className="text-base leading-relaxed pt-2" style={{ color: '#535353' }}>
+                <p className="text-sm sm:text-base leading-relaxed pt-1 sm:pt-2" style={{ color: '#535353' }}>
                   Benefits that support your entire team, from frontline 
                   staff to top leadership
                 </p>
@@ -321,10 +321,10 @@ export default function Enterprise() {
         <div className="absolute inset-0 bg-black/40 z-[1]"></div>
         <div className="relative z-10">
           {/* Let's Design a New Standard Section */}
-          <div className="pt-24 pb-12">
-            <div className="max-w-5xl mx-auto px-8">
+          <div className="pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-10 md:pb-12">
+            <div className="max-w-5xl mx-auto px-6 sm:px-8">
               <div 
-                className="py-16 px-12 text-center"
+                className="py-8 sm:py-12 md:py-16 px-6 sm:px-8 md:px-12 text-center"
                 style={{ 
                   backgroundColor: 'rgba(244, 244, 244, 0.7)',
                   borderTopLeftRadius: '120px',
@@ -333,10 +333,10 @@ export default function Enterprise() {
                   borderBottomLeftRadius: '0px'
                 }}
               >
-                <div className={sectionTitleClasses + " mb-8"}>
+                <div className={sectionTitleClasses + " mb-6 sm:mb-8 text-2xl sm:text-3xl md:text-4xl"}>
                   Let&apos;s Design a New Standard
                 </div>
-                <p className="text-xl mb-12 max-w-3xl mx-auto" style={{ color: '#535353' }}>
+                <p className="text-base sm:text-lg md:text-xl mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto" style={{ color: '#535353' }}>
                   Ready to raise the bar? Contact us to see how Ambé can become your next-gen wellness partner—transforming 
                   your strategy to elevate culture, retention, performance, and ROI.
                 </p>
@@ -348,10 +348,10 @@ export default function Enterprise() {
           </div>
 
           {/* Contact Form Section */}
-          <div className="pb-20">
-            <div className="max-w-5xl mx-auto px-8">
+          <div className="pb-12 sm:pb-16 md:pb-20">
+            <div className="max-w-5xl mx-auto px-6 sm:px-8">
               <div 
-                className="py-16 px-12" 
+                className="py-8 sm:py-12 md:py-16 px-6 sm:px-8 md:px-12" 
                 style={{ 
                   backgroundColor: 'rgba(244, 244, 244, 0.7)',
                   borderTopLeftRadius: '120px',
@@ -359,10 +359,10 @@ export default function Enterprise() {
                   borderBottomRightRadius: '120px',
                   borderBottomLeftRadius: '0px'
                 }}>
-                <div className={sectionTitleClasses + " text-center mb-4"}>
+                <div className={sectionTitleClasses + " text-center mb-4 text-2xl sm:text-3xl md:text-4xl"}>
                   Contact
                 </div>
-                <p className="text-center mb-12" style={{ color: '#535353' }}>
+                <p className="text-center mb-8 sm:mb-10 md:mb-12 text-sm sm:text-base" style={{ color: '#535353' }}>
                   Drop us a line for a complementary guide for your team
                 </p>
                 

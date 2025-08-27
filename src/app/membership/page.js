@@ -14,7 +14,7 @@ export default function Membership() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-[75vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[75vh] flex items-center overflow-hidden py-20">
         {/* Video Background */}
         <VideoBackground />
         
@@ -22,12 +22,12 @@ export default function Membership() {
         <div className="absolute inset-0 bg-black/40 z-[1]"></div>
         
         <div className="relative z-10 w-full flex justify-center">
-          <div className="w-full max-w-7xl px-8 lg:px-16">
+          <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
+              <div className={bannerTitleClasses + " mb-4 leading-tight text-3xl sm:text-4xl md:text-5xl xl:text-6xl"} style={{ color: 'white' }}>
                 Your Wellness. Fully Covered.
               </div>
-              <p className="text-white mb-8 text-xl font-light" style={{ color: 'white' }}>
+              <p className="text-white mb-8 text-base sm:text-lg md:text-xl font-light" style={{ color: 'white' }}>
                 Unlimited care. One monthly price.
               </p>
               
@@ -40,59 +40,59 @@ export default function Membership() {
       </section>
 
       {/* What You Get Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
           {/* Title */}
-          <div className={sectionTitleClasses + " text-center mb-16"}>
+          <div className={sectionTitleClasses + " text-center mb-8 sm:mb-12 md:mb-16 text-2xl sm:text-3xl md:text-4xl"}>
             What You Get
           </div>
 
           {/* Icons Row */}
-          <div className="flex justify-center items-center gap-8 mb-16">
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8 mb-8 sm:mb-12 md:mb-16">
             {/* Personalized Wellness Plan */}
-            <div className="w-48 h-48 rounded-full bg-white flex flex-col items-center justify-center p-6">
-              <span className="text-4xl mb-2" style={{ color: '#FFD3AC' }}>📋</span>
-              <p className="text-base text-center" style={{ color: '#353535' }}>
+            <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-full bg-white flex flex-col items-center justify-center p-4 sm:p-5 md:p-6">
+              <span className="text-3xl sm:text-4xl mb-2" style={{ color: '#FFD3AC' }}>📋</span>
+              <p className="text-sm sm:text-base text-center" style={{ color: '#353535' }}>
                 Personalized<br />
-                Wellness Plan <span className="text-sm">✓</span>
+                Wellness Plan <span className="text-xs sm:text-sm">✓</span>
               </p>
             </div>
 
             {/* Unlimited Texting */}
-            <div className="w-48 h-48 rounded-full bg-white flex flex-col items-center justify-center p-6">
-              <span className="text-4xl mb-2" style={{ color: '#FFD3AC' }}>💬</span>
-              <p className="text-base text-center" style={{ color: '#353535' }}>
+            <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-full bg-white flex flex-col items-center justify-center p-4 sm:p-5 md:p-6">
+              <span className="text-3xl sm:text-4xl mb-2" style={{ color: '#FFD3AC' }}>💬</span>
+              <p className="text-sm sm:text-base text-center" style={{ color: '#353535' }}>
                 Unlimited<br />
-                Texting <span className="text-sm">✓</span>
+                Texting <span className="text-xs sm:text-sm">✓</span>
               </p>
             </div>
 
             {/* 1 Hour Video Call Monthly - Center/Highlighted */}
-            <div className="w-56 h-56 rounded-full flex flex-col items-center justify-center px-8" style={{ backgroundColor: '#FFD3AC' }}>
-              <span className="text-5xl mb-3" style={{ color: '#353535' }}>📱</span>
-              <p className="text-xl font-medium mb-2 text-center" style={{ color: '#353535' }}>
+            <div className="w-44 h-44 sm:w-48 sm:h-48 md:w-52 md:h-52 lg:w-56 lg:h-56 rounded-full flex flex-col items-center justify-center px-4 sm:px-6 md:px-8 order-first md:order-none" style={{ backgroundColor: '#FFD3AC' }}>
+              <span className="text-4xl sm:text-5xl mb-2 sm:mb-3" style={{ color: '#353535' }}>📱</span>
+              <p className="text-base sm:text-lg md:text-xl font-medium mb-1 sm:mb-2 text-center" style={{ color: '#353535' }}>
                 1 Hour Video Call<br />
                 Monthly
               </p>
-              <p className="text-base text-center" style={{ color: '#353535' }}>
+              <p className="text-sm sm:text-base text-center" style={{ color: '#353535' }}>
                 Get the attention you<br />
                 deserve
               </p>
             </div>
 
             {/* Remedies Included */}
-            <div className="w-48 h-48 rounded-full bg-white flex flex-col items-center justify-center p-6">
-              <span className="text-4xl mb-2" style={{ color: '#FFD3AC' }}>💊</span>
-              <p className="text-base text-center" style={{ color: '#353535' }}>
+            <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-full bg-white flex flex-col items-center justify-center p-4 sm:p-5 md:p-6">
+              <span className="text-3xl sm:text-4xl mb-2" style={{ color: '#FFD3AC' }}>💊</span>
+              <p className="text-sm sm:text-base text-center" style={{ color: '#353535' }}>
                 Remedies<br />
                 Included
               </p>
             </div>
 
             {/* Bath, Body, Food & Tea Perks */}
-            <div className="w-48 h-48 rounded-full bg-white flex flex-col items-center justify-center p-6">
-              <span className="text-4xl mb-2" style={{ color: '#FFD3AC' }}>🍵</span>
-              <p className="text-base text-center" style={{ color: '#353535' }}>
+            <div className="w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 rounded-full bg-white flex flex-col items-center justify-center p-4 sm:p-5 md:p-6">
+              <span className="text-3xl sm:text-4xl mb-2" style={{ color: '#FFD3AC' }}>🍵</span>
+              <p className="text-sm sm:text-base text-center" style={{ color: '#353535' }}>
                 Bath, Body,Food<br />
                 & Tea Perks
               </p>
@@ -100,52 +100,51 @@ export default function Membership() {
           </div>
 
           {/* Bottom Text */}
-          <div className="text-2xl font-light text-center" style={{ color: '#353535' }}>
+          <div className="text-lg sm:text-xl md:text-2xl font-light text-center px-4 sm:px-0" style={{ color: '#353535' }}>
             Always 20%+ Discount on vitamins and minerals.
           </div>
         </div>
       </section>
 
       {/* No Surprises Section */}
-      <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
           <div className="text-center">
-            <div className={sectionTitleClasses + " mb-8"}>
+            <div className={sectionTitleClasses + " mb-6 sm:mb-8 text-2xl sm:text-3xl md:text-4xl"}>
               No Surprises. Just Results
             </div>
-            <p className="text-lg" style={{ color: '#535353' }}>
-              Most wellness programs leave you with costly supplements and little support. We include everything you need so<br />
-              you can focus on feeling your best.
+            <p className="text-base sm:text-lg px-4 sm:px-8 md:px-0" style={{ color: '#535353' }}>
+              Most wellness programs leave you with costly supplements and little support. We include everything you need so you can focus on feeling your best.
             </p>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className="flex gap-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
             {/* Left Column - Pricing */}
-            <div className="flex-1">
-              <div className={sectionTitleClasses + " mb-12"}>
+            <div className="w-full lg:flex-1">
+              <div className={sectionTitleClasses + " mb-8 sm:mb-10 md:mb-12 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Pricing
               </div>
               
               {/* Ambe Membership Card */}
               <div 
-                className="p-8 rounded-2xl mb-8"
+                className="p-6 sm:p-8 rounded-2xl mb-8 max-w-md mx-auto lg:max-w-none"
                 style={{ backgroundColor: 'white' }}
               >
                 {/* Peach Header */}
                 <div 
-                  className="p-6 -m-8 mb-6 rounded-t-2xl text-center"
+                  className="p-4 sm:p-6 -m-6 sm:-m-8 mb-4 sm:mb-6 rounded-t-2xl text-center"
                   style={{ backgroundColor: '#FFD3AC' }}
                 >
-                  <div className="text-2xl font-medium mb-2" style={{ color: '#353535' }}>
+                  <div className="text-xl sm:text-2xl font-medium mb-2" style={{ color: '#353535' }}>
                     Ambe Membership
                   </div>
-                  <div className="text-3xl font-semibold" style={{ color: '#353535' }}>
-                    $150 sign-up and $50<span className="text-lg">/month</span>
+                  <div className="text-2xl sm:text-3xl font-semibold" style={{ color: '#353535' }}>
+                    $150 sign-up and $50<span className="text-base sm:text-lg">/month</span>
                   </div>
                 </div>
 
@@ -180,19 +179,19 @@ export default function Membership() {
             </div>
 
             {/* Right Column - Pay As You Like */}
-            <div className="flex-1">
-              <div className={sectionTitleClasses + " mb-12"}>
+            <div className="w-full lg:flex-1">
+              <div className={sectionTitleClasses + " mb-8 sm:mb-10 md:mb-12 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Pay-As-You-Like Plan
               </div>
 
               {/* Three Cards */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6 max-w-md mx-auto lg:max-w-none">
                 {/* Free first consult */}
                 <div 
-                  className="p-6 rounded-2xl flex items-center gap-6"
+                  className="p-4 sm:p-6 rounded-2xl flex items-center gap-4 sm:gap-6"
                   style={{ backgroundColor: 'white' }}
                 >
-                  <div className="w-20 h-20 flex items-center justify-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
                     <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                       <rect x="20" y="15" width="40" height="30" rx="2" stroke="#FFD3AC" strokeWidth="2"/>
                       <circle cx="30" cy="30" r="5" stroke="#FFD3AC" strokeWidth="2"/>
@@ -200,33 +199,33 @@ export default function Membership() {
                       <path d="M25 55 Q40 65 55 55" stroke="#FFD3AC" strokeWidth="2" fill="none"/>
                     </svg>
                   </div>
-                  <div className="text-xl" style={{ color: '#353535' }}>
+                  <div className="text-lg sm:text-xl" style={{ color: '#353535' }}>
                     Free first consult
                   </div>
                 </div>
 
                 {/* No text support */}
                 <div 
-                  className="p-6 rounded-2xl flex items-center gap-6"
+                  className="p-4 sm:p-6 rounded-2xl flex items-center gap-4 sm:gap-6"
                   style={{ backgroundColor: 'white' }}
                 >
-                  <div className="w-20 h-20 flex items-center justify-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
                     <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                       <rect x="20" y="25" width="40" height="30" rx="4" stroke="#FFD3AC" strokeWidth="2"/>
                       <path d="M30 35 H50 M30 40 H45 M30 45 H50" stroke="#FFD3AC" strokeWidth="2"/>
                     </svg>
                   </div>
-                  <div className="text-xl" style={{ color: '#353535' }}>
+                  <div className="text-lg sm:text-xl" style={{ color: '#353535' }}>
                     No text support
                   </div>
                 </div>
 
                 {/* Products purchased separately */}
                 <div 
-                  className="p-6 rounded-2xl flex items-center gap-6"
+                  className="p-4 sm:p-6 rounded-2xl flex items-center gap-4 sm:gap-6"
                   style={{ backgroundColor: 'white' }}
                 >
-                  <div className="w-20 h-20 flex items-center justify-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
                     <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                       <circle cx="35" cy="35" r="8" stroke="#FFD3AC" strokeWidth="2"/>
                       <text x="35" y="40" fill="#FFD3AC" textAnchor="middle" fontSize="16">$</text>
@@ -234,7 +233,7 @@ export default function Membership() {
                       <text x="45" y="50" fill="#FFD3AC" textAnchor="middle" fontSize="16">$</text>
                     </svg>
                   </div>
-                  <div className="text-xl" style={{ color: '#353535' }}>
+                  <div className="text-lg sm:text-xl" style={{ color: '#353535' }}>
                     Products purchased separately
                   </div>
                 </div>
@@ -245,28 +244,30 @@ export default function Membership() {
       </section>
 
       {/* Comparison Grid Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
-          <div className={sectionTitleClasses + " text-center mb-12"}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className={sectionTitleClasses + " text-center mb-8 sm:mb-10 md:mb-12 text-2xl sm:text-3xl md:text-4xl"}>
             Comparison Grid
           </div>
 
-          {/* Column Headers */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div></div>
-            <div className="text-center font-medium" style={{ color: '#353535' }}>
-              Ambe Membership
+          {/* Desktop View */}
+          <div className="hidden lg:block">
+            {/* Column Headers */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              <div></div>
+              <div className="text-center font-medium" style={{ color: '#353535' }}>
+                Ambe Membership
+              </div>
+              <div className="text-center font-medium" style={{ color: '#353535' }}>
+                Pay-As-You-Like
+              </div>
+              <div className="text-center font-medium" style={{ color: '#353535' }}>
+                TYPICAL WELLNESS PROGRAMS
+              </div>
             </div>
-            <div className="text-center font-medium" style={{ color: '#353535' }}>
-              Pay-As-You-Like
-            </div>
-            <div className="text-center font-medium" style={{ color: '#353535' }}>
-              TYPICAL WELLNESS PROGRAMS
-            </div>
-          </div>
 
-          {/* Comparison Rows */}
-          <div className="space-y-4">
+            {/* Comparison Rows */}
+            <div className="space-y-4">
             {/* Video Consults */}
             <div className="grid grid-cols-4 gap-4 items-center">
               <div className="font-medium" style={{ color: '#353535' }}>
@@ -363,28 +364,72 @@ export default function Membership() {
               </div>
             </div>
 
-            {/* Focus on Prevention */}
-            <div className="grid grid-cols-4 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Focus on Prevention
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span style={{ color: '#353535' }}>✓</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>✓</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
+              {/* Focus on Prevention */}
+              <div className="grid grid-cols-4 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Focus on Prevention
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span style={{ color: '#353535' }}>✓</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>✓</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>X</span>
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* Mobile/Tablet View - Cards */}
+          <div className="lg:hidden space-y-4 sm:space-y-6">
+            {/* Video Consults Card */}
+            <div className="bg-white p-4 rounded-lg">
+              <div className="font-medium mb-3 text-base" style={{ color: '#353535' }}>Video Consults</div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#535353' }}>Ambe:</span>
+                  <span className="text-sm font-medium" style={{ color: '#353535' }}>1 hr/month included</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#535353' }}>Pay-As-You-Like:</span>
+                  <span className="text-sm" style={{ color: '#535353' }}>$180-$400/hr</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#535353' }}>Typical:</span>
+                  <span className="text-sm" style={{ color: '#535353' }}>Not included</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Text Support Card */}
+            <div className="bg-white p-4 rounded-lg">
+              <div className="font-medium mb-3 text-base" style={{ color: '#353535' }}>Unlimited Text Support</div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#535353' }}>Ambe:</span>
+                  <span className="text-sm font-medium" style={{ color: '#353535' }}>✓</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#535353' }}>Pay-As-You-Like:</span>
+                  <span className="text-sm" style={{ color: '#535353' }}>Limited</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: '#535353' }}>Typical:</span>
+                  <span className="text-sm" style={{ color: '#535353' }}>Not included</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Other comparison cards would go here... */}
           </div>
         </div>
       </section>
 
       {/* Professional Comparison Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8 lg:px-16">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 overflow-x-auto">
           {/* Header Row */}
           <div className="grid grid-cols-4 gap-0">
             <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
@@ -581,10 +626,10 @@ export default function Membership() {
         <div className="absolute inset-0 bg-black/40 z-[1]"></div>
         <div className="relative z-10">
           {/* Ready to Feel Your Best Section */}
-          <div className="pt-24 pb-8">
-            <div className="max-w-5xl mx-auto px-8">
+          <div className="pt-16 sm:pt-20 md:pt-24 pb-6 sm:pb-8">
+            <div className="max-w-5xl mx-auto px-6 sm:px-8">
               <div 
-                className="py-10 px-12 text-center"
+                className="py-8 sm:py-10 px-6 sm:px-8 md:px-12 text-center"
                 style={{ 
                   backgroundColor: 'rgba(244, 244, 244, 0.7)',
                   borderTopLeftRadius: '120px',
@@ -593,10 +638,10 @@ export default function Membership() {
                   borderBottomLeftRadius: '0px'
                 }}
               >
-                <div className={sectionTitleClasses + " mb-6"}>
+                <div className={sectionTitleClasses + " mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl"}>
                   Ready to Feel Your Best?
                 </div>
-                <p className="text-xl mb-8" style={{ color: '#535353' }}>
+                <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8" style={{ color: '#535353' }}>
                   Join the Ambe Membership for personalized, all-inclusive care.
                 </p>
                 <Button>
@@ -607,8 +652,8 @@ export default function Membership() {
           </div>
 
           {/* Everyone Deserves Access Text */}
-          <div className="text-center pt-8 pb-16">
-            <p className="text-2xl" style={{ color: 'white' }}>
+          <div className="text-center pt-6 sm:pt-8 pb-12 sm:pb-16 px-6">
+            <p className="text-lg sm:text-xl md:text-2xl" style={{ color: 'white' }}>
               Everyone deserves access to care, no matter their budget
             </p>
           </div>

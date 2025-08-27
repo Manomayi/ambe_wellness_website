@@ -14,7 +14,7 @@ export default function Resources() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative h-[75vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[75vh] flex items-center overflow-hidden py-20">
         {/* Video Background */}
         <VideoBackground />
         
@@ -22,18 +22,18 @@ export default function Resources() {
         <div className="absolute inset-0 bg-black/40 z-[1]"></div>
         
         <div className="relative z-10 w-full flex justify-center">
-          <div className="w-full max-w-7xl px-8 lg:px-16">
+          <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className={bannerTitleClasses + " mb-6 leading-tight"} style={{ color: 'white' }}>
+              <div className={bannerTitleClasses + " mb-6 leading-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"} style={{ color: 'white' }}>
                 If you think living healthy is expensive, try living unhealthy.
               </div>
-              <p className="text-white mb-6 text-lg font-light leading-relaxed" style={{ color: 'white' }}>
+              <p className="text-white mb-6 text-sm sm:text-base md:text-lg font-light leading-relaxed" style={{ color: 'white' }}>
                 Self-care is the highest expression of love for yourself, your family, your pets. Prevention is king. 
                 At Ambé, we believe that care begins before illness takes over. Many chronic diseases—from 
                 diabetes and kidney failure to inflammation, cancer, autoimmunity, and parasitic infections—are 
                 preventable.
               </p>
-              <p className="text-white mb-8 text-lg font-light" style={{ color: 'white' }}>
+              <p className="text-white mb-8 text-sm sm:text-base md:text-lg font-light" style={{ color: 'white' }}>
                 Eating well, detoxifying the body, and minimizing exposure to toxins and plastics can 
                 significantly reduce these risks. Let&apos;s reframe health as an act of love.
               </p>
@@ -47,17 +47,17 @@ export default function Resources() {
       </section>
 
       {/* Health Priorities Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8">
-          <div className={sectionTitleClasses + " text-center mb-12"}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          <div className={sectionTitleClasses + " text-center mb-8 sm:mb-10 md:mb-12 text-xl sm:text-2xl md:text-3xl lg:text-4xl px-4"}>
             Health begins with priorities that sustain life:
           </div>
           
           {/* Grid of health priorities */}
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-10 md:mb-12">
             {/* Air Card */}
-            <div className="bg-white rounded-lg p-8">
-              <div className="text-xl font-semibold mb-6 px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+            <div className="bg-white rounded-lg p-6 sm:p-8">
+              <div className="text-base sm:text-lg md:text-xl font-semibold mb-4 sm:mb-6 px-3 sm:px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
                 Air - Survival: ~3 Minutes
               </div>
               
@@ -107,8 +107,8 @@ export default function Resources() {
             </div>
 
             {/* Water Card */}
-            <div className="bg-white rounded-lg p-8">
-              <div className="text-xl font-semibold mb-6 px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+            <div className="bg-white rounded-lg p-6 sm:p-8">
+              <div className="text-base sm:text-lg md:text-xl font-semibold mb-4 sm:mb-6 px-3 sm:px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
                 Water - Survival: 3-5 Days
               </div>
               
@@ -155,8 +155,8 @@ export default function Resources() {
             </div>
 
             {/* Food Card */}
-            <div className="bg-white rounded-lg p-8">
-              <div className="text-xl font-semibold mb-6 px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+            <div className="bg-white rounded-lg p-6 sm:p-8">
+              <div className="text-base sm:text-lg md:text-xl font-semibold mb-4 sm:mb-6 px-3 sm:px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
                 Food - Survival: 2-3 Months
               </div>
               
@@ -203,8 +203,8 @@ export default function Resources() {
             </div>
 
             {/* Environment Card */}
-            <div className="bg-white rounded-lg p-8">
-              <div className="text-xl font-semibold mb-6 px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+            <div className="bg-white rounded-lg p-6 sm:p-8">
+              <div className="text-base sm:text-lg md:text-xl font-semibold mb-4 sm:mb-6 px-3 sm:px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
                 Environment - Chronic Impact
               </div>
               
@@ -252,7 +252,7 @@ export default function Resources() {
           </div>
 
           {/* Mind & Emotions Card - Full Width */}
-          <div className="bg-white rounded-lg p-8 max-w-3xl mx-auto mb-12">
+          <div className="bg-white rounded-lg p-6 sm:p-8 max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12">
             <div className="text-xl font-semibold mb-6 px-4 py-2 rounded text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
               Mind & Emotions - Lifelong Impact
             </div>
@@ -309,21 +309,21 @@ export default function Resources() {
       </section>
 
       {/* Guide Library Section */}
-      <section className="py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-8">
-          <div className={sectionTitleClasses + " text-center mb-12"}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          <div className={sectionTitleClasses + " text-center mb-8 sm:mb-10 md:mb-12 text-xl sm:text-2xl md:text-3xl lg:text-4xl px-4"}>
             Guide Library
           </div>
           
           {/* Grid of guide cards */}
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Body & Personal Care */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">🧴</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">🧴</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Body & Personal Care
                 </div>
               </div>
@@ -356,12 +356,12 @@ export default function Resources() {
             </div>
 
             {/* Food & Nutrition */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">🍕</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">🍕</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Food & Nutrition
                 </div>
               </div>
@@ -394,12 +394,12 @@ export default function Resources() {
             </div>
 
             {/* Home & Environmental Safety */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">🏠</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">🏠</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Home & Environmental Safety
                 </div>
               </div>
@@ -432,12 +432,12 @@ export default function Resources() {
             </div>
 
             {/* Pets: Safe Nutrition */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">🐕</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">🐕</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Pets: Safe Nutrition
                 </div>
               </div>
@@ -470,12 +470,12 @@ export default function Resources() {
             </div>
 
             {/* Cleansing & Detox Protocols */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">🧘</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">🧘</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Cleansing & Detox Protocols
                 </div>
               </div>
@@ -508,12 +508,12 @@ export default function Resources() {
             </div>
 
             {/* Fasting & Autophagy */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">⏱️</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">⏱️</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Fasting & Autophagy
                 </div>
               </div>
@@ -536,12 +536,12 @@ export default function Resources() {
             </div>
 
             {/* Pharmaceutical Risks */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">💊</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">💊</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Pharmaceutical Risks
                 </div>
               </div>
@@ -574,12 +574,12 @@ export default function Resources() {
             </div>
 
             {/* Global Healing & Retreat Centers */}
-            <div className="bg-white rounded-lg p-8">
+            <div className="bg-white rounded-lg p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                  <span className="text-2xl">🌍</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-xl sm:text-2xl">🌍</span>
                 </div>
-                <div className="text-xl font-semibold" style={{ color: '#353535' }}>
+                <div className="text-lg sm:text-xl font-semibold" style={{ color: '#353535' }}>
                   Global Healing & Retreat Centers
                 </div>
               </div>
@@ -624,33 +624,33 @@ export default function Resources() {
         
         <div className="relative z-10">
           {/* Logo Circles Section */}
-          <div className="py-24">
-            <div className="max-w-5xl mx-auto px-8">
-              <div className="flex justify-center items-center gap-20">
+          <div className="py-16 sm:py-20 md:py-24">
+            <div className="max-w-5xl mx-auto px-6 sm:px-8">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-8 sm:gap-12 md:gap-16 lg:gap-20">
                 {/* Yuka Logo - White Circle */}
-                <div className="w-40 h-40 rounded-full bg-white flex items-center justify-center shadow-lg">
+                <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full bg-white flex items-center justify-center shadow-lg">
                   <img 
                     src="/yuka.png" 
                     alt="Yuka"
-                    className="w-32 h-32 object-contain"
+                    className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
                   />
                 </div>
                 
                 {/* Picky Logo - With circular mask */}
-                <div className="w-40 h-40 rounded-full overflow-hidden flex items-center justify-center">
+                <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full overflow-hidden flex items-center justify-center">
                   <img 
                     src="/picky.png" 
                     alt="Picky"
-                    className="w-40 h-40 object-cover"
+                    className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 object-cover"
                   />
                 </div>
                 
                 {/* EWG Logo - White Circle */}
-                <div className="w-40 h-40 rounded-full bg-white flex items-center justify-center shadow-lg">
+                <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full bg-white flex items-center justify-center shadow-lg">
                   <img 
                     src="/ewg.png" 
                     alt="EWG"
-                    className="w-32 h-32 object-contain"
+                    className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
                   />
                 </div>
               </div>
@@ -658,10 +658,10 @@ export default function Resources() {
           </div>
           
           {/* Disclaimer Section */}
-          <div className="py-20">
-            <div className="max-w-7xl mx-auto px-8">
+          <div className="py-12 sm:py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-6 sm:px-8">
               <div 
-                className="py-10 px-12"
+                className="py-8 sm:py-10 px-6 sm:px-8 md:px-12"
                 style={{ 
                   backgroundColor: 'rgba(244, 244, 244, 0.9)',
                   borderTopLeftRadius: '120px',
@@ -670,22 +670,22 @@ export default function Resources() {
                   borderBottomLeftRadius: '0px'
                 }}
               >
-                <div className={sectionTitleClasses + " text-center mb-8"}>
+                <div className={sectionTitleClasses + " text-center mb-6 sm:mb-8 text-xl sm:text-2xl md:text-3xl lg:text-4xl"}>
                   AMBE Wellness Disclaimer
                 </div>
                 
-                <div className="max-w-5xl mx-auto space-y-6">
-                  <p className="text-center leading-relaxed" style={{ color: '#535353' }}>
+                <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
+                  <p className="text-sm sm:text-base text-center leading-relaxed px-4" style={{ color: '#535353' }}>
                     All content and resources provided by AMBE are intended for **educational purposes only**. They do not constitute 
                     medical advice, diagnosis, or treatment. Any cleanse, detox program, or health regimen should be undertaken only under 
                     the supervision of AMBE&apos;s team of qualified wellness practitioners or other vetted professionals with appropriate experience**.
                   </p>
                   
-                  <p className="text-center leading-relaxed" style={{ color: '#535353' }}>
+                  <p className="text-sm sm:text-base text-center leading-relaxed px-4" style={{ color: '#535353' }}>
                     This ensures that your individual constitution (&quot;Prakriti&quot;), health status, and unique needs are addressed safely.
                   </p>
                   
-                  <p className="text-center leading-relaxed" style={{ color: '#535353' }}>
+                  <p className="text-sm sm:text-base text-center leading-relaxed px-4" style={{ color: '#535353' }}>
                     Improper or unsupervised application of these protocols can lead to harm. Always consult your licensed healthcare provider 
                     before starting any new wellness or cleansing program. By using AMBE resources, you acknowledge and 
                     accept that you are responsible for your own health decisions.
