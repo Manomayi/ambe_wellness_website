@@ -422,7 +422,14 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Dr. Smita Bhatia */}
             <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
+                <Image
+                  src="/images/doctors/smita_bhatia.png"
+                  alt="Dr. Smita Bhatia"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
                 Dr. Smita Bhatia
               </div>
@@ -441,7 +448,14 @@ export default function Home() {
 
             {/* Dr. Jeremy Stone */}
             <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
+                <Image
+                  src="/images/doctors/jeremy_stone.png"
+                  alt="Dr. Jeremy Stone"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
                 Dr. Jeremy Stone
               </div>
@@ -463,7 +477,14 @@ export default function Home() {
 
             {/* Dr. Anandibai Joshi */}
             <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
+                <Image
+                  src="/images/doctors/anandibai_joshi.png"
+                  alt="Dr. Anandibai Joshi"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
                 Dr. Anandibai Joshi
               </div>
@@ -482,7 +503,14 @@ export default function Home() {
 
             {/* Dr. Indira Hinduja */}
             <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
+                <Image
+                  src="/images/doctors/indira_hinduja.png"
+                  alt="Dr. Indira Hinduja"
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
                 Dr. Indira Hinduja
               </div>
