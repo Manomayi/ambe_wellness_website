@@ -4,6 +4,16 @@ import "./globals.css";
 export const metadata = {
   title: "Ambe Wellness",
   description: "We care about your health and wellness",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/leaf.png",
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+  },
 };
 
 export default function RootLayout({ children }) {

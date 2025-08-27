@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Prevent horizontal scroll on mobile */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 /* Import Richmond Text fonts - for section titles */
 @font-face {
   font-family: 'Richmond';
