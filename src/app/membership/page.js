@@ -429,9 +429,11 @@ export default function Membership() {
 
       {/* Professional Comparison Section */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 overflow-x-auto">
-          {/* Header Row */}
-          <div className="grid grid-cols-4 gap-0">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          {/* Desktop Grid View */}
+          <div className="hidden lg:block overflow-x-auto">
+            {/* Header Row */}
+            <div className="grid grid-cols-4 gap-0">
             <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
               <span className="font-medium text-sm" style={{ color: '#353535' }}>Feature/Training Area</span>
             </div>
@@ -614,6 +616,142 @@ export default function Membership() {
             </div>
             <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
               <span className="text-xs" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
+            </div>
+          </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden space-y-6">
+            <div className={sectionTitleClasses + " text-center mb-6 text-xl sm:text-2xl"}>
+              Professional Comparison
+            </div>
+            
+            {/* Educational Pathway Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                Educational Pathway
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Varies widely (certificate to degree)</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Governing Body Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                Governing Body / License
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>None or limited (not legally protected)</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Focus of Training Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                Focus of Training
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>General nutrition, food science</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Training in Herbs Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                Training in Herbs & Botanicals
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Minimal to none</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional cards for remaining categories - showing a few more for completeness */}
+            
+            {/* View of Food Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                View of Food
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Macronutrients & calories</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Food as medicine, categorized by qualities, energetics, season</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Time-Tested Tradition Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                Time-Tested Tradition
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Modern (~50-100 years of development)</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Scientific framework from 20th century</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

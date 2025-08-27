@@ -145,9 +145,15 @@ export default function Enterprise() {
             {/* Card 1 - Personalized Care */}
             <div className="bg-white p-6 sm:p-8 text-center">
               <div className="mb-6 sm:mb-8 flex justify-center">
-                <span className="text-5xl sm:text-6xl" style={{ color: '#FFD3AC' }}>🤲</span>
+                <Image
+                  src="/images/enterprise/holistic-care-1.png"
+                  alt="Personalized care"
+                  width={60}
+                  height={60}
+                  className="w-12 h-12 sm:w-14 sm:h-14"
+                />
               </div>
-              <div className="text-xl sm:text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-lg sm:text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Personalized care for every employee - not cookie cutter
               </div>
             </div>
@@ -155,12 +161,18 @@ export default function Enterprise() {
             {/* Card 2 - Multilingual Instructors */}
             <div className="bg-white p-6 sm:p-8 text-center">
               <div className="mb-6 sm:mb-8 flex justify-center">
-                <span className="text-5xl sm:text-6xl" style={{ color: '#FFD3AC' }}>🗣️</span>
+                <Image
+                  src="/images/enterprise/holistic-care-2.png"
+                  alt="Multilingual instructors"
+                  width={60}
+                  height={60}
+                  className="w-12 h-12 sm:w-14 sm:h-14"
+                />
               </div>
-              <div className="text-xl sm:text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-lg sm:text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 Multilingual instructors and culturally attuned offerings
               </div>
-              <p className="text-base" style={{ color: '#535353' }}>
+              <p className="text-sm" style={{ color: '#535353' }}>
                 (including classes in Mandarin, Spanish, and more)
               </p>
             </div>
@@ -168,9 +180,15 @@ export default function Enterprise() {
             {/* Card 3 - Holistic Modalities */}
             <div className="bg-white p-6 sm:p-8 text-center sm:col-span-2 lg:col-span-1">
               <div className="mb-6 sm:mb-8 flex justify-center">
-                <span className="text-5xl sm:text-6xl" style={{ color: '#FFD3AC' }}>🌿</span>
+                <Image
+                  src="/images/enterprise/holistic-care-3.png"
+                  alt="Holistic modalities"
+                  width={60}
+                  height={60}
+                  className="w-12 h-12 sm:w-14 sm:h-14"
+                />
               </div>
-              <div className="text-xl sm:text-2xl font-semibold mb-4" style={{ color: '#353535' }}>
+              <div className="text-lg sm:text-xl font-semibold mb-4" style={{ color: '#353535' }}>
                 A broad range of holistic modalities—from wellness tech to movement-based therapies
               </div>
             </div>
@@ -267,7 +285,7 @@ export default function Enterprise() {
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 xl:gap-16">
             {/* Left Content */}
-            <div className="w-full lg:flex-1 flex flex-col justify-center order-2 lg:order-1">
+            <div className="w-full lg:flex-1 flex flex-col justify-center order-1 lg:order-1">
               <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
                 Bring Ambe to Your Company
               </div>
@@ -278,33 +296,51 @@ export default function Enterprise() {
             </div>
 
             {/* Right Benefits */}
-            <div className="w-full lg:flex-1 space-y-6 sm:space-y-8 order-1 lg:order-2">
+            <div className="w-full lg:flex-1 space-y-6 sm:space-y-8 order-2 lg:order-2">
               {/* Benefit 1 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
-                  <span className="text-xl sm:text-2xl">🎯</span>
+                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+                  <Image
+                    src="/images/enterprise/bring-ambe-1.png"
+                    alt="Customized solutions"
+                    width={64}
+                    height={64}
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                  />
                 </div>
-                <p className="text-sm sm:text-base leading-relaxed pt-1 sm:pt-2" style={{ color: '#535353' }}>
+                <p className="text-sm sm:text-base leading-relaxed pt-2 sm:pt-3" style={{ color: '#535353' }}>
                   Fully customized solutions tailored to your workforce
                 </p>
               </div>
 
               {/* Benefit 2 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
-                  <span className="text-xl sm:text-2xl">💰</span>
+                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+                  <Image
+                    src="/images/enterprise/bring-ambe-2.png"
+                    alt="High-return services"
+                    width={64}
+                    height={64}
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                  />
                 </div>
-                <p className="text-sm sm:text-base leading-relaxed pt-1 sm:pt-2" style={{ color: '#535353' }}>
+                <p className="text-sm sm:text-base leading-relaxed pt-2 sm:pt-3" style={{ color: '#535353' }}>
                   Lean, high-return services that maximize value
                 </p>
               </div>
 
               {/* Benefit 3 */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
-                  <span className="text-xl sm:text-2xl">👥</span>
+                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+                  <Image
+                    src="/images/enterprise/bring-ambe-3.png"
+                    alt="Team support"
+                    width={64}
+                    height={64}
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                  />
                 </div>
-                <p className="text-sm sm:text-base leading-relaxed pt-1 sm:pt-2" style={{ color: '#535353' }}>
+                <p className="text-sm sm:text-base leading-relaxed pt-2 sm:pt-3" style={{ color: '#535353' }}>
                   Benefits that support your entire team, from frontline 
                   staff to top leadership
                 </p>

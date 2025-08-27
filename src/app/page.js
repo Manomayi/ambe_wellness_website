@@ -532,7 +532,7 @@ export default function Home() {
 
 
       {/* How We Compare Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-grid-box">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={sectionTitleClasses + " mb-4 text-2xl sm:text-3xl md:text-4xl"}>
             How We Compare
@@ -548,7 +548,7 @@ export default function Home() {
                 <tr>
                   <th className="text-left py-2 sm:py-4 pr-4 sm:pr-8 font-normal"></th>
                   <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">
-                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#FFD3AC]">AMBE</div>
+                    <Image src="/images/ambe_logo.png" alt="Ambe Logo" width={100} height={33} className="mx-auto" />
                   </th>
                   <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
                     OUR<br />COMPETITORS
@@ -670,22 +670,44 @@ export default function Home() {
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Tab Navigation */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 mb-8 sm:mb-12">
-            <button className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm mb-2" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
-              Do You Need Labs for HRT?
-            </button>
-            <button className="px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full text-xs sm:text-sm mb-2" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
-              Bio markers and holistic integration
-            </button>
-            <button className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm mb-2" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
-              How We Personalize Every Formula
-            </button>
-            <button className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm mb-2" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
-              Prevent contraindicated therapies with Pharmaceuticals
-            </button>
-            <button className="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm mb-2" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
-              Mislabeled Therapies to Watch Out For
-            </button>
+          <div className="w-full mb-8 sm:mb-12">
+            {/* Mobile: Vertical stack */}
+            <div className="md:hidden flex flex-col gap-2">
+              <button className="w-full px-4 py-2 rounded-full text-xs text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                Do You Need Labs for HRT?
+              </button>
+              <button className="w-full px-4 py-2.5 rounded-full text-xs text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+                Bio markers and holistic integration
+              </button>
+              <button className="w-full px-4 py-2 rounded-full text-xs text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                How We Personalize Every Formula
+              </button>
+              <button className="w-full px-4 py-2 rounded-full text-xs text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                Prevent contraindicated therapies with Pharmaceuticals
+              </button>
+              <button className="w-full px-4 py-2 rounded-full text-xs text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                Mislabeled Therapies to Watch Out For
+              </button>
+            </div>
+            
+            {/* Desktop: Single row with equal width */}
+            <div className="hidden md:flex justify-between gap-3 lg:gap-4">
+              <button className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                <span className="block whitespace-normal">Do You Need<br className="lg:hidden"/>Labs for HRT?</span>
+              </button>
+              <button className="flex-1 px-2 lg:px-4 py-2.5 lg:py-3 rounded-full text-sm text-center" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+                <span className="block whitespace-normal">Bio markers and<br className="lg:hidden"/>holistic integration</span>
+              </button>
+              <button className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                <span className="block whitespace-normal">How We Personalize<br className="lg:hidden"/>Every Formula</span>
+              </button>
+              <button className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                <span className="block whitespace-normal">Prevent contraindicated<br className="lg:hidden"/>therapies with<br className="lg:hidden"/>Pharmaceuticals</span>
+              </button>
+              <button className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center" style={{ backgroundColor: '#FFFFFF', color: '#353535' }}>
+                <span className="block whitespace-normal">Mislabeled Therapies<br className="lg:hidden"/>to Watch Out For</span>
+              </button>
+            </div>
           </div>
 
           {/* Content Section */}
