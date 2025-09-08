@@ -24,7 +24,7 @@ export default function Membership() {
         <div className="relative z-10 w-full flex justify-center">
           <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className={bannerTitleClasses + " mb-4 leading-tight text-3xl sm:text-4xl md:text-5xl xl:text-6xl"} style={{ color: 'white' }}>
+              <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
                 Your Wellness. Fully Covered.
               </div>
               <p className="text-white mb-8 text-base sm:text-lg md:text-xl font-light" style={{ color: 'white' }}>

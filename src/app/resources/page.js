@@ -24,7 +24,7 @@ export default function Resources() {
         <div className="relative z-10 w-full flex justify-center">
           <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className={bannerTitleClasses + " mb-6 leading-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"} style={{ color: 'white' }}>
+              <div className={bannerTitleClasses + " mb-6 leading-tight"} style={{ color: 'white' }}>
                 If you think living healthy is expensive, try living unhealthy.
               </div>
               <p className="text-white mb-6 text-sm sm:text-base md:text-lg font-light leading-relaxed" style={{ color: 'white' }}>
