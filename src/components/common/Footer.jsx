@@ -28,13 +28,25 @@ export default function Footer() {
         </div>
         
         {/* Second row - copyright and terms */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 mb-6">
           <p style={{ color: 'white' }} className="text-xs sm:text-sm text-center sm:text-left">
             2025 Ambe All Rights Reserved
           </p>
           <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity">
             Terms
           </Link>
+        </div>
+        
+        {/* Disclaimer text */}
+        <div className="pt-6 border-t border-gray-400">
+          <p style={{ color: 'white' }} className="text-xs leading-relaxed">
+            All content and resources provided by AMBE are intended for <strong>educational purposes only</strong>. They do not constitute medical advice, diagnosis, or treatment.
+            Any cleanse, detox program, or health regimen should be undertaken only under the supervision of AMBE's team of qualified wellness practitioners or 
+            other vetted professionals with appropriate experience. This ensures that your individual constitution ("Prakriti"), health status, 
+            and unique needs are addressed safely. Improper or unsupervised application of these protocols can lead to harm. Always consult your licensed healthcare 
+            provider before starting any new wellness or cleansing program. By using AMBE resources, you acknowledge and
+            accept that you are responsible for your own health decisions.
+          </p>
         </div>
       </div>
     </footer>

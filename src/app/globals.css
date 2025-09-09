@@ -132,7 +132,7 @@ h2, .h2 {
   font-weight: 500;
 }
 
-p, .body-text {
+.body-text {
   font-size: 16px;
   color: var(--ambe-body);
   line-height: 1.6;
@@ -151,4 +151,14 @@ input, textarea, select {
 
 .text-shadow {
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Hide scrollbar for wellness benefits section */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

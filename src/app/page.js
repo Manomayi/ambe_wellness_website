@@ -28,7 +28,7 @@ export default function Home() {
 
         <div className="relative z-20">
           {/* Original Banner Content */}
-          <div className="min-h-[75vh] flex items-center py-20">
+          <div className="pt-50 pb-6">
             <div className="w-full flex justify-center">
               <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
                 <div className="max-w-3xl">
@@ -66,11 +66,12 @@ export default function Home() {
           </div>
 
           {/* Trusted By Section - Now part of banner */}
-          <div className="pb-12 sm:pb-16 md:pb-20">
+          <div className="pb-8 sm:pb-10 md:pb-12">
             <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
               {/* Icons Section */}
-              <div className="mb-12 sm:mb-16 px-4">
-                <div className="grid grid-cols-5 sm:grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
+              <div className="mb-8 sm:mb-10 px-4">
+                {/* Desktop view - grid */}
+                <div className="hidden sm:grid grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
                   {/* Skin & Hair */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
@@ -81,7 +82,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Skin &<br/>Hair</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Skin &<br/>Hair</p>
                   </div>
                   
                   {/* Women's Health */}
@@ -94,7 +95,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Women's<br/>Health</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Women's<br/>Health</p>
                   </div>
                   
                   {/* Men's Health */}
@@ -107,7 +108,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Men's<br/>Health</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Men's<br/>Health</p>
                   </div>
                   
                   {/* Digestive Health */}
@@ -120,7 +121,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Digestive<br/>Health</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Digestive<br/>Health</p>
                   </div>
                   
                   {/* Musculoskeletal */}
@@ -133,7 +134,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Musculo-<br/>skeletal</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Musculo-<br/>skeletal</p>
                   </div>
                   
                   {/* Mental Health */}
@@ -146,7 +147,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Mental<br/>Health</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Mental<br/>Health</p>
                   </div>
                   
                   {/* Longevity */}
@@ -159,7 +160,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Longevity</p>
                   </div>
                   
                   {/* Weight Management */}
@@ -172,7 +173,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Weight<br/>Mgmt</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Weight<br/>Mgmt</p>
                   </div>
                   
                   {/* Hormone Health */}
@@ -185,7 +186,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
                   </div>
                   
                   {/* Wellness Guides */}
@@ -198,7 +199,177 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[5px] sm:text-[6px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                  </div>
+                </div>
+                
+                {/* Mobile view - scrollable with 2 items visible */}
+                <div className="sm:hidden">
+                  <div className="relative">
+                    <div 
+                      id="icon-scroll"
+                      className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                      style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+                      onScroll={(e) => {
+                        const scrollPosition = e.target.scrollLeft;
+                        const itemWidth = 83; // Single item width (80) + gap (3) 
+                        const currentPage = Math.round(scrollPosition / (itemWidth * 2)); // Groups of 2
+                        const dots = document.querySelectorAll('.icon-dot');
+                        dots.forEach((dot, index) => {
+                          if (index === currentPage) {
+                            dot.style.backgroundColor = 'white';
+                          } else {
+                            dot.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                          }
+                        });
+                      }}
+                    >
+                      {/* Skin & Hair */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/healthcare.png"
+                            alt="Skin & Hair"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Skin &<br/>Hair</p>
+                      </div>
+                      
+                      {/* Women's Health */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/healthcare (1).png"
+                            alt="Women's Health"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Women's<br/>Health</p>
+                      </div>
+                      
+                      {/* Men's Health */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/patient.png"
+                            alt="Men's Health"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Men's<br/>Health</p>
+                      </div>
+                      
+                      {/* Digestive Health */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/healthy-food.png"
+                            alt="Digestive Health"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Digestive<br/>Health</p>
+                      </div>
+                      
+                      {/* Musculoskeletal */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/broken-bone.png"
+                            alt="Musculoskeletal"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Musculo-<br/>skeletal</p>
+                      </div>
+                      
+                      {/* Mental Health */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/talk.png"
+                            alt="Mental Health"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Mental<br/>Health</p>
+                      </div>
+                      
+                      {/* Longevity */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/award.png"
+                            alt="Longevity"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                      </div>
+                      
+                      {/* Weight Management */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/plan.png"
+                            alt="Weight Management"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Weight<br/>Mgmt</p>
+                      </div>
+                      
+                      {/* Hormone Health */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/supplements.png"
+                            alt="Hormone Health"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                      </div>
+                      
+                      {/* Wellness Guides */}
+                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                        <div className="w-10 h-10 mb-1 relative">
+                          <Image
+                            src="/images/icons/herbal.png"
+                            alt="Wellness Guides"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                      </div>
+                    </div>
+                    
+                    {/* Navigation dots for mobile */}
+                    <div className="flex justify-center gap-2 mt-4">
+                      {[0, 1, 2, 3, 4].map((index) => (
+                        <div 
+                          key={index}
+                          className="icon-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
+                          style={{ backgroundColor: index === 0 ? 'white' : 'rgba(255, 255, 255, 0.5)' }}
+                          onClick={() => {
+                            const scroll = document.getElementById('icon-scroll');
+                            const itemWidth = 83; // Single item width + gap
+                            scroll.scrollTo({ left: index * itemWidth * 2, behavior: 'smooth' });
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -235,7 +406,7 @@ export default function Home() {
                     className="rounded-full p-4 sm:p-4 md:p-6 lg:p-6 xl:p-5 flex flex-col items-center w-[calc(100vw-32px)] md:w-[400px] lg:w-[400px] xl:w-[400px] max-w-[380px] md:max-w-none h-[calc(100vw-32px)] md:h-[400px] lg:h-[400px] xl:h-[400px] max-h-[380px] md:max-h-none"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-16 sm:w-16 md:w-20 lg:w-18 xl:w-16 h-16 sm:h-16 md:h-20 lg:h-18 xl:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden">
+                    <div className="relative w-20 sm:w-20 md:w-24 lg:w-24 xl:w-20 h-20 sm:h-20 md:h-24 lg:h-24 xl:h-20 rounded-full mb-3 flex-shrink-0 overflow-hidden">
                       <Image
                         src="/images/testimonials/david.png"
                         alt="David"
@@ -276,7 +447,7 @@ export default function Home() {
                     className="rounded-full p-4 sm:p-4 md:p-6 lg:p-6 xl:p-5 flex flex-col items-center w-[calc(100vw-32px)] md:w-[400px] lg:w-[400px] xl:w-[400px] max-w-[380px] md:max-w-none h-[calc(100vw-32px)] md:h-[400px] lg:h-[400px] xl:h-[400px] max-h-[380px] md:max-h-none"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-16 sm:w-16 md:w-20 lg:w-18 xl:w-16 h-16 sm:h-16 md:h-20 lg:h-18 xl:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden">
+                    <div className="relative w-20 sm:w-20 md:w-24 lg:w-24 xl:w-20 h-20 sm:h-20 md:h-24 lg:h-24 xl:h-20 rounded-full mb-3 flex-shrink-0 overflow-hidden">
                       <Image
                         src="/images/testimonials/joshua.png"
                         alt="Joshua"
@@ -316,7 +487,7 @@ export default function Home() {
                     className="rounded-full p-4 sm:p-4 md:p-6 lg:p-6 xl:p-5 flex flex-col items-center w-[calc(100vw-32px)] md:w-[400px] lg:w-[400px] xl:w-[400px] max-w-[380px] md:max-w-none h-[calc(100vw-32px)] md:h-[400px] lg:h-[400px] xl:h-[400px] max-h-[380px] md:max-h-none"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-16 sm:w-16 md:w-20 lg:w-18 xl:w-16 h-16 sm:h-16 md:h-20 lg:h-18 xl:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden">
+                    <div className="relative w-20 sm:w-20 md:w-24 lg:w-24 xl:w-20 h-20 sm:h-20 md:h-24 lg:h-24 xl:h-20 rounded-full mb-3 flex-shrink-0 overflow-hidden">
                       <Image
                         src="/images/testimonials/rosario.png"
                         alt="Rosario"
@@ -367,14 +538,79 @@ export default function Home() {
       </section>
 
       {/* Ayurveda Meets Epigenetics Section */}
-      <section style={{ backgroundColor: "#F4F4F4" }}>
-        <Image
-          src="/images/tired.png"
-          alt="Ayurveda Meets Epigenetics"
-          width={1400}
-          height={800}
-          className="w-full h-auto"
-        />
+      <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#E5E5E5" }}>
+        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+            {/* Left Box */}
+            <div className="flex-1 bg-white rounded-2xl p-8 sm:p-10">
+              <div className="text-2xl sm:text-3xl mb-3 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+                Ayurveda Meets Epigenetics
+              </div>
+              <div className="text-2xl sm:text-3xl mb-6 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+                The Future Of Healthcare
+              </div>
+              <p className="text-base mb-6" style={{ color: "#535353", lineHeight: "1.6" }}>
+                One system has guided humanity for 5,000 years. The other is at
+                science's frontier. Together, they transform what healthcare can be.
+              </p>
+              <div className="space-y-3 mb-6">
+                <div className="flex items-start">
+                  <span className="text-xl mr-3" style={{ color: "#FFD3AC" }}>✓</span>
+                  <p className="text-base" style={{ color: "#535353", lineHeight: "1.6" }}>
+                    Detect potential health issues years — even decades — before
+                    symptoms appear.
+                  </p>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-xl mr-3" style={{ color: "#FFD3AC" }}>✓</span>
+                  <p className="text-base" style={{ color: "#535353", lineHeight: "1.6" }}>
+                    Track in real time how your lifestyle impacts your cellular +
+                    mitochondrial health.
+                  </p>
+                </div>
+              </div>
+              <p className="text-base" style={{ color: "#353535" }}>
+                This isn't science fiction. This is Ambé."
+              </p>
+            </div>
+
+            {/* Right Box - Same height as left */}
+            <div className="flex-1 bg-white rounded-2xl p-8 sm:p-10 flex flex-col justify-between">
+              <div>
+                <div className="text-base mb-4 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+                  Your DNA Writes The Alphabet Your Epigenetics Write The Story
+                </div>
+                <p className="text-base mb-8" style={{ color: "#535353", lineHeight: "1.6" }}>
+                  Your genes don't decide your fate. Epigenetics — your lifestyle,
+                  environment, and consciousness — determine which genes switch on or
+                  off. That means your health future is in your hands.
+                </p>
+              </div>
+
+              <div className="p-6 sm:p-8" style={{ backgroundColor: "#FFD3AC", borderTopLeftRadius: "60px", borderBottomRightRadius: "60px" }}>
+                <p className="text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
+                  "In a twin double blind study , identical twins lived
+                  differently for just 8 weeks. The twin measurably
+                  lowered their biological age. Same DNA. Different
+                  choices. Different future."
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Book Free Consult Button - Centered Below */}
+          <div className="flex justify-center mt-12">
+            <button 
+              className="px-10 py-3 rounded-full text-base font-medium uppercase tracking-wide transition-all duration-300 hover:shadow-lg"
+              style={{ 
+                backgroundColor: "#FFD3AC", 
+                color: "#353535"
+              }}
+            >
+              BOOK FREE<br/>CONSULT NOW
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* Time Tested Section - Commented Out */}
@@ -565,7 +801,7 @@ export default function Home() {
               <tbody>
                 {/* Integrative Doctors */}
                 <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal">
+                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
                     Integrative Doctors
                   </td>
                   <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
@@ -573,26 +809,36 @@ export default function Home() {
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-charcoal text-xs sm:text-sm md:text-base">
-                    $ 500/Visit
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-xs sm:text-sm md:text-base text-charcoal">$ 500/Visit</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
                 </tr>
 
                 {/* 1 on 1 Video */}
                 <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal">
+                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
                     1 on 1 Video
                   </td>
                   <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
@@ -600,28 +846,36 @@ export default function Home() {
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-charcoal text-xs sm:text-sm md:text-base">
-                    $ 500/Visit
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-xs sm:text-sm md:text-base text-charcoal">$ 500/Visit</span>
+                    </div>
                   </td>
                   <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
                     <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
                 </tr>
 
                 {/* Unlimited Texting */}
                 <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal">
+                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
                     Unlimited Texting
                   </td>
                   <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
@@ -629,26 +883,36 @@ export default function Home() {
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
                 </tr>
 
                 {/* Time Tested */}
                 <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal">
+                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
                     Time Tested
                   </td>
                   <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
@@ -656,54 +920,33 @@ export default function Home() {
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-charcoal text-xs sm:text-sm md:text-base">
-                    Infrequently
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-xs sm:text-sm md:text-base text-charcoal">Infrequently</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
+                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
+                    </div>
                   </td>
                 </tr>
 
-                {/* Bio markers tested */}
-                <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal">
-                    Bio markers tested
-                  </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <span className="text-xs sm:text-sm text-charcoal">
-                        100 tests = $100
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-xs sm:text-sm text-charcoal">
-                    100 tests =<br />
-                    min $300
-                  </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-charcoal text-xs sm:text-sm md:text-base">
-                    $250
-                  </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
-                  </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
-                    </div>
-                  </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center text-base sm:text-lg md:text-xl text-charcoal">
-                    X
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -713,13 +956,86 @@ export default function Home() {
       {/* Certifications Section */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Image
-            src="/images/Frame 72.png"
-            alt="Ayurveda Meets Epigenetics"
-            width={1200}
-            height={400}
-            className="w-full h-auto object-contain"
-          />
+          {/* Three Column Headers */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                Backed By Expertise.
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                Certified For Safety.
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                Trusted By Design.
+              </div>
+            </div>
+          </div>
+
+          {/* Three Column Content - Responsive with Perfect Squares */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+            {/* ISO Standards */}
+            <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
+              <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square">
+                <div className="w-32 h-32 sm:w-28 md:w-32 lg:w-36 mb-4 flex items-center justify-center">
+                  <Image
+                    src="/images/iso.png"
+                    alt="ISO 22000"
+                    width={144}
+                    height={144}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+                <p className="text-sm sm:text-base" style={{ color: "#353535" }}>
+                  ISO 22000 & EU<br />
+                  Pharmacopoeia<br />
+                  herbal standards
+                </p>
+              </div>
+            </div>
+
+            {/* GDPR */}
+            <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
+              <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square">
+                <div className="w-32 h-32 sm:w-28 md:w-32 lg:w-36 mb-4 flex items-center justify-center">
+                  <Image
+                    src="/images/gdpr.png"
+                    alt="GDPR"
+                    width={144}
+                    height={144}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+                <p className="text-sm sm:text-base" style={{ color: "#353535" }}>
+                  GDPR-compliant<br />
+                  data privacy
+                </p>
+              </div>
+            </div>
+
+            {/* European Pharmacopoeia */}
+            <div className="mx-auto w-full max-w-[300px] sm:max-w-none sm:col-span-2 lg:col-span-1">
+              <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square sm:max-w-[300px] sm:mx-auto lg:max-w-none">
+                <div className="w-20 h-20 sm:w-20 md:w-24 lg:w-28 mb-4 flex items-center justify-center">
+                  <Image
+                    src="/images/europharm.png"
+                    alt="European Pharmacopoeia"
+                    width={112}
+                    height={112}
+                    className="object-contain w-full h-full"
+                  />
+                </div>
+                <p className="text-sm sm:text-base" style={{ color: "#353535" }}>
+                  Every supplement<br />
+                  screened for drug<br />
+                  interactions
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -830,7 +1146,7 @@ export default function Home() {
       {/* Steps Section - no title */}
       <section
         className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#F4F4F4" }}
+        style={{ backgroundColor: "#E5E5E5" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-8 sm:gap-y-12 md:gap-y-16">
@@ -947,7 +1263,7 @@ export default function Home() {
       </section>
 
       {/* Meet the Experts Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-gray-100">
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className={
@@ -1057,6 +1373,572 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Wellness Benefits Section */}
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-4">
+            {/* Left Arrow Indicator - always takes up space */}
+            <div className="hidden sm:flex flex-shrink-0 w-12">
+              <div 
+                id="wellness-arrow-left"
+                className="cursor-pointer transition-opacity duration-300"
+                style={{ opacity: "0", pointerEvents: "none" }}
+                onClick={() => {
+                  const scroll = document.getElementById('wellness-scroll');
+                  scroll.scrollBy({ left: -1032, behavior: 'smooth' });
+                }}
+              >
+                <div className="bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-shadow">
+                  <svg 
+                    className="w-6 h-6" 
+                    fill="none" 
+                    stroke="#353535" 
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="relative" style={{ maxWidth: "1008px", overflow: "hidden" }}>
+              {/* Scrollable Container - fixed width to show exactly 3 items */}
+              <div 
+                id="wellness-scroll"
+                className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide" 
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+                onScroll={(e) => {
+                  const scrollPosition = e.target.scrollLeft;
+                  const itemWidth = 320 + 24; // item width + gap
+                  
+                  // Update desktop dots (groups of 3)
+                  const currentPage = Math.round(scrollPosition / (itemWidth * 3));
+                  const dots = document.querySelectorAll('.wellness-dot');
+                  dots.forEach((dot, index) => {
+                    if (index === currentPage) {
+                      dot.style.backgroundColor = '#353535';
+                    } else {
+                      dot.style.backgroundColor = '#D0D0D0';
+                    }
+                  });
+                  
+                  // Update mobile dots (individual items)
+                  const currentItem = Math.round(scrollPosition / itemWidth);
+                  const mobileDots = document.querySelectorAll('.wellness-dot-mobile');
+                  mobileDots.forEach((dot, index) => {
+                    if (index === currentItem) {
+                      dot.style.backgroundColor = '#353535';
+                    } else {
+                      dot.style.backgroundColor = '#D0D0D0';
+                    }
+                  });
+                  
+                  // Show/hide arrows based on scroll position
+                  const rightArrow = document.getElementById('wellness-arrow');
+                  const leftArrow = document.getElementById('wellness-arrow-left');
+                  if (rightArrow) {
+                    const maxScroll = e.target.scrollWidth - e.target.clientWidth;
+                    if (scrollPosition >= maxScroll - 10) {
+                      rightArrow.style.opacity = '0';
+                      rightArrow.style.pointerEvents = 'none';
+                    } else {
+                      rightArrow.style.opacity = '1';
+                      rightArrow.style.pointerEvents = 'auto';
+                    }
+                  }
+                  if (leftArrow) {
+                    if (scrollPosition > 10) {
+                      leftArrow.style.opacity = '1';
+                      leftArrow.style.pointerEvents = 'auto';
+                    } else {
+                      leftArrow.style.opacity = '0';
+                      leftArrow.style.pointerEvents = 'none';
+                    }
+                  }
+                }}
+              >
+              {/* Hormone Health */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/healthcare.png"
+                      alt="Hormone Health"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Hormone Health
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Rebalance hormones naturally with expert guidance and personalized protocols for optimal wellness
+                  </p>
+                </div>
+              </div>
+
+              {/* Women's Health */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/patient.png"
+                      alt="Women's Health"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Women's Health
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Comprehensive care for every stage of a woman's life, from menstrual health to menopause
+                  </p>
+                </div>
+              </div>
+
+              {/* Men's Health */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/personalized.png"
+                      alt="Men's Health"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Men's Health
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Targeted support for men's unique health needs, from vitality to performance optimization
+                  </p>
+                </div>
+              </div>
+
+              {/* Musculoskeletal */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/broken-bone.png"
+                      alt="Musculoskeletal"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Musculoskeletal
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Address pain and mobility issues with integrative approaches to joint and muscle health
+                  </p>
+                </div>
+              </div>
+
+              {/* Diabetes & Metabolic */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/supplements.png"
+                      alt="Diabetes"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Diabetes, Blood & Autoimmune
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Manage blood sugar naturally and support immune balance with personalized nutrition
+                  </p>
+                </div>
+              </div>
+
+              {/* Oncology Support */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/clinic.png"
+                      alt="Oncology"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Oncology Support
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Complementary care to support healing and recovery through cancer treatment
+                  </p>
+                </div>
+              </div>
+
+              {/* Heart Health */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/trust.png"
+                      alt="Heart Health"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Infant Health Wellness Programs
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Nurture your child's health from the start with gentle, natural approaches
+                  </p>
+                </div>
+              </div>
+
+              {/* Home Detox */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/herbal.png"
+                      alt="Home Detox"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Home Detox & Herbal Health Guides
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Cleanse and rejuvenate with safe, effective home detox protocols
+                  </p>
+                </div>
+              </div>
+
+              {/* Safety */}
+              <div className="flex-none snap-start" style={{ width: "320px" }}>
+                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+                  <div className="w-16 h-16 mb-4">
+                    <Image
+                      src="/images/icons/healthy-food.png"
+                      alt="Safety"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
+                    Kidney, Bladder & UT, Heart, Stroke
+                  </div>
+                  <p className="text-sm" style={{ color: "#353535" }}>
+                    Comprehensive support for cardiovascular and urinary system health
+                  </p>
+                </div>
+              </div>
+            </div>
+            </div>
+            {/* Right Arrow Indicator - always takes up space */}
+            <div className="hidden sm:flex flex-shrink-0 w-12">
+              <div 
+                id="wellness-arrow"
+                className="cursor-pointer transition-opacity duration-300"
+                style={{ opacity: "1", pointerEvents: "auto" }}
+                onClick={() => {
+                  const scroll = document.getElementById('wellness-scroll');
+                  scroll.scrollBy({ left: 1032, behavior: 'smooth' });
+                }}
+              >
+                <div className="bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-shadow">
+                  <svg 
+                    className="w-6 h-6" 
+                    fill="none" 
+                    stroke="#353535" 
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Pagination Dots */}
+          <div className="flex justify-center gap-2 mt-8">
+              {/* Desktop dots - 3 for groups of 3 */}
+              <div className="hidden sm:flex gap-2">
+                <div 
+                  className="wellness-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
+                  style={{ backgroundColor: "#353535" }}
+                  onClick={() => {
+                    document.getElementById('wellness-scroll').scrollTo({ left: 0, behavior: 'smooth' });
+                  }}
+                />
+                <div 
+                  className="wellness-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
+                  style={{ backgroundColor: "#D0D0D0" }}
+                  onClick={() => {
+                    document.getElementById('wellness-scroll').scrollTo({ left: 1032, behavior: 'smooth' });
+                  }}
+                />
+                <div 
+                  className="wellness-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
+                  style={{ backgroundColor: "#D0D0D0" }}
+                  onClick={() => {
+                    document.getElementById('wellness-scroll').scrollTo({ left: 2064, behavior: 'smooth' });
+                  }}
+                />
+              </div>
+              {/* Mobile dots - 9 for individual items */}
+              <div className="flex sm:hidden gap-2">
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
+                  <div 
+                    key={index}
+                    className="wellness-dot-mobile w-2 h-2 rounded-full cursor-pointer transition-colors"
+                    style={{ backgroundColor: index === 0 ? "#353535" : "#D0D0D0" }}
+                    onClick={() => {
+                      document.getElementById('wellness-scroll').scrollTo({ left: index * 344, behavior: 'smooth' });
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+        </div>
+      </section>
+
+      {/* Professional Comparison Section - Copied from Membership Page */}
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          {/* Desktop Grid View */}
+          <div className="hidden lg:block overflow-x-auto">
+            {/* Header Row */}
+            <div className="grid grid-cols-4 gap-0">
+            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Feature/Training Area</span>
+            </div>
+            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist</span>
+            </div>
+            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian (RD)</span>
+            </div>
+            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor</span>
+            </div>
+          </div>
+
+          {/* Data Rows */}
+          <div className="grid grid-cols-4 gap-0">
+            {/* Educational Pathway */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Educational Pathway</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
+            </div>
+
+            {/* Governing Body */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Governing Body / License</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
+            </div>
+
+            {/* Focus of Training */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Focus of Training</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>General nutrition, food science</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
+            </div>
+
+            {/* Training in Herbs */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Minimal to none</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
+            </div>
+
+            {/* View of Food */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>View of Food</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Macronutrients & calories</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
+            </div>
+
+            {/* Personalization */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Personalization Approach</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Personalized to medical conditions</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
+            </div>
+
+            {/* Understanding Digestion */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Understanding of Digestion</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Detailed GI pathologies, fiber, enzyme responses</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
+            </div>
+
+            {/* Mind-Body Integration */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Mind-Body Integration</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Rarely addressed</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Minimal integration</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
+            </div>
+
+            {/* Spiritual Lens */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Not included</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Not included</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
+            </div>
+
+            {/* Treatment Modalities */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Treatment Modalities</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Medical nutrition therapy</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
+            </div>
+
+            {/* Scope of Practice */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Scope of Practice</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Wellness support</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Disease prevention & management</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Holistic care across mental, physical, and spiritual domains</span>
+            </div>
+
+            {/* Time-Tested Tradition */}
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="font-medium text-sm" style={{ color: '#353535' }}>Time-Tested Tradition</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Modern (~50-100 years of development)</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Scientific framework from 20th century</span>
+            </div>
+            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
+              <span className="text-xs" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
+            </div>
+          </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden space-y-6">
+            <div className={sectionTitleClasses + " text-center mb-6 text-xl sm:text-2xl"}>
+              Professional Comparison
+            </div>
+            
+            {/* Educational Pathway Card */}
+            <div className="bg-white rounded-lg p-4 sm:p-6">
+              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
+                Educational Pathway
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Varies widely (certificate to degree)</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</p>
+                </div>
+                <div>
+                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-xs mt-1" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional cards for mobile view - showing just a few for brevity */}
+          </div>
+        </div>
+      </section>
 
       {/* Education Section */}
       <section
@@ -1262,44 +2144,26 @@ export default function Home() {
 
                     {/* Attribution */}
                     <p
-                      className="text-right text-sm sm:text-base md:text-lg"
+                      className="text-right text-sm sm:text-base md:text-lg mb-8"
                       style={{ color: "#353535" }}
                     >
                       -Founder
+                    </p>
+                    
+                    {/* Ten trees text */}
+                    <p
+                      className="text-sm sm:text-base leading-relaxed text-center"
+                      style={{ color: "#353535" }}
+                    >
+                      Ten trees planted per member, per month = 120 trees per year
+                      per member. Our health depends on the health of Mother Nature — trees are proven to be the #1
+                      way to purify and nourish the environment and help avert.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Environmental Message Container */}
-            <div className="max-w-5xl mx-auto px-6 sm:px-8 mt-8 sm:mt-12 md:mt-16">
-              <div
-                className="rounded-2xl sm:rounded-3xl py-8 sm:py-10 md:py-12 px-6 sm:px-8 md:px-12"
-                style={{ backgroundColor: "rgba(244, 244, 244, 0.7)" }}
-              >
-                <p
-                  className="text-sm sm:text-base leading-relaxed text-center"
-                  style={{ color: "#353535" }}
-                >
-                  Ten trees planted per member, per month = 120 trees per year
-                  per member. Our health depends
-                  <br className="hidden md:block" />
-                  <span className="md:hidden">
-                    Ten trees planted per member, per month = 120 trees per year
-                    per member. Our health depends{" "}
-                  </span>
-                  on the health of Mother Nature — trees are proven to be the #1
-                  way to purify and nourish the
-                  <br className="hidden md:block" />
-                  <span className="md:hidden">
-                    on the health of Mother Nature — trees are proven to be the
-                    #1 way to purify and nourish the{" "}
-                  </span>
-                  environment and help avert.
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Footer */}
