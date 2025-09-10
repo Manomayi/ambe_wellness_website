@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Image from 'next/image';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
 import Navigation from '@/components/navigation/Navigation';
@@ -629,27 +630,33 @@ export default function Resources() {
               <div className="flex flex-col sm:flex-row justify-center items-center gap-8 sm:gap-12 md:gap-16 lg:gap-20">
                 {/* Yuka Logo - White Circle */}
                 <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full bg-white flex items-center justify-center shadow-lg">
-                  <img 
-                    src="/yuka.png" 
+                  <Image 
+                    src="/images/resources/yuka.png" 
                     alt="Yuka"
+                    width={128}
+                    height={128}
                     className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
                   />
                 </div>
                 
                 {/* Picky Logo - With circular mask */}
                 <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full overflow-hidden flex items-center justify-center">
-                  <img 
-                    src="/picky.png" 
+                  <Image 
+                    src="/images/resources/picky.png" 
                     alt="Picky"
+                    width={160}
+                    height={160}
                     className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 object-cover"
                   />
                 </div>
                 
                 {/* EWG Logo - White Circle */}
                 <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full bg-white flex items-center justify-center shadow-lg">
-                  <img 
-                    src="/ewg.png" 
+                  <Image 
+                    src="/images/resources/ewg.png" 
                     alt="EWG"
+                    width={128}
+                    height={128}
                     className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
                   />
                 </div>

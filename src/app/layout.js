@@ -7,7 +7,7 @@ export const metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/leaf.png",
+    apple: "/images/favicons/leaf.png",
   },
   viewport: {
     width: 'device-width',

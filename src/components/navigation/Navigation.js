@@ -16,7 +16,7 @@ export default function Navigation() {
             {/* Logo */}
             <Link href="/">
               <Image
-                src="/images/ambe_logo.png"
+                src="/images/logos/ambe_logo.png"
                 alt="AMBE"
                 width={100}
                 height={33}
@@ -89,7 +89,7 @@ export default function Navigation() {
           <div className="flex justify-between items-center px-4 py-4 border-b" style={{ borderColor: '#E5E5E5' }}>
             <Link href="/" onClick={() => setMobileMenuOpen(false)}>
               <Image
-                src="/images/ambe_logo.png"
+                src="/images/logos/ambe_logo.png"
                 alt="AMBE"
                 width={80}
                 height={27}

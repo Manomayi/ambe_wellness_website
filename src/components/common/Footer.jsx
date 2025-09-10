@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer className="py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8">
         {/* First row - navigation links */}
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0 mb-6 sm:mb-4">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 lg:gap-12 xl:justify-between xl:flex-1">

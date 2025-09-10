@@ -33,7 +33,7 @@ export default function Home() {
               <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
                 <div className="max-w-3xl">
                   <div
-                    className={bannerTitleClasses + " mb-2 leading-tight"}
+                    className={bannerTitleClasses + " leading-tight"}
                     style={{ color: "white" }}
                   >
                     Holistic Tele-Wellness
@@ -47,19 +47,19 @@ export default function Home() {
                     Traditional Vedic Medicine.
                   </p>
                   <p
-                    className="text-white text-sm sm:text-base font-bold"
+                    className="text-white text-sm sm:text-base md:text-lg lg:text-3xl font-bold"
                     style={{ color: "white" }}
                   >
                     Pay As You Want
                   </p>
                   <p
-                    className="text-white mb-6 sm:mb-8 text-sm sm:text-base font-bold"
+                    className="text-white mb-6 text-sm sm:text-base md:text-lg lg:text-xl font-bold"
                     style={{ color: "white" }}
                   >
                     Developed at Stanford
                   </p>
 
-                  <Button>BOOK NOW</Button>
+                  <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
                 </div>
               </div>
             </div>
@@ -76,130 +76,130 @@ export default function Home() {
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/healthcare.png"
+                        src="/images/icons/skin_hair.png"
                         alt="Skin & Hair"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Skin &<br/>Hair</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
                   </div>
                   
                   {/* Women's Health */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/healthcare (1).png"
+                        src="/images/icons/womens_health.png"
                         alt="Women's Health"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Women's<br/>Health</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
                   </div>
                   
                   {/* Men's Health */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/patient.png"
+                        src="/images/icons/mens_health.png"
                         alt="Men's Health"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Men's<br/>Health</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
                   </div>
                   
                   {/* Digestive Health */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/healthy-food.png"
+                        src="/images/icons/digestive_health.png"
                         alt="Digestive Health"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Digestive<br/>Health</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
                   </div>
                   
                   {/* Musculoskeletal */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/broken-bone.png"
+                        src="/images/icons/musculoskeletal.png"
                         alt="Musculoskeletal"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Musculo-<br/>skeletal</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
                   </div>
                   
                   {/* Mental Health */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/talk.png"
+                        src="/images/icons/mental_health.png"
                         alt="Mental Health"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Mental<br/>Health</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
                   </div>
                   
                   {/* Longevity */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/award.png"
+                        src="/images/icons/longevity.png"
                         alt="Longevity"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
                   </div>
                   
                   {/* Weight Management */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/plan.png"
+                        src="/images/icons/weight_mgmt.png"
                         alt="Weight Management"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Weight<br/>Mgmt</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
                   </div>
                   
                   {/* Hormone Health */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/supplements.png"
+                        src="/images/icons/hormone_health.png"
                         alt="Hormone Health"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
                   </div>
                   
                   {/* Wellness Guides */}
                   <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
-                        src="/images/icons/herbal.png"
+                        src="/images/icons/wellness_guides.png"
                         alt="Wellness Guides"
                         fill
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
                   </div>
                 </div>
                 
@@ -228,130 +228,130 @@ export default function Home() {
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/healthcare.png"
+                            src="/images/icons/skin_hair.png"
                             alt="Skin & Hair"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Skin &<br/>Hair</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
                       </div>
                       
                       {/* Women's Health */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/healthcare (1).png"
+                            src="/images/icons/womens_health.png"
                             alt="Women's Health"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Women's<br/>Health</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
                       </div>
                       
                       {/* Men's Health */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/patient.png"
+                            src="/images/icons/mens_health.png"
                             alt="Men's Health"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Men's<br/>Health</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
                       </div>
                       
                       {/* Digestive Health */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/healthy-food.png"
+                            src="/images/icons/digestive_health.png"
                             alt="Digestive Health"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Digestive<br/>Health</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
                       </div>
                       
                       {/* Musculoskeletal */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/broken-bone.png"
+                            src="/images/icons/musculoskeletal.png"
                             alt="Musculoskeletal"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Musculo-<br/>skeletal</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
                       </div>
                       
                       {/* Mental Health */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/talk.png"
+                            src="/images/icons/mental_health.png"
                             alt="Mental Health"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Mental<br/>Health</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
                       </div>
                       
                       {/* Longevity */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/award.png"
+                            src="/images/icons/longevity.png"
                             alt="Longevity"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
                       </div>
                       
                       {/* Weight Management */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/plan.png"
+                            src="/images/icons/weight_mgmt.png"
                             alt="Weight Management"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Weight<br/>Mgmt</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
                       </div>
                       
                       {/* Hormone Health */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/supplements.png"
+                            src="/images/icons/hormone_health.png"
                             alt="Hormone Health"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
                       </div>
                       
                       {/* Wellness Guides */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
-                            src="/images/icons/herbal.png"
+                            src="/images/icons/wellness_guides.png"
                             alt="Wellness Guides"
                             fill
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[12px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
                       </div>
                     </div>
                     
@@ -378,11 +378,11 @@ export default function Home() {
                 <div
                   className={
                     sectionTitleClasses +
-                    " mb-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+                    " mb-2 text-base md:text-lg lg:text-xl xl:text-2xl"
                   }
                   style={{ color: "white" }}
                 >
-                  Trusted by:
+                  Trusted By:
                 </div>
                 <div
                   className="font-bold mb-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl"
@@ -394,19 +394,19 @@ export default function Home() {
                   className="text-sm sm:text-base lg:text-lg"
                   style={{ color: "white" }}
                 >
-                  Pioneers In Corporate Wellness: A Better Way To Grow
+                  "Trusted by executives, frontline workers, and families alike"
                 </p>
               </div>
 
               {/* Testimonials Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
+              <div className="flex flex-col md:flex-row justify-center items-center gap-4 sm:gap-6 mb-12 sm:mb-16">
                 {/* David Testimonial */}
-                <div className="relative flex justify-center px-4 md:px-0">
+                <div className="flex justify-center">
                   <div
-                    className="rounded-full p-4 sm:p-4 md:p-6 lg:p-6 xl:p-5 flex flex-col items-center w-[calc(100vw-32px)] md:w-[400px] lg:w-[400px] xl:w-[400px] max-w-[380px] md:max-w-none h-[calc(100vw-32px)] md:h-[400px] lg:h-[400px] xl:h-[400px] max-h-[380px] md:max-h-none"
+                    className="rounded-full p-4 sm:p-5 md:p-6 flex flex-col items-center justify-center w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px]"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-20 sm:w-20 md:w-24 lg:w-24 xl:w-20 h-20 sm:h-20 md:h-24 lg:h-24 xl:h-20 rounded-full mb-3 flex-shrink-0 overflow-hidden">
+                    <div className="relative w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
                       <Image
                         src="/images/testimonials/david.png"
                         alt="David"
@@ -414,40 +414,34 @@ export default function Home() {
                         className="object-cover"
                       />
                     </div>
-                    <div
-                      className="text-sm sm:text-base md:text-lg font-semibold text-center mb-3 min-h-[2.5rem] sm:min-h-[3rem] flex items-center"
-                      style={{ color: "#353535" }}
-                    >
-                      Chief Strategy Officer,
-                      <br />
-                      National Tech Firm
-                    </div>
                     <p
-                      className="text-xs sm:text-sm text-center leading-relaxed flex-1 flex items-start px-2"
+                      className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      For the first time in 20 years of nonstop output, I found a
-                      wellness system that didn&apos;t just slow me down—it woke me
-                      up. Ambé&apos;s personalized protocols gave me energy I
-                      didn&apos;t know I was missing, and helped me show up sharper,
-                      calmer, and more focused than ever before.
+                      "Sharper focus in just weeks. Ambé gave me energy I didn't know I was missing"
                     </p>
                     <p
-                      className="text-center font-semibold mt-3 sm:mt-4 text-sm sm:text-base"
+                      className="text-sm text-center font-bold mb-1"
                       style={{ color: "#353535" }}
                     >
                       David
+                    </p>
+                    <p
+                      className="text-sm text-center"
+                      style={{ color: "#353535" }}
+                    >
+                      Chief Strategy Officer
                     </p>
                   </div>
                 </div>
 
                 {/* Joshua Testimonial */}
-                <div className="relative flex justify-center px-4 md:px-0">
+                <div className="flex justify-center">
                   <div
-                    className="rounded-full p-4 sm:p-4 md:p-6 lg:p-6 xl:p-5 flex flex-col items-center w-[calc(100vw-32px)] md:w-[400px] lg:w-[400px] xl:w-[400px] max-w-[380px] md:max-w-none h-[calc(100vw-32px)] md:h-[400px] lg:h-[400px] xl:h-[400px] max-h-[380px] md:max-h-none"
+                    className="rounded-full p-4 sm:p-5 md:p-6 flex flex-col items-center justify-center w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px]"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-20 sm:w-20 md:w-24 lg:w-24 xl:w-20 h-20 sm:h-20 md:h-24 lg:h-24 xl:h-20 rounded-full mb-3 flex-shrink-0 overflow-hidden">
+                    <div className="relative w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
                       <Image
                         src="/images/testimonials/joshua.png"
                         alt="Joshua"
@@ -455,39 +449,34 @@ export default function Home() {
                         className="object-cover"
                       />
                     </div>
-                    <div
-                      className="text-sm sm:text-base md:text-lg font-semibold text-center mb-3 min-h-[2.5rem] sm:min-h-[3rem] flex items-center"
-                      style={{ color: "#353535" }}
-                    >
-                      Operations Supervisor,
-                      <br />
-                      Regional Distribution Center
-                    </div>
                     <p
-                      className="text-xs sm:text-sm text-center leading-relaxed flex-1 flex items-start px-2"
+                      className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      Between shift work and stress, I was running on empty. Ambé
-                      didn&apos;t hand me a generic plan—they listened. My sleep,
-                      digestion, and moods have all leveled out. I finally feel in
-                      control of my health, and my team noticed the difference too.
+                      "My stress, digestion, and moods leveled out. I finally feel in control."
                     </p>
                     <p
-                      className="text-center font-semibold mt-3 sm:mt-4 text-sm sm:text-base"
+                      className="text-sm text-center font-bold mb-1"
                       style={{ color: "#353535" }}
                     >
                       Joshua
+                    </p>
+                    <p
+                      className="text-sm text-center"
+                      style={{ color: "#353535" }}
+                    >
+                      Operations Supervisor
                     </p>
                   </div>
                 </div>
 
                 {/* Rosario Testimonial */}
-                <div className="relative flex justify-center px-4 md:px-0 md:col-span-2 xl:col-span-1">
+                <div className="flex justify-center">
                   <div
-                    className="rounded-full p-4 sm:p-4 md:p-6 lg:p-6 xl:p-5 flex flex-col items-center w-[calc(100vw-32px)] md:w-[400px] lg:w-[400px] xl:w-[400px] max-w-[380px] md:max-w-none h-[calc(100vw-32px)] md:h-[400px] lg:h-[400px] xl:h-[400px] max-h-[380px] md:max-h-none"
+                    className="rounded-full p-4 sm:p-5 md:p-6 flex flex-col items-center justify-center w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px]"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-20 sm:w-20 md:w-24 lg:w-24 xl:w-20 h-20 sm:h-20 md:h-24 lg:h-24 xl:h-20 rounded-full mb-3 flex-shrink-0 overflow-hidden">
+                    <div className="relative w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
                       <Image
                         src="/images/testimonials/rosario.png"
                         alt="Rosario"
@@ -495,28 +484,23 @@ export default function Home() {
                         className="object-cover"
                       />
                     </div>
-                    <div
-                      className="text-sm sm:text-base md:text-lg font-semibold text-center mb-3 min-h-[2.5rem] sm:min-h-[3rem] flex items-center"
-                      style={{ color: "#353535" }}
-                    >
-                      Warehouse Associate,
-                      <br />
-                      National Retail Chain
-                    </div>
                     <p
-                      className="text-xs sm:text-sm text-center leading-relaxed flex-1 flex items-start px-2"
+                      className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      I never thought wellness was made for someone like me. Ambé
-                      changed that. They spoke my language, respected my time, and
-                      helped my body stop hurting every day. It&apos;s not just
-                      medicine—it&apos;s care that fits real life.
+                      "Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human."
                     </p>
                     <p
-                      className="text-center font-semibold mt-3 sm:mt-4 text-sm sm:text-base"
+                      className="text-sm text-center font-bold mb-1"
                       style={{ color: "#353535" }}
                     >
                       Rosario
+                    </p>
+                    <p
+                      className="text-sm text-center"
+                      style={{ color: "#353535" }}
+                    >
+                      Warehouse Associate
                     </p>
                   </div>
                 </div>
@@ -525,12 +509,14 @@ export default function Home() {
               {/* Bio-Markers Stats */}
               <div className="text-center px-4">
                 <p
-                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+                  className="text-base md:text-xl lg:text-2xl mb-6"
                   style={{ color: "white" }}
                 >
                   <span className="font-bold underline">55</span>{" "}
                   <span className="font-light">Million Bio-Markers analysed</span>
                 </p>
+                
+                <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
               </div>
             </div>
           </div>
@@ -551,7 +537,7 @@ export default function Home() {
               </div>
               <p className="text-base mb-6" style={{ color: "#535353", lineHeight: "1.6" }}>
                 One system has guided humanity for 5,000 years. The other is at
-                science's frontier. Together, they transform what healthcare can be.
+                science&apos;s frontier. Together, they transform what healthcare can be.
               </p>
               <div className="space-y-3 mb-6">
                 <div className="flex items-start">
@@ -570,7 +556,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-base" style={{ color: "#353535" }}>
-                This isn't science fiction. This is Ambé."
+                This isn&apos;t science fiction. This is Ambé.&quot;
               </p>
             </div>
 
@@ -581,7 +567,7 @@ export default function Home() {
                   Your DNA Writes The Alphabet Your Epigenetics Write The Story
                 </div>
                 <p className="text-base mb-8" style={{ color: "#535353", lineHeight: "1.6" }}>
-                  Your genes don't decide your fate. Epigenetics — your lifestyle,
+                  Your genes don&apos;t decide your fate. Epigenetics — your lifestyle,
                   environment, and consciousness — determine which genes switch on or
                   off. That means your health future is in your hands.
                 </p>
@@ -589,10 +575,10 @@ export default function Home() {
 
               <div className="p-6 sm:p-8" style={{ backgroundColor: "#FFD3AC", borderTopLeftRadius: "60px", borderBottomRightRadius: "60px" }}>
                 <p className="text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
-                  "In a twin double blind study , identical twins lived
+                  &quot;In a twin double blind study , identical twins lived
                   differently for just 8 weeks. The twin measurably
                   lowered their biological age. Same DNA. Different
-                  choices. Different future."
+                  choices. Different future.&quot;
                 </p>
               </div>
             </div>
@@ -600,15 +586,7 @@ export default function Home() {
 
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-12">
-            <button 
-              className="px-10 py-3 rounded-full text-base font-medium uppercase tracking-wide transition-all duration-300 hover:shadow-lg"
-              style={{ 
-                backgroundColor: "#FFD3AC", 
-                color: "#353535"
-              }}
-            >
-              BOOK FREE<br/>CONSULT NOW
-            </button>
+            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
@@ -753,7 +731,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className={
-              sectionTitleClasses + " mb-4 text-2xl sm:text-3xl md:text-4xl"
+              sectionTitleClasses + " mb-4 text-xl sm:text-2xl md:text-3xl"
             }
           >
             How We Compare
@@ -763,185 +741,185 @@ export default function Home() {
           </p>
 
           {/* Comparison Table */}
-          <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
-            <table className="w-full min-w-[640px]">
+          <div className="overflow-x-auto md:overflow-visible -mx-6 sm:-mx-8 md:mx-0 px-6 sm:px-8 md:px-0">
+            <table className="w-full min-w-[640px] md:min-w-0">
               <thead>
                 <tr>
-                  <th className="text-left py-2 sm:py-4 pr-4 sm:pr-8 font-normal"></th>
-                  <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4">
+                  <th className="text-left py-2 sm:py-4 pr-8 sm:pr-12 md:pr-16 lg:pr-24 font-normal w-[200px] md:w-[300px] lg:w-[400px]"></th>
+                  <th className="px-0.5 md:px-1 py-2 sm:py-4">
                     <Image
-                      src="/images/ambe_logo.png"
+                      src="/images/logos/ambe_logo.png"
                       alt="Ambe Logo"
                       width={100}
                       height={33}
                       className="mx-auto"
                     />
                   </th>
-                  <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
+                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
                     OUR
                     <br />
                     COMPETITORS
                   </th>
-                  <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
+                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
                     OTHERS
                   </th>
-                  <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
+                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
                     NUTRITIONIST
                   </th>
-                  <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
+                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
                     BIOMARKER
                     <br />
                     RESULTS
                   </th>
-                  <th className="px-2 sm:px-4 md:px-6 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
+                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
                     GENE RESULTS
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {/* Integrative Doctors */}
-                <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
+                <tr>
+                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
                     Integrative Doctors
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-xs sm:text-sm md:text-base text-charcoal">$ 500/Visit</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
                 </tr>
 
                 {/* 1 on 1 Video */}
-                <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
+                <tr>
+                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
                     1 on 1 Video
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-xs sm:text-sm md:text-base text-charcoal">$ 500/Visit</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
                 </tr>
 
                 {/* Unlimited Texting */}
-                <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
+                <tr>
+                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
                     Unlimited Texting
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
                 </tr>
 
                 {/* Time Tested */}
-                <tr className="border-t border-gray-200">
-                  <td className="py-3 sm:py-4 md:py-6 pr-4 sm:pr-8 text-sm sm:text-base md:text-lg text-charcoal font-bold">
+                <tr>
+                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
                     Time Tested
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
                       <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-xs sm:text-sm md:text-base text-charcoal">Infrequently</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
-                  <td className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 text-center">
-                    <div className="inline-flex items-center justify-center w-20 sm:w-24 md:w-32 h-10 sm:h-12 md:h-16 rounded-xl sm:rounded-2xl bg-white">
+                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
+                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
                       <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
                     </div>
                   </td>
@@ -950,39 +928,30 @@ export default function Home() {
               </tbody>
             </table>
           </div>
+          
+          {/* Book Free Consult Button - Centered Below */}
+          <div className="flex justify-center mt-12">
+            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+          </div>
         </div>
       </section>
 
       {/* Certifications Section */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32" style={{ backgroundColor: "#E5E5E5" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Three Column Headers */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
-                Backed By Expertise.
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
-                Certified For Safety.
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
-                Trusted By Design.
-              </div>
-            </div>
-          </div>
-
-          {/* Three Column Content - Responsive with Perfect Squares */}
+          {/* Three Column Content with Text Above Each - Responsive with Perfect Squares */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {/* ISO Standards */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
+              <div className="text-center mb-4">
+                <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                  Backed By Expertise
+                </div>
+              </div>
               <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square">
                 <div className="w-32 h-32 sm:w-28 md:w-32 lg:w-36 mb-4 flex items-center justify-center">
                   <Image
-                    src="/images/iso.png"
+                    src="/images/certifications/iso.png"
                     alt="ISO 22000"
                     width={144}
                     height={144}
@@ -999,10 +968,15 @@ export default function Home() {
 
             {/* GDPR */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
+              <div className="text-center mb-4">
+                <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                  Certified For Safety
+                </div>
+              </div>
               <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square">
                 <div className="w-32 h-32 sm:w-28 md:w-32 lg:w-36 mb-4 flex items-center justify-center">
                   <Image
-                    src="/images/gdpr.png"
+                    src="/images/certifications/gdpr.png"
                     alt="GDPR"
                     width={144}
                     height={144}
@@ -1018,10 +992,15 @@ export default function Home() {
 
             {/* European Pharmacopoeia */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none sm:col-span-2 lg:col-span-1">
+              <div className="text-center mb-4">
+                <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                  Trusted By Design
+                </div>
+              </div>
               <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square sm:max-w-[300px] sm:mx-auto lg:max-w-none">
                 <div className="w-20 h-20 sm:w-20 md:w-24 lg:w-28 mb-4 flex items-center justify-center">
                   <Image
-                    src="/images/europharm.png"
+                    src="/images/certifications/europharm.png"
                     alt="European Pharmacopoeia"
                     width={112}
                     height={112}
@@ -1273,7 +1252,7 @@ export default function Home() {
           >
             Meet the Experts
           </div>
-          <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-5xl mx-auto text-body px-4">
+          <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
             Licensed. Global. Guided by science. Every Ambé practitioner is
             trained in traditional medicine and modern clinical
             frameworks–bringing deep expertise to every personalized plan.
@@ -1370,59 +1349,43 @@ export default function Home() {
               </p>
             </div>
           </div>
+          
+          {/* Book Free Consult Button - Centered Below */}
+          <div className="flex justify-center mt-12">
+            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+          </div>
         </div>
       </section>
 
       {/* Wellness Benefits Section */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-4">
-            {/* Left Arrow Indicator - always takes up space */}
-            <div className="hidden sm:flex flex-shrink-0 w-12">
-              <div 
-                id="wellness-arrow-left"
-                className="cursor-pointer transition-opacity duration-300"
-                style={{ opacity: "0", pointerEvents: "none" }}
-                onClick={() => {
-                  const scroll = document.getElementById('wellness-scroll');
-                  scroll.scrollBy({ left: -1032, behavior: 'smooth' });
-                }}
-              >
-                <div className="bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-shadow">
-                  <svg 
-                    className="w-6 h-6" 
-                    fill="none" 
-                    stroke="#353535" 
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="relative" style={{ maxWidth: "1008px", overflow: "hidden" }}>
+          <div className="flex items-center justify-center">
+            <div className="relative w-full" style={{ overflow: "hidden" }}>
               {/* Scrollable Container - fixed width to show exactly 3 items */}
               <div 
                 id="wellness-scroll"
-                className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide" 
+                className="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide" 
                 style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
                 onScroll={(e) => {
                   const scrollPosition = e.target.scrollLeft;
-                  const itemWidth = 320 + 24; // item width + gap
+                  const containerWidth = e.target.scrollWidth / 3; // Total width divided by 3 groups
                   
                   // Update desktop dots (groups of 3)
-                  const currentPage = Math.round(scrollPosition / (itemWidth * 3));
+                  const currentPage = Math.round(scrollPosition / containerWidth);
                   const dots = document.querySelectorAll('.wellness-dot');
                   dots.forEach((dot, index) => {
                     if (index === currentPage) {
-                      dot.style.backgroundColor = '#353535';
+                      dot.style.backgroundColor = '#FFD3AC';
+                      dot.style.borderColor = '#FFD3AC';
                     } else {
-                      dot.style.backgroundColor = '#D0D0D0';
+                      dot.style.backgroundColor = 'transparent';
+                      dot.style.borderColor = '#353535';
                     }
                   });
                   
                   // Update mobile dots (individual items)
+                  const itemWidth = 380 + 32; // 380px circle width + 32px gap
                   const currentItem = Math.round(scrollPosition / itemWidth);
                   const mobileDots = document.querySelectorAll('.wellness-dot-mobile');
                   mobileDots.forEach((dot, index) => {
@@ -1458,11 +1421,11 @@ export default function Home() {
                 }}
               >
               {/* Hormone Health */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/healthcare.png"
+                      src="/images/icons/hormone_health.png"
                       alt="Hormone Health"
                       width={64}
                       height={64}
@@ -1472,18 +1435,18 @@ export default function Home() {
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
                     Hormone Health
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Rebalance hormones naturally with expert guidance and personalized protocols for optimal wellness
+                  <p className="text-base" style={{ color: "#353535" }}>
+Balance, not band-aids with adverse long term affects nor dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
                   </p>
                 </div>
               </div>
 
               {/* Women's Health */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/patient.png"
+                      src="/images/icons/womens_health.png"
                       alt="Women's Health"
                       width={64}
                       height={64}
@@ -1493,18 +1456,17 @@ export default function Home() {
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
                     Women's Health
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Comprehensive care for every stage of a woman's life, from menstrual health to menopause
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+Whole-woman care, redefined. From menstruation to menopause, fertility to fibroids—we offer precise, culturally competent, deeply supportive care that treats the whole woman, not just her symptoms.                  </p>
                 </div>
               </div>
 
               {/* Men's Health */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/personalized.png"
+                      src="/images/icons/mens_health.png"
                       alt="Men's Health"
                       width={64}
                       height={64}
@@ -1514,18 +1476,17 @@ export default function Home() {
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
                     Men's Health
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Targeted support for men's unique health needs, from vitality to performance optimization
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional and allopathic medicine science to build long-term performance and resilience.                  </p>
                 </div>
               </div>
 
               {/* Musculoskeletal */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/broken-bone.png"
+                      src="/images/icons/musculoskeletal.png"
                       alt="Musculoskeletal"
                       width={64}
                       height={64}
@@ -1535,40 +1496,38 @@ export default function Home() {
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
                     Musculoskeletal
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Address pain and mobility issues with integrative approaches to joint and muscle health
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+Move freely. Live fully. Whether it’s pain, posture, inflammation, or injury recovery—we integrate Ayurveda, biomechanics, and physical optimization protocols personalized to your structure.                  </p>
                 </div>
               </div>
 
-              {/* Diabetes & Metabolic */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              {/* Emotional, Mental & Behavioral */}
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/supplements.png"
-                      alt="Diabetes"
+                      src="/images/icons/emotional_behavorial.png"
+                      alt="Emotional, Mental & Behavioral"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Diabetes, Blood & Autoimmune
+                    Emotional, Mental & Behavioral
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Manage blood sugar naturally and support immune balance with personalized nutrition
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+Your mind-body reboot. Anxiety, burnout, depression, addiction patterns—no surface fixes. We offer deep emotional recalibration through neuro-supportive herbs, behavior rewiring, and somatic therapies that stick.                  </p>
                 </div>
               </div>
 
               {/* Oncology Support */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/clinic.png"
-                      alt="Oncology"
+                      src="/images/icons/oncology.png"
+                      alt="Oncology Support"
                       width={64}
                       height={64}
                       className="object-contain"
@@ -1577,124 +1536,98 @@ export default function Home() {
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
                     Oncology Support
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Complementary care to support healing and recovery through cancer treatment
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+Rooted care during hard seasons. For those undergoing or recovering from cancer, we provide complementary pathways that nourish, restore, and support immunity—with compassion and precision.                  </p>
                 </div>
               </div>
 
-              {/* Heart Health */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              {/* Tailor Made Medicine Program */}
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/trust.png"
-                      alt="Heart Health"
+                      src="/images/icons/tailor-made.png"
+                      alt="Tailor Made Medicine Program"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Infant Health Wellness Programs
+                    Tailor Made Medicine Programs
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Nurture your child's health from the start with gentle, natural approaches
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+Built for you. Not the algorithm. We don’t do fads. We do personalized, long-game protocols aligned with your body type, labs, lifestyle, and history. This is medicine made human again.                  </p>
                 </div>
               </div>
 
-              {/* Home Detox */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              {/* Whole Body & Mind Health Scans */}
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/herbal.png"
-                      alt="Home Detox"
+                      src="/images/icons/whole_body.png"
+                      alt="Whole Body & Mind Health Scans"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Home Detox & Herbal Health Guides
+                    Whole Body & Mind Health Scans
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Cleanse and rejuvenate with safe, effective home detox protocols
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+Your environment heals with you. We give you step-by-step plans for detoxing your space, body care routines, and healing rhythms to keep your inner and outer worlds in sync.                  </p>
                 </div>
               </div>
 
-              {/* Safety */}
-              <div className="flex-none snap-start" style={{ width: "320px" }}>
-                <div className="rounded-full p-8 flex flex-col items-center text-center h-80 justify-center" style={{ backgroundColor: "#FFD3AC" }}>
+              {/* Whole Kitchen & Your Kitchen */}
+              <div className="flex-none snap-start" style={{ width: "380px" }}>
+                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
-                      src="/images/icons/healthy-food.png"
-                      alt="Safety"
+                      src="/images/icons/whole_kitchen.png"
+                      alt="Whole Kitchen & Your Kitchen"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Kidney, Bladder & UT, Heart, Stroke
+                    Whole Kitchen & Your Kitchen
                   </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Comprehensive support for cardiovascular and urinary system health
-                  </p>
+                  <p className="text-base" style={{ color: "#353535" }}>
+What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a healing center, with Ayurvedic and vet-approved tips for feeding those you love.                  </p>
                 </div>
               </div>
             </div>
-            </div>
-            {/* Right Arrow Indicator - always takes up space */}
-            <div className="hidden sm:flex flex-shrink-0 w-12">
-              <div 
-                id="wellness-arrow"
-                className="cursor-pointer transition-opacity duration-300"
-                style={{ opacity: "1", pointerEvents: "auto" }}
-                onClick={() => {
-                  const scroll = document.getElementById('wellness-scroll');
-                  scroll.scrollBy({ left: 1032, behavior: 'smooth' });
-                }}
-              >
-                <div className="bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-shadow">
-                  <svg 
-                    className="w-6 h-6" 
-                    fill="none" 
-                    stroke="#353535" 
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
             </div>
           </div>
           {/* Pagination Dots */}
           <div className="flex justify-center gap-2 mt-8">
               {/* Desktop dots - 3 for groups of 3 */}
-              <div className="hidden sm:flex gap-2">
+              <div className="hidden sm:flex gap-3">
                 <div 
-                  className="wellness-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
-                  style={{ backgroundColor: "#353535" }}
+                  className="wellness-dot w-3 h-3 rounded-full cursor-pointer transition-all border"
+                  style={{ backgroundColor: "#FFD3AC", borderColor: "#FFD3AC" }}
                   onClick={() => {
                     document.getElementById('wellness-scroll').scrollTo({ left: 0, behavior: 'smooth' });
                   }}
                 />
                 <div 
-                  className="wellness-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
-                  style={{ backgroundColor: "#D0D0D0" }}
+                  className="wellness-dot w-3 h-3 rounded-full cursor-pointer transition-all border"
+                  style={{ backgroundColor: "transparent", borderColor: "#353535" }}
                   onClick={() => {
-                    document.getElementById('wellness-scroll').scrollTo({ left: 1032, behavior: 'smooth' });
+                    const itemWidth = 380 + 32; // circle width + gap
+                    document.getElementById('wellness-scroll').scrollTo({ left: itemWidth * 3, behavior: 'smooth' });
                   }}
                 />
                 <div 
-                  className="wellness-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
-                  style={{ backgroundColor: "#D0D0D0" }}
+                  className="wellness-dot w-3 h-3 rounded-full cursor-pointer transition-all border"
+                  style={{ backgroundColor: "transparent", borderColor: "#353535" }}
                   onClick={() => {
-                    document.getElementById('wellness-scroll').scrollTo({ left: 2064, behavior: 'smooth' });
+                    const itemWidth = 380 + 32; // circle width + gap
+                    document.getElementById('wellness-scroll').scrollTo({ left: itemWidth * 6, behavior: 'smooth' });
                   }}
                 />
               </div>
@@ -1717,193 +1650,193 @@ export default function Home() {
 
       {/* Professional Comparison Section - Copied from Membership Page */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8">
           {/* Desktop Grid View */}
           <div className="hidden lg:block overflow-x-auto">
             {/* Header Row */}
             <div className="grid grid-cols-4 gap-0">
-            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Feature/Training Area</span>
+            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+              <span className="font-bold text-xl" style={{ color: '#353535' }}>Feature/Training Area</span>
             </div>
-            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist</span>
+            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+              <span className="font-bold text-xl" style={{ color: '#353535' }}>Nutritionist</span>
             </div>
-            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian (RD)</span>
+            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+              <span className="font-bold text-xl" style={{ color: '#353535' }}>Registered Dietitian (RD)</span>
             </div>
-            <div className="h-16 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor</span>
+            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+              <span className="font-bold text-xl" style={{ color: '#353535' }}>Ayurvedic Doctor</span>
             </div>
           </div>
 
           {/* Data Rows */}
           <div className="grid grid-cols-4 gap-0">
             {/* Educational Pathway */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Educational Pathway</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Educational Pathway</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
             </div>
 
             {/* Governing Body */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Governing Body / License</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Governing Body / License</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
             </div>
 
             {/* Focus of Training */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Focus of Training</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Focus of Training</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>General nutrition, food science</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>General nutrition, food science</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
             </div>
 
             {/* Training in Herbs */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Minimal to none</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal to none</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
             </div>
 
             {/* View of Food */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>View of Food</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>View of Food</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Macronutrients & calories</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrients & calories</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
             </div>
 
             {/* Personalization */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Personalization Approach</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Personalization Approach</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Personalized to medical conditions</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Personalized to medical conditions</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
             </div>
 
             {/* Understanding Digestion */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Understanding of Digestion</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Understanding of Digestion</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Detailed GI pathologies, fiber, enzyme responses</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Detailed GI pathologies, fiber, enzyme responses</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
             </div>
 
             {/* Mind-Body Integration */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Mind-Body Integration</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Mind-Body Integration</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Rarely addressed</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Rarely addressed</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Minimal integration</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal integration</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
             </div>
 
             {/* Spiritual Lens */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Not included</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Not included</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
             </div>
 
             {/* Treatment Modalities */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Treatment Modalities</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Treatment Modalities</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Medical nutrition therapy</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Medical nutrition therapy</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
             </div>
 
             {/* Scope of Practice */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Scope of Practice</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Scope of Practice</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Wellness support</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Wellness support</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Disease prevention & management</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Disease prevention & management</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Holistic care across mental, physical, and spiritual domains</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Holistic care across mental, physical, and spiritual domains</span>
             </div>
 
             {/* Time-Tested Tradition */}
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="font-medium text-sm" style={{ color: '#353535' }}>Time-Tested Tradition</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Time-Tested Tradition</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Modern (~50-100 years of development)</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Modern (~50-100 years of development)</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Scientific framework from 20th century</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Scientific framework from 20th century</span>
             </div>
-            <div className="h-20 border flex items-center px-4" style={{ backgroundColor: 'white', borderColor: '#D3D3D3' }}>
-              <span className="text-xs" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
+            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+              <span className="text-base leading-none" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
             </div>
           </div>
           </div>
@@ -1921,16 +1854,16 @@ export default function Home() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Nutritionist:</span>
-                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Varies widely (certificate to degree)</p>
+                  <span className="text-base leading-none" style={{ color: '#353535' }}>Nutritionist:</span>
+                  <p className="text-base leading-none mt-1" style={{ color: '#535353' }}>Varies widely (certificate to degree)</p>
                 </div>
                 <div>
-                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Registered Dietitian:</span>
-                  <p className="text-xs mt-1" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</p>
+                  <span className="text-base leading-none" style={{ color: '#353535' }}>Registered Dietitian:</span>
+                  <p className="text-base leading-none mt-1" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</p>
                 </div>
                 <div>
-                  <span className="font-medium text-sm" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
-                  <p className="text-xs mt-1" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</p>
+                  <span className="text-base leading-none" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
+                  <p className="text-base leading-none mt-1" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</p>
                 </div>
               </div>
             </div>
@@ -2066,7 +1999,7 @@ export default function Home() {
                 Bio markers and holistic integration
               </div>
               <p
-                className="text-sm sm:text-base leading-relaxed"
+                className="text-sm sm:text-base leading-relaxed mb-6"
                 style={{ color: "#535353" }}
               >
                 Bio markers are often not time tested nor really accurate when
@@ -2076,6 +2009,9 @@ export default function Home() {
                 employ lab bio markers along with time tested methods, often
                 catching imbalance early on.
               </p>
+              <div className="flex justify-start">
+                <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+              </div>
             </div>
           </div>
         </div>
