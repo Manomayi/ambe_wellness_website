@@ -28,7 +28,7 @@ export default function Home() {
 
         <div className="relative z-20">
           {/* Original Banner Content */}
-          <div className="pt-50 pb-6">
+          <div className="pt-24 sm:pt-50 pb-6">
             <div className="w-full flex justify-center">
               <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
                 <div className="max-w-3xl">
@@ -47,19 +47,23 @@ export default function Home() {
                     Traditional Vedic Medicine.
                   </p>
                   <p
-                    className="text-white text-sm sm:text-base md:text-lg lg:text-3xl font-bold"
+                    className="text-white text-2xl lg:text-3xl font-bold"
                     style={{ color: "white" }}
                   >
                     Pay As You Want
                   </p>
                   <p
-                    className="text-white mb-6 text-sm sm:text-base md:text-lg lg:text-xl font-bold"
+                    className="text-white mb-6 text-lg lg:text-xl font-bold"
                     style={{ color: "white" }}
                   >
                     Developed at Stanford
                   </p>
 
-                  <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+                  <button 
+                    className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
+                  >
+                    BOOK FREE<br/> CONSULT NOW
+                  </button>
                 </div>
               </div>
             </div>
@@ -203,26 +207,27 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {/* Mobile view - scrollable with 2 items visible */}
+                {/* Mobile view - scrollable with arrows */}
                 <div className="sm:hidden">
-                  <div className="relative">
+                  <div className="flex items-center gap-0">
+                    {/* Left Arrow */}
+                    <button
+                      onClick={() => {
+                        const scrollContainer = document.getElementById('icon-scroll');
+                        scrollContainer.scrollBy({ left: -332, behavior: 'smooth' });
+                      }}
+                      className="flex-shrink-0 -ml-4"
+                      aria-label="Scroll left"
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                    
                     <div 
                       id="icon-scroll"
-                      className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                      style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
-                      onScroll={(e) => {
-                        const scrollPosition = e.target.scrollLeft;
-                        const itemWidth = 83; // Single item width (80) + gap (3) 
-                        const currentPage = Math.round(scrollPosition / (itemWidth * 2)); // Groups of 2
-                        const dots = document.querySelectorAll('.icon-dot');
-                        dots.forEach((dot, index) => {
-                          if (index === currentPage) {
-                            dot.style.backgroundColor = 'white';
-                          } else {
-                            dot.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                          }
-                        });
-                      }}
+                      className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-hide flex-1 px-2"
+                      style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
                     >
                       {/* Skin & Hair */}
                       <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
@@ -234,7 +239,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
                       </div>
                       
                       {/* Women's Health */}
@@ -247,7 +252,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
                       </div>
                       
                       {/* Men's Health */}
@@ -260,7 +265,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
                       </div>
                       
                       {/* Digestive Health */}
@@ -273,7 +278,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
                       </div>
                       
                       {/* Musculoskeletal */}
@@ -286,7 +291,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
                       </div>
                       
                       {/* Mental Health */}
@@ -299,7 +304,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
                       </div>
                       
                       {/* Longevity */}
@@ -312,7 +317,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Longevity</p>
                       </div>
                       
                       {/* Weight Management */}
@@ -325,7 +330,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
                       </div>
                       
                       {/* Hormone Health */}
@@ -338,7 +343,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
                       </div>
                       
                       {/* Wellness Guides */}
@@ -351,25 +356,23 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
                       </div>
                     </div>
                     
-                    {/* Navigation dots for mobile */}
-                    <div className="flex justify-center gap-2 mt-4">
-                      {[0, 1, 2, 3, 4].map((index) => (
-                        <div 
-                          key={index}
-                          className="icon-dot w-2 h-2 rounded-full cursor-pointer transition-colors"
-                          style={{ backgroundColor: index === 0 ? 'white' : 'rgba(255, 255, 255, 0.5)' }}
-                          onClick={() => {
-                            const scroll = document.getElementById('icon-scroll');
-                            const itemWidth = 83; // Single item width + gap
-                            scroll.scrollTo({ left: index * itemWidth * 2, behavior: 'smooth' });
-                          }}
-                        />
-                      ))}
-                    </div>
+                    {/* Right Arrow */}
+                    <button
+                      onClick={() => {
+                        const scrollContainer = document.getElementById('icon-scroll');
+                        scrollContainer.scrollBy({ left: 332, behavior: 'smooth' });
+                      }}
+                      className="flex-shrink-0 -mr-4"
+                      aria-label="Scroll right"
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -378,28 +381,28 @@ export default function Home() {
                 <div
                   className={
                     sectionTitleClasses +
-                    " mb-2 text-base md:text-lg lg:text-xl xl:text-2xl"
+                    " text-xl xl:text-2xl"
                   }
                   style={{ color: "white" }}
                 >
                   Trusted By:
                 </div>
                 <div
-                  className="font-bold mb-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+                  className="font-bold mb-2 md:mb-4 text-3xl lg:text-4xl"
                   style={{ color: "white" }}
                 >
                   American Apparel™
                 </div>
                 <p
-                  className="text-sm sm:text-base lg:text-lg"
+                  className="text-xs sm:text-base lg:text-lg"
                   style={{ color: "white" }}
                 >
-                  "Trusted by executives, frontline workers, and families alike"
+                  &quot;Trusted by executives, frontline workers, and families alike&quot;
                 </p>
               </div>
 
-              {/* Testimonials Grid */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-4 sm:gap-6 mb-12 sm:mb-16">
+              {/* Testimonials Grid - Desktop */}
+              <div className="hidden md:flex flex-row justify-center items-center gap-4 sm:gap-6 mb-12 sm:mb-16">
                 {/* David Testimonial */}
                 <div className="flex justify-center">
                   <div
@@ -418,7 +421,7 @@ export default function Home() {
                       className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      "Sharper focus in just weeks. Ambé gave me energy I didn't know I was missing"
+                      &quot;Sharper focus in just weeks. Ambé gave me energy I didn&apos;t know I was missing&quot;
                     </p>
                     <p
                       className="text-sm text-center font-bold mb-1"
@@ -453,7 +456,7 @@ export default function Home() {
                       className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      "My stress, digestion, and moods leveled out. I finally feel in control."
+                      &quot;My stress, digestion, and moods leveled out. I finally feel in control.&quot;
                     </p>
                     <p
                       className="text-sm text-center font-bold mb-1"
@@ -488,7 +491,7 @@ export default function Home() {
                       className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      "Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human."
+                      &quot;Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human.&quot;
                     </p>
                     <p
                       className="text-sm text-center font-bold mb-1"
@@ -506,17 +509,161 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Testimonials - Mobile with Arrows */}
+              <div className="md:hidden mb-6 sm:mb-16">
+                <div className="flex items-center justify-center gap-2">
+                  {/* Left Arrow */}
+                  <button
+                    onClick={() => {
+                      const scrollContainer = document.getElementById('testimonial-scroll');
+                      scrollContainer.scrollBy({ left: -296, behavior: 'smooth' });
+                    }}
+                    className="flex-shrink-0 p-1"
+                    aria-label="Scroll left"
+                  >
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  
+                  <div 
+                    id="testimonial-scroll"
+                    className="flex gap-4 overflow-x-hidden snap-x snap-mandatory scrollbar-hide"
+                    style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", width: "280px" }}
+                  >
+                    {/* David Testimonial */}
+                    <div className="flex-none snap-center">
+                      <div
+                        className="rounded-full p-4 flex flex-col items-center justify-center w-[280px] h-[280px]"
+                        style={{ backgroundColor: "#FFD3AC" }}
+                      >
+                        <div className="relative w-16 h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                          <Image
+                            src="/images/testimonials/david.png"
+                            alt="David"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <p
+                          className="text-sm text-center leading-relaxed mb-3 px-4"
+                          style={{ color: "#353535" }}
+                        >
+                          &quot;Sharper focus in just weeks. Ambé gave me energy I didn&apos;t know I was missing&quot;
+                        </p>
+                        <p
+                          className="text-sm text-center font-bold mb-1"
+                          style={{ color: "#353535" }}
+                        >
+                          David
+                        </p>
+                        <p
+                          className="text-xs text-center"
+                          style={{ color: "#353535" }}
+                        >
+                          Chief Strategy Officer
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Joshua Testimonial */}
+                    <div className="flex-none snap-center">
+                      <div
+                        className="rounded-full p-4 flex flex-col items-center justify-center w-[280px] h-[280px]"
+                        style={{ backgroundColor: "#FFD3AC" }}
+                      >
+                        <div className="relative w-16 h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                          <Image
+                            src="/images/testimonials/joshua.png"
+                            alt="Joshua"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <p
+                          className="text-sm text-center leading-relaxed mb-3 px-4"
+                          style={{ color: "#353535" }}
+                        >
+                          &quot;My stress, digestion, and moods leveled out. I finally feel in control.&quot;
+                        </p>
+                        <p
+                          className="text-sm text-center font-bold mb-1"
+                          style={{ color: "#353535" }}
+                        >
+                          Joshua
+                        </p>
+                        <p
+                          className="text-xs text-center"
+                          style={{ color: "#353535" }}
+                        >
+                          Operations Supervisor
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Rosario Testimonial */}
+                    <div className="flex-none snap-center">
+                      <div
+                        className="rounded-full p-4 flex flex-col items-center justify-center w-[280px] h-[280px]"
+                        style={{ backgroundColor: "#FFD3AC" }}
+                      >
+                        <div className="relative w-16 h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                          <Image
+                            src="/images/testimonials/rosario.png"
+                            alt="Rosario"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <p
+                          className="text-sm text-center leading-relaxed mb-3 px-4"
+                          style={{ color: "#353535" }}
+                        >
+                          &quot;Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human.&quot;
+                        </p>
+                        <p
+                          className="text-sm text-center font-bold mb-1"
+                          style={{ color: "#353535" }}
+                        >
+                          Rosario
+                        </p>
+                        <p
+                          className="text-xs text-center"
+                          style={{ color: "#353535" }}
+                        >
+                          Warehouse Associate
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right Arrow */}
+                  <button
+                    onClick={() => {
+                      const scrollContainer = document.getElementById('testimonial-scroll');
+                      scrollContainer.scrollBy({ left: 296, behavior: 'smooth' });
+                    }}
+                    className="flex-shrink-0 p-1"
+                    aria-label="Scroll right"
+                  >
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
               {/* Bio-Markers Stats */}
               <div className="text-center px-4">
                 <p
-                  className="text-base md:text-xl lg:text-2xl mb-6"
+                  className="text-xl lg:text-2xl mb-6"
                   style={{ color: "white" }}
                 >
                   <span className="font-bold underline">55</span>{" "}
                   <span className="font-light">Million Bio-Markers analysed</span>
                 </p>
                 
-                <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+                <Button className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
               </div>
             </div>
           </div>
@@ -525,48 +672,52 @@ export default function Home() {
 
       {/* Ayurveda Meets Epigenetics Section */}
       <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#E5E5E5" }}>
-        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-12">
             {/* Left Box */}
-            <div className="flex-1 bg-white rounded-2xl p-8 sm:p-10">
-              <div className="text-2xl sm:text-3xl mb-3 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+            <div className="flex-1 bg-white rounded-lg p-6 sm:p-10">
+              <div className="text-2xl sm:text-3xl mb-1 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
                 Ayurveda Meets Epigenetics
               </div>
-              <div className="text-2xl sm:text-3xl mb-6 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+              <div className="text-2xl sm:text-3xl mb-3 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
                 The Future Of Healthcare
               </div>
-              <p className="text-base mb-6" style={{ color: "#535353", lineHeight: "1.6" }}>
+              <p className="text-sm md:text-base mb-6" style={{ color: "#535353"}}>
                 One system has guided humanity for 5,000 years. The other is at
                 science&apos;s frontier. Together, they transform what healthcare can be.
               </p>
               <div className="space-y-3 mb-6">
                 <div className="flex items-start">
-                  <span className="text-xl mr-3" style={{ color: "#FFD3AC" }}>✓</span>
-                  <p className="text-base" style={{ color: "#535353", lineHeight: "1.6" }}>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full mr-3 flex-shrink-0 mt-0.5" style={{ backgroundColor: "#FFD3AC" }}>
+                    <span style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>✓</span>
+                  </span>
+                  <p className="text-sm md:text-base" style={{ color: "#535353" }}>
                     Detect potential health issues years — even decades — before
                     symptoms appear.
                   </p>
                 </div>
                 <div className="flex items-start">
-                  <span className="text-xl mr-3" style={{ color: "#FFD3AC" }}>✓</span>
-                  <p className="text-base" style={{ color: "#535353", lineHeight: "1.6" }}>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full mr-3 flex-shrink-0 mt-0.5" style={{ backgroundColor: "#FFD3AC" }}>
+                    <span style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>✓</span>
+                  </span>
+                  <p className="text-sm md:text-base" style={{ color: "#535353" }}>
                     Track in real time how your lifestyle impacts your cellular +
                     mitochondrial health.
                   </p>
                 </div>
               </div>
-              <p className="text-base" style={{ color: "#353535" }}>
+              <p className="text-sm md:text-base" style={{ color: "#353535" }}>
                 This isn&apos;t science fiction. This is Ambé.&quot;
               </p>
             </div>
 
             {/* Right Box - Same height as left */}
-            <div className="flex-1 bg-white rounded-2xl p-8 sm:p-10 flex flex-col justify-between">
+            <div className="flex-1 bg-white rounded-lg p-6 md:p-8 sm:p-10 flex flex-col justify-between" style={{ border: "0.5px solid #FFD3AC" }}>
               <div>
-                <div className="text-base mb-4 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+                <div className="text-sm md:text-base mb-2 md:mb-4 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
                   Your DNA Writes The Alphabet Your Epigenetics Write The Story
                 </div>
-                <p className="text-base mb-8" style={{ color: "#535353", lineHeight: "1.6" }}>
+                <p className="text-sm md:text-base mb-4 md:mb-8" style={{ color: "#535353", lineHeight: "1.6" }}>
                   Your genes don&apos;t decide your fate. Epigenetics — your lifestyle,
                   environment, and consciousness — determine which genes switch on or
                   off. That means your health future is in your hands.
@@ -574,7 +725,7 @@ export default function Home() {
               </div>
 
               <div className="p-6 sm:p-8" style={{ backgroundColor: "#FFD3AC", borderTopLeftRadius: "60px", borderBottomRightRadius: "60px" }}>
-                <p className="text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
+                <p className="text-sm md:text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
                   &quot;In a twin double blind study , identical twins lived
                   differently for just 8 weeks. The twin measurably
                   lowered their biological age. Same DNA. Different
@@ -585,143 +736,11 @@ export default function Home() {
           </div>
 
           {/* Book Free Consult Button - Centered Below */}
-          <div className="flex justify-center mt-12">
-            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+          <div className="flex justify-center mt-7 md:mt-12">
+            <Button className="font-extrabold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
-
-      {/* Time Tested Section - Commented Out */}
-      {/* <section
-        className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#F4F4F4" }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className={
-              sectionTitleClasses +
-              " text-center mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl"
-            }
-          >
-            Time Tested and Results Driven
-          </div>
-          <p
-            className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-5xl mx-auto px-4"
-            style={{ color: "#535353" }}
-          >
-            Dr. Google is scary. We get it. You&apos;ve tried the threads—the
-            threads on the threads... It&apos;s time for something real, built
-            around you. Clarity is a form of care.
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 sm:mb-12 md:mb-16">
-            <div className="text-center bg-white p-6">
-              <div className="mb-6 h-20 sm:h-24 flex items-center justify-center">
-                <div className="relative w-14 sm:w-16 h-14 sm:h-16">
-                  <Image
-                    src="/images/time-tested/conflicted.png"
-                    alt="Conflicted"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-              <div
-                className="text-lg sm:text-xl font-semibold mb-4"
-                style={{ color: "#353535" }}
-              >
-                Conflicted by fad-driven advice and
-                <br className="hidden sm:block" />
-                <span className="sm:hidden">
-                  Conflicted by fad-driven advice and{" "}
-                </span>
-                endless tests without real insight?
-              </div>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "#535353" }}
-              >
-                Ambé cuts through the noise with time-tested, evidence-based
-                care and real credentials—thousands of years of wisdom versus a
-                few years of fragmented information in holistic medicine.
-              </p>
-            </div>
-
-            <div className="text-center bg-white p-6">
-              <div className="mb-6 h-20 sm:h-24 flex items-center justify-center">
-                <div className="relative w-14 sm:w-16 h-14 sm:h-16">
-                  <Image
-                    src="/images/time-tested/tired.png"
-                    alt="Tired"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-              <div
-                className="text-lg sm:text-xl font-semibold mb-4"
-                style={{ color: "#353535" }}
-              >
-                Tired of one-size-fits-all
-                <br className="hidden sm:block" />
-                <span className="sm:hidden">Tired of one-size-fits-all </span>
-                supplements?
-              </div>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "#535353" }}
-              >
-                At Ambé, every formula is tailored to your unique mind-body
-                type. No algorithms. No shortcuts. Just real doctors creating
-                real, time-tested protocols—just for you. We don&apos;t do
-                &quot;standard.&quot; Ambé formulas are hand-built by doctors to
-                reflect your specific constitution, habits, and environment. You
-                deserve precision—not guesswork.
-              </p>
-            </div>
-
-            <div className="text-center bg-white p-6">
-              <div className="mb-6 h-20 sm:h-24 flex items-center justify-center">
-                <div className="relative w-14 sm:w-16 h-14 sm:h-16">
-                  <Image
-                    src="/images/time-tested/overcharged.png"
-                    alt="Overcharged"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-              <div
-                className="text-lg sm:text-xl font-semibold mb-4"
-                style={{ color: "#353535" }}
-              >
-                Being overcharged by underqualified,
-                <br className="hidden sm:block" />
-                <span className="sm:hidden">
-                  Being overcharged by underqualified,{" "}
-                </span>
-                self-professed experts?
-              </div>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "#535353" }}
-              >
-                The human psychology of valuing only that which we pay a lot for
-                can be remedied with proven results. By setting an example—by
-                making high-quality health care available to everyone. We hope,
-                that most will benefit.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <Button className="mb-4">BOOK NOW</Button>
-            <p className="text-sm" style={{ color: "#535353" }}>
-              Two minutes. No commitment. Much clarity.
-            </p>
-          </div>
-        </div>
-      </section> */}
 
       {/* How We Compare Section - Moved Here */}
       <section
@@ -731,7 +750,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className={
-              sectionTitleClasses + " mb-4 text-xl sm:text-2xl md:text-3xl"
+              sectionTitleClasses + " mb-4 text-2xl sm:text-2xl md:text-3xl"
             }
           >
             How We Compare
@@ -740,8 +759,8 @@ export default function Home() {
             No hidden fees, ever.
           </p>
 
-          {/* Comparison Table */}
-          <div className="overflow-x-auto md:overflow-visible -mx-6 sm:-mx-8 md:mx-0 px-6 sm:px-8 md:px-0">
+          {/* Desktop Comparison Table */}
+          <div className="hidden md:block overflow-x-auto md:overflow-visible -mx-6 sm:-mx-8 md:mx-0 px-6 sm:px-8 md:px-0">
             <table className="w-full min-w-[640px] md:min-w-0">
               <thead>
                 <tr>
@@ -927,6 +946,234 @@ export default function Home() {
 
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Comparison Carousel */}
+          <div className="md:hidden">
+            <div className="relative">
+              {/* Fixed column headers on top */}
+              <div className="flex mb-4 gap-3">
+                <div className="w-36 flex-shrink-0"></div>
+                <div className="flex-1 overflow-hidden">
+                  <div 
+                    id="compare-headers"
+                    className="flex transition-transform duration-300"
+                    style={{ transform: 'translateX(0px)' }}
+                  >
+                    <div className="flex-none w-full">
+                      <Image
+                        src="/images/logos/ambe_logo.png"
+                        alt="Ambe Logo"
+                        width={80}
+                        height={27}
+                        className="mx-auto"
+                      />
+                    </div>
+                    <div className="flex-none w-full text-center">
+                      <span className="text-xs font-normal text-charcoal">OUR<br/>COMPETITORS</span>
+                    </div>
+                    <div className="flex-none w-full text-center">
+                      <span className="text-xs font-normal text-charcoal">OTHERS</span>
+                    </div>
+                    <div className="flex-none w-full text-center">
+                      <span className="text-xs font-normal text-charcoal">NUTRITIONIST</span>
+                    </div>
+                    <div className="flex-none w-full text-center">
+                      <span className="text-xs font-normal text-charcoal">BIOMARKER<br/>RESULTS</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table rows with fixed labels and scrollable values */}
+              <div className="space-y-3">
+                {/* Integrative Doctors Row */}
+                <div className="flex gap-3">
+                  <div className="w-36 flex-shrink-0">
+                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Integrative Doctors</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <div 
+                      className="flex compare-row transition-transform duration-300"
+                      style={{ transform: 'translateX(0px)' }}
+                    >
+                      <div className="flex-none w-full flex justify-center">
+                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                            <CheckIcon className="w-5 h-5 text-charcoal" />
+                          </div>
+                        </div>
+                        <div className="flex-none w-full flex justify-center">
+                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                            <span className="text-base text-charcoal">X</span>
+                          </div>
+                        </div>
+                        <div className="flex-none w-full flex justify-center">
+                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                            <span className="text-xs text-charcoal">$ 500/Visit</span>
+                          </div>
+                        </div>
+                        <div className="flex-none w-full flex justify-center">
+                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                            <span className="text-base text-charcoal">X</span>
+                          </div>
+                        </div>
+                        <div className="flex-none w-full flex justify-center">
+                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                            <span className="text-base text-charcoal">X</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+
+                {/* 1 on 1 Video Row */}
+                <div className="flex gap-3">
+                  <div className="w-36 flex-shrink-0">
+                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">1 on 1 Video</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <div 
+                      className="flex compare-row transition-transform duration-300"
+                      style={{ transform: 'translateX(0px)' }}
+                    >
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                          <CheckIcon className="w-5 h-5 text-charcoal" />
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-xs text-charcoal">$ 500/Visit</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                          <CheckIcon className="w-5 h-5 text-charcoal" />
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      </div>
+                    </div>
+                </div>
+
+                {/* Unlimited Texting Row */}
+                <div className="flex gap-3">
+                  <div className="w-36 flex-shrink-0">
+                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Unlimited Texting</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <div 
+                      className="flex compare-row transition-transform duration-300"
+                      style={{ transform: 'translateX(0px)' }}
+                    >
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                          <CheckIcon className="w-5 h-5 text-charcoal" />
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      </div>
+                    </div>
+                </div>
+
+                {/* Time Tested Row */}
+                <div className="flex gap-3">
+                  <div className="w-36 flex-shrink-0">
+                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Time Tested</span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <div 
+                      className="flex compare-row transition-transform duration-300"
+                      style={{ transform: 'translateX(0px)' }}
+                    >
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                          <CheckIcon className="w-5 h-5 text-charcoal" />
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-xs text-charcoal">Infrequently</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      <div className="flex-none w-full flex justify-center">
+                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                          <span className="text-base text-charcoal">X</span>
+                        </div>
+                      </div>
+                      </div>
+                    </div>
+                </div>
+              </div>
+
+              {/* Dots Navigation */}
+              <div className="flex justify-center gap-2 mt-6">
+                {[0, 1, 2, 3, 4].map((index) => (
+                  <button
+                    key={index}
+                    className="w-2 h-2 rounded-full transition-colors"
+                    style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
+                    onClick={() => {
+                      const offset = -index * 100; // 100% width for each column
+                      
+                      // Update all rows
+                      const rows = document.querySelectorAll('.compare-row');
+                      rows.forEach(row => {
+                        row.style.transform = `translateX(${offset}%)`;
+                      });
+                      
+                      // Update headers
+                      const headers = document.getElementById('compare-headers');
+                      headers.style.transform = `translateX(${offset}%)`;
+                      
+                      // Update dot colors
+                      const dots = document.querySelectorAll('.flex.justify-center.gap-2.mt-6 button');
+                      dots.forEach((dot, i) => {
+                        dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
+                      });
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
           
           {/* Book Free Consult Button - Centered Below */}
@@ -1454,7 +1701,7 @@ Balance, not band-aids with adverse long term affects nor dependency. From cycle
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Women's Health
+                    Women&apos;s Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
 Whole-woman care, redefined. From menstruation to menopause, fertility to fibroids—we offer precise, culturally competent, deeply supportive care that treats the whole woman, not just her symptoms.                  </p>
@@ -1474,7 +1721,7 @@ Whole-woman care, redefined. From menstruation to menopause, fertility to fibro
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Men's Health
+                    Men&apos;s Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
 More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional and allopathic medicine science to build long-term performance and resilience.                  </p>
@@ -1841,34 +2088,255 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
           </div>
           </div>
 
-          {/* Mobile/Tablet Card View */}
-          <div className="lg:hidden space-y-6">
-            <div className={sectionTitleClasses + " text-center mb-6 text-xl sm:text-2xl"}>
-              Professional Comparison
-            </div>
-            
-            {/* Educational Pathway Card */}
-            <div className="bg-white rounded-lg p-4 sm:p-6">
-              <div className="font-semibold mb-4 text-base sm:text-lg" style={{ color: '#353535', backgroundColor: '#FFD3AC', padding: '8px', borderRadius: '4px' }}>
-                Educational Pathway
+          {/* Mobile View - 2 columns at a time with dots navigation */}
+          <div className="lg:hidden">
+            <div className="relative overflow-hidden">
+              <div 
+                id="prof-comparison-scroll"
+                className="flex transition-transform duration-300"
+                style={{ transform: 'translateX(0%)' }}
+              >
+                {/* First 2 columns */}
+                <div className="flex-none w-full">
+                  <div className="grid grid-cols-2 gap-0">
+                    {/* Headers */}
+                    <div className="h-10 border flex items-center px-2" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                      <span className="font-bold text-base" style={{ color: '#353535' }}>Feature/Training</span>
+                    </div>
+                    <div className="h-10 border flex items-center px-2" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                      <span className="font-bold text-base" style={{ color: '#353535' }}>Nutritionist</span>
+                    </div>
+                    
+                    {/* Educational Pathway */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Educational Pathway</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
+                    </div>
+                    
+                    {/* Governing Body */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Governing Body / License</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
+                    </div>
+                    
+                    {/* Focus of Training */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Focus of Training</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>General nutrition, food science</span>
+                    </div>
+                    
+                    {/* Training in Herbs */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Minimal to none</span>
+                    </div>
+                    
+                    {/* View of Food */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>View of Food</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Macronutrients & calories</span>
+                    </div>
+                    
+                    {/* Personalization */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Personalization Approach</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
+                    </div>
+                    
+                    {/* Understanding Digestion */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Understanding of Digestion</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
+                    </div>
+                    
+                    {/* Mind-Body Integration */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Mind-Body Integration</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Rarely addressed</span>
+                    </div>
+                    
+                    {/* Spiritual Lens */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Not included</span>
+                    </div>
+                    
+                    {/* Treatment Modalities */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Treatment Modalities</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
+                    </div>
+                    
+                    {/* Scope of Practice */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Scope of Practice</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Wellness support</span>
+                    </div>
+                    
+                    {/* Time-Tested Tradition */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Time-Tested Tradition</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Modern (~50-100 years)</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Second 2 columns */}
+                <div className="flex-none w-full">
+                  <div className="grid grid-cols-2 gap-0">
+                    {/* Headers */}
+                    <div className="h-10 border flex items-center px-2" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                      <span className="font-bold text-base" style={{ color: '#353535' }}>Registered Dietitian</span>
+                    </div>
+                    <div className="h-10 border flex items-center px-2" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                      <span className="font-bold text-base" style={{ color: '#353535' }}>Ayurvedic Doctor</span>
+                    </div>
+                    
+                    {/* Educational Pathway */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Accredited BS/MS + 1200+ hrs practice</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>5.5-year BAMS degree</span>
+                    </div>
+                    
+                    {/* Governing Body */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Licensed by CDR</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Ayurvedic Medical Boards</span>
+                    </div>
+                    
+                    {/* Focus of Training */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Clinical nutrition, disease plans</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Mind-body-spirit, doshas</span>
+                    </div>
+                    
+                    {/* Training in Herbs */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Minimal (supplements only)</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Extensive herbal training</span>
+                    </div>
+                    
+                    {/* View of Food */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Macro & micronutrients</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Food as medicine (Ahara)</span>
+                    </div>
+                    
+                    {/* Personalization */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Medical conditions based</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Prakriti, vikriti, agni based</span>
+                    </div>
+                    
+                    {/* Understanding Digestion */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>GI pathologies, enzymes</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Agni theory, 13 digestive fires</span>
+                    </div>
+                    
+                    {/* Mind-Body Integration */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Minimal integration</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Central to treatment</span>
+                    </div>
+                    
+                    {/* Spiritual Lens */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Not included</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Vedic philosophy, karma</span>
+                    </div>
+                    
+                    {/* Treatment Modalities */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Medical nutrition therapy</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Food, herbs, lifestyle, detox</span>
+                    </div>
+                    
+                    {/* Scope of Practice */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Disease prevention/mgmt</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Holistic care all domains</span>
+                    </div>
+                    
+                    {/* Time-Tested Tradition */}
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>20th century framework</span>
+                    </div>
+                    <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>5,000+ years lineage</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-3">
-                <div>
-                  <span className="text-base leading-none" style={{ color: '#353535' }}>Nutritionist:</span>
-                  <p className="text-base leading-none mt-1" style={{ color: '#535353' }}>Varies widely (certificate to degree)</p>
-                </div>
-                <div>
-                  <span className="text-base leading-none" style={{ color: '#353535' }}>Registered Dietitian:</span>
-                  <p className="text-base leading-none mt-1" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</p>
-                </div>
-                <div>
-                  <span className="text-base leading-none" style={{ color: '#353535' }}>Ayurvedic Doctor:</span>
-                  <p className="text-base leading-none mt-1" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</p>
-                </div>
+              
+              {/* Dots Navigation */}
+              <div className="flex justify-center gap-2 mt-4">
+                <button
+                  onClick={(e) => {
+                    document.getElementById('prof-comparison-scroll').style.transform = 'translateX(0%)';
+                    e.target.style.backgroundColor = '#353535';
+                    e.target.nextSibling.style.backgroundColor = '#D0D0D0';
+                  }}
+                  className="w-2 h-2 rounded-full transition-colors"
+                  style={{ backgroundColor: '#353535' }}
+                />
+                <button
+                  onClick={(e) => {
+                    document.getElementById('prof-comparison-scroll').style.transform = 'translateX(-100%)';
+                    e.target.style.backgroundColor = '#353535';
+                    e.target.previousSibling.style.backgroundColor = '#D0D0D0';
+                  }}
+                  className="w-2 h-2 rounded-full transition-colors"
+                  style={{ backgroundColor: '#D0D0D0' }}
+                />
               </div>
             </div>
-
-            {/* Additional cards for mobile view - showing just a few for brevity */}
           </div>
         </div>
       </section>
@@ -2030,12 +2498,12 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
               <div className="relative">
                 {/* Quote Icon - positioned at the top border */}
                 <div
-                  className="absolute left-1/2 transform -translate-x-1/2 -top-8 sm:-top-10 w-16 sm:w-20 h-16 sm:h-20 rounded-full flex items-center justify-center z-10"
+                  className="absolute left-1/2 transform -translate-x-1/2 -top-10 sm:-top-12 w-20 sm:w-24 h-20 sm:h-24 rounded-full flex items-center justify-center z-10"
                   style={{ backgroundColor: "#E5E5E5" }}
                 >
                   <span
-                    className="text-3xl sm:text-4xl"
-                    style={{ color: "#FFD3AC" }}
+                    className="text-8xl sm:text-9xl"
+                    style={{ color: "#FFD3AC", fontSize: "120px", lineHeight: "0.3", marginTop: "30px" }}
                   >
                     &ldquo;
                   </span>
@@ -2049,22 +2517,16 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                   <div className="max-w-4xl mx-auto text-center">
                     {/* First paragraph */}
                     <p
-                      className="text-sm sm:text-base md:text-lg mb-3 sm:mb-4"
+                      className="text-sm sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-4"
                       style={{ color: "#353535" }}
                     >
                       We&apos;re doctors, entrepreneurs and researchers with
-                      decades of experience.
-                    </p>
-                    <p
-                      className="text-sm sm:text-base md:text-lg mb-8 sm:mb-12"
-                      style={{ color: "#353535" }}
-                    >
-                      Ambé is built for the soul of the modern man.
+                      decades of experience. Ambé is built for the soul of the modern man.
                     </p>
 
                     {/* Main Quote */}
                     <div
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light leading-tight mb-8 sm:mb-12"
+                      className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-light leading-snug mb-2 sm:mb-4"
                       style={{
                         color: "#353535",
                         fontFamily: "Playfair Display, serif",
@@ -2080,7 +2542,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
 
                     {/* Attribution */}
                     <p
-                      className="text-right text-sm sm:text-base md:text-lg mb-8"
+                      className="text-right text-sm sm:text-base md:text-lg mt-2 mb-4"
                       style={{ color: "#353535" }}
                     >
                       -Founder
@@ -2098,6 +2560,11 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                   </div>
                 </div>
               </div>
+            </div>
+            
+            {/* Book Free Consult Button */}
+            <div className="flex justify-center mt-12">
+              <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
             </div>
 
           </div>
