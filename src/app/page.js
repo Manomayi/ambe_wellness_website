@@ -13,6 +13,38 @@ import {
 import Footer from "@/components/common/Footer";
 
 export default function Home() {
+  // State for managing selected tab content
+  const [selectedTab, setSelectedTab] = React.useState('biomarkers');
+
+  // Content data for each tab
+  const tabContent = {
+    'labs': {
+      title: 'Lab Work & Hormone Health',
+      text: "Hormone levels fluctuate significantly from day to day, and throughout a single day at times, which means a single blood test often doesn't reflect the full picture. Rather than relying solely on lab diagnostics, our approach emphasizes symptom patterns, constitutional balance, and energetic signs—what we call iridic insight. We work with your body's rhythms, not just snapshots in time.",
+      image: '/images/education/lab_work.png'
+    },
+    'biomarkers': {
+      title: 'Bio markers and holistic integration',
+      text: 'Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don\'t catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.',
+      image: '/images/home/hands.png'
+    },
+    'personalize': {
+      title: 'Precision Formulated rooted in You',
+      text: 'Every formula is crafted from the ground up using your unique constitution, energetic state, symptoms, and subtle pulse readings. Our doctors blend herbs, minerals, and natural compounds using both ancient rasayana principles and modern botanical intelligence. There are no mass formulations—only tailored wellness.',
+      image: '/images/education/precision_formula.png'
+    },
+    'prevent': {
+      title: 'Safe Use Across All Systems',
+      text: "We take your pharmaceutical use seriously. Every formula is screened against known herb-drug contraindications using a global reference database. We'll never suggest anything that interferes with your prescriptions. Our doctors are trained in integrative pharmacognosy and will advise gently, with respect for allopathic care plans.",
+      image: '/images/education/safe_use.png'
+    },
+    'mislabeled': {
+      title: 'Truth Behind the Labels',
+      text: 'Not all "natural" therapies are safe. Many over-the-counter hormone creams or supplements are mislabeled, contain synthetic compounds, or disrupt your endocrine system further. Our team helps you decode marketing hype, guiding you toward real nourishment and away from potentially harmful fads.',
+      image: '/images/education/truth_behind.png'
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -950,53 +982,82 @@ export default function Home() {
 
           {/* Mobile Comparison Carousel */}
           <div className="md:hidden">
-            <div className="flex items-center gap-2">
-              {/* Left Arrow */}
-              <button
-                onClick={() => {
-                  const currentIndex = parseInt(document.querySelector('.compare-dot-active')?.dataset?.index || '0');
-                  const newIndex = Math.max(0, currentIndex - 1);
-                  const offset = -newIndex * 50; // 50% width for 2 columns
+            <div
+              className="relative touch-pan-x"
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                e.currentTarget.dataset.startX = touch.clientX;
+                const headers = document.getElementById('compare-headers');
+                const currentTransform = headers.style.transform;
+                const currentX = parseInt(currentTransform.match(/-?\d+/)?.[0] || '0');
+                e.currentTarget.dataset.startTransform = currentX;
+              }}
+              onTouchMove={(e) => {
+                if (!e.currentTarget.dataset.startX) return;
+                const touch = e.touches[0];
+                const startX = parseFloat(e.currentTarget.dataset.startX);
+                const startTransform = parseFloat(e.currentTarget.dataset.startTransform);
+                const diff = touch.clientX - startX;
 
-                  // Update all rows
-                  const rows = document.querySelectorAll('.compare-row');
-                  rows.forEach(row => {
-                    row.style.transform = `translateX(${offset}%)`;
-                  });
+                // Calculate new position with boundaries
+                // We have 5 columns total, showing 2 at a time
+                // So we need to be able to scroll 3 column widths (50% * 3 = 150%)
+                let newX = startTransform + diff;
+                // Convert pixel difference to percentage (assuming viewport width)
+                const percentageShift = (diff / window.innerWidth) * 100;
+                let newPercentage = startTransform + percentageShift;
 
-                  // Update headers
-                  const headers = document.getElementById('compare-headers');
-                  headers.style.transform = `translateX(${offset}%)`;
+                // Limit: can't scroll right past 0%, can't scroll left past -150%
+                newPercentage = Math.max(-150, Math.min(0, newPercentage));
 
-                  // Update dot colors
-                  const dots = document.querySelectorAll('.compare-dot');
-                  dots.forEach((dot, i) => {
-                    dot.classList.remove('compare-dot-active');
-                    if (i === newIndex) {
-                      dot.classList.add('compare-dot-active');
-                      dot.dataset.index = newIndex;
-                    }
-                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
-                  });
-                }}
-                className="flex-shrink-0"
-                aria-label="Previous columns"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
+                const headers = document.getElementById('compare-headers');
+                const rows = document.querySelectorAll('.compare-row');
+                headers.style.transform = `translateX(${newPercentage}%)`;
+                rows.forEach(row => {
+                  row.style.transform = `translateX(${newPercentage}%)`;
+                });
 
+                // Update pagination dots based on current position
+                const dots = document.querySelectorAll('.compare-dot');
+                const activeIndex = Math.round(Math.abs(newPercentage) / 50);
+                dots.forEach((dot, i) => {
+                  dot.classList.remove('compare-dot-active');
+                  if (i === activeIndex) {
+                    dot.classList.add('compare-dot-active');
+                    dot.dataset.index = activeIndex;
+                  }
+                  dot.style.backgroundColor = i === activeIndex ? '#FFD3AC' : '#D1D5DB';
+                });
+              }}
+              onTouchEnd={(e) => {
+                // Snap to nearest column pair
+                const headers = document.getElementById('compare-headers');
+                const currentTransform = headers.style.transform;
+                const currentPercentage = parseFloat(currentTransform.match(/-?\d+/)?.[0] || '0');
+
+                // Round to nearest 50% increment (each column pair)
+                const snappedPercentage = Math.round(currentPercentage / 50) * 50;
+
+                headers.style.transform = `translateX(${snappedPercentage}%)`;
+                const rows = document.querySelectorAll('.compare-row');
+                rows.forEach(row => {
+                  row.style.transform = `translateX(${snappedPercentage}%)`;
+                });
+
+                delete e.currentTarget.dataset.startX;
+                delete e.currentTarget.dataset.startTransform;
+              }}
+            >
               {/* Table Content */}
-              <div className="flex-1 overflow-hidden">
+              <div className="overflow-hidden">
                 {/* Fixed column headers on top */}
                 <div className="flex mb-4 gap-3">
                   <div className="w-32 flex-shrink-0"></div>
                   <div className="flex-1 overflow-hidden">
                     <div
                       id="compare-headers"
-                      className="flex transition-transform duration-300"
-                      style={{ transform: 'translateX(0px)' }}
+                      className="flex transition-transform duration-300 ease-out"
+                      style={{ transform: 'translateX(0%)' }}
                     >
                       <div className="flex-none w-1/2">
                         <Image
@@ -1032,8 +1093,8 @@ export default function Home() {
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div
-                      className="flex compare-row transition-transform duration-300"
-                      style={{ transform: 'translateX(0px)' }}
+                      className="flex compare-row transition-transform duration-300 ease-out"
+                      style={{ transform: 'translateX(0%)' }}
                     >
                       <div className="flex-none w-1/2 flex justify-center px-1">
                           <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
@@ -1071,8 +1132,8 @@ export default function Home() {
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div
-                      className="flex compare-row transition-transform duration-300"
-                      style={{ transform: 'translateX(0px)' }}
+                      className="flex compare-row transition-transform duration-300 ease-out"
+                      style={{ transform: 'translateX(0%)' }}
                     >
                       <div className="flex-none w-1/2 flex justify-center px-1">
                         <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
@@ -1110,8 +1171,8 @@ export default function Home() {
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div
-                      className="flex compare-row transition-transform duration-300"
-                      style={{ transform: 'translateX(0px)' }}
+                      className="flex compare-row transition-transform duration-300 ease-out"
+                      style={{ transform: 'translateX(0%)' }}
                     >
                       <div className="flex-none w-1/2 flex justify-center px-1">
                         <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
@@ -1149,8 +1210,8 @@ export default function Home() {
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div
-                      className="flex compare-row transition-transform duration-300"
-                      style={{ transform: 'translateX(0px)' }}
+                      className="flex compare-row transition-transform duration-300 ease-out"
+                      style={{ transform: 'translateX(0%)' }}
                     >
                       <div className="flex-none w-1/2 flex justify-center px-1">
                         <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
@@ -1182,42 +1243,6 @@ export default function Home() {
                 </div>
               </div>
               </div>
-
-              {/* Right Arrow */}
-              <button
-                onClick={() => {
-                  const currentIndex = parseInt(document.querySelector('.compare-dot-active')?.dataset?.index || '0');
-                  const newIndex = Math.min(3, currentIndex + 1); // Max 3 for showing pairs
-                  const offset = -newIndex * 50; // 50% width for 2 columns
-
-                  // Update all rows
-                  const rows = document.querySelectorAll('.compare-row');
-                  rows.forEach(row => {
-                    row.style.transform = `translateX(${offset}%)`;
-                  });
-
-                  // Update headers
-                  const headers = document.getElementById('compare-headers');
-                  headers.style.transform = `translateX(${offset}%)`;
-
-                  // Update dot colors
-                  const dots = document.querySelectorAll('.compare-dot');
-                  dots.forEach((dot, i) => {
-                    dot.classList.remove('compare-dot-active');
-                    if (i === newIndex) {
-                      dot.classList.add('compare-dot-active');
-                      dot.dataset.index = newIndex;
-                    }
-                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
-                  });
-                }}
-                className="flex-shrink-0"
-                aria-label="Next columns"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
             </div>
 
             {/* Dots Navigation */}
@@ -2750,12 +2775,66 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
           </div>
           </div>
 
-          {/* Mobile View - 2 columns at a time with dots navigation */}
+          {/* Mobile View - 2 columns at a time with swipe navigation */}
           <div className="lg:hidden">
-            <div className="relative overflow-hidden">
-              <div 
+            <div
+              className="relative overflow-hidden touch-pan-x"
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                e.currentTarget.dataset.startX = touch.clientX;
+                const scrollElement = document.getElementById('prof-comparison-scroll');
+                const currentTransform = scrollElement.style.transform;
+                const currentPercentage = parseFloat(currentTransform.match(/-?\d+/)?.[0] || '0');
+                e.currentTarget.dataset.startTransform = currentPercentage;
+              }}
+              onTouchMove={(e) => {
+                if (!e.currentTarget.dataset.startX) return;
+                const touch = e.touches[0];
+                const startX = parseFloat(e.currentTarget.dataset.startX);
+                const startTransform = parseFloat(e.currentTarget.dataset.startTransform);
+                const diff = touch.clientX - startX;
+
+                // Convert pixel difference to percentage
+                const percentageShift = (diff / window.innerWidth) * 100;
+                let newPercentage = startTransform + percentageShift;
+
+                // Limit: can't scroll right past 0%, can't scroll left past -100% (2 views)
+                newPercentage = Math.max(-100, Math.min(0, newPercentage));
+
+                const scrollElement = document.getElementById('prof-comparison-scroll');
+                scrollElement.style.transform = `translateX(${newPercentage}%)`;
+
+                // Update dots
+                const dots = e.currentTarget.querySelectorAll('.prof-dot');
+                const activeIndex = Math.round(Math.abs(newPercentage) / 100);
+                dots.forEach((dot, i) => {
+                  dot.style.backgroundColor = i === activeIndex ? '#353535' : '#D0D0D0';
+                });
+              }}
+              onTouchEnd={(e) => {
+                // Snap to nearest view
+                const scrollElement = document.getElementById('prof-comparison-scroll');
+                const currentTransform = scrollElement.style.transform;
+                const currentPercentage = parseFloat(currentTransform.match(/-?\d+/)?.[0] || '0');
+
+                // Round to nearest 100% increment
+                const snappedPercentage = Math.round(currentPercentage / 100) * 100;
+                scrollElement.style.transform = `translateX(${snappedPercentage}%)`;
+
+                // Update dots
+                const dots = e.currentTarget.querySelectorAll('.prof-dot');
+                const activeIndex = Math.round(Math.abs(snappedPercentage) / 100);
+                dots.forEach((dot, i) => {
+                  dot.style.backgroundColor = i === activeIndex ? '#353535' : '#D0D0D0';
+                });
+
+                delete e.currentTarget.dataset.startX;
+                delete e.currentTarget.dataset.startTransform;
+              }}
+            >
+              <div
                 id="prof-comparison-scroll"
-                className="flex transition-transform duration-300"
+                className="flex transition-transform duration-300 ease-out"
                 style={{ transform: 'translateX(0%)' }}
               >
                 {/* First 2 columns */}
@@ -2980,21 +3059,25 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
               {/* Dots Navigation */}
               <div className="flex justify-center gap-2 mt-4">
                 <button
-                  onClick={(e) => {
+                  onClick={() => {
                     document.getElementById('prof-comparison-scroll').style.transform = 'translateX(0%)';
-                    e.target.style.backgroundColor = '#353535';
-                    e.target.nextSibling.style.backgroundColor = '#D0D0D0';
+                    const dots = document.querySelectorAll('.prof-dot');
+                    dots.forEach((dot, i) => {
+                      dot.style.backgroundColor = i === 0 ? '#353535' : '#D0D0D0';
+                    });
                   }}
-                  className="w-2 h-2 rounded-full transition-colors"
+                  className="w-2 h-2 rounded-full transition-colors prof-dot"
                   style={{ backgroundColor: '#353535' }}
                 />
                 <button
-                  onClick={(e) => {
+                  onClick={() => {
                     document.getElementById('prof-comparison-scroll').style.transform = 'translateX(-100%)';
-                    e.target.style.backgroundColor = '#353535';
-                    e.target.previousSibling.style.backgroundColor = '#D0D0D0';
+                    const dots = document.querySelectorAll('.prof-dot');
+                    dots.forEach((dot, i) => {
+                      dot.style.backgroundColor = i === 1 ? '#353535' : '#D0D0D0';
+                    });
                   }}
-                  className="w-2 h-2 rounded-full transition-colors"
+                  className="w-2 h-2 rounded-full transition-colors prof-dot"
                   style={{ backgroundColor: '#D0D0D0' }}
                 />
               </div>
@@ -3011,92 +3094,130 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Tab Navigation */}
           <div className="w-full mb-8 sm:mb-12">
-            {/* Mobile: Vertical stack */}
-            <div className="md:hidden flex flex-col gap-2">
-              <button
-                className="w-full px-4 py-2 rounded-full text-xs text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
-              >
-                Do You Need Labs for HRT?
-              </button>
-              <button
-                className="w-full px-4 py-2.5 rounded-full text-xs text-center"
-                style={{ backgroundColor: "#FFD3AC", color: "#353535" }}
-              >
-                Bio markers and holistic integration
-              </button>
-              <button
-                className="w-full px-4 py-2 rounded-full text-xs text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
-              >
-                How We Personalize Every Formula
-              </button>
-              <button
-                className="w-full px-4 py-2 rounded-full text-xs text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
-              >
-                Prevent contraindicated therapies with Pharmaceuticals
-              </button>
-              <button
-                className="w-full px-4 py-2 rounded-full text-xs text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
-              >
-                Mislabeled Therapies to Watch Out For
-              </button>
+            {/* Mobile: Dynamic button arrangement */}
+            <div className="md:hidden">
+              {(() => {
+                // Define all buttons with their keys and labels
+                const allButtons = [
+                  { key: 'labs', label: 'Do You Need Labs for HRT?' },
+                  { key: 'biomarkers', label: 'Bio markers and holistic integration' },
+                  { key: 'personalize', label: 'How We Personalize Every Formula' },
+                  { key: 'prevent', label: 'Prevent contraindicated therapies with Pharmaceuticals' },
+                  { key: 'mislabeled', label: 'Mislabeled Therapies to Watch Out For' }
+                ];
+
+                // Find the index of the selected tab
+                const selectedIndex = allButtons.findIndex(btn => btn.key === selectedTab);
+
+                // Determine how many buttons go on top based on selection
+                let topButtons = [];
+                let bottomButtons = [];
+
+                if (selectedIndex === 0) {
+                  // First selected: 1 on top, 4 below
+                  topButtons = allButtons.slice(0, 1);
+                  bottomButtons = allButtons.slice(1);
+                } else if (selectedIndex === 1) {
+                  // Second selected: 2 on top, 3 below
+                  topButtons = allButtons.slice(0, 2);
+                  bottomButtons = allButtons.slice(2);
+                } else if (selectedIndex === 2) {
+                  // Third selected: 3 on top, 2 below
+                  topButtons = allButtons.slice(0, 3);
+                  bottomButtons = allButtons.slice(3);
+                } else if (selectedIndex === 3) {
+                  // Fourth selected: 4 on top, 1 below
+                  topButtons = allButtons.slice(0, 4);
+                  bottomButtons = allButtons.slice(4);
+                } else {
+                  // Fifth selected: all 5 on top
+                  topButtons = allButtons;
+                  bottomButtons = [];
+                }
+
+                return (
+                  <>
+                    {/* Top buttons */}
+                    <div className="flex flex-col gap-2 mb-6">
+                      {topButtons.map(button => (
+                        <button
+                          key={button.key}
+                          className="w-full px-2 py-3 rounded-full text-sm font-medium text-center"
+                          style={{
+                            backgroundColor: selectedTab === button.key ? "#FFD3AC" : "#FFFFFF",
+                            color: "#353535"
+                          }}
+                          onClick={() => setSelectedTab(button.key)}
+                        >
+                          {button.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Desktop: Single row with equal width */}
             <div className="hidden md:flex justify-between gap-3 lg:gap-4">
               <button
-                className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
+                className="flex-1 px-1 lg:px-2 py-3 lg:py-4 rounded-full text-base lg:text-lg font-medium text-center"
+                style={{
+                  backgroundColor: selectedTab === 'labs' ? "#FFD3AC" : "#FFFFFF",
+                  color: "#353535"
+                }}
+                onClick={() => setSelectedTab('labs')}
               >
                 <span className="block whitespace-normal">
-                  Do You Need
-                  <br className="lg:hidden" />
-                  Labs for HRT?
+                  Do You Need Labs for HRT?
                 </span>
               </button>
               <button
-                className="flex-1 px-2 lg:px-4 py-2.5 lg:py-3 rounded-full text-sm text-center"
-                style={{ backgroundColor: "#FFD3AC", color: "#353535" }}
+                className="flex-1 px-1 lg:px-2 py-3 lg:py-4 rounded-full text-base lg:text-lg font-medium text-center"
+                style={{
+                  backgroundColor: selectedTab === 'biomarkers' ? "#FFD3AC" : "#FFFFFF",
+                  color: "#353535"
+                }}
+                onClick={() => setSelectedTab('biomarkers')}
               >
                 <span className="block whitespace-normal">
-                  Bio markers and
-                  <br className="lg:hidden" />
-                  holistic integration
+                  Bio markers and holistic integration
                 </span>
               </button>
               <button
-                className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
+                className="flex-1 px-1 lg:px-2 py-3 lg:py-4 rounded-full text-base lg:text-lg font-medium text-center"
+                style={{
+                  backgroundColor: selectedTab === 'personalize' ? "#FFD3AC" : "#FFFFFF",
+                  color: "#353535"
+                }}
+                onClick={() => setSelectedTab('personalize')}
               >
                 <span className="block whitespace-normal">
-                  How We Personalize
-                  <br className="lg:hidden" />
-                  Every Formula
+                  How We Personalize Every Formula
                 </span>
               </button>
               <button
-                className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
+                className="flex-1 px-1 lg:px-2 py-3 lg:py-4 rounded-full text-base lg:text-lg font-medium text-center"
+                style={{
+                  backgroundColor: selectedTab === 'prevent' ? "#FFD3AC" : "#FFFFFF",
+                  color: "#353535"
+                }}
+                onClick={() => setSelectedTab('prevent')}
               >
                 <span className="block whitespace-normal">
-                  Prevent contraindicated
-                  <br className="lg:hidden" />
-                  therapies with
-                  <br className="lg:hidden" />
-                  Pharmaceuticals
+                  Prevent contraindicated therapies with Pharmaceuticals
                 </span>
               </button>
               <button
-                className="flex-1 px-2 lg:px-4 py-2 rounded-full text-sm text-center"
-                style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
+                className="flex-1 px-1 lg:px-2 py-3 lg:py-4 rounded-full text-base lg:text-lg font-medium text-center"
+                style={{
+                  backgroundColor: selectedTab === 'mislabeled' ? "#FFD3AC" : "#FFFFFF",
+                  color: "#353535"
+                }}
+                onClick={() => setSelectedTab('mislabeled')}
               >
                 <span className="block whitespace-normal">
-                  Mislabeled Therapies
-                  <br className="lg:hidden" />
-                  to Watch Out For
+                  Mislabeled Therapies to Watch Out For
                 </span>
               </button>
             </div>
@@ -3111,8 +3232,8 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                 style={{ borderRadius: "0 150px 0 150px" }}
               >
                 <Image
-                  src="/images/home/hands.png"
-                  alt="Hands holding light"
+                  src={tabContent[selectedTab].image}
+                  alt={tabContent[selectedTab].title}
                   width={600}
                   height={400}
                   className="object-cover w-full h-full"
@@ -3126,21 +3247,73 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                 className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-6"
                 style={{ color: "#353535" }}
               >
-                Bio markers and holistic integration
+                {tabContent[selectedTab].title}
               </div>
               <p
                 className="text-sm sm:text-base leading-relaxed mb-6"
                 style={{ color: "#535353" }}
               >
-                Bio markers are often not time tested nor really accurate when
-                it comes to hormones because hormones fluctuate day to day if
-                not hour to hour. We often don&apos;t catch imbalances or
-                deficiencies until its far advanced and harder to treat. We
-                employ lab bio markers along with time tested methods, often
-                catching imbalance early on.
+                {tabContent[selectedTab].text}
               </p>
               <div className="flex justify-start">
                 <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+              </div>
+
+              {/* Bottom buttons - Mobile only, below the Book button */}
+              <div className="md:hidden">
+                {(() => {
+                  // Define all buttons with their keys and labels (same as above)
+                  const allButtons = [
+                    { key: 'labs', label: 'Do You Need Labs for HRT?' },
+                    { key: 'biomarkers', label: 'Bio markers and holistic integration' },
+                    { key: 'personalize', label: 'How We Personalize Every Formula' },
+                    { key: 'prevent', label: 'Prevent contraindicated therapies with Pharmaceuticals' },
+                    { key: 'mislabeled', label: 'Mislabeled Therapies to Watch Out For' }
+                  ];
+
+                  // Find the index of the selected tab
+                  const selectedIndex = allButtons.findIndex(btn => btn.key === selectedTab);
+
+                  // Determine bottom buttons based on selection
+                  let bottomButtons = [];
+
+                  if (selectedIndex === 0) {
+                    // First selected: 4 below
+                    bottomButtons = allButtons.slice(1);
+                  } else if (selectedIndex === 1) {
+                    // Second selected: 3 below
+                    bottomButtons = allButtons.slice(2);
+                  } else if (selectedIndex === 2) {
+                    // Third selected: 2 below
+                    bottomButtons = allButtons.slice(3);
+                  } else if (selectedIndex === 3) {
+                    // Fourth selected: 1 below
+                    bottomButtons = allButtons.slice(4);
+                  } else {
+                    // Fifth selected: none below
+                    bottomButtons = [];
+                  }
+
+                  if (bottomButtons.length === 0) return null;
+
+                  return (
+                    <div className="flex flex-col gap-2 mt-6">
+                      {bottomButtons.map(button => (
+                        <button
+                          key={button.key}
+                          className="w-full px-2 py-3 rounded-full text-sm font-medium text-center"
+                          style={{
+                            backgroundColor: selectedTab === button.key ? "#FFD3AC" : "#FFFFFF",
+                            color: "#353535"
+                          }}
+                          onClick={() => setSelectedTab(button.key)}
+                        >
+                          {button.label}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
