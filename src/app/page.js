@@ -77,7 +77,7 @@ export default function Home() {
                 {/* Desktop view - grid */}
                 <div className="hidden sm:grid grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
                   {/* Skin & Hair */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/skin_hair.png"
@@ -87,10 +87,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
-                  </div>
+                  </Link>
                   
                   {/* Women's Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/womens_health.png"
@@ -100,10 +100,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
-                  </div>
+                  </Link>
                   
                   {/* Men's Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/mens_health.png"
@@ -113,10 +113,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
-                  </div>
+                  </Link>
                   
                   {/* Digestive Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/digestive_health.png"
@@ -126,10 +126,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
-                  </div>
+                  </Link>
                   
                   {/* Musculoskeletal */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/musculoskeletal.png"
@@ -139,10 +139,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
-                  </div>
+                  </Link>
                   
                   {/* Mental Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/mental_health.png"
@@ -152,10 +152,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
-                  </div>
+                  </Link>
                   
                   {/* Longevity */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/longevity.png"
@@ -165,10 +165,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
-                  </div>
+                  </Link>
                   
                   {/* Weight Management */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/weight_mgmt.png"
@@ -178,10 +178,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
-                  </div>
+                  </Link>
                   
                   {/* Hormone Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/hormone_health.png"
@@ -191,10 +191,10 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
-                  </div>
+                  </Link>
                   
                   {/* Wellness Guides */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
+                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image
                         src="/images/icons/wellness_guides.png"
@@ -204,7 +204,7 @@ export default function Home() {
                       />
                     </div>
                     <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
-                  </div>
+                  </Link>
                 </div>
                 
                 {/* Mobile view - scrollable with arrows */}
@@ -230,7 +230,7 @@ export default function Home() {
                       style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
                     >
                       {/* Skin & Hair */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/skin_hair.png"
@@ -240,10 +240,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
-                      </div>
+                      </Link>
                       
                       {/* Women's Health */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/womens_health.png"
@@ -253,10 +253,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
-                      </div>
+                      </Link>
                       
                       {/* Men's Health */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/mens_health.png"
@@ -266,10 +266,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
-                      </div>
+                      </Link>
                       
                       {/* Digestive Health */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/digestive_health.png"
@@ -279,10 +279,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
-                      </div>
+                      </Link>
                       
                       {/* Musculoskeletal */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/musculoskeletal.png"
@@ -292,10 +292,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
-                      </div>
+                      </Link>
                       
                       {/* Mental Health */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/mental_health.png"
@@ -305,10 +305,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
-                      </div>
+                      </Link>
                       
                       {/* Longevity */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/longevity.png"
@@ -318,10 +318,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Longevity</p>
-                      </div>
+                      </Link>
                       
                       {/* Weight Management */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/weight_mgmt.png"
@@ -331,10 +331,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
-                      </div>
+                      </Link>
                       
                       {/* Hormone Health */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/hormone_health.png"
@@ -344,10 +344,10 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
-                      </div>
+                      </Link>
                       
                       {/* Wellness Guides */}
-                      <div className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
+                      <Link href="/membership" className="flex-none snap-start bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20">
                         <div className="w-10 h-10 mb-1 relative">
                           <Image
                             src="/images/icons/wellness_guides.png"
@@ -357,7 +357,7 @@ export default function Home() {
                           />
                         </div>
                         <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
-                      </div>
+                      </Link>
                     </div>
                     
                     {/* Right Arrow */}
@@ -950,75 +950,113 @@ export default function Home() {
 
           {/* Mobile Comparison Carousel */}
           <div className="md:hidden">
-            <div className="relative">
-              {/* Fixed column headers on top */}
-              <div className="flex mb-4 gap-3">
-                <div className="w-36 flex-shrink-0"></div>
-                <div className="flex-1 overflow-hidden">
-                  <div 
-                    id="compare-headers"
-                    className="flex transition-transform duration-300"
-                    style={{ transform: 'translateX(0px)' }}
-                  >
-                    <div className="flex-none w-full">
-                      <Image
-                        src="/images/logos/ambe_logo.png"
-                        alt="Ambe Logo"
-                        width={80}
-                        height={27}
-                        className="mx-auto"
-                      />
-                    </div>
-                    <div className="flex-none w-full text-center">
-                      <span className="text-xs font-normal text-charcoal">OUR<br/>COMPETITORS</span>
-                    </div>
-                    <div className="flex-none w-full text-center">
-                      <span className="text-xs font-normal text-charcoal">OTHERS</span>
-                    </div>
-                    <div className="flex-none w-full text-center">
-                      <span className="text-xs font-normal text-charcoal">NUTRITIONIST</span>
-                    </div>
-                    <div className="flex-none w-full text-center">
-                      <span className="text-xs font-normal text-charcoal">BIOMARKER<br/>RESULTS</span>
+            <div className="flex items-center gap-2">
+              {/* Left Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.compare-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.max(0, currentIndex - 1);
+                  const offset = -newIndex * 50; // 50% width for 2 columns
+
+                  // Update all rows
+                  const rows = document.querySelectorAll('.compare-row');
+                  rows.forEach(row => {
+                    row.style.transform = `translateX(${offset}%)`;
+                  });
+
+                  // Update headers
+                  const headers = document.getElementById('compare-headers');
+                  headers.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.compare-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('compare-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('compare-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0"
+                aria-label="Previous columns"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              {/* Table Content */}
+              <div className="flex-1 overflow-hidden">
+                {/* Fixed column headers on top */}
+                <div className="flex mb-4 gap-3">
+                  <div className="w-32 flex-shrink-0"></div>
+                  <div className="flex-1 overflow-hidden">
+                    <div
+                      id="compare-headers"
+                      className="flex transition-transform duration-300"
+                      style={{ transform: 'translateX(0px)' }}
+                    >
+                      <div className="flex-none w-1/2">
+                        <Image
+                          src="/images/logos/ambe_logo.png"
+                          alt="Ambe Logo"
+                          width={80}
+                          height={27}
+                          className="mx-auto"
+                        />
+                      </div>
+                      <div className="flex-none w-1/2 text-center">
+                        <span className="text-xs font-normal text-charcoal">OUR<br/>COMPETITORS</span>
+                      </div>
+                      <div className="flex-none w-1/2 text-center">
+                        <span className="text-xs font-normal text-charcoal">OTHERS</span>
+                      </div>
+                      <div className="flex-none w-1/2 text-center">
+                        <span className="text-xs font-normal text-charcoal">NUTRITIONIST</span>
+                      </div>
+                      <div className="flex-none w-1/2 text-center">
+                        <span className="text-xs font-normal text-charcoal">BIOMARKER<br/>RESULTS</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Table rows with fixed labels and scrollable values */}
-              <div className="space-y-3">
+                {/* Table rows with fixed labels and scrollable values */}
+                <div className="space-y-3">
                 {/* Integrative Doctors Row */}
-                <div className="flex gap-3">
-                  <div className="w-36 flex-shrink-0">
+                <div className="flex gap-3 items-center">
+                  <div className="w-32 flex-shrink-0">
                     <span className="text-sm font-bold text-charcoal whitespace-nowrap">Integrative Doctors</span>
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <div 
+                    <div
                       className="flex compare-row transition-transform duration-300"
                       style={{ transform: 'translateX(0px)' }}
                     >
-                      <div className="flex-none w-full flex justify-center">
-                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
                             <CheckIcon className="w-5 h-5 text-charcoal" />
                           </div>
                         </div>
-                        <div className="flex-none w-full flex justify-center">
-                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                        <div className="flex-none w-1/2 flex justify-center px-1">
+                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                             <span className="text-base text-charcoal">X</span>
                           </div>
                         </div>
-                        <div className="flex-none w-full flex justify-center">
-                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
-                            <span className="text-xs text-charcoal">$ 500/Visit</span>
+                        <div className="flex-none w-1/2 flex justify-center px-1">
+                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
+                            <span className="text-[10px] text-charcoal">$ 500/Visit</span>
                           </div>
                         </div>
-                        <div className="flex-none w-full flex justify-center">
-                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                        <div className="flex-none w-1/2 flex justify-center px-1">
+                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                             <span className="text-base text-charcoal">X</span>
                           </div>
                         </div>
-                        <div className="flex-none w-full flex justify-center">
-                          <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                        <div className="flex-none w-1/2 flex justify-center px-1">
+                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                             <span className="text-base text-charcoal">X</span>
                           </div>
                         </div>
@@ -1027,37 +1065,37 @@ export default function Home() {
                 </div>
 
                 {/* 1 on 1 Video Row */}
-                <div className="flex gap-3">
-                  <div className="w-36 flex-shrink-0">
+                <div className="flex gap-3 items-center">
+                  <div className="w-32 flex-shrink-0">
                     <span className="text-sm font-bold text-charcoal whitespace-nowrap">1 on 1 Video</span>
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <div 
+                    <div
                       className="flex compare-row transition-transform duration-300"
                       style={{ transform: 'translateX(0px)' }}
                     >
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
                           <CheckIcon className="w-5 h-5 text-charcoal" />
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
-                          <span className="text-xs text-charcoal">$ 500/Visit</span>
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
+                          <span className="text-[10px] text-charcoal">$ 500/Visit</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
                           <CheckIcon className="w-5 h-5 text-charcoal" />
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
@@ -1066,37 +1104,37 @@ export default function Home() {
                 </div>
 
                 {/* Unlimited Texting Row */}
-                <div className="flex gap-3">
-                  <div className="w-36 flex-shrink-0">
+                <div className="flex gap-3 items-center">
+                  <div className="w-32 flex-shrink-0">
                     <span className="text-sm font-bold text-charcoal whitespace-nowrap">Unlimited Texting</span>
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <div 
+                    <div
                       className="flex compare-row transition-transform duration-300"
                       style={{ transform: 'translateX(0px)' }}
                     >
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
                           <CheckIcon className="w-5 h-5 text-charcoal" />
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
@@ -1105,37 +1143,37 @@ export default function Home() {
                 </div>
 
                 {/* Time Tested Row */}
-                <div className="flex gap-3">
-                  <div className="w-36 flex-shrink-0">
+                <div className="flex gap-3 items-center">
+                  <div className="w-32 flex-shrink-0">
                     <span className="text-sm font-bold text-charcoal whitespace-nowrap">Time Tested</span>
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <div 
+                    <div
                       className="flex compare-row transition-transform duration-300"
                       style={{ transform: 'translateX(0px)' }}
                     >
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-[#FFD3AC]">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
                           <CheckIcon className="w-5 h-5 text-charcoal" />
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
-                          <span className="text-xs text-charcoal">Infrequently</span>
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
+                          <span className="text-[9px] text-charcoal">Infrequently</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
-                      <div className="flex-none w-full flex justify-center">
-                        <div className="inline-flex items-center justify-center w-28 h-12 rounded-xl bg-white">
+                      <div className="flex-none w-1/2 flex justify-center px-1">
+                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
                           <span className="text-base text-charcoal">X</span>
                         </div>
                       </div>
@@ -1143,36 +1181,79 @@ export default function Home() {
                     </div>
                 </div>
               </div>
-
-              {/* Dots Navigation */}
-              <div className="flex justify-center gap-2 mt-6">
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <button
-                    key={index}
-                    className="w-2 h-2 rounded-full transition-colors"
-                    style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
-                    onClick={() => {
-                      const offset = -index * 100; // 100% width for each column
-                      
-                      // Update all rows
-                      const rows = document.querySelectorAll('.compare-row');
-                      rows.forEach(row => {
-                        row.style.transform = `translateX(${offset}%)`;
-                      });
-                      
-                      // Update headers
-                      const headers = document.getElementById('compare-headers');
-                      headers.style.transform = `translateX(${offset}%)`;
-                      
-                      // Update dot colors
-                      const dots = document.querySelectorAll('.flex.justify-center.gap-2.mt-6 button');
-                      dots.forEach((dot, i) => {
-                        dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
-                      });
-                    }}
-                  />
-                ))}
               </div>
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.compare-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.min(3, currentIndex + 1); // Max 3 for showing pairs
+                  const offset = -newIndex * 50; // 50% width for 2 columns
+
+                  // Update all rows
+                  const rows = document.querySelectorAll('.compare-row');
+                  rows.forEach(row => {
+                    row.style.transform = `translateX(${offset}%)`;
+                  });
+
+                  // Update headers
+                  const headers = document.getElementById('compare-headers');
+                  headers.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.compare-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('compare-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('compare-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0"
+                aria-label="Next columns"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Dots Navigation */}
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors compare-dot ${index === 0 ? 'compare-dot-active' : ''}`}
+                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
+                  data-index={index}
+                  onClick={() => {
+                    const offset = -index * 50; // 50% width for 2 columns view
+
+                    // Update all rows
+                    const rows = document.querySelectorAll('.compare-row');
+                    rows.forEach(row => {
+                      row.style.transform = `translateX(${offset}%)`;
+                    });
+
+                    // Update headers
+                    const headers = document.getElementById('compare-headers');
+                    headers.style.transform = `translateX(${offset}%)`;
+
+                    // Update dot colors
+                    const dots = document.querySelectorAll('.compare-dot');
+                    dots.forEach((dot, i) => {
+                      dot.classList.remove('compare-dot-active');
+                      if (i === index) {
+                        dot.classList.add('compare-dot-active');
+                        dot.dataset.index = index;
+                      }
+                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
+                    });
+                  }}
+                />
+              ))}
             </div>
           </div>
           
@@ -1186,8 +1267,8 @@ export default function Home() {
       {/* Certifications Section */}
       <section className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32" style={{ backgroundColor: "#E5E5E5" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Three Column Content with Text Above Each - Responsive with Perfect Squares */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+          {/* Desktop View - Grid */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {/* ISO Standards */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
               <div className="text-center mb-4">
@@ -1260,6 +1341,191 @@ export default function Home() {
                   interactions
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Mobile View - Carousel with Arrows */}
+          <div className="sm:hidden">
+            <div className="flex items-center gap-2">
+              {/* Left Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.cert-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.max(0, currentIndex - 1);
+                  const offset = -newIndex * 100; // 100% width for each card
+
+                  // Update carousel
+                  const carousel = document.getElementById('cert-carousel');
+                  carousel.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.cert-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('cert-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('cert-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0"
+                aria-label="Previous certification"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              {/* Carousel Content */}
+              <div className="flex-1 overflow-hidden">
+                <div
+                  id="cert-carousel"
+                  className="flex transition-transform duration-300"
+                  style={{ transform: 'translateX(0px)' }}
+                >
+                  {/* ISO Standards Card */}
+                  <div className="flex-none w-full px-2">
+                    <div className="max-w-[300px] mx-auto">
+                      <div className="text-center mb-4">
+                        <div className="text-2xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                          Backed By Expertise
+                        </div>
+                      </div>
+                      <div className="bg-white p-6 flex flex-col items-center justify-center text-center aspect-square">
+                        <div className="w-32 h-32 mb-4 flex items-center justify-center">
+                          <Image
+                            src="/images/certifications/iso.png"
+                            alt="ISO 22000"
+                            width={144}
+                            height={144}
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
+                        <p className="text-sm" style={{ color: "#353535" }}>
+                          ISO 22000 & EU<br />
+                          Pharmacopoeia<br />
+                          herbal standards
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* GDPR Card */}
+                  <div className="flex-none w-full px-2">
+                    <div className="max-w-[300px] mx-auto">
+                      <div className="text-center mb-4">
+                        <div className="text-2xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                          Certified For Safety
+                        </div>
+                      </div>
+                      <div className="bg-white p-6 flex flex-col items-center justify-center text-center aspect-square">
+                        <div className="w-32 h-32 mb-4 flex items-center justify-center">
+                          <Image
+                            src="/images/certifications/gdpr.png"
+                            alt="GDPR"
+                            width={144}
+                            height={144}
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
+                        <p className="text-sm" style={{ color: "#353535" }}>
+                          GDPR-compliant<br />
+                          data privacy
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* European Pharmacopoeia Card */}
+                  <div className="flex-none w-full px-2">
+                    <div className="max-w-[300px] mx-auto">
+                      <div className="text-center mb-4">
+                        <div className="text-2xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                          Trusted By Design
+                        </div>
+                      </div>
+                      <div className="bg-white p-6 flex flex-col items-center justify-center text-center aspect-square">
+                        <div className="w-20 h-20 mb-4 flex items-center justify-center">
+                          <Image
+                            src="/images/certifications/europharm.png"
+                            alt="European Pharmacopoeia"
+                            width={112}
+                            height={112}
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
+                        <p className="text-sm" style={{ color: "#353535" }}>
+                          Every supplement<br />
+                          screened for drug<br />
+                          interactions
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.cert-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.min(2, currentIndex + 1); // Max 2 for 3 cards
+
+                  const offset = -newIndex * 100; // 100% width for each card
+
+                  // Update carousel
+                  const carousel = document.getElementById('cert-carousel');
+                  carousel.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.cert-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('cert-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('cert-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0"
+                aria-label="Next certification"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Dots Navigation */}
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors cert-dot ${index === 0 ? 'cert-dot-active' : ''}`}
+                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
+                  data-index={index}
+                  onClick={() => {
+                    const offset = -index * 100; // 100% width for each card
+
+                    // Update carousel
+                    const carousel = document.getElementById('cert-carousel');
+                    carousel.style.transform = `translateX(${offset}%)`;
+
+                    // Update dot colors
+                    const dots = document.querySelectorAll('.cert-dot');
+                    dots.forEach((dot, i) => {
+                      dot.classList.remove('cert-dot-active');
+                      if (i === index) {
+                        dot.classList.add('cert-dot-active');
+                        dot.dataset.index = index;
+                      }
+                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
+                    });
+                  }}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -1375,7 +1641,8 @@ export default function Home() {
         style={{ backgroundColor: "#E5E5E5" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-8 sm:gap-y-12 md:gap-y-16">
+          {/* Desktop View - Grid */}
+          <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-8 sm:gap-y-12 md:gap-y-16">
             {/* Left Column - Steps 1 & 2 */}
             <div className="space-y-8 sm:space-y-12 md:space-y-16">
               {/* Step 1 - Book */}
@@ -1485,6 +1752,199 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Mobile View - Carousel with Arrows */}
+          <div className="sm:hidden">
+            <div className="flex items-center gap-1">
+              {/* Left Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.steps-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.max(0, currentIndex - 1);
+                  const offset = -newIndex * 100; // 100% width for each page
+
+                  // Update carousel
+                  const carousel = document.getElementById('steps-carousel');
+                  carousel.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.steps-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('steps-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('steps-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0 -ml-1"
+                aria-label="Previous steps"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              {/* Carousel Content */}
+              <div className="flex-1 overflow-hidden">
+                <div
+                  id="steps-carousel"
+                  className="flex transition-transform duration-300"
+                  style={{ transform: 'translateX(0px)' }}
+                >
+                  {/* First Page - Steps 1 & 2 */}
+                  <div className="flex-none w-full px-2">
+                    <div className="space-y-8">
+                      {/* Step 1 - Book */}
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src="/images/home/step1.png"
+                          alt="Step 1"
+                          width={96}
+                          height={72}
+                          className="w-24 h-20 object-contain flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
+                            Book
+                          </div>
+                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                            Book now, and fill out your secured details to be matched
+                            with a doctor specific to your unique needs.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step 2 - Video Call */}
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src="/images/home/step2.png"
+                          alt="Step 2"
+                          width={96}
+                          height={72}
+                          className="w-24 h-20 object-contain flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
+                            Video Call
+                          </div>
+                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                            Video chat with your specialist.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Second Page - Steps 3 & 4 */}
+                  <div className="flex-none w-full px-2">
+                    <div className="space-y-8">
+                      {/* Step 3 - Get Care + Unlimited Text */}
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src="/images/home/step3.png"
+                          alt="Step 3"
+                          width={96}
+                          height={72}
+                          className="w-24 h-20 object-contain flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
+                            Get Care + Unlimited Text
+                          </div>
+                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                            Get customized diet, cleanse, lifestyle, exercise, yoga, and
+                            meditation plans by your specialist — plus unlimited texting.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step 4 - Monthly Video Follow Up */}
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src="/images/home/step4.png"
+                          alt="Step 4"
+                          width={96}
+                          height={72}
+                          className="w-24 h-20 object-contain flex-shrink-0"
+                        />
+                        <div className="flex-1">
+                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
+                            Monthly Video Follow Up
+                          </div>
+                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                            Monthly video call — essential care takes persistence.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.steps-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.min(1, currentIndex + 1); // Max 1 for 2 pages
+
+                  const offset = -newIndex * 100; // 100% width for each page
+
+                  // Update carousel
+                  const carousel = document.getElementById('steps-carousel');
+                  carousel.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.steps-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('steps-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('steps-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0 -mr-1"
+                aria-label="Next steps"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Dots Navigation */}
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1].map((index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors steps-dot ${index === 0 ? 'steps-dot-active' : ''}`}
+                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
+                  data-index={index}
+                  onClick={() => {
+                    const offset = -index * 100; // 100% width for each page
+
+                    // Update carousel
+                    const carousel = document.getElementById('steps-carousel');
+                    carousel.style.transform = `translateX(${offset}%)`;
+
+                    // Update dot colors
+                    const dots = document.querySelectorAll('.steps-dot');
+                    dots.forEach((dot, i) => {
+                      dot.classList.remove('steps-dot-active');
+                      if (i === index) {
+                        dot.classList.add('steps-dot-active');
+                        dot.dataset.index = index;
+                      }
+                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1505,8 +1965,8 @@ export default function Home() {
             frameworks–bringing deep expertise to every personalized plan.
           </p>
 
-          {/* Doctors Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Desktop Doctors Grid */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Dr. Smita Bhatia */}
             <div className="bg-white p-6 sm:p-8 text-center">
               <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
@@ -1596,7 +2056,209 @@ export default function Home() {
               </p>
             </div>
           </div>
-          
+
+          {/* Mobile Doctors Carousel */}
+          <div className="sm:hidden">
+            <div className="flex items-center gap-1">
+              {/* Left Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.experts-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.max(0, currentIndex - 1);
+                  const offset = -newIndex * 100; // 100% width for each expert
+
+                  // Update carousel
+                  const carousel = document.getElementById('experts-carousel');
+                  carousel.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.experts-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('experts-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('experts-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0 -ml-1"
+                aria-label="Previous expert"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              {/* Carousel Content */}
+              <div className="flex-1 overflow-hidden">
+                <div
+                  id="experts-carousel"
+                  className="flex transition-transform duration-300"
+                  style={{ transform: 'translateX(0px)' }}
+                >
+                  {/* Dr. Smita Bhatia */}
+                  <div className="flex-none w-full px-2">
+                    <div className="bg-white p-6 text-center">
+                      <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
+                        <Image
+                          src="/images/doctors/smita_bhatia.png"
+                          alt="Dr. Smita Bhatia"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">
+                        Dr. Smita Bhatia
+                      </div>
+                      <p className="text-sm mb-1 text-body">MBBS</p>
+                      <p className="text-sm mb-2 text-body">BAMS</p>
+                      <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
+                      <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
+                      <p className="text-sm font-medium text-charcoal">
+                        Oncology Director
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dr. Jeremy Stone */}
+                  <div className="flex-none w-full px-2">
+                    <div className="bg-white p-6 text-center">
+                      <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
+                        <Image
+                          src="/images/doctors/jeremy_stone.png"
+                          alt="Dr. Jeremy Stone"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">
+                        Dr. Jeremy Stone
+                      </div>
+                      <p className="text-sm mb-1 text-body">MBBS</p>
+                      <p className="text-sm mb-2 text-body">BAMS</p>
+                      <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
+                      <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
+                      <p className="text-sm font-medium text-charcoal">Metabolic and</p>
+                      <p className="text-sm font-medium text-charcoal">
+                        musculoskeletal specialist
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dr. Anandibai Joshi */}
+                  <div className="flex-none w-full px-2">
+                    <div className="bg-white p-6 text-center">
+                      <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
+                        <Image
+                          src="/images/doctors/anandibai_joshi.png"
+                          alt="Dr. Anandibai Joshi"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">
+                        Dr. Anandibai Joshi
+                      </div>
+                      <p className="text-sm mb-1 text-body">MBBS</p>
+                      <p className="text-sm mb-2 text-body">BAMS</p>
+                      <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
+                      <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
+                      <p className="text-sm font-medium text-charcoal">
+                        Psychology specialist
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dr. Indira Hinduja */}
+                  <div className="flex-none w-full px-2">
+                    <div className="bg-white p-6 text-center">
+                      <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
+                        <Image
+                          src="/images/doctors/indira_hinduja.png"
+                          alt="Dr. Indira Hinduja"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">
+                        Dr. Indira Hinduja
+                      </div>
+                      <p className="text-sm mb-1 text-body">MBBS</p>
+                      <p className="text-sm mb-2 text-body">BAMS</p>
+                      <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
+                      <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
+                      <p className="text-sm font-medium text-charcoal">
+                        OBGYN and women&apos;s health
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => {
+                  const currentIndex = parseInt(document.querySelector('.experts-dot-active')?.dataset?.index || '0');
+                  const newIndex = Math.min(3, currentIndex + 1); // Max 3 for 4 experts
+
+                  const offset = -newIndex * 100; // 100% width for each expert
+
+                  // Update carousel
+                  const carousel = document.getElementById('experts-carousel');
+                  carousel.style.transform = `translateX(${offset}%)`;
+
+                  // Update dot colors
+                  const dots = document.querySelectorAll('.experts-dot');
+                  dots.forEach((dot, i) => {
+                    dot.classList.remove('experts-dot-active');
+                    if (i === newIndex) {
+                      dot.classList.add('experts-dot-active');
+                      dot.dataset.index = newIndex;
+                    }
+                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                  });
+                }}
+                className="flex-shrink-0 -mr-1"
+                aria-label="Next expert"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Dots Navigation */}
+            <div className="flex justify-center gap-2 mt-6">
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors experts-dot ${index === 0 ? 'experts-dot-active' : ''}`}
+                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
+                  data-index={index}
+                  onClick={() => {
+                    const offset = -index * 100; // 100% width for each expert
+
+                    // Update carousel
+                    const carousel = document.getElementById('experts-carousel');
+                    carousel.style.transform = `translateX(${offset}%)`;
+
+                    // Update dot colors
+                    const dots = document.querySelectorAll('.experts-dot');
+                    dots.forEach((dot, i) => {
+                      dot.classList.remove('experts-dot-active');
+                      if (i === index) {
+                        dot.classList.add('experts-dot-active');
+                        dot.dataset.index = index;
+                      }
+                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
+                    });
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-12">
             <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
