@@ -1,226 +1,255 @@
-# Project Architecture
+# Architecture Documentation
 
-## Folder Structure
+**Last Updated**: October 2025
+
+Technical architecture and design patterns for the Ambé Wellness platform.
+
+---
+
+## System Architecture
+
+### High-Level Overview
 
 ```
-src/
-├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Authentication route group
-│   │   ├── login/                # Login page
-│   │   └── signup/               # Signup page
-│   ├── (dashboard)/              # Dashboard route group (requires auth)
-│   │   ├── doctor/               # Doctor portal
-│   │   │   ├── consultations/    # Consultation management
-│   │   │   │   ├── appointment/  # Individual appointment pages
-│   │   │   │   ├── history/      # Consultation history
-│   │   │   │   └── report/       # Consultation reports
-│   │   │   ├── messages/         # Messaging with users
-│   │   │   ├── schedule/         # Schedule management
-│   │   │   ├── users/            # User management
-│   │   │   ├── dashboard/        # Doctor dashboard
-│   │   │   ├── home/             # Doctor home
-│   │   │   └── menu/             # Doctor settings/profile
-│   │   └── user/                 # User portal
-│   │       ├── cart/             # Shopping cart
-│   │       ├── checkout/         # Checkout flow
-│   │       │   ├── payment/      # Stripe payment page
-│   │       │   └── success/      # Payment success page
-│   │       ├── consult/          # Consultation features
-│   │       │   ├── appointment/  # Appointment video call
-│   │       │   ├── history/      # Consultation history
-│   │       │   ├── message_doctor/ # Messaging with doctor
-│   │       │   ├── report/       # View consultation reports
-│   │       │   └── schedule/     # Schedule consultations
-│   │       ├── get-matched/      # Doctor matching flow
-│   │       ├── home/             # User dashboard
-│   │       ├── menu/             # User settings/profile
-│   │       │   ├── questionnaire/ # Health questionnaire
-│   │       │   └── purchase_history/ # Order history
-│   │       ├── notifications/    # User notifications
-│   │       ├── payment/          # Subscription payment
-│   │       ├── referral/         # Referral program
-│   │       └── store/            # Product store
-│   ├── globals.css               # Global styles
-│   ├── layout.js                 # Root layout
-│   └── page.js                   # Landing page
-│
-├── components/                   # Reusable components
-│   ├── common/                   # Generic UI components
-│   │   ├── Button.jsx            # Styled button component
-│   │   ├── TextField.jsx         # Styled input component
-│   │   └── ProtectedRoute.jsx   # Auth protection wrapper
-│   ├── navigation/               # Navigation components
-│   │   ├── DoctorNav.jsx         # Doctor portal navigation
-│   │   └── UserNav.jsx           # User portal navigation
-│   ├── auth/                     # Authentication components
-│   │   ├── ClientAuthProvider.jsx # Auth context provider
-│   │   └── UserOnboarding.jsx    # New user onboarding flow
-│   ├── chat/                     # Chat components
-│   │   └── ChatWindow.jsx        # Real-time chat interface
-│   ├── video/                    # Video call components
-│   │   └── VideoCall.jsx         # Agora video call component
-│   └── user/                     # User-specific components
-│       └── GetMatched.jsx        # Doctor matching component
-│
-├── contexts/                     # React contexts
-│   └── AuthContext.jsx           # Authentication context
-│
-├── lib/                          # Libraries and utilities
-│   ├── firebase/                 # Firebase configuration
-│   │   └── config.js             # Firebase initialization
-│   └── utils/                    # Utility functions (future)
-│
-├── hooks/                        # Custom React hooks (future)
-│
-└── styles/                       # Additional styles (future)
+┌────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                         │
+│                   Next.js 15 App Router                     │
+│                                                              │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐      │
+│  │   Public    │  │  Auth Routes │  │  Dashboard  │      │
+│  │   Routes    │  │              │  │   Routes    │      │
+│  └─────────────┘  └──────────────┘  └─────────────┘      │
+└────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│                   CONTEXT PROVIDERS                         │
+│  • AuthContext (authentication & user state)               │
+│  • Real-time listeners (Firestore)                         │
+└────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│                    SERVICES LAYER                           │
+│  ┌──────────┐  ┌─────────┐  ┌──────────┐                 │
+│  │ Firebase │  │ Stripe  │  │  Agora   │                 │
+│  └──────────┘  └─────────┘  └──────────┘                 │
+└────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────┐
+│                      DATA LAYER                             │
+│  • Firestore (NoSQL database)                              │
+│  • Firebase Storage (files/images)                         │
+│  • Real-time synchronization                               │
+└────────────────────────────────────────────────────────────┘
 ```
 
-## Route Groups
+---
 
-### (auth)
-- **Purpose**: Contains authentication-related pages
-- **Access**: Public (no authentication required)
-- **Layout**: Minimal layout without navigation bars
-- **Pages**: 
-  - `/login` - User and doctor login
-  - `/signup` - New user registration
+## Project Structure
 
-### (dashboard)
-- **Purpose**: Contains all authenticated user areas
-- **Access**: Protected (requires authentication)
-- **Layout**: Includes navigation components (DoctorNav or UserNav)
-- **Structure**: Split between doctor and user portals
+```
+ambe_wellness_website/
+├── public/
+│   ├── images/              # Static images
+│   ├── fonts/               # Custom fonts
+│   └── videos/              # Video files
+│
+├── src/
+│   ├── app/
+│   │   ├── (auth)/          # Auth route group
+│   │   │   ├── login/
+│   │   │   └── signup/
+│   │   ├── (dashboard)/     # Protected route group
+│   │   │   ├── doctor/      # Doctor portal
+│   │   │   └── user/        # User portal
+│   │   ├── layout.js        # Root layout
+│   │   ├── page.js          # Homepage
+│   │   └── globals.css      # Global styles
+│   │
+│   ├── components/
+│   │   ├── auth/            # Auth components
+│   │   ├── chat/            # Messaging components
+│   │   ├── common/          # Shared components
+│   │   ├── navigation/      # Navigation bars
+│   │   ├── user/            # User-specific components
+│   │   └── video/           # Video call components
+│   │
+│   ├── contexts/
+│   │   └── AuthContext.jsx  # Global auth state
+│   │
+│   └── lib/
+│       ├── firebase/
+│       │   └── config.js    # Firebase initialization
+│       └── design-tokens.js # Design system
+│
+├── docs/                    # This documentation
+├── CLAUDE.md               # Project instructions
+└── package.json            # Dependencies
+```
 
-## Component Organization
+---
 
-### Common Components (`/components/common/`)
-- Reusable UI components used throughout the app
-- Examples: Button, TextField, ProtectedRoute
-- No business logic, purely presentational
+## Tech Stack
 
-### Navigation Components (`/components/navigation/`)
-- Portal-specific navigation bars
-- DoctorNav: Used in doctor portal with specific menu items
-- UserNav: Used in user portal with user-specific navigation
+### Frontend
 
-### Auth Components (`/components/auth/`)
-- Authentication-related components
-- ClientAuthProvider: Wraps the app with auth context
-- UserOnboarding: New user questionnaire flow
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js | 15.2.4 | React framework |
+| React | 19.0.0 | UI library |
+| Tailwind CSS | 4.0 | Styling |
+| Framer Motion | 12.10.0 | Animations |
+| Heroicons | 2.2.0 | Icons |
 
-### Feature Components
-- Chat: Real-time messaging components
-- Video: Video consultation components using Agora SDK
-- User: User-specific components like doctor matching
+### Backend & Services
 
-## State Management
+| Service | Purpose |
+|---------|---------|
+| Firebase Auth | Authentication |
+| Firestore | Database |
+| Firebase Storage | File storage |
+| Stripe | Payments |
+| Agora RTC SDK | Video calls |
 
-### Authentication Context
-- Provides user authentication state throughout the app
-- Manages user profile data
-- Handles authentication flow
+---
 
-### Local State
-- Component-level state for UI interactions
-- Form management
-- Loading states
+## Design Patterns
+
+### 1. Route Groups
+
+Next.js 13+ route groups for layout organization:
+
+```
+app/
+├── (auth)/        # Auth layout
+├── (dashboard)/   # Dashboard layout
+└── (public)/      # Public layout (implicit)
+```
+
+### 2. Protected Routes
+
+HOC pattern for route protection:
+
+```javascript
+<ProtectedRoute userType="user">
+  {children}
+</ProtectedRoute>
+```
+
+### 3. Real-time Data
+
+Firestore snapshots for live updates:
+
+```javascript
+onSnapshot(docRef, (snapshot) => {
+  setData(snapshot.data());
+});
+```
+
+### 4. Dual Storage
+
+Appointments and messages stored in both user and doctor collections for efficient queries.
+
+---
 
 ## Data Flow
 
-1. **Authentication**:
-   - Firebase Auth handles user authentication
-   - AuthContext provides user state to components
-   - ProtectedRoute component enforces access control
+### User Login Flow
 
-2. **Real-time Data**:
-   - Firestore listeners for real-time updates
-   - Chat messages use onSnapshot for live updates
-   - Appointment status updates in real-time
+```
+User enters credentials
+  ↓
+Firebase Authentication
+  ↓
+Check Firestore for doctor document
+  ↓
+Set userType ("doctor" or "user")
+  ↓
+Real-time profile listener
+  ↓
+Navigate to appropriate dashboard
+```
 
-3. **Payments**:
-   - Stripe integration for subscriptions and store purchases
-   - Cloud functions handle payment processing
-   - Client-side only handles payment UI
+### Appointment Creation Flow
 
-## Key Design Decisions
+```
+User selects time slot
+  ↓
+Create in /users/{uid}/appointments_upcoming
+  ↓
+Mirror in /doctors/{uid}/appointments_upcoming
+  ↓
+Send notifications
+  ↓
+Real-time updates on both sides
+```
 
-1. **Route Groups**: 
-   - Separation of auth and dashboard layouts
-   - Better code organization and layout management
-   - Follows Next.js 13+ best practices
+---
 
-2. **Component Structure**:
-   - Organized by function rather than feature
-   - Promotes reusability
-   - Clear separation of concerns
+## State Management
 
-3. **Firebase Architecture**:
-   - Centralized configuration in `/lib/firebase/config.js`
-   - Direct Firestore access from components
-   - Real-time listeners for live data
+### AuthContext
 
-4. **Protected Routes**:
-   - ProtectedRoute component wraps all authenticated pages
-   - Handles redirect logic for unauthenticated users
-   - Different protection for doctor vs user portals
+Global authentication state using React Context API.
 
-5. **Terminology Consistency**:
-   - "doctor" for healthcare providers
-   - "user" for patients/clients
-   - Consistent naming throughout codebase
+**State**:
+- `user`: Firebase Auth user
+- `userType`: "doctor" | "user"
+- `profile`: Firestore profile data
+- `loading`: Boolean
 
-## Security Considerations
+**Methods**:
+- `signIn(email, password)`
+- `signUp(email, password, userType)`
+- `signOut()`
+- `resetPassword(email)`
 
-1. **Authentication**:
-   - Firebase Auth handles secure authentication
-   - Protected routes prevent unauthorized access
-   - Role-based access (doctor vs user)
-
-2. **Data Access**:
-   - Firestore security rules enforce data access
-   - Users can only access their own data
-   - Doctors can access assigned user data
-
-3. **Payment Security**:
-   - Stripe handles all payment processing
-   - No credit card data stored in app
-   - Cloud functions for secure payment intent creation
+---
 
 ## Performance Optimizations
 
-1. **Code Splitting**:
-   - Next.js automatic code splitting
-   - Route-based splitting with route groups
-   - Dynamic imports where needed
+1. **Server Components**: Use Next.js server components where possible
+2. **Image Optimization**: Next.js Image component
+3. **Code Splitting**: Automatic with Next.js App Router
+4. **Real-time Queries**: Limit listeners, unsubscribe on unmount
+5. **Caching**: Firestore persistence enabled
 
-2. **Real-time Updates**:
-   - Firestore listeners only where needed
-   - Proper cleanup of listeners
-   - Optimistic UI updates
+---
 
-3. **Image Optimization**:
-   - Next.js Image component for optimized images
-   - Lazy loading of images
-   - Proper image sizing
+## Security
 
-## Future Considerations
+1. **Firebase Auth**: Secure authentication
+2. **Firestore Rules**: Role-based access control
+3. **Environment Variables**: Secrets in `.env.local`
+4. **HTTPS**: Required in production
+5. **Input Validation**: Client and server-side
 
-1. **Testing**:
-   - Add testing framework (Jest, React Testing Library)
-   - Component tests
-   - Integration tests
+---
 
-2. **TypeScript**:
-   - Consider migration to TypeScript
-   - Better type safety
-   - Improved developer experience
+## Deployment
 
-3. **State Management**:
-   - Consider global state solution if needed
-   - Redux or Zustand for complex state
-   - Currently using Context API which is sufficient
+### Recommended: Vercel
 
-4. **API Layer**:
-   - Abstract Firestore calls to custom hooks
-   - Better separation of data logic
-   - Easier testing and maintenance
+1. Connect Git repository
+2. Configure environment variables
+3. Auto-deploy on push
+
+### Build Process
+
+```bash
+npm run build  # Creates optimized production build
+```
+
+---
+
+## Related Documentation
+
+- [OVERVIEW.md](./OVERVIEW.md) - Project overview
+- [SETUP_AND_INSTALLATION.md](./SETUP_AND_INSTALLATION.md) - Setup guide
+- [DATABASE_STRUCTURE.md](./DATABASE_STRUCTURE.md) - Data architecture
+
+---
+
+**Architecture documentation complete!**

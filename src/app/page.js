@@ -12,6 +12,134 @@ import {
 } from "@/lib/styles/constants";
 import Footer from "@/components/common/Footer";
 
+// Carousel component for The Ambé Difference section
+function AmbeDifferenceCarousel() {
+  const [currentItem, setCurrentItem] = React.useState(0);
+  const carouselItems = [
+    {
+      title: "1. Clinical Precision",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "Doctors trained in traditional and Ayurvedic Medicine and allopathic, modern medicine integrative science. Recognize interactions between herbal and pharmaceutical protocols.",
+      whyItMatters: "Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric)."
+    },
+    {
+      title: "2. High-Touch Personalization",
+      icon: "/images/icons/personalized.png",
+      whatWeDo: "Protocols tailored to each individual's dosha, agni (metabolic function), emotional state, lifestyle, and environment.",
+      whyItMatters: "Ensures safety, relevance, and long-term sustainability in real-world lifestyles."
+    },
+    {
+      title: "3. No Harmful Cross-Reactions",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "Evaluate all regimens for potential interactions with pharmaceuticals and contraindicated therapies.",
+      whyItMatters: "Reduces risk of iatrogenic effects seen with unqualified holistic advice or DIY use."
+    },
+    {
+      title: "4. Science-Guided Herbalism",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "All formulas third-party tested for purity, potency, microbial safety, heavy metals, and pesticides.",
+      whyItMatters: "Offers effective, non-toxic results—especially important for chronic illness or sensitive users."
+    },
+    {
+      title: "5. Regulatory Integrity",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "No consultation fees. Practitioners are doctors with added biomedical training—not licensed MDs.",
+      whyItMatters: "Maintains legal compliance while delivering high-quality, informed care."
+    },
+    {
+      title: "6. Global Standard Sourcing",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "Ingredients sourced from India, South America, Japan, and Europe; meet EU pharmacopeia and ISO benchmarks.",
+      whyItMatters: "Surpasses U.S. safety norms; ensures quality and cultural fidelity."
+    },
+    {
+      title: "7. Evidence-Informed Guidance",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "Cross-reference Vedic protocols with peer-reviewed science in nutrition, immunology, endocrinology, and mental health.",
+      whyItMatters: "Balances tradition with modern science—ideal for skeptical or science-minded individuals."
+    },
+    {
+      title: "8. Access Over Hype",
+      icon: "/images/icons/clinic.png",
+      whatWeDo: "We don't waste your money on flashy marketing campaigns or expensive packaging. Instead, we invest every dollar where it truly counts-making high-quality wellness support accessible and affordable.",
+      whyItMatters: "By keeping our costs lean and our approach honest, we prioritize real care over hype. This means fair pricing, wider reach, and access to personalized, traditional wellness for everyone-without paying extra for marketing fluff"
+    }
+  ];
+
+  const handlePrev = () => {
+    setCurrentItem((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+  };
+
+  const handleNext = () => {
+    setCurrentItem((prev) => (prev + 1) % carouselItems.length);
+  };
+
+  return (
+    <>
+      {/* Carousel Navigation */}
+      <div className="flex items-center justify-between mb-8">
+        <button onClick={handlePrev} className="p-2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        <div className="bg-white rounded-full py-3 px-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#FFD3AC] rounded-full flex items-center justify-center p-2">
+              <Image
+                src={carouselItems[currentItem].icon}
+                alt={carouselItems[currentItem].title}
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
+            <span className="font-medium text-base" style={{ color: "#353535" }}>
+              {carouselItems[currentItem].title}
+            </span>
+          </div>
+        </div>
+
+        <button onClick={handleNext} className="p-2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Content Box - Perfect Circle */}
+      <div className="flex justify-center">
+        <div className="bg-white rounded-full w-[24rem] h-[24rem] p-10 flex flex-col justify-center text-center">
+          <div className="text-lg font-medium mb-4" style={{ color: "#353535" }}>
+            {carouselItems[currentItem].title}
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <div className="font-medium mb-1 text-sm" style={{ color: "#353535" }}>
+                What We Do
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: "#535353" }}>
+                {carouselItems[currentItem].whatWeDo}
+              </p>
+            </div>
+
+            <div>
+              <div className="font-medium mb-1 text-sm" style={{ color: "#353535" }}>
+                Why It Matters
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: "#535353" }}>
+                {carouselItems[currentItem].whyItMatters}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function Home() {
   // State for managing selected tab content
   const [selectedTab, setSelectedTab] = React.useState('biomarkers');
@@ -854,132 +982,7 @@ export default function Home() {
           </div>
 
           {/* Carousel with State Management */}
-          {(() => {
-            const [currentItem, setCurrentItem] = React.useState(0);
-            const carouselItems = [
-              {
-                title: "1. Clinical Precision",
-                icon: "/images/icons/clinic.png",
-                whatWeDo: "Doctors trained in traditional and Ayurvedic Medicine and allopathic, modern medicine integrative science. Recognize interactions between herbal and pharmaceutical protocols.",
-                whyItMatters: "Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric)."
-              },
-              {
-                title: "2. High-Touch Personalization",
-                icon: "/images/icons/personalized.png",
-                whatWeDo: "Protocols tailored to each individual's dosha, agni (metabolic function), emotional state, lifestyle, and environment.",
-                whyItMatters: "Ensures safety, relevance, and long-term sustainability in real-world lifestyles."
-              },
-              {
-                title: "3. No Harmful Cross-Reactions",
-                icon: "/images/icons/harmful.png",
-                whatWeDo: "Evaluate all regimens for potential interactions with pharmaceuticals and contraindicated therapies.",
-                whyItMatters: "Reduces risk of iatrogenic effects seen with unqualified holistic advice or DIY use."
-              },
-              {
-                title: "4. Science-Guided Herbalism",
-                icon: "/images/icons/herbal.png",
-                whatWeDo: "All formulas third-party tested for purity, potency, microbial safety, heavy metals, and pesticides.",
-                whyItMatters: "Offers effective, non-toxic results—especially important for chronic illness or sensitive users."
-              },
-              {
-                title: "5. Regulatory Integrity",
-                icon: "/images/icons/regula.png",
-                whatWeDo: "No consultation fees. Practitioners are doctors with added biomedical training—not licensed MDs.",
-                whyItMatters: "Maintains legal compliance while delivering high-quality, informed care."
-              },
-              {
-                title: "6. Global Standard Sourcing",
-                icon: "/images/icons/regula.png",
-                whatWeDo: "Ingredients sourced from India, South America, Japan, and Europe; meet EU pharmacopeia and ISO benchmarks.",
-                whyItMatters: "Surpasses U.S. safety norms; ensures quality and cultural fidelity."
-              },
-              {
-                title: "7. Evidence-Informed Guidance",
-                icon: "/images/icons/evidence.png",
-                whatWeDo: "Cross-reference Vedic protocols with peer-reviewed science in nutrition, immunology, endocrinology, and mental health.",
-                whyItMatters: "Balances tradition with modern science—ideal for skeptical or science-minded individuals."
-              },
-              {
-                title: "8. Access Over Hype",
-                icon: "/images/icons/access.png",
-                whatWeDo: "We don't waste your money on flashy marketing campaigns or expensive packaging. Instead, we invest every dollar where it truly counts-making high-quality wellness support accessible and affordable.",
-                whyItMatters: "By keeping our costs lean and our approach honest, we prioritize real care over hype. This means fair pricing, wider reach, and access to personalized, traditional wellness for everyone-without paying extra for marketing fluff"
-              }
-            ];
-
-            const handlePrev = () => {
-              setCurrentItem((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
-            };
-
-            const handleNext = () => {
-              setCurrentItem((prev) => (prev + 1) % carouselItems.length);
-            };
-
-            return (
-              <>
-                {/* Carousel Navigation */}
-                <div className="flex items-center justify-between mb-8">
-                  <button onClick={handlePrev} className="p-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                      <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                  </button>
-
-                  <div className="bg-white rounded-full py-3 px-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-[#FFD3AC] rounded-full flex items-center justify-center p-2">
-                        <Image
-                          src={carouselItems[currentItem].icon}
-                          alt={carouselItems[currentItem].title}
-                          width={32}
-                          height={32}
-                          className="object-contain"
-                        />
-                      </div>
-                      <span className="font-medium text-base" style={{ color: "#353535" }}>
-                        {carouselItems[currentItem].title}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button onClick={handleNext} className="p-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Content Box - Perfect Circle */}
-                <div className="flex justify-center">
-                  <div className="bg-white rounded-full w-[24rem] h-[24rem] p-10 flex flex-col justify-center text-center">
-                    <div className="text-lg font-medium mb-4" style={{ color: "#353535" }}>
-                      {carouselItems[currentItem].title}
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <div className="font-medium mb-1 text-sm" style={{ color: "#353535" }}>
-                          What We Do
-                        </div>
-                        <p className="text-xs leading-relaxed" style={{ color: "#535353" }}>
-                          {carouselItems[currentItem].whatWeDo}
-                        </p>
-                      </div>
-
-                      <div>
-                        <div className="font-medium mb-1 text-sm" style={{ color: "#353535" }}>
-                          Why It Matters
-                        </div>
-                        <p className="text-xs leading-relaxed" style={{ color: "#535353" }}>
-                          {carouselItems[currentItem].whyItMatters}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            );
-          })()}
+          <AmbeDifferenceCarousel />
         </div>
       </section>
 
