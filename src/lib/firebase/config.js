@@ -1,4 +1,6 @@
 // src/lib/firebase.js
+import 'dotenv/config';
+
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth }   from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
