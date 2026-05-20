@@ -30,7 +30,7 @@ export default function Footer() {
         {/* Second row - copyright and terms */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-6">
           <p style={{ color: 'white' }} className="text-xs sm:text-sm text-left">
-            2026 Ambe All Rights Reserved By Lakshmi Devi Namaha LLC
+            2026 Ambé All Rights Reserved By Lakshmi Devi Namaha LLC
           </p>
           <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
             Terms

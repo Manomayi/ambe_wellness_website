@@ -68,11 +68,11 @@ export default function ReferFriendPage() {
   }
 
   function shareReferralCode() {
-    const message = `Join Ambe Wellness and get 25% off your first order! Use my referral code: ${referralCode}\n\nSign up and start your wellness journey today!`;
+    const message = `Join Ambé Wellness and get 25% off your first order! Use my referral code: ${referralCode}\n\nSign up and start your wellness journey today!`;
     
     if (navigator.share) {
       navigator.share({
-        title: 'Join Ambe Wellness',
+        title: 'Join Ambé Wellness',
         text: message,
       }).catch((error) => {
         // Only handle actual errors, not user cancellation

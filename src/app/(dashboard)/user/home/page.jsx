@@ -148,7 +148,7 @@ export default function UserHomePage() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Ambe</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Ambé</h1>
             <h2 className="text-3xl font-normal text-gray-800">
               Hello {firstName},
             </h2>

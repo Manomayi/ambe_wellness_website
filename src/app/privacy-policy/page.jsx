@@ -1,8 +1,8 @@
 import React from 'react';
 
 export const metadata = {
-  title: 'Privacy Policy | Ambe Wellness',
-  description: 'Privacy Policy for Ambe Wellness',
+  title: 'Privacy Policy | Ambé Wellness',
+  description: 'Privacy Policy for Ambé Wellness',
 };
 
 export default function PrivacyPolicy() {
@@ -13,7 +13,7 @@ export default function PrivacyPolicy() {
         <div className="whitespace-pre-wrap font-sans leading-relaxed text-gray-700">
           {`
 
-Privacy Policy for Ambe Wellness by Lakshmi Devi Namaha LLC
+Privacy Policy for Ambé Wellness by Lakshmi Devi Namaha LLC
 
 Last updated: August 16, 2024
 This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.
@@ -29,7 +29,7 @@ Account means a unique account created for You to access our Service or parts of
 Affiliate means an entity that controls, is controlled by or is under common control with a party, where "control" means ownership of 50% or more of the shares, equity interest or other securities entitled to vote for election of directors or other managing authority.
 
  
-Application refers to Ambe Wellness, the software program provided by the Company.
+Application refers to Ambé Wellness, the software program provided by the Company.
 
  
 Business, for the purpose of CCPA/CPRA, refers to the Company as the legal entity that collects Consumers' personal information and determines the purposes and means of the processing of Consumers' personal information, or on behalf of which such information is collected and that alone, or jointly with others, determines the purposes and means of the processing of consumers' personal information, that does business in the State of California.
@@ -59,7 +59,7 @@ Device means any device that can access the Service such as a computer, a cellph
  
 Do Not Track (DNT) is a concept that has been promoted by US regulatory authorities, in particular the U.S. Federal Trade Commission (FTC), for the Internet industry to develop and implement a mechanism for allowing internet users to control the tracking of their online activities across websites.
  
-Facebook Fan Page is a public profile named Ambe Wellness  specifically created by the Company on the Facebook social network, accessible from [Facebook.com/ambewellness](https://www.termsfeed.com/live/Facebook.com/ambewellness)
+Facebook Fan Page is a public profile named Ambé Wellness  specifically created by the Company on the Facebook social network, accessible from [Facebook.com/ambewellness](https://www.termsfeed.com/live/Facebook.com/ambewellness)
 
 GDPR refers to EU General Data Protection Regulation.
 

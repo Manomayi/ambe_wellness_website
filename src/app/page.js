@@ -153,7 +153,7 @@ export default function Home() {
     },
     'biomarkers': {
       title: 'Bio markers and holistic integration',
-      text: 'Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don\'t catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.',
+      text: 'Bio markers are often not time-tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don\'t catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time-tested methods, often catching imbalance early on.',
       image: '/images/home/hands.png'
     },
     'personalize': {
@@ -651,7 +651,7 @@ export default function Home() {
                       className="text-sm text-center leading-relaxed mb-3 px-4"
                       style={{ color: "#353535" }}
                     >
-                      &quot;Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human.&quot;
+                      &quot;Pain stopped ruling me. Ambé helped me reclaim my health with care that feels human.&quot;
                     </p>
                     <p
                       className="text-sm text-center font-bold mb-1"
@@ -779,7 +779,7 @@ export default function Home() {
                           className="text-sm text-center leading-relaxed mb-3 px-4"
                           style={{ color: "#353535" }}
                         >
-                          &quot;Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human.&quot;
+                          &quot;Pain stopped ruling me. Ambé helped me reclaim my health with care that feels human.&quot;
                         </p>
                         <p
                           className="text-sm text-center font-bold mb-1"
@@ -820,7 +820,7 @@ export default function Home() {
                   style={{ color: "white" }}
                 >
                   <span className="font-bold underline">55</span>{" "}
-                  <span className="font-light">Million Bio-Markers analysed</span>
+                  <span className="font-light">Million Biomarkers Analyzed</span>
                 </p>
                 
                 <Button className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
@@ -867,7 +867,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-sm md:text-base" style={{ color: "#353535" }}>
-                This isn&apos;t science fiction. This is Ambé.&quot;
+                This isn&apos;t science fiction. This is Ambé.
               </p>
             </div>
 
@@ -886,10 +886,7 @@ export default function Home() {
 
               <div className="p-6 sm:p-8" style={{ backgroundColor: "#FFD3AC", borderTopLeftRadius: "60px", borderBottomRightRadius: "60px" }}>
                 <p className="text-sm md:text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
-                  &quot;In a twin double blind study , identical twins lived
-                  differently for just 8 weeks. The twin measurably
-                  lowered their biological age. Same DNA. Different
-                  choices. Different future.&quot;
+                In a double-blind twin study, identical twins who changed their lifestyle for just 8 weeks measurably lowered their biological age. Same DNA. Different choices. Different future.
                 </p>
               </div>
             </div>
@@ -928,7 +925,7 @@ export default function Home() {
                     Precision You Can Trust
                   </div>
                   <p className="text-sm" style={{ color: "#353535" }}>
-                    Doctors cross-trained in time tested and modern science
+                    Doctors cross-trained in time-tested and modern science
                   </p>
                 </div>
               </div>
@@ -948,7 +945,7 @@ export default function Home() {
                 </div>
                 <div className="flex-1">
                   <div className="font-semibold text-lg mb-2" style={{ color: "#353535" }}>
-                    Plans crafted around your
+                    Plans crafted around you
                   </div>
                   <p className="text-sm" style={{ color: "#353535" }}>
                     Plans crafted around your whole self & labs
@@ -1154,7 +1151,7 @@ export default function Home() {
                 {/* Time Tested */}
                 <tr>
                   <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
-                    Time Tested
+                    Time-Tested
                   </td>
                   <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
                     <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
@@ -1418,7 +1415,7 @@ export default function Home() {
                 {/* Time Tested Row */}
                 <div className="flex gap-3 items-center">
                   <div className="w-32 flex-shrink-0">
-                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Time Tested</span>
+                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Time-Tested</span>
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div
@@ -2199,7 +2196,7 @@ export default function Home() {
           <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
             Licensed. Global. Guided by science. Every Ambé practitioner is
             trained in traditional medicine and modern clinical
-            frameworks–bringing deep expertise to every personalized plan.
+            frameworks – bringing deep expertise to every personalized plan.
           </p>
 
           {/* Desktop Doctors Grid */}
@@ -2582,7 +2579,7 @@ export default function Home() {
                     Hormone Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-Balance, not band-aids with adverse long term affects nor dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
+Balance, not band-aids with adverse long-term effects or dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
                   </p>
                 </div>
               </div>
@@ -2623,7 +2620,8 @@ Whole-woman care, redefined. From menstruation to menopause, fertility to fibro
                     Men&apos;s Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional and allopathic medicine science to build long-term performance and resilience.                  </p>
+More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional Ayurvedic and modern medical science to build long-term performance and resilience. 
+</p>
                 </div>
               </div>
 
@@ -2713,14 +2711,14 @@ Built for you. Not the algorithm. We don’t do fads. We do personalized, long-
                   <div className="w-16 h-16 mb-4">
                     <Image
                       src="/images/icons/whole_body.png"
-                      alt="Whole Body & Mind Health Scans"
+                      alt="Home & Environment Detox"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Whole Body & Mind Health Scans
+                    Home & Environment Detox
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
 Your environment heals with you. We give you step-by-step plans for detoxing your space, body care routines, and healing rhythms to keep your inner and outer worlds in sync.                  </p>
@@ -2733,14 +2731,14 @@ Your environment heals with you. We give you step-by-step plans for detoxing yo
                   <div className="w-16 h-16 mb-4">
                     <Image
                       src="/images/icons/whole_kitchen.png"
-                      alt="Whole Kitchen & Your Kitchen"
+                      alt="Healing Kitchen Guide"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Whole Kitchen & Your Kitchen
+                    Healing Kitchen Guide
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
 What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a healing center, with Ayurvedic and vet-approved tips for feeding those you love.                  </p>
@@ -3569,7 +3567,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                       style={{ color: "#353535" }}
                     >
                       We&apos;re doctors, entrepreneurs and researchers with
-                      decades of experience. Ambé is built for the soul of the modern man.
+                      decades of experience. Ambé is built for the soul of the modern human.
                     </p>
 
                     {/* Main Quote */}
@@ -3583,7 +3581,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                       With loving support, we can blossom into
                       <br className="hidden sm:block" />
                       <span className="sm:hidden">
-                        With loving support, we can blossom into{" "}
+                        {/* With loving support, we can blossom into{" "} */}
                       </span>
                       our full potential.
                     </div>
@@ -3603,7 +3601,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                     >
                       Ten trees planted per member, per month = 120 trees per year
                       per member. Our health depends on the health of Mother Nature — trees are proven to be the #1
-                      way to purify and nourish the environment and help avert.
+                      way to purify and nourish the environment and help avert environmental decline.
                     </p>
                   </div>
                 </div>

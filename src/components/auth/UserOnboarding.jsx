@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 export default function UserOnboarding({ onFinish }) {
   const pages = [
     {
-      title: 'Welcome to Ambe',
+      title: 'Welcome to Ambé',
       desc: 'Complete the questionnaire',
     },
     {

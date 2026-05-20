@@ -287,7 +287,7 @@ export default function Enterprise() {
             {/* Left Content */}
             <div className="w-full lg:flex-1 flex flex-col justify-center order-1 lg:order-1">
               <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
-                Bring Ambe to Your Company
+                Bring Ambé to Your Company
               </div>
               <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 We offer high-impact, cost-effective wellness programs designed 
@@ -399,7 +399,7 @@ export default function Enterprise() {
                   Contact
                 </div>
                 <p className="text-center mb-8 sm:mb-10 md:mb-12 text-sm sm:text-base" style={{ color: '#535353' }}>
-                  Drop us a line for a complementary guide for your team
+                  Drop us a line for a complimentary guide for your team
                 </p>
                 
                 <form className="space-y-6">

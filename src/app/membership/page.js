@@ -60,7 +60,7 @@ export default function Membership() {
                       1:1 Video Sessions with Your Specialist
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Each month, you&apos;ll connect face-to-face with your personal Ayurvedic specialist. You can also choose to consult with other practitioners from our multidisciplinary team
+                      Each month, you&apos;ll connect face-to-face with your personal integrative doctor. You can also choose to consult with other practitioners from our multidisciplinary team
                     </p>
                   </div>
                 </div>
@@ -90,7 +90,7 @@ export default function Membership() {
                       Practitioner Collaboration, Powered by Real-Time Data
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call-and
+                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. 'Your wellness doesn’t stop at the first call — and neither do we.
                     </p>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default function Membership() {
                             1:1 Video Sessions with Your Specialist
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Each month, you&apos;ll connect face-to-face with your personal Ayurvedic specialist. You can also choose to consult with other practitioners from our multidisciplinary team
+                            Each month, you&apos;ll connect face-to-face with your personal integrative doctor. You can also choose to consult with other practitioners from our multidisciplinary team
                           </p>
                         </div>
                       </div>
@@ -160,7 +160,7 @@ export default function Membership() {
                             Practitioner Collaboration, Powered by Real-Time Data
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call-and
+                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. 'Your wellness doesn’t stop at the first call — and neither do we.
                           </p>
                         </div>
                       </div>
@@ -479,7 +479,7 @@ export default function Membership() {
                   style={{ backgroundColor: '#FFD3AC' }}
                 >
                   <div className="text-xl sm:text-2xl font-medium" style={{ color: '#353535' }}>
-                    Excepteur sint
+                  Flexible care on your terms.
                   </div>
                  
                 </div>
@@ -505,18 +505,47 @@ export default function Membership() {
                     <span style={{ color: '#535353' }}>Bath, body, food, and tea products</span>
                   </div>
                   {/* Invisible placeholders to match left column height */}
-                  <div className="flex items-center gap-3 invisible">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0"></div>
-                    <span>Placeholder</span>
-                  </div>
-                  <div className="flex items-center gap-3 invisible">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0"></div>
-                    <span>Placeholder</span>
-                  </div>
-                  <div className="flex items-center gap-3 invisible">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0"></div>
-                    <span>Placeholder</span>
-                  </div>
+                  <div className="flex items-center gap-3">
+  <div
+    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+    style={{ backgroundColor: '#FFD3AC' }}
+  >
+    <span className="text-[10px] font-black" style={{ color: 'white' }}>
+      ✓
+    </span>
+  </div>
+  <span style={{ color: '#535353' }}>
+    Book individual consultations
+  </span>
+</div>
+
+<div className="flex items-center gap-3">
+  <div
+    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+    style={{ backgroundColor: '#FFD3AC' }}
+  >
+    <span className="text-[10px] font-black" style={{ color: 'white' }}>
+      ✓
+    </span>
+  </div>
+  <span style={{ color: '#535353' }}>
+    No minimum commitment
+  </span>
+</div>
+
+<div className="flex items-center gap-3">
+  <div
+    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+    style={{ backgroundColor: '#FFD3AC' }}
+  >
+    <span className="text-[10px] font-black" style={{ color: 'white' }}>
+      ✓
+    </span>
+  </div>
+  <span style={{ color: '#535353' }}>
+    Supplements purchased separately
+  </span>
+</div>
                 </div>
               </div>
             </div>
@@ -533,7 +562,7 @@ export default function Membership() {
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div></div>
               <div className="text-center font-medium" style={{ color: '#353535' }}>
-                Ambe Membership
+              Ambé Membership
               </div>
               <div className="text-center font-medium" style={{ color: '#353535' }}>
                 Typical Wellness Programs
@@ -642,7 +671,7 @@ export default function Membership() {
               <div className="grid grid-cols-3 gap-4 mb-6 sticky top-0 bg-[#F4F4F4] z-10 pb-2">
                 <div></div>
                 <div className="text-center font-medium text-sm" style={{ color: '#353535' }}>
-                  Ambe Membership
+              Ambé Membership
                 </div>
                 <div className="text-center font-medium text-sm" style={{ color: '#353535' }}>
                   Typical Wellness Programs
@@ -1257,7 +1286,7 @@ export default function Membership() {
                   Ready to Feel Your Best?
                 </div>
                 <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8" style={{ color: '#535353' }}>
-                  Join the Ambe Membership for personalized, all-inclusive care.
+                  Join the Ambé Membership for personalized, all-inclusive care.
                 </p>
                 <Button>
                   BOOK NOW - PAY AS YOU LIKE

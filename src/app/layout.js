@@ -2,7 +2,7 @@ import ClientAuthProvider from "@/components/auth/ClientAuthProvider";
 import "./globals.css";
 
 export const metadata = {
-  title: "Ambe Wellness",
+  title: "Ambé Wellness",
   description: "We care about your health and wellness",
   icons: {
     icon: "/favicon.ico",

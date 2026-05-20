@@ -13,7 +13,7 @@ export default function UserNav({ currentPath }) {
   return (
     <header className="sticky top-0 z-50 bg-white bg-opacity-90 backdrop-blur-sm shadow-sm">
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16">
-        <div className="text-2xl font-bold text-green-600">Ambe</div>
+        <div className="text-2xl font-bold text-green-600">Ambé</div>
         <nav className="flex space-x-6">
           {tabs.map(({ label, href, Icon }) => {
             const isActive = currentPath === href;

@@ -277,7 +277,8 @@ export default function Resources() {
                   <div>
                     <div className="font-semibold mb-2">Health Impact:</div>
                     <p className="text-sm mt-1" style={{ color: '#535353' }}>
-                      Increased toxin exposure, crime risk, stress load.
+                    Elevated cortisol, anxiety, depression, burnout, and
+                    immune suppression
                     </p>
                   </div>
                 </div>
@@ -703,7 +704,7 @@ export default function Resources() {
           </div>
 
           {/* Footer */}
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </section>
       

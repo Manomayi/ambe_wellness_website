@@ -16,7 +16,7 @@ export default function DoctorLayout({ children }) {
         </div>
       </main>
       <footer className="text-center text-gray-500 text-sm py-6">
-        © {new Date().getFullYear()} Ambe Wellness
+        © {new Date().getFullYear()} Ambé Wellness
       </footer>
     </div>
   );
