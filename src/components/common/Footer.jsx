@@ -16,14 +16,14 @@ export default function Footer() {
               Membership
             </Link>
             <Link
-  href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
-  target="_blank"
-  rel="noopener noreferrer"
-  style={{ color: 'white' }}
-  className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left"
->
-  Download App
-</Link>
+              href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'white' }}
+              className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left"
+            >
+              Download App
+            </Link>
             <Link href="/login" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
               Sign In
             </Link>
@@ -32,11 +32,11 @@ export default function Footer() {
             </Link>
           </div>
         </div>
-        
+
         {/* Second row - copyright and terms */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-6">
           <p style={{ color: 'white' }} className="text-xs sm:text-sm text-left">
-          © 2026 Ambé All Rights Reserved By Lakshmi Devi Namaha LLC
+            © 2026 Ambé All Rights Reserved By Lakshmi Devi Namaha LLC
           </p>
           <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
             Terms
@@ -45,14 +45,14 @@ export default function Footer() {
             Privacy Policy
           </Link>
         </div>
-        
+
         {/* Disclaimer text */}
         <div className="pt-6">
           <p style={{ color: 'white' }} className="text-xs leading-relaxed">
             All content and resources provided by AMBE are intended for <strong>educational purposes only</strong>. They do not constitute medical advice, diagnosis, or treatment.
-            Any cleanse, detox program, or health regimen should be undertaken only under the supervision of AMBE's team of qualified wellness practitioners or 
-            other vetted professionals with appropriate experience. This ensures that your individual constitution ("Prakriti"), health status, 
-            and unique needs are addressed safely. Improper or unsupervised application of these protocols can lead to harm. Always consult your licensed healthcare 
+            Any cleanse, detox program, or health regimen should be undertaken only under the supervision of AMBE's team of qualified wellness practitioners or
+            other vetted professionals with appropriate experience. This ensures that your individual constitution ("Prakriti"), health status,
+            and unique needs are addressed safely. Improper or unsupervised application of these protocols can lead to harm. Always consult your licensed healthcare
             provider before starting any new wellness or cleansing program. By using AMBE resources, you acknowledge and
             accept that you are responsible for your own health decisions.
           </p>

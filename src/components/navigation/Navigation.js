@@ -24,9 +24,9 @@ export default function Navigation() {
                 priority
               />
             </Link>
-            
+
             {/* Mobile menu button */}
-            <button 
+            <button
               className="md:hidden relative z-[60]"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{ color: mobileMenuOpen ? '#353535' : 'white' }}
@@ -39,52 +39,59 @@ export default function Navigation() {
                 )}
               </svg>
             </button>
-          
-          {/* Desktop navigation */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-8 xl:gap-12">
-            <Link 
-              href="/enterprise" 
-              className="text-xs lg:text-sm" 
-              style={{ color: pathname === '/enterprise' ? '#FFD3AC' : 'white' }}
-            >
-              Enterprise
-            </Link>
-            <Link 
-              href="/membership" 
-              className="text-xs lg:text-sm" 
-              style={{ color: pathname === '/membership' ? '#FFD3AC' : 'white' }}
-            >
-              Membership
-            </Link>
-            <Link 
-              href="/resources" 
-              className="text-xs lg:text-sm" 
-              style={{ color: pathname === '/resources' ? '#FFD3AC' : 'white' }}
-            >
-              Resources
-            </Link>
-            <button className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm hover:bg-white hover:text-black transition-colors whitespace-nowrap" style={{ color: 'white' }}>
-              Download App
-            </button>
-            
-            {/* Divider */}
-            <div className="hidden lg:block h-8 w-px bg-white opacity-50"></div>
-            
-            <Link href="/login" className="text-xs lg:text-sm" style={{ color: 'white' }}>
-              Sign in
-            </Link>
+
+            {/* Desktop navigation */}
+            <div className="hidden md:flex items-center gap-4 lg:gap-8 xl:gap-12">
+              <Link
+                href="/enterprise"
+                className="text-xs lg:text-sm"
+                style={{ color: pathname === '/enterprise' ? '#FFD3AC' : 'white' }}
+              >
+                Enterprise
+              </Link>
+              <Link
+                href="/membership"
+                className="text-xs lg:text-sm"
+                style={{ color: pathname === '/membership' ? '#FFD3AC' : 'white' }}
+              >
+                Membership
+              </Link>
+              <Link
+                href="/resources"
+                className="text-xs lg:text-sm"
+                style={{ color: pathname === '/resources' ? '#FFD3AC' : 'white' }}
+              >
+                Resources
+              </Link>
+              <Link
+                href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
+                target="_blank"
+              >
+                <button
+                  className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm hover:bg-white hover:text-black transition-colors whitespace-nowrap"
+                  style={{ color: 'white' }}
+                >
+                  Download App
+                </button>
+              </Link>
+
+              {/* Divider */}
+              <div className="hidden lg:block h-8 w-px bg-white opacity-50"></div>
+
+              <Link href="/login" className="text-xs lg:text-sm" style={{ color: 'white' }}>
+                Sign in
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
-    {/* Mobile menu - Full screen overlay sliding from right */}
-    <div 
-      className={`md:hidden fixed inset-0 z-[55] bg-white transform transition-transform duration-300 ease-in-out ${
-        mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}
-    >
-      <div className="flex flex-col h-full">
+      {/* Mobile menu - Full screen overlay sliding from right */}
+      <div
+        className={`md:hidden fixed inset-0 z-[55] bg-white transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+      >
+        <div className="flex flex-col h-full">
           {/* Mobile menu header with close button */}
           <div className="flex justify-between items-center px-6 py-4 border-b" style={{ borderColor: '#E5E5E5' }}>
             <Link href="/" onClick={() => setMobileMenuOpen(false)}>
@@ -96,7 +103,7 @@ export default function Navigation() {
                 className="cursor-pointer"
               />
             </Link>
-            <button 
+            <button
               onClick={() => setMobileMenuOpen(false)}
               style={{ color: '#353535' }}
             >
@@ -105,41 +112,47 @@ export default function Navigation() {
               </svg>
             </button>
           </div>
-          
+
           {/* Mobile menu items */}
           <div className="flex-1 px-8 py-8">
             <div className="flex flex-col space-y-6">
-              <Link 
-                href="/enterprise" 
-                className="text-2xl font-light" 
+              <Link
+                href="/enterprise"
+                className="text-2xl font-light"
                 style={{ color: pathname === '/enterprise' ? '#FFD3AC' : '#353535' }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Enterprise
               </Link>
-              <Link 
-                href="/membership" 
-                className="text-2xl font-light" 
+              <Link
+                href="/membership"
+                className="text-2xl font-light"
                 style={{ color: pathname === '/membership' ? '#FFD3AC' : '#353535' }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Membership
               </Link>
-              <Link 
-                href="/resources" 
-                className="text-2xl font-light" 
+              <Link
+                href="/resources"
+                className="text-2xl font-light"
                 style={{ color: pathname === '/resources' ? '#FFD3AC' : '#353535' }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Resources
               </Link>
-              <button 
-                className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit" 
-                style={{ borderColor: '#FFD3AC', backgroundColor: '#FFD3AC', color: '#353535' }}
-                onClick={() => setMobileMenuOpen(false)}
+              <a
+                href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                Download App
-              </button>
+                <button
+                  className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit"
+                  style={{ borderColor: '#FFD3AC', backgroundColor: '#FFD3AC', color: '#353535' }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Download App
+                </button>
+              </a>
             </div>
           </div>
         </div>
