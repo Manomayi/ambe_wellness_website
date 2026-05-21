@@ -15,10 +15,16 @@ export default function Footer() {
             <Link href="/membership" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
               Membership
             </Link>
-            <Link href="/download" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
-              Download App
-            </Link>
-            <Link href="/signin" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
+            <Link
+  href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
+  target="_blank"
+  rel="noopener noreferrer"
+  style={{ color: 'white' }}
+  className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left"
+>
+  Download App
+</Link>
+            <Link href="/login" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
               Sign In
             </Link>
             <Link href="/contact" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
@@ -30,7 +36,7 @@ export default function Footer() {
         {/* Second row - copyright and terms */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-6">
           <p style={{ color: 'white' }} className="text-xs sm:text-sm text-left">
-            2026 Ambé All Rights Reserved By Lakshmi Devi Namaha LLC
+          © 2026 Ambé All Rights Reserved By Lakshmi Devi Namaha LLC
           </p>
           <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
             Terms
@@ -51,6 +57,18 @@ export default function Footer() {
             accept that you are responsible for your own health decisions.
           </p>
         </div>
+
+        <p
+          style={{
+            fontSize: '10px',
+            color: '#fff',
+            textAlign: 'center',
+            marginTop: '8px',
+          }}
+        >
+          Ambé Wellness is a product of Lakshmi Devi Namaha LLC. All app-related services are
+          provided under the iOS developer account of Lakshmi Devi Namaha.
+        </p>
       </div>
     </footer>
   );

@@ -38,7 +38,7 @@ export default function Membership() {
                   <button
                     className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
                   >
-                    BOOK FREE<br/> CONSULT NOW
+                    BOOK FREE<br /> CONSULT NOW
                   </button>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export default function Membership() {
                       Practitioner Collaboration, Powered by Real-Time Data
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. 'Your wellness doesn’t stop at the first call — and neither do we.
+                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. &apos;Your wellness doesn’t stop at the first call — and neither do we.
                     </p>
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function Membership() {
                             Practitioner Collaboration, Powered by Real-Time Data
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. 'Your wellness doesn’t stop at the first call — and neither do we.
+                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. &apos;Your wellness doesn’t stop at the first call — and neither do we.
                           </p>
                         </div>
                       </div>
@@ -252,7 +252,7 @@ export default function Membership() {
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image src="/images/icons/weight_mgmt.png" alt="Weight Management" fill className="object-contain" />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br />Management</p>
                   </div>
 
                   {/* Hormone Health */}
@@ -260,7 +260,7 @@ export default function Membership() {
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image src="/images/icons/hormone_health.png" alt="Hormone Health" fill className="object-contain" />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br />Health</p>
                   </div>
 
                   {/* Wellness Guides */}
@@ -268,7 +268,7 @@ export default function Membership() {
                     <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                       <Image src="/images/icons/wellness_guides.png" alt="Wellness Guides" fill className="object-contain" />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br />Guides</p>
                   </div>
                 </div>
 
@@ -296,67 +296,67 @@ export default function Membership() {
                         className="flex gap-3 overflow-x-auto scrollbar-hide"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitScrollbar: { display: 'none' } }}
                       >
-                    {/* All 10 icons repeated for mobile */}
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/skin_hair.png" alt="Skin & Hair" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/womens_health.png" alt="Women&apos;s Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/mens_health.png" alt="Men&apos;s Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/digestive_health.png" alt="Digestive Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/musculoskeletal.png" alt="Musculoskeletal" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/mental_health.png" alt="Mental Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/longevity.png" alt="Longevity" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/weight_mgmt.png" alt="Weight Management" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/hormone_health.png" alt="Hormone Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/wellness_guides.png" alt="Wellness Guides" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
-                    </div>
+                        {/* All 10 icons repeated for mobile */}
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/skin_hair.png" alt="Skin & Hair" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/womens_health.png" alt="Women&apos;s Health" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/mens_health.png" alt="Men&apos;s Health" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/digestive_health.png" alt="Digestive Health" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/musculoskeletal.png" alt="Musculoskeletal" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/mental_health.png" alt="Mental Health" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/longevity.png" alt="Longevity" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/weight_mgmt.png" alt="Weight Management" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br />Management</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/hormone_health.png" alt="Hormone Health" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br />Health</p>
+                        </div>
+                        <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
+                          <div className="w-10 h-10 mb-1 relative">
+                            <Image src="/images/icons/wellness_guides.png" alt="Wellness Guides" fill className="object-contain" />
+                          </div>
+                          <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br />Guides</p>
+                        </div>
                       </div>
                     </div>
 
@@ -417,6 +417,9 @@ export default function Membership() {
                 >
                   <div className="text-xl sm:text-2xl font-medium" style={{ color: '#353535' }}>
                     $50 A Month
+                  </div>
+                  <div className="text-sm mt-1" style={{ color: '#535353' }}>
+                    3-month minimum commitment
                   </div>
                 </div>
 
@@ -479,9 +482,9 @@ export default function Membership() {
                   style={{ backgroundColor: '#FFD3AC' }}
                 >
                   <div className="text-xl sm:text-2xl font-medium" style={{ color: '#353535' }}>
-                  Flexible care on your terms.
+                    Flexible care on your terms.
                   </div>
-                 
+
                 </div>
 
                 {/* Features List - Only 3 items with placeholder spacing */}
@@ -506,46 +509,46 @@ export default function Membership() {
                   </div>
                   {/* Invisible placeholders to match left column height */}
                   <div className="flex items-center gap-3">
-  <div
-    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-    style={{ backgroundColor: '#FFD3AC' }}
-  >
-    <span className="text-[10px] font-black" style={{ color: 'white' }}>
-      ✓
-    </span>
-  </div>
-  <span style={{ color: '#535353' }}>
-    Book individual consultations
-  </span>
-</div>
+                    <div
+                      className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: '#FFD3AC' }}
+                    >
+                      <span className="text-[10px] font-black" style={{ color: 'white' }}>
+                        ✓
+                      </span>
+                    </div>
+                    <span style={{ color: '#535353' }}>
+                      Book individual consultations
+                    </span>
+                  </div>
 
-<div className="flex items-center gap-3">
-  <div
-    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-    style={{ backgroundColor: '#FFD3AC' }}
-  >
-    <span className="text-[10px] font-black" style={{ color: 'white' }}>
-      ✓
-    </span>
-  </div>
-  <span style={{ color: '#535353' }}>
-    No minimum commitment
-  </span>
-</div>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: '#FFD3AC' }}
+                    >
+                      <span className="text-[10px] font-black" style={{ color: 'white' }}>
+                        ✓
+                      </span>
+                    </div>
+                    <span style={{ color: '#535353' }}>
+                      No minimum commitment
+                    </span>
+                  </div>
 
-<div className="flex items-center gap-3">
-  <div
-    className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-    style={{ backgroundColor: '#FFD3AC' }}
-  >
-    <span className="text-[10px] font-black" style={{ color: 'white' }}>
-      ✓
-    </span>
-  </div>
-  <span style={{ color: '#535353' }}>
-    Supplements purchased separately
-  </span>
-</div>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: '#FFD3AC' }}
+                    >
+                      <span className="text-[10px] font-black" style={{ color: 'white' }}>
+                        ✓
+                      </span>
+                    </div>
+                    <span style={{ color: '#535353' }}>
+                      Supplements purchased separately
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -562,7 +565,7 @@ export default function Membership() {
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div></div>
               <div className="text-center font-medium" style={{ color: '#353535' }}>
-              Ambé Membership
+                Ambé Membership
               </div>
               <div className="text-center font-medium" style={{ color: '#353535' }}>
                 Typical Wellness Programs
@@ -571,83 +574,83 @@ export default function Membership() {
 
             {/* Comparison Rows */}
             <div className="space-y-4">
-            {/* Video Consults */}
-            <div className="grid grid-cols-3 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Video Consults
+              {/* Video Consults */}
+              <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Video Consults
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span className="text-sm" style={{ color: '#353535' }}>1 hr/month included</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>X</span>
+                </div>
               </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span className="text-sm" style={{ color: '#353535' }}>1 hr/month included</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
-              </div>
-            </div>
 
-            {/* Unlimited Text Support */}
-            <div className="grid grid-cols-3 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Unlimited Text Support
+              {/* Unlimited Text Support */}
+              <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Unlimited Text Support
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span style={{ color: '#353535' }}>✓</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>X</span>
+                </div>
               </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span style={{ color: '#353535' }}>✓</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
-              </div>
-            </div>
 
-            {/* Personalized Remedies Included */}
-            <div className="grid grid-cols-3 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Personalized Remedies Included
+              {/* Personalized Remedies Included */}
+              <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Personalized Remedies Included
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span style={{ color: '#353535' }}>✓</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>X</span>
+                </div>
               </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span style={{ color: '#353535' }}>✓</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
-              </div>
-            </div>
 
-            {/* Cost of Remedies */}
-            <div className="grid grid-cols-3 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Cost of Remedies
+              {/* Cost of Remedies */}
+              <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Cost of Remedies
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span style={{ color: '#353535' }}>$50</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span className="text-sm" style={{ color: '#535353' }}>$350-$1200/mo</span>
+                </div>
               </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span style={{ color: '#353535' }}>$50</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span className="text-sm" style={{ color: '#535353' }}>$350-$1200/mo</span>
-              </div>
-            </div>
 
-            {/* Additional Product Discounts */}
-            <div className="grid grid-cols-3 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Additional Product Discounts
+              {/* Additional Product Discounts */}
+              <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Additional Product Discounts
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span style={{ color: '#353535' }}>20%+ off</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>Full Retail Price</span>
+                </div>
               </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span style={{ color: '#353535' }}>20%+ off</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>Full Retail Price</span>
-              </div>
-            </div>
 
-            {/* Bath/Body/Food/Tea Products */}
-            <div className="grid grid-cols-3 gap-4 items-center">
-              <div className="font-medium" style={{ color: '#353535' }}>
-                Bath/Body/Food/Tea Products
+              {/* Bath/Body/Food/Tea Products */}
+              <div className="grid grid-cols-3 gap-4 items-center">
+                <div className="font-medium" style={{ color: '#353535' }}>
+                  Bath/Body/Food/Tea Products
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
+                  <span style={{ color: '#353535' }}>Included</span>
+                </div>
+                <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
+                  <span style={{ color: '#535353' }}>X</span>
+                </div>
               </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FFD3AC' }}>
-                <span style={{ color: '#353535' }}>Included</span>
-              </div>
-              <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
-              </div>
-            </div>
 
               {/* Focus on Prevention */}
               <div className="grid grid-cols-3 gap-4 items-center">
@@ -671,7 +674,7 @@ export default function Membership() {
               <div className="grid grid-cols-3 gap-4 mb-6 sticky top-0 bg-[#F4F4F4] z-10 pb-2">
                 <div></div>
                 <div className="text-center font-medium text-sm" style={{ color: '#353535' }}>
-              Ambé Membership
+                  Ambé Membership
                 </div>
                 <div className="text-center font-medium text-sm" style={{ color: '#353535' }}>
                   Typical Wellness Programs
@@ -783,180 +786,180 @@ export default function Membership() {
           <div className="hidden lg:block overflow-x-auto">
             {/* Header Row */}
             <div className="grid grid-cols-4 gap-0">
-            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
-              <span className="font-bold text-xl" style={{ color: '#353535' }}>Feature/Training Area</span>
-            </div>
-            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
-              <span className="font-bold text-xl" style={{ color: '#353535' }}>Nutritionist</span>
-            </div>
-            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
-              <span className="font-bold text-xl" style={{ color: '#353535' }}>Registered Dietitian (RD)</span>
-            </div>
-            <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
-              <span className="font-bold text-xl" style={{ color: '#353535' }}>Ayurvedic Doctor</span>
-            </div>
-          </div>
-
-          {/* Data Rows */}
-          <div className="grid grid-cols-4 gap-0">
-            {/* Educational Pathway */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Educational Pathway</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
+              <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                <span className="font-bold text-xl" style={{ color: '#353535' }}>Feature/Training Area</span>
+              </div>
+              <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                <span className="font-bold text-xl" style={{ color: '#353535' }}>Nutritionist</span>
+              </div>
+              <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                <span className="font-bold text-xl" style={{ color: '#353535' }}>Registered Dietitian (RD)</span>
+              </div>
+              <div className="h-12 border flex items-center px-4" style={{ backgroundColor: '#FFD3AC', borderColor: '#F5B880' }}>
+                <span className="font-bold text-xl" style={{ color: '#353535' }}>Ayurvedic Doctor</span>
+              </div>
             </div>
 
-            {/* Governing Body */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Governing Body / License</span>
+            {/* Data Rows */}
+            <div className="grid grid-cols-4 gap-0">
+              {/* Educational Pathway */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Educational Pathway</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
+              </div>
+
+              {/* Governing Body */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Governing Body / License</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
+              </div>
+              {/* Focus of Training */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Focus of Training</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>General nutrition, food science</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
+              </div>
+              {/* Training in Herbs */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal to none</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
+              </div>
+              {/* View of Food */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>View of Food</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrients & calories</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
+              </div>
+              {/* Personalization */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Personalization Approach</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Personalized to medical conditions</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
+              </div>
+              {/* Understanding Digestion */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Understanding of Digestion</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Detailed GI pathologies, fiber, enzyme responses</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
+              </div>
+              {/* Mind-Body Integration */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Mind-Body Integration</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Rarely addressed</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal integration</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
+              </div>
+              {/* Spiritual Lens */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
+              </div>
+              {/* Treatment Modalities */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Treatment Modalities</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Medical nutrition therapy</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
+              </div>
+              {/* Scope of Practice */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Scope of Practice</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Wellness support</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Disease prevention & management</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Holistic care across mental, physical, and spiritual domains</span>
+              </div>
+              {/* Time-Tested Tradition */}
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#353535' }}>Time-Tested Tradition</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Modern (~50-100 years of development)</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Scientific framework from 20th century</span>
+              </div>
+              <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
+                <span className="text-base leading-none" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
+              </div>
             </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
-            </div>
-            {/* Focus of Training */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Focus of Training</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>General nutrition, food science</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
-            </div>
-            {/* Training in Herbs */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal to none</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
-            </div>
-            {/* View of Food */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>View of Food</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrients & calories</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
-            </div>
-            {/* Personalization */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Personalization Approach</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Personalized to medical conditions</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
-            </div>
-            {/* Understanding Digestion */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Understanding of Digestion</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Detailed GI pathologies, fiber, enzyme responses</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
-            </div>
-            {/* Mind-Body Integration */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Mind-Body Integration</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Rarely addressed</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal integration</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
-            </div>
-            {/* Spiritual Lens */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
-            </div>
-            {/* Treatment Modalities */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Treatment Modalities</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Medical nutrition therapy</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
-            </div>
-            {/* Scope of Practice */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Scope of Practice</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Wellness support</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Disease prevention & management</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Holistic care across mental, physical, and spiritual domains</span>
-            </div>
-            {/* Time-Tested Tradition */}
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#353535' }}>Time-Tested Tradition</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Modern (~50-100 years of development)</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Scientific framework from 20th century</span>
-            </div>
-            <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
-            </div>
-          </div>
           </div>
 
           {/* Mobile View - 2 columns at a time with swipe navigation */}
@@ -1272,9 +1275,9 @@ export default function Membership() {
           {/* Ready to Feel Your Best Section */}
           <div className="pt-16 sm:pt-20 md:pt-24 pb-6 sm:pb-8">
             <div className="max-w-5xl mx-auto px-6 sm:px-8">
-              <div 
+              <div
                 className="py-8 sm:py-10 px-6 sm:px-8 md:px-12 text-center"
-                style={{ 
+                style={{
                   backgroundColor: 'rgba(244, 244, 244, 0.7)',
                   borderTopLeftRadius: '120px',
                   borderTopRightRadius: '0px',
