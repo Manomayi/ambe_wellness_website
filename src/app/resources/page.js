@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
@@ -8,6 +9,61 @@ import { sectionTitleClasses, bannerTitleClasses } from '@/lib/styles/constants'
 import Footer from '@/components/common/Footer';
 
 export default function Resources() {
+  const [openFaq, setOpenFaq] = React.useState(null);
+
+  const faqs = [
+    {
+      category: 'Getting Started',
+      items: [
+        { q: 'How do I get started with Ambé Wellness?', a: 'Simply click "Book Free Consult Now" on any page. You\'ll fill out a brief health questionnaire, then get matched with an integrative doctor suited to your needs. Your first consultation is completely free.' },
+        { q: 'What happens during my first consultation?', a: 'Your doctor will review your health history, current symptoms, lifestyle, and goals. Using both modern diagnostics and Ayurvedic assessment methods, they\'ll begin building your personalized wellness plan.' },
+      ]
+    },
+    {
+      category: 'Plans & Pricing',
+      items: [
+        { q: 'How much does Ambé Wellness cost?', a: 'Membership starts at $50/month with a 3-month minimum commitment. This includes 1:1 video sessions, unlimited messaging, personalized protocols, and all recommended medicines and remedies.' },
+        { q: 'What is included in the $50/month membership?', a: 'Everything — monthly 1:1 video calls with your doctor, unlimited text access, personalized protocols, all recommended herbal medicines and remedies, diet and lifestyle plans, and monthly follow-ups.' },
+      ]
+    },
+    {
+      category: 'Products & Remedies',
+      items: [
+        { q: 'Are the herbal medicines and supplements safe?', a: 'Yes. All formulas are third-party tested for purity, potency, microbial safety, heavy metals, and pesticides. Every formula is also screened against known herb-drug contraindications before being prescribed.' },
+        { q: 'Will herbal remedies interfere with my current medications?', a: 'Our integrative doctors are trained to recognize dangerous interactions between herbal protocols and pharmaceutical medications. Your full medication list is reviewed before any formula is recommended.' },
+      ]
+    },
+    {
+      category: 'Your Doctor',
+      items: [
+        { q: 'Who are the Ambé doctors?', a: 'All Ambé practitioners hold dual qualifications in modern medicine (MBBS) and Ayurvedic Medicine and Surgery (BAMS). They are trained to bridge traditional Vedic protocols with evidence-based clinical science.' },
+        { q: 'Can I choose my own doctor?', a: 'Yes. After completing your health questionnaire, you can browse our practitioner profiles and choose the doctor best suited to your health goals and specialty needs.' },
+      ]
+    },
+    {
+      category: 'Your Wellness Plan',
+      items: [
+        { q: 'How personalized is my wellness plan?', a: 'Every plan is built entirely around you — your dosha, current imbalances, lifestyle, lab results, and health goals. No two plans are the same. We don\'t use generic protocols.' },
+        { q: 'How often will I hear from my doctor?', a: 'You have unlimited text access to your practitioner team throughout your membership, plus a scheduled monthly video call. Most members hear back within a few hours during business days.' },
+      ]
+    },
+    {
+      category: 'Privacy & Safety',
+      items: [
+        { q: 'Is my health data private and secure?', a: 'Yes. Ambé Wellness is fully GDPR-compliant. Your health data is encrypted, never sold to third parties, and stored securely. You can request deletion of your data at any time by contacting info@ambewellness.com.' },
+        { q: 'Are Ambé practitioners licensed?', a: 'All practitioners hold recognized degrees (MBBS/BAMS). They are practitioners with added biomedical training. Ambé does not diagnose or treat disease in the conventional medical sense but provides integrative wellness guidance.' },
+      ]
+    },
+    {
+      category: 'Understanding Ayurveda',
+      items: [
+        { q: 'What is Ayurveda and is it scientifically backed?', a: 'Ayurveda is a 5,000-year-old system of medicine from India. At Ambé, we cross-reference Vedic protocols with peer-reviewed science in nutrition, immunology, endocrinology, and mental health — balancing tradition with modern evidence.' },
+        { q: 'What is a dosha and why does it matter?', a: 'Your dosha is your unique mind-body constitution (Vata, Pitta, or Kapha). Understanding it helps us tailor your diet, lifestyle, and herbal protocols specifically to your body\'s natural tendencies and imbalances.' },
+        { q: 'Can Ayurveda work alongside my conventional medical treatment?', a: 'Yes. Our doctors are trained in integrative pharmacognosy and will never suggest anything that conflicts with your current prescriptions. Ayurvedic care is designed to complement, not replace, your existing medical care.' },
+      ]
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
 
@@ -612,6 +668,66 @@ export default function Resources() {
                 Download Healing Centers Directory
               </a>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Membership CTA after Guide Library */}
+      <section className="py-12 sm:py-16" style={{ backgroundColor: '#F4F4F4' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+          <div className="border-2 rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-6" style={{ borderColor: '#FFD3AC', backgroundColor: '#FFFFFF' }}>
+            <p className="text-base sm:text-lg font-medium text-center sm:text-left" style={{ color: '#353535' }}>
+              Your Ambé doctor can personalize everything in these guides for your specific constitution.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+              <Link href="/membership" className="px-6 py-3 rounded-full font-bold text-sm text-center inline-block" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+                VIEW MEMBERSHIP PLANS
+              </Link>
+              <Link href="/signup" className="px-6 py-3 rounded-full font-bold text-sm text-center inline-block border" style={{ borderColor: '#353535', color: '#353535' }}>
+                BOOK FREE CONSULT
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Accordion Section */}
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-4xl mx-auto px-6 sm:px-8">
+          <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#535353' }}>Q&A</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-10" style={{ color: '#353535', fontFamily: 'Georgia, serif' }}>Common Questions</h2>
+
+          <div className="space-y-10">
+            {faqs.map((group) => (
+              <div key={group.category}>
+                {/* Category Label */}
+                <p className="text-xs font-bold tracking-widest uppercase mb-4 pb-2 border-b" style={{ color: '#FFD3AC', borderColor: '#FFD3AC' }}>
+                  {group.category}
+                </p>
+                <div className="space-y-2">
+                  {group.items.map((item, idx) => {
+                    const key = `${group.category}-${idx}`;
+                    const isOpen = openFaq === key;
+                    return (
+                      <div key={key} className="rounded-xl overflow-hidden" style={{ backgroundColor: isOpen ? '#FFD3AC' : '#F4F4F4' }}>
+                        <button
+                          className="w-full flex justify-between items-center px-5 py-4 text-left"
+                          onClick={() => setOpenFaq(isOpen ? null : key)}
+                        >
+                          <span className="text-sm sm:text-base font-medium pr-4" style={{ color: '#353535' }}>{item.q}</span>
+                          <span className="text-xl font-light flex-shrink-0 transition-transform" style={{ color: '#353535', transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)' }}>+</span>
+                        </button>
+                        {isOpen && (
+                          <div className="px-5 pb-5">
+                            <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>{item.a}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

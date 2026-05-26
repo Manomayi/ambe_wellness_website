@@ -11,7 +11,7 @@ export default function Navigation() {
   return (
     <>
       <nav className="absolute top-0 left-0 right-0 z-50 py-4 sm:py-6 sm:border-b border-white">
-        <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16">
+        <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16" suppressHydrationWarning>
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link href="/">
@@ -66,13 +66,9 @@ export default function Navigation() {
               <Link
                 href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
                 target="_blank"
+                className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm !text-white hover:bg-white hover:!text-black transition-colors whitespace-nowrap"
               >
-                <button
-                  className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm hover:bg-white hover:text-black transition-colors whitespace-nowrap"
-                  style={{ color: 'white' }}
-                >
-                  Download App
-                </button>
+                Download App
               </Link>
 
               {/* Divider */}
@@ -144,14 +140,11 @@ export default function Navigation() {
                 href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp"
                 target="_blank"
                 rel="noopener noreferrer"
+                className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit inline-block"
+                style={{ borderColor: '#FFD3AC', backgroundColor: '#FFD3AC', color: '#353535' }}
+                onClick={() => setMobileMenuOpen(false)}
               >
-                <button
-                  className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit"
-                  style={{ borderColor: '#FFD3AC', backgroundColor: '#FFD3AC', color: '#353535' }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Download App
-                </button>
+                Download App
               </a>
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { FaApple, FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
 import { CheckIcon } from "@heroicons/react/24/solid";
@@ -141,8 +142,55 @@ function AmbeDifferenceCarousel() {
 }
 
 export default function Home() {
-  // State for managing selected tab content
   const [selectedTab, setSelectedTab] = React.useState('biomarkers');
+  const [activeDoctor, setActiveDoctor] = React.useState(null);
+  const [showEmailModal, setShowEmailModal] = React.useState(false);
+  const [emailValue, setEmailValue] = React.useState('');
+  const [emailSubmitted, setEmailSubmitted] = React.useState(false);
+  const [openFaq, setOpenFaq] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!localStorage.getItem('ambe_email_shown')) {
+      const timer = setTimeout(() => {
+        setShowEmailModal(true);
+        localStorage.setItem('ambe_email_shown', '1');
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    if (!emailValue) return;
+    setEmailSubmitted(true);
+  };
+
+  const doctors = {
+    smita: {
+      name: 'Dr. Smita Bhatia', creds: 'MBBS · BAMS', degree: 'Doctor of Ayurvedic Medicine and Surgery',
+      role: 'Oncology Director', badge: 'MEDICAL DIRECTOR',
+      image: '/images/doctors/smita_bhatia.png',
+      bio: 'Dr. Bhatia brings over two decades of integrative oncology experience, blending classical Ayurvedic protocols with evidence-based modern medicine. Her precision-driven approach supports patients navigating cancer recovery, prevention, and long-term cellular health.',
+    },
+    jeremy: {
+      name: 'Dr. Jeremy Stone', creds: 'MBBS · BAMS', degree: 'Doctor of Ayurvedic Medicine and Surgery',
+      role: 'Metabolic & Musculoskeletal Specialist',
+      image: '/images/doctors/jeremy_stone.png',
+      bio: 'Dr. Stone specializes in chronic pain, metabolic dysfunction, and structural wellness. He integrates Ayurvedic movement therapies with modern biomechanics to create lasting, personalized rehabilitation and performance protocols.',
+    },
+    anandibai: {
+      name: 'Dr. Anandibai Joshi', creds: 'MBBS · BAMS', degree: 'Doctor of Ayurvedic Medicine and Surgery',
+      role: 'Psychology & Mind-Body Specialist',
+      image: '/images/doctors/anandibai_joshi.png',
+      bio: 'Dr. Joshi works at the intersection of Ayurvedic psychology and modern behavioral science, supporting clients through anxiety, burnout, emotional recalibration, and somatic healing with deep clinical empathy.',
+    },
+    indira: {
+      name: 'Dr. Indira Hinduja', creds: 'MBBS · BAMS', degree: 'Doctor of Ayurvedic Medicine and Surgery',
+      role: 'OBGYN & Women\'s Health Lead',
+      image: '/images/doctors/indira_hinduja.png',
+      bio: 'Dr. Hinduja offers deeply personalized women\'s health care spanning hormonal balance, fertility, menstrual health, and menopause — integrating Vedic wisdom with contemporary gynecological science.',
+    },
+  };
 
   // Content data for each tab
   const tabContent = {
@@ -174,7 +222,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" suppressHydrationWarning>
       {/* Navigation */}
       <Navigation />
 
@@ -219,11 +267,9 @@ export default function Home() {
                     Developed at Stanford
                   </p>
 
-                  <button 
-                    className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
-                  >
+                  <Link href="/signup" className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer">
                     BOOK FREE<br/> CONSULT NOW
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -360,6 +406,7 @@ export default function Home() {
                         src="/images/icons/wellness_guides.png"
                         alt="Wellness Guides"
                         fill
+                        sizes="(max-width: 639px) 40px, (max-width: 767px) 48px, 56px"
                         className="object-contain"
                       />
                     </div>
@@ -513,6 +560,7 @@ export default function Home() {
                             src="/images/icons/wellness_guides.png"
                             alt="Wellness Guides"
                             fill
+                            sizes="40px"
                             className="object-contain"
                           />
                         </div>
@@ -574,6 +622,7 @@ export default function Home() {
                         src="/images/testimonials/david.png"
                         alt="David"
                         fill
+                        sizes="(max-width: 1023px) 64px, 64px"
                         className="object-cover"
                       />
                     </div>
@@ -609,6 +658,7 @@ export default function Home() {
                         src="/images/testimonials/joshua.png"
                         alt="Joshua"
                         fill
+                        sizes="(max-width: 1023px) 64px, 64px"
                         className="object-cover"
                       />
                     </div>
@@ -644,6 +694,7 @@ export default function Home() {
                         src="/images/testimonials/rosario.png"
                         alt="Rosario"
                         fill
+                        sizes="(max-width: 1023px) 64px, 64px"
                         className="object-cover"
                       />
                     </div>
@@ -702,6 +753,7 @@ export default function Home() {
                             src="/images/testimonials/david.png"
                             alt="David"
                             fill
+                            sizes="64px"
                             className="object-cover"
                           />
                         </div>
@@ -737,6 +789,7 @@ export default function Home() {
                             src="/images/testimonials/joshua.png"
                             alt="Joshua"
                             fill
+                            sizes="64px"
                             className="object-cover"
                           />
                         </div>
@@ -772,6 +825,7 @@ export default function Home() {
                             src="/images/testimonials/rosario.png"
                             alt="Rosario"
                             fill
+                            sizes="64px"
                             className="object-cover"
                           />
                         </div>
@@ -823,15 +877,39 @@ export default function Home() {
                   <span className="font-light">Million Biomarkers Analyzed</span>
                 </p>
                 
-                <Button className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
+                <Button href="/signup" className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Stats Bar */}
+      <section style={{ backgroundColor: "#353535" }}>
+        <div className="w-full py-8 sm:py-10">
+          <div className="flex w-full divide-x divide-[#555555]">
+            <div className="flex flex-col items-center text-center w-1/4 py-2 px-4">
+              <span className="text-3xl sm:text-4xl font-bold" style={{ color: "#FFD3AC" }}>10,000+</span>
+              <span className="text-xs sm:text-sm mt-1" style={{ color: "#A0A0A0" }}>Members Served</span>
+            </div>
+            <div className="flex flex-col items-center text-center w-1/4 py-2 px-4">
+              <span className="text-3xl sm:text-4xl font-bold" style={{ color: "#FFD3AC" }}>85%</span>
+              <span className="text-xs sm:text-sm mt-1" style={{ color: "#A0A0A0" }}>Report Measurable Improvement</span>
+            </div>
+            <div className="flex flex-col items-center text-center w-1/4 py-2 px-4">
+              <span className="text-3xl sm:text-4xl font-bold" style={{ color: "#FFD3AC" }}>★★★★★</span>
+              <span className="text-xs sm:text-sm mt-1" style={{ color: "#A0A0A0" }}>Average Member Rating</span>
+            </div>
+            <div className="flex flex-col items-center text-center w-1/4 py-2 px-4">
+              <span className="text-3xl sm:text-4xl font-bold" style={{ color: "#FFD3AC" }}>55M+</span>
+              <span className="text-xs sm:text-sm mt-1" style={{ color: "#A0A0A0" }}>Biomarkers Analyzed</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Ayurveda Meets Epigenetics Section */}
-      <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-12">
             {/* Left Box */}
@@ -894,88 +972,34 @@ export default function Home() {
 
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-7 md:mt-12">
-            <Button className="font-extrabold">BOOK FREE<br/> CONSULT NOW</Button>
+            <Button href="/signup" className="font-extrabold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
 
-      {/* The Ambé Difference - Mobile Only */}
-      <section className="md:hidden py-12" style={{ backgroundColor: "#F4F4F4" }}>
-        <div className="container mx-auto px-4">
-          <div className="text-3xl text-center mb-8 font-['Richmond'] font-medium" style={{ color: "#353535" }}>
+      {/* The Ambé Difference */}
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F4F4" }}>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-3xl sm:text-4xl text-center mb-10 sm:mb-14 font-medium" style={{ color: "#353535", fontFamily: "Georgia, serif" }}>
             The Ambé Difference
           </div>
 
-          {/* Three Cards */}
-          <div className="space-y-6 mb-12">
-            {/* Precision You Can Trust Card */}
-            <div className="relative bg-[#FFD3AC] py-7 px-5 pr-10" style={{ borderRadius: "0 80px 0 80px" }}>
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-4">
-                  <Image
-                    src="/images/icons/trust.png"
-                    alt="Trust"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-contain"
-                  />
+          {/* 3-column Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+            {[
+              { icon: '/images/icons/trust.png',     title: 'Precision You Can Trust',     desc: 'Doctors cross-trained in time-tested and modern science' },
+              { icon: '/images/icons/healthcare.png', title: 'Plans Crafted Around Your',    desc: 'Plans crafted around your whole self & labs' },
+              { icon: '/images/icons/ethics.png',    title: 'Ethics You Can Stand Behind', desc: 'Fair-trade sourcing, real transparency' },
+            ].map((card) => (
+              <div key={card.title} className="bg-[#FFD3AC] rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 p-4 flex-shrink-0">
+                  <Image src={card.icon} alt={card.title} width={32} height={32} className="w-full h-full object-contain" />
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-lg mb-2" style={{ color: "#353535" }}>
-                    Precision You Can Trust
-                  </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Doctors cross-trained in time-tested and modern science
-                  </p>
-                </div>
+                <div className="font-semibold text-lg mb-2" style={{ color: "#353535" }}>{card.title}</div>
+                <p className="text-sm" style={{ color: "#353535" }}>{card.desc}</p>
               </div>
-            </div>
-
-            {/* Plans crafted around your Card */}
-            <div className="relative bg-[#FFD3AC] py-7 px-5 pr-10" style={{ borderRadius: "0 80px 0 80px" }}>
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-4">
-                  <Image
-                    src="/images/icons/healthcare.png"
-                    alt="Healthcare"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-lg mb-2" style={{ color: "#353535" }}>
-                    Plans crafted around you
-                  </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Plans crafted around your whole self & labs
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Ethics You Can Stand Behind Card */}
-            <div className="relative bg-[#FFD3AC] py-7 px-5 pr-10" style={{ borderRadius: "0 80px 0 80px" }}>
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-4">
-                  <Image
-                    src="/images/icons/ethics.png"
-                    alt="Ethics"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-lg mb-2" style={{ color: "#353535" }}>
-                    Ethics You Can Stand Behind
-                  </div>
-                  <p className="text-sm" style={{ color: "#353535" }}>
-                    Fair-trade sourcing, real transparency
-                  </p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Carousel with State Management */}
@@ -983,523 +1007,135 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How We Compare Section - Moved Here */}
+      {/* How We Compare Section */}
       <section
         className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#F4F4F4" }}
+        style={{ backgroundColor: "#1a1a1a" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className={
-              sectionTitleClasses + " mb-4 text-2xl sm:text-2xl md:text-3xl"
-            }
-          >
-            How We Compare
+          {/* Header row */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 sm:mb-12">
+            <div>
+              <p className="text-xs font-semibold tracking-widest mb-2" style={{ color: "#C9A87C" }}>HOW WE COMPARE</p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold" style={{ color: "#FFFFFF" }}>No Hidden Fees. Ever.</h2>
+              <p className="text-sm sm:text-base mt-3" style={{ color: "rgba(255,255,255,0.45)" }}>Everything competitors charge extra for are included in the $50 per month membership.</p>
+            </div>
+            <div className="flex-shrink-0">
+              <Button href="/signup" className="font-bold !px-8 text-sm whitespace-nowrap">BOOK FREE CONSULT NOW</Button>
+            </div>
           </div>
-          <p className="text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 text-body">
-            No hidden fees, ever.
-          </p>
 
           {/* Desktop Comparison Table */}
-          <div className="hidden md:block overflow-x-auto md:overflow-visible -mx-6 sm:-mx-8 md:mx-0 px-6 sm:px-8 md:px-0">
-            <table className="w-full min-w-[640px] md:min-w-0">
+          <div className="hidden md:block rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(201,168,124,0.2)", backgroundColor: "#242220" }}>
+            <table className="w-full">
               <thead>
-                <tr>
-                  <th className="text-left py-2 sm:py-4 pr-8 sm:pr-12 md:pr-16 lg:pr-24 font-normal w-[200px] md:w-[300px] lg:w-[400px]"></th>
-                  <th className="px-0.5 md:px-1 py-2 sm:py-4">
-                    <Image
-                      src="/images/logos/ambe_logo.png"
-                      alt="Ambe Logo"
-                      width={100}
-                      height={33}
-                      className="mx-auto"
-                    />
-                  </th>
-                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
-                    OUR
-                    <br />
-                    COMPETITORS
-                  </th>
-                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
-                    OTHERS
-                  </th>
-                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
-                    NUTRITIONIST
-                  </th>
-                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
-                    BIOMARKER
-                    <br />
-                    RESULTS
-                  </th>
-                  <th className="px-0.5 md:px-1 py-2 sm:py-4 text-center font-normal text-charcoal text-xs sm:text-sm md:text-base">
-                    GENE RESULTS
-                  </th>
+                <tr style={{ borderBottom: "1px solid rgba(201,168,124,0.25)" }}>
+                  <th className="text-left py-5 px-6 font-normal w-[220px] lg:w-[280px]"></th>
+                  <th className="px-3 py-5 text-center font-semibold text-lg" style={{ color: "#FFFFFF", fontFamily: "Georgia, serif" }}>AMBÉ</th>
+                  <th className="px-3 py-5 text-center font-normal text-xs tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>OUR{"\n"}COMPETITORS</th>
+                  <th className="px-3 py-5 text-center font-normal text-xs tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>OTHERS</th>
+                  <th className="px-3 py-5 text-center font-normal text-xs tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>NUTRITIONIST</th>
+                  <th className="px-3 py-5 text-center font-normal text-xs tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>DNA TESTING{"\n"}CO.</th>
+                  <th className="px-3 py-5 text-center font-normal text-xs tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>BIOMARKER{"\n"}CO.</th>
                 </tr>
               </thead>
               <tbody>
-                {/* Integrative Doctors */}
-                <tr>
-                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
-                    Integrative Doctors
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-xs sm:text-sm md:text-base text-charcoal">$ 500/Visit</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* 1 on 1 Video */}
-                <tr>
-                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
-                    1 on 1 Video
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-xs sm:text-sm md:text-base text-charcoal">$ 500/Visit</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Unlimited Texting */}
-                <tr>
-                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
-                    Unlimited Texting
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Time Tested */}
-                <tr>
-                  <td className="py-1 sm:py-2 md:py-3 pr-8 sm:pr-12 md:pr-16 lg:pr-24 text-sm sm:text-base md:text-lg text-charcoal font-bold whitespace-nowrap">
-                    Time-Tested
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-[#FFD3AC]">
-                      <CheckIcon className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 text-charcoal" />
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-xs sm:text-sm md:text-base text-charcoal">Infrequently</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                  <td className="px-0.5 md:px-1 py-1 sm:py-2 md:py-3 text-center">
-                    <div className="inline-flex items-center justify-center w-24 sm:w-28 md:w-36 h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl bg-white">
-                      <span className="text-base sm:text-lg md:text-xl text-charcoal">X</span>
-                    </div>
-                  </td>
-                </tr>
-
+                {[
+                  { label: "Integrative Doctors",  ambe: "check", comp: "x",            others: "$500/Visit", nutri: "x",     dna: "x",    bio: "x"    },
+                  { label: "1:1 Video Sessions",   ambe: "check", comp: "x",            others: "$500/Visit", nutri: "check", dna: "x",    bio: "x"    },
+                  { label: "Unlimited Texting",    ambe: "check", comp: "x",            others: "x",          nutri: "x",     dna: "x",    bio: "x"    },
+                  { label: "Time-Tested Methods",  ambe: "check", comp: "Infrequently", others: "x",          nutri: "x",     dna: "x",    bio: "x"    },
+                  { label: "Medicines Included",   ambe: "check", comp: "x",            others: "x",          nutri: "x",     dna: "x",    bio: "x"    },
+                  { label: "Monthly Cost",         ambe: "$50",   comp: "N/A",          others: "$500+",      nutri: "$200+", dna: "$299+", bio: "$399+" },
+                ].map((row, i) => {
+                  const isLast = i === 5;
+                  const rowStyle = {
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    backgroundColor: i % 2 === 1 ? "rgba(255,255,255,0.02)" : "transparent",
+                  };
+                  const renderCell = (val, isAmbe = false) => {
+                    if (val === "check") return <CheckIcon className="w-5 h-5 mx-auto" style={{ color: "#C9A87C" }} />;
+                    if (val === "x") return <span className="text-xl font-light" style={{ color: "rgba(255,255,255,0.18)" }}>✕</span>;
+                    if (val === "Infrequently") return <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>Infrequently</span>;
+                    if (val === "N/A") return <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>N/A</span>;
+                    const isPrice = val.startsWith("$") && !isAmbe;
+                    const isCompPrice = isPrice && !isAmbe;
+                    return <span className="text-sm font-bold" style={{ color: isAmbe ? "#C9A87C" : isCompPrice ? "#e07060" : "#888" }}>{val}</span>;
+                  };
+                  return (
+                    <tr key={row.label} style={rowStyle}>
+                      <td className="py-4 px-6 text-sm lg:text-base" style={{ color: "rgba(255,255,255,0.55)" }}>{row.label}</td>
+                      <td className="px-3 py-4 text-center">{renderCell(row.ambe, true)}</td>
+                      <td className="px-3 py-4 text-center">{renderCell(row.comp)}</td>
+                      <td className="px-3 py-4 text-center">{renderCell(row.others)}</td>
+                      <td className="px-3 py-4 text-center">{renderCell(row.nutri)}</td>
+                      <td className="px-3 py-4 text-center">{renderCell(row.dna)}</td>
+                      <td className="px-3 py-4 text-center">{renderCell(row.bio)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
-          {/* Mobile Comparison Carousel */}
-          <div className="md:hidden">
-            <div
-              className="relative touch-pan-x"
-              onTouchStart={(e) => {
-                const touch = e.touches[0];
-                e.currentTarget.dataset.startX = touch.clientX;
-                const headers = document.getElementById('compare-headers');
-                const currentTransform = headers.style.transform;
-                const currentX = parseInt(currentTransform.match(/-?\d+/)?.[0] || '0');
-                e.currentTarget.dataset.startTransform = currentX;
-              }}
-              onTouchMove={(e) => {
-                if (!e.currentTarget.dataset.startX) return;
-                const touch = e.touches[0];
-                const startX = parseFloat(e.currentTarget.dataset.startX);
-                const startTransform = parseFloat(e.currentTarget.dataset.startTransform);
-                const diff = touch.clientX - startX;
-
-                // Calculate new position with boundaries
-                // We have 5 columns total, showing 2 at a time
-                // So we need to be able to scroll 3 column widths (50% * 3 = 150%)
-                let newX = startTransform + diff;
-                // Convert pixel difference to percentage (assuming viewport width)
-                const percentageShift = (diff / window.innerWidth) * 100;
-                let newPercentage = startTransform + percentageShift;
-
-                // Limit: can't scroll right past 0%, can't scroll left past -150%
-                newPercentage = Math.max(-150, Math.min(0, newPercentage));
-
-                const headers = document.getElementById('compare-headers');
-                const rows = document.querySelectorAll('.compare-row');
-                headers.style.transform = `translateX(${newPercentage}%)`;
-                rows.forEach(row => {
-                  row.style.transform = `translateX(${newPercentage}%)`;
-                });
-
-                // Update pagination dots based on current position
-                const dots = document.querySelectorAll('.compare-dot');
-                const activeIndex = Math.round(Math.abs(newPercentage) / 50);
-                dots.forEach((dot, i) => {
-                  dot.classList.remove('compare-dot-active');
-                  if (i === activeIndex) {
-                    dot.classList.add('compare-dot-active');
-                    dot.dataset.index = activeIndex;
-                  }
-                  dot.style.backgroundColor = i === activeIndex ? '#FFD3AC' : '#D1D5DB';
-                });
-              }}
-              onTouchEnd={(e) => {
-                // Snap to nearest column pair
-                const headers = document.getElementById('compare-headers');
-                const currentTransform = headers.style.transform;
-                const currentPercentage = parseFloat(currentTransform.match(/-?\d+/)?.[0] || '0');
-
-                // Round to nearest 50% increment (each column pair)
-                const snappedPercentage = Math.round(currentPercentage / 50) * 50;
-
-                headers.style.transform = `translateX(${snappedPercentage}%)`;
-                const rows = document.querySelectorAll('.compare-row');
-                rows.forEach(row => {
-                  row.style.transform = `translateX(${snappedPercentage}%)`;
-                });
-
-                delete e.currentTarget.dataset.startX;
-                delete e.currentTarget.dataset.startTransform;
-              }}
-            >
-              {/* Table Content */}
-              <div className="overflow-hidden">
-                {/* Fixed column headers on top */}
-                <div className="flex mb-4 gap-3">
-                  <div className="w-32 flex-shrink-0"></div>
-                  <div className="flex-1 overflow-hidden">
-                    <div
-                      id="compare-headers"
-                      className="flex transition-transform duration-300 ease-out"
-                      style={{ transform: 'translateX(0%)' }}
-                    >
-                      <div className="flex-none w-1/2">
-                        <Image
-                          src="/images/logos/ambe_logo.png"
-                          alt="Ambe Logo"
-                          width={80}
-                          height={27}
-                          className="mx-auto"
-                        />
-                      </div>
-                      <div className="flex-none w-1/2 text-center">
-                        <span className="text-xs font-normal text-charcoal">OUR<br/>COMPETITORS</span>
-                      </div>
-                      <div className="flex-none w-1/2 text-center">
-                        <span className="text-xs font-normal text-charcoal">OTHERS</span>
-                      </div>
-                      <div className="flex-none w-1/2 text-center">
-                        <span className="text-xs font-normal text-charcoal">NUTRITIONIST</span>
-                      </div>
-                      <div className="flex-none w-1/2 text-center">
-                        <span className="text-xs font-normal text-charcoal">BIOMARKER<br/>RESULTS</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table rows with fixed labels and scrollable values */}
-                <div className="space-y-3">
-                {/* Integrative Doctors Row */}
-                <div className="flex gap-3 items-center">
-                  <div className="w-32 flex-shrink-0">
-                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Integrative Doctors</span>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div
-                      className="flex compare-row transition-transform duration-300 ease-out"
-                      style={{ transform: 'translateX(0%)' }}
-                    >
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
-                            <CheckIcon className="w-5 h-5 text-charcoal" />
-                          </div>
-                        </div>
-                        <div className="flex-none w-1/2 flex justify-center px-1">
-                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                            <span className="text-base text-charcoal">X</span>
-                          </div>
-                        </div>
-                        <div className="flex-none w-1/2 flex justify-center px-1">
-                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                            <span className="text-[10px] text-charcoal">$ 500/Visit</span>
-                          </div>
-                        </div>
-                        <div className="flex-none w-1/2 flex justify-center px-1">
-                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                            <span className="text-base text-charcoal">X</span>
-                          </div>
-                        </div>
-                        <div className="flex-none w-1/2 flex justify-center px-1">
-                          <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                            <span className="text-base text-charcoal">X</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </div>
-
-                {/* 1 on 1 Video Row */}
-                <div className="flex gap-3 items-center">
-                  <div className="w-32 flex-shrink-0">
-                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">1 on 1 Video</span>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div
-                      className="flex compare-row transition-transform duration-300 ease-out"
-                      style={{ transform: 'translateX(0%)' }}
-                    >
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
-                          <CheckIcon className="w-5 h-5 text-charcoal" />
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-[10px] text-charcoal">$ 500/Visit</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
-                          <CheckIcon className="w-5 h-5 text-charcoal" />
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-                </div>
-
-                {/* Unlimited Texting Row */}
-                <div className="flex gap-3 items-center">
-                  <div className="w-32 flex-shrink-0">
-                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Unlimited Texting</span>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div
-                      className="flex compare-row transition-transform duration-300 ease-out"
-                      style={{ transform: 'translateX(0%)' }}
-                    >
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
-                          <CheckIcon className="w-5 h-5 text-charcoal" />
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-                </div>
-
-                {/* Time Tested Row */}
-                <div className="flex gap-3 items-center">
-                  <div className="w-32 flex-shrink-0">
-                    <span className="text-sm font-bold text-charcoal whitespace-nowrap">Time-Tested</span>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <div
-                      className="flex compare-row transition-transform duration-300 ease-out"
-                      style={{ transform: 'translateX(0%)' }}
-                    >
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-[#FFD3AC]">
-                          <CheckIcon className="w-5 h-5 text-charcoal" />
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-[9px] text-charcoal">Infrequently</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      <div className="flex-none w-1/2 flex justify-center px-1">
-                        <div className="inline-flex items-center justify-center w-20 h-12 rounded-xl bg-white">
-                          <span className="text-base text-charcoal">X</span>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-                </div>
-              </div>
-              </div>
-            </div>
-
-            {/* Dots Navigation */}
-            <div className="flex justify-center gap-2 mt-6">
-              {[0, 1, 2, 3].map((index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors compare-dot ${index === 0 ? 'compare-dot-active' : ''}`}
-                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
-                  data-index={index}
-                  onClick={() => {
-                    const offset = -index * 50; // 50% width for 2 columns view
-
-                    // Update all rows
-                    const rows = document.querySelectorAll('.compare-row');
-                    rows.forEach(row => {
-                      row.style.transform = `translateX(${offset}%)`;
-                    });
-
-                    // Update headers
-                    const headers = document.getElementById('compare-headers');
-                    headers.style.transform = `translateX(${offset}%)`;
-
-                    // Update dot colors
-                    const dots = document.querySelectorAll('.compare-dot');
-                    dots.forEach((dot, i) => {
-                      dot.classList.remove('compare-dot-active');
-                      if (i === index) {
-                        dot.classList.add('compare-dot-active');
-                        dot.dataset.index = index;
-                      }
-                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
-                    });
-                  }}
-                />
-              ))}
+          {/* Mobile Comparison Table */}
+          <div className="md:hidden rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(201,168,124,0.2)", backgroundColor: "#242220" }}>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px]">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(201,168,124,0.25)" }}>
+                    <th className="text-left py-3 px-4 font-normal w-28"></th>
+                    <th className="px-2 py-3 text-center font-semibold text-sm" style={{ color: "#FFFFFF" }}>AMBÉ</th>
+                    <th className="px-2 py-3 text-center font-normal text-[9px] tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>OUR<br/>COMP.</th>
+                    <th className="px-2 py-3 text-center font-normal text-[9px] tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>OTHERS</th>
+                    <th className="px-2 py-3 text-center font-normal text-[9px] tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>NUTRI.</th>
+                    <th className="px-2 py-3 text-center font-normal text-[9px] tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>DNA CO.</th>
+                    <th className="px-2 py-3 text-center font-normal text-[9px] tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>BIO CO.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { label: "Integrative Doctors",  ambe: "check", comp: "x",            others: "$500/Visit", nutri: "x",     dna: "x",    bio: "x"    },
+                    { label: "1:1 Video Sessions",   ambe: "check", comp: "x",            others: "$500/Visit", nutri: "check", dna: "x",    bio: "x"    },
+                    { label: "Unlimited Texting",    ambe: "check", comp: "x",            others: "x",          nutri: "x",     dna: "x",    bio: "x"    },
+                    { label: "Time-Tested Methods",  ambe: "check", comp: "Infreq.",      others: "x",          nutri: "x",     dna: "x",    bio: "x"    },
+                    { label: "Medicines Included",   ambe: "check", comp: "x",            others: "x",          nutri: "x",     dna: "x",    bio: "x"    },
+                    { label: "Monthly Cost",         ambe: "$50",   comp: "N/A",          others: "$500+",      nutri: "$200+", dna: "$299+",bio: "$399+" },
+                  ].map((row, i) => {
+                    const isLast = i === 5;
+                    const renderCell = (val, isAmbe = false) => {
+                      if (val === "check") return <CheckIcon className="w-4 h-4 mx-auto" style={{ color: "#C9A87C" }} />;
+                      if (val === "x") return <span className="text-lg font-light" style={{ color: "rgba(255,255,255,0.18)" }}>✕</span>;
+                      if (val === "Infreq." || val === "N/A") return <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{val}</span>;
+                      const isPrice = val.startsWith("$") && !isAmbe;
+                      return <span className="text-xs font-bold" style={{ color: isAmbe ? "#C9A87C" : isPrice ? "#e07060" : "#888" }}>{val}</span>;
+                    };
+                    return (
+                      <tr key={row.label} style={{ borderTop: "1px solid rgba(255,255,255,0.05)", backgroundColor: i % 2 === 1 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                        <td className="py-3 px-4 text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{row.label}</td>
+                        <td className="px-2 py-3 text-center">{renderCell(row.ambe, true)}</td>
+                        <td className="px-2 py-3 text-center">{renderCell(row.comp)}</td>
+                        <td className="px-2 py-3 text-center">{renderCell(row.others)}</td>
+                        <td className="px-2 py-3 text-center">{renderCell(row.nutri)}</td>
+                        <td className="px-2 py-3 text-center">{renderCell(row.dna)}</td>
+                        <td className="px-2 py-3 text-center">{renderCell(row.bio)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-          
-          {/* Book Free Consult Button - Centered Below */}
-          <div className="flex justify-center mt-12">
-            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+
+          {/* Book Free Consult Button - Bottom Left */}
+          <div className="flex justify-start mt-8">
+            <Button href="/signup" className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
 
       {/* Certifications Section */}
-      <section className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32" style={{ backgroundColor: "#F4F4F4" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop View - Grid */}
           <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
@@ -1872,7 +1508,7 @@ export default function Home() {
       {/* Steps Section - no title */}
       <section
         className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#E5E5E5" }}
+        style={{ backgroundColor: "#FFFFFF" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop View - Grid */}
@@ -2183,7 +1819,7 @@ export default function Home() {
       </section>
 
       {/* Meet the Experts Section */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F4F4" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className={
@@ -2196,99 +1832,47 @@ export default function Home() {
           <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
             Licensed. Global. Guided by science. Every Ambé practitioner is
             trained in traditional medicine and modern clinical
-            frameworks – bringing deep expertise to every personalized plan.
+            frameworks — bringing deep expertise to every personalized plan.
           </p>
+
+          <div className="flex justify-end mb-4">
+            <p className="text-sm" style={{ color: '#535353' }}>Click any card to view full profile →</p>
+          </div>
 
           {/* Desktop Doctors Grid */}
           <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Dr. Smita Bhatia */}
-            <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/images/doctors/smita_bhatia.png"
-                  alt="Dr. Smita Bhatia"
-                  fill
-                  className="object-cover"
-                />
+            {[
+              { key: 'smita', name: 'Dr. Smita Bhatia', role: 'Oncology Director', badge: 'MEDICAL DIRECTOR', img: '/images/doctors/smita_bhatia.png' },
+              { key: 'jeremy', name: 'Dr. Jeremy Stone', role: 'Metabolic & Musculoskeletal Specialist', img: '/images/doctors/jeremy_stone.png' },
+              { key: 'anandibai', name: 'Dr. Anandibai Joshi', role: 'Psychology Specialist', img: '/images/doctors/anandibai_joshi.png' },
+              { key: 'indira', name: 'Dr. Indira Hinduja', role: 'OBGYN & Women\'s Health', img: '/images/doctors/indira_hinduja.png' },
+            ].map((doc) => (
+              <div
+                key={doc.key}
+                className="bg-white p-6 sm:p-8 text-center flex flex-col items-center cursor-pointer relative border-2 transition-all hover:shadow-lg hover:-translate-y-1"
+                style={{ borderColor: doc.badge ? '#FFD3AC' : 'transparent' }}
+                onClick={() => setActiveDoctor(doc.key)}
+              >
+                {doc.badge && (
+                  <div className="absolute top-0 left-0 right-0 text-center py-1 text-[10px] font-bold tracking-widest rounded-t" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+                    {doc.badge}
+                  </div>
+                )}
+                <div className={`relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden ${doc.badge ? 'mt-6' : ''}`}>
+                  <Image src={doc.img} alt={doc.name} fill className="object-cover" />
+                </div>
+                <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">{doc.name}</div>
+                <p className="text-sm mb-1 text-body">MBBS · BAMS</p>
+                <p className="text-sm mb-1 text-body">Doctor of Ayurvedic Medicine and Surgery</p>
+                <p className="text-sm font-medium text-charcoal mb-4">{doc.role}</p>
+                <button
+                  className="mt-auto bg-[#FFD3AC] text-[#353535] text-sm font-medium px-6 py-2 rounded-full hover:bg-[#f0bc90] transition-colors"
+                  onClick={(e) => { e.stopPropagation(); setActiveDoctor(doc.key); }}
+                >
+                  View Profile
+                </button>
               </div>
-              <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
-                Dr. Smita Bhatia
-              </div>
-              <p className="text-sm mb-1 text-body">MBBS</p>
-              <p className="text-sm mb-2 text-body">BAMS</p>
-              <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
-              <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-              <p className="text-sm font-medium text-charcoal">
-                Oncology Director
-              </p>
-            </div>
-
-            {/* Dr. Jeremy Stone */}
-            <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/images/doctors/jeremy_stone.png"
-                  alt="Dr. Jeremy Stone"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
-                Dr. Jeremy Stone
-              </div>
-              <p className="text-sm mb-1 text-body">MBBS</p>
-              <p className="text-sm mb-2 text-body">BAMS</p>
-              <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
-              <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-              <p className="text-sm font-medium text-charcoal">Metabolic and</p>
-              <p className="text-sm font-medium text-charcoal">
-                musculoskeletal specialist
-              </p>
-            </div>
-
-            {/* Dr. Anandibai Joshi */}
-            <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/images/doctors/anandibai_joshi.png"
-                  alt="Dr. Anandibai Joshi"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
-                Dr. Anandibai Joshi
-              </div>
-              <p className="text-sm mb-1 text-body">MBBS</p>
-              <p className="text-sm mb-2 text-body">BAMS</p>
-              <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
-              <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-              <p className="text-sm font-medium text-charcoal">
-                Psychology specialist
-              </p>
-            </div>
-
-            {/* Dr. Indira Hinduja */}
-            <div className="bg-white p-6 sm:p-8 text-center">
-              <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
-                <Image
-                  src="/images/doctors/indira_hinduja.png"
-                  alt="Dr. Indira Hinduja"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
-                Dr. Indira Hinduja
-              </div>
-              <p className="text-sm mb-1 text-body">MBBS</p>
-              <p className="text-sm mb-2 text-body">BAMS</p>
-              <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
-              <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-              <p className="text-sm font-medium text-charcoal">
-                OBGYN and women&apos;s health
-              </p>
-            </div>
+            ))}
           </div>
 
           {/* Mobile Doctors Carousel */}
@@ -2333,98 +1917,66 @@ export default function Home() {
                 >
                   {/* Dr. Smita Bhatia */}
                   <div className="flex-none w-full px-2">
-                    <div className="bg-white p-6 text-center">
+                    <div className="bg-white p-6 text-center flex flex-col items-center">
                       <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
-                        <Image
-                          src="/images/doctors/smita_bhatia.png"
-                          alt="Dr. Smita Bhatia"
-                          fill
-                          className="object-cover"
-                        />
+                        <Image src="/images/doctors/smita_bhatia.png" alt="Dr. Smita Bhatia" fill className="object-cover" />
                       </div>
-                      <div className="text-lg font-semibold mb-1 text-charcoal">
-                        Dr. Smita Bhatia
-                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">Dr. Smita Bhatia</div>
                       <p className="text-sm mb-1 text-body">MBBS</p>
                       <p className="text-sm mb-2 text-body">BAMS</p>
                       <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
                       <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-                      <p className="text-sm font-medium text-charcoal">
-                        Oncology Director
-                      </p>
+                      <p className="text-sm font-medium text-charcoal mb-4">Oncology Director</p>
+                      <Link href="/get-matched" className="bg-[#FFD3AC] text-[#353535] text-sm font-medium px-6 py-2 rounded-full hover:bg-[#f0bc90] transition-colors">View Profile</Link>
                     </div>
                   </div>
 
                   {/* Dr. Jeremy Stone */}
                   <div className="flex-none w-full px-2">
-                    <div className="bg-white p-6 text-center">
+                    <div className="bg-white p-6 text-center flex flex-col items-center">
                       <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
-                        <Image
-                          src="/images/doctors/jeremy_stone.png"
-                          alt="Dr. Jeremy Stone"
-                          fill
-                          className="object-cover"
-                        />
+                        <Image src="/images/doctors/jeremy_stone.png" alt="Dr. Jeremy Stone" fill className="object-cover" />
                       </div>
-                      <div className="text-lg font-semibold mb-1 text-charcoal">
-                        Dr. Jeremy Stone
-                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">Dr. Jeremy Stone</div>
                       <p className="text-sm mb-1 text-body">MBBS</p>
                       <p className="text-sm mb-2 text-body">BAMS</p>
                       <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
                       <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
                       <p className="text-sm font-medium text-charcoal">Metabolic and</p>
-                      <p className="text-sm font-medium text-charcoal">
-                        musculoskeletal specialist
-                      </p>
+                      <p className="text-sm font-medium text-charcoal mb-4">musculoskeletal specialist</p>
+                      <Link href="/get-matched" className="bg-[#FFD3AC] text-[#353535] text-sm font-medium px-6 py-2 rounded-full hover:bg-[#f0bc90] transition-colors">View Profile</Link>
                     </div>
                   </div>
 
                   {/* Dr. Anandibai Joshi */}
                   <div className="flex-none w-full px-2">
-                    <div className="bg-white p-6 text-center">
+                    <div className="bg-white p-6 text-center flex flex-col items-center">
                       <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
-                        <Image
-                          src="/images/doctors/anandibai_joshi.png"
-                          alt="Dr. Anandibai Joshi"
-                          fill
-                          className="object-cover"
-                        />
+                        <Image src="/images/doctors/anandibai_joshi.png" alt="Dr. Anandibai Joshi" fill className="object-cover" />
                       </div>
-                      <div className="text-lg font-semibold mb-1 text-charcoal">
-                        Dr. Anandibai Joshi
-                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">Dr. Anandibai Joshi</div>
                       <p className="text-sm mb-1 text-body">MBBS</p>
                       <p className="text-sm mb-2 text-body">BAMS</p>
                       <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
                       <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-                      <p className="text-sm font-medium text-charcoal">
-                        Psychology specialist
-                      </p>
+                      <p className="text-sm font-medium text-charcoal mb-4">Psychology specialist</p>
+                      <Link href="/get-matched" className="bg-[#FFD3AC] text-[#353535] text-sm font-medium px-6 py-2 rounded-full hover:bg-[#f0bc90] transition-colors">View Profile</Link>
                     </div>
                   </div>
 
                   {/* Dr. Indira Hinduja */}
                   <div className="flex-none w-full px-2">
-                    <div className="bg-white p-6 text-center">
+                    <div className="bg-white p-6 text-center flex flex-col items-center">
                       <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
-                        <Image
-                          src="/images/doctors/indira_hinduja.png"
-                          alt="Dr. Indira Hinduja"
-                          fill
-                          className="object-cover"
-                        />
+                        <Image src="/images/doctors/indira_hinduja.png" alt="Dr. Indira Hinduja" fill className="object-cover" />
                       </div>
-                      <div className="text-lg font-semibold mb-1 text-charcoal">
-                        Dr. Indira Hinduja
-                      </div>
+                      <div className="text-lg font-semibold mb-1 text-charcoal">Dr. Indira Hinduja</div>
                       <p className="text-sm mb-1 text-body">MBBS</p>
                       <p className="text-sm mb-2 text-body">BAMS</p>
                       <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
                       <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-                      <p className="text-sm font-medium text-charcoal">
-                        OBGYN and women&apos;s health
-                      </p>
+                      <p className="text-sm font-medium text-charcoal mb-4">OBGYN and women&apos;s health</p>
+                      <Link href="/get-matched" className="bg-[#FFD3AC] text-[#353535] text-sm font-medium px-6 py-2 rounded-full hover:bg-[#f0bc90] transition-colors">View Profile</Link>
                     </div>
                   </div>
                 </div>
@@ -2495,18 +2047,24 @@ export default function Home() {
 
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-12">
-            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+            <Button href="/signup" className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
 
       {/* Wellness Benefits Section */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Label + Heading */}
+          <div className="mb-8 sm:mb-12">
+            <p className="text-sm font-bold tracking-[4px] uppercase mb-4" style={{ color: '#C9A87C' }}>What We Treat</p>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-tight" style={{ color: '#353535', fontFamily: 'Georgia, serif' }}>Areas of Care</h2>
+          </div>
+
           <div className="flex items-center justify-center">
             <div className="relative w-full" style={{ overflow: "hidden" }}>
               {/* Scrollable Container - fixed width to show exactly 3 items */}
-              <div 
+              <div
                 id="wellness-scroll"
                 className="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide" 
                 style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -2579,7 +2137,7 @@ export default function Home() {
                     Hormone Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-Balance, not band-aids with adverse long-term effects or dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
+Balance, not band-aids with adverse long-term effects nor dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
                   </p>
                 </div>
               </div>
@@ -2620,7 +2178,7 @@ Whole-woman care, redefined. From menstruation to menopause, fertility to fibro
                     Men&apos;s Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional Ayurvedic and modern medical science to build long-term performance and resilience. 
+More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional Ayurvedic and allopathic medical science to build long-term performance and resilience. 
 </p>
                 </div>
               </div>
@@ -2793,7 +2351,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
       </section>
 
       {/* Professional Comparison Section - Copied from Membership Page */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
         <div className="max-w-7xl mx-auto px-6 sm:px-8">
           {/* Desktop Grid View */}
           <div className="hidden lg:block overflow-x-auto">
@@ -3299,7 +2857,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
       {/* Education Section */}
       <section
         className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#E5E5E5" }}
+        style={{ backgroundColor: "#FFFFFF" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Tab Navigation */}
@@ -3466,7 +3024,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                 {tabContent[selectedTab].text}
               </p>
               <div className="flex justify-start">
-                <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+                <Button href="/signup" className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
               </div>
 
               {/* Bottom buttons - Mobile only, below the Book button */}
@@ -3531,11 +3089,91 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
       </section>
 
 
+      {/* Pricing Callout */}
+      <section className="py-16 sm:py-20" style={{ backgroundColor: '#353535' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 flex flex-col sm:flex-row justify-between items-center gap-8">
+          <div>
+            <p className="text-xs font-semibold tracking-widest mb-2" style={{ color: '#FFD3AC' }}>SIMPLE PRICING</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2" style={{ color: '#FFFFFF', fontFamily: 'Georgia, serif' }}>Membership starts at <em style={{ color: '#FFD3AC', fontStyle: 'normal' }}>$50/month.</em></h2>
+            <p className="text-sm sm:text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>Everything included — consultations, medicines, unlimited messaging. No surprises.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 flex-shrink-0">
+            <Link href="/membership" className="px-8 py-3 rounded-full font-bold text-sm text-center transition-colors" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>VIEW MEMBERSHIP PLANS</Link>
+            <Link href="/signup" className="px-8 py-3 rounded-full font-bold text-sm text-center border transition-colors" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>BOOK FREE CONSULT</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Accordion Section */}
+      {(() => {
+        const faqItems = [
+          { q: 'Do You Need Labs for HRT?', title: null, a: "Biomarkers are often not time-tested nor truly accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don't catch imbalances or deficiencies until it's far advanced and harder to treat. We employ lab biomarkers along with time-tested methods, often catching imbalance early on." },
+          { q: 'Biomarkers and Holistic Integration', title: null, a: "Biomarkers give us data points, but holistic assessment gives us context. At Ambé, we integrate lab results with constitutional analysis, tongue analysis, nail analysis, and symptom history to build a complete picture of your health." },
+          { q: 'How We Personalize Every Formula', title: null, a: "Every formula is built around your unique constitution, current imbalances, and treatment goals. We screen for contraindications with any pharmaceuticals you're taking, and adjust based on your monthly check-in results." },
+          { q: 'Prevent Contraindicated Therapies with Pharmaceuticals', title: null, a: "Our integrative doctors are trained to recognize dangerous combinations between herbal protocols and pharmaceutical medications. Your full medication list is reviewed before any formula is recommended." },
+          { q: 'Mislabeled Therapies to Watch Out For', title: 'Truth Behind the Labels', a: 'Not all "natural" therapies are safe. Many over-the-counter hormone creams or supplements are mislabeled, contain synthetic compounds, or disrupt your endocrine system further. Our team helps you decode marketing hype, guiding you toward real nourishment and away from potentially harmful fads.' },
+        ];
+        return (
+          <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F4F4' }}>
+            <div className="max-w-4xl mx-auto px-6 sm:px-8">
+              <p className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#535353' }}>Q&A</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-10" style={{ color: '#353535', fontFamily: 'Georgia, serif' }}>Common Questions</h2>
+              <div className="divide-y" style={{ borderColor: '#E0E0E0' }}>
+                {faqItems.map((item, idx) => (
+                  <div key={idx} className="overflow-hidden" style={{ backgroundColor: openFaq === idx ? '#FFD3AC' : 'transparent' }}>
+                    <button
+                      className="w-full flex justify-between items-center px-2 py-5 text-left"
+                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                    >
+                      <span className="text-sm sm:text-base font-medium pr-4" style={{ color: '#353535' }}>{item.q}</span>
+                      <span className="text-xl font-light flex-shrink-0" style={{ color: '#353535', display: 'inline-block', transform: openFaq === idx ? 'rotate(45deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>+</span>
+                    </button>
+                    {openFaq === idx && (
+                      <div className="px-2 pb-5">
+                        {item.title && <p className="font-bold mb-2 text-sm sm:text-base" style={{ color: '#353535' }}>{item.title}</p>}
+                        <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>{item.a}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* App Download Section */}
+      <section className="py-16 sm:py-20" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 flex flex-col sm:flex-row justify-between items-center gap-8">
+          <div>
+            <p className="text-xs font-semibold tracking-widest mb-2 uppercase" style={{ color: '#535353' }}>Get The App</p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#353535', fontFamily: 'Georgia, serif' }}>Your Wellness Journey in Your Pocket</h2>
+            <p className="text-sm sm:text-base" style={{ color: '#535353' }}>Book consults, message your doctor, track your plan — all from the Ambé app.</p>
+          </div>
+          <div className="flex gap-4 flex-shrink-0">
+            <Link href="https://apps.apple.com/in/app/ambe-wellness/id6523417737" target="_blank" className="flex items-center gap-3 px-5 py-3 rounded-xl" style={{ backgroundColor: '#353535', color: '#fff' }}>
+              <FaApple size={24} />
+              <div>
+                <div className="text-[9px] font-normal opacity-75 leading-none mb-0.5">Download on the</div>
+                <div className="text-sm font-bold leading-none">App Store</div>
+              </div>
+            </Link>
+            <Link href="https://play.google.com/store/apps/details?id=com.ambe.wellnessapp" target="_blank" className="flex items-center gap-3 px-5 py-3 rounded-xl" style={{ backgroundColor: '#353535', color: '#fff' }}>
+              <FaGooglePlay size={22} />
+              <div>
+                <div className="text-[9px] font-normal opacity-75 leading-none mb-0.5">Get it on</div>
+                <div className="text-sm font-bold leading-none">Google Play</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Quote Section and Footer - Combined with single video background */}
-      <section className="relative">
+      <section className="relative overflow-hidden">
         <VideoBackground />
         {/* Semi-transparent black overlay */}
-        <div className="absolute inset-0 bg-black/40 z-[1]"></div>
+        <div className="absolute inset-0 bg-black/60 z-[1]"></div>
         <div className="relative z-10">
           {/* Quote Section */}
           <div className="py-12 sm:py-16 md:py-24">
@@ -3610,7 +3248,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
             
             {/* Book Free Consult Button */}
             <div className="flex justify-center mt-12">
-              <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+              <Button href="/signup" className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
             </div>
 
           </div>
@@ -3619,6 +3257,121 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
           <Footer />
         </div>
       </section>
+      {/* Email Capture Modal */}
+      {showEmailModal && (
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center p-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setShowEmailModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full p-10 relative shadow-2xl text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              className="absolute top-4 right-5 text-2xl leading-none cursor-pointer"
+              style={{ color: '#aaa', background: 'none', border: 'none' }}
+              onClick={() => setShowEmailModal(false)}
+            >×</button>
+
+            {!emailSubmitted ? (
+              <>
+                <p className="text-xs font-semibold tracking-widest mb-3 uppercase" style={{ color: '#535353' }}>Free Wellness Library</p>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ color: '#353535', fontFamily: 'Georgia, serif' }}>
+                  8 Expert Guides.<br />Yours Free.
+                </h2>
+                <p className="text-sm sm:text-base mb-6 leading-relaxed" style={{ color: '#535353' }}>
+                  Enter your email to instantly unlock our complete wellness guide library.
+                </p>
+                <form onSubmit={handleEmailSubmit} className="space-y-3">
+                  <input
+                    type="email"
+                    placeholder="Your email address"
+                    value={emailValue}
+                    onChange={(e) => setEmailValue(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none border"
+                    style={{ borderColor: '#e0e0e0', color: '#353535' }}
+                  />
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-full font-bold text-sm tracking-wide transition-colors"
+                    style={{ backgroundColor: '#FFD3AC', color: '#353535' }}
+                  >
+                    SEND MY FREE GUIDES
+                  </button>
+                </form>
+                <p className="text-xs mt-4" style={{ color: '#bbb' }}>No spam. Unsubscribe anytime.</p>
+              </>
+            ) : (
+              <>
+                <div className="text-5xl mb-4" style={{ color: '#FFD3AC' }}>✓</div>
+                <h2 className="text-2xl font-bold mb-3" style={{ color: '#353535', fontFamily: 'Georgia, serif' }}>
+                  Guides on their way.
+                </h2>
+                <p className="text-sm mb-6" style={{ color: '#535353' }}>Check your inbox.</p>
+                <button
+                  className="px-10 py-3 rounded-full font-bold text-sm"
+                  style={{ backgroundColor: '#FFD3AC', color: '#353535' }}
+                  onClick={() => setShowEmailModal(false)}
+                >
+                  CLOSE
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Doctor Profile Modals */}
+      {activeDoctor && doctors[activeDoctor] && (
+        <div
+          className="fixed inset-0 z-[500] flex items-center justify-center p-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+          onClick={() => setActiveDoctor(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-lg w-full p-10 relative shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-4 right-5 text-2xl leading-none cursor-pointer"
+              style={{ color: '#aaa', background: 'none', border: 'none' }}
+              onClick={() => setActiveDoctor(null)}
+            >×</button>
+
+            {doctors[activeDoctor].badge && (
+              <div className="inline-block rounded px-4 py-1 text-xs font-bold tracking-widest mb-4" style={{ backgroundColor: '#FFD3AC', color: '#353535' }}>
+                {doctors[activeDoctor].badge}
+              </div>
+            )}
+
+            <div className="flex gap-5 items-start mb-5">
+              <div className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0 border-4" style={{ borderColor: '#FFD3AC' }}>
+                <Image src={doctors[activeDoctor].image} alt={doctors[activeDoctor].name} fill className="object-cover" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-1" style={{ color: '#353535' }}>{doctors[activeDoctor].name}</h3>
+                <p className="text-sm mb-1" style={{ color: '#535353' }}>{doctors[activeDoctor].creds}</p>
+                <p className="text-sm mb-1" style={{ color: '#535353' }}>{doctors[activeDoctor].degree}</p>
+                <p className="text-sm font-semibold" style={{ color: '#353535' }}>{doctors[activeDoctor].role}</p>
+              </div>
+            </div>
+
+            <div className="h-px mb-5" style={{ backgroundColor: '#f0f0f0' }} />
+            <p className="text-sm leading-relaxed mb-6" style={{ color: '#535353' }}>{doctors[activeDoctor].bio}</p>
+            <Link
+              href="/signup"
+              className="px-8 py-3 rounded-full font-bold text-sm inline-block"
+              style={{ backgroundColor: '#FFD3AC', color: '#353535' }}
+              onClick={() => setActiveDoctor(null)}
+            >
+              BOOK WITH {doctors[activeDoctor].name.split(' ').slice(-1)[0].toUpperCase()}
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

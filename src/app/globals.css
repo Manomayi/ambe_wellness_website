@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 
 /* Prevent horizontal scroll on mobile */
 html,
@@ -90,7 +91,6 @@ body {
 }
 
 /* Temporary: Using Playfair Display as fallback until Richmond font files are added */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 
 :root {
   --background: #E5E5E5;

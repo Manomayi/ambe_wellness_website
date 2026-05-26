@@ -34,9 +34,37 @@ export default function Enterprise() {
                 executive suite.
               </p>
               
-              <Button variant="light">
+              <Button variant="light" href="#contact">
                 GET STARTED
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ROI Stats Section */}
+      <section style={{ backgroundColor: '#1a1a1a' }}>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 py-10 sm:py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#333333]">
+            <div className="flex flex-col items-center text-center px-6 py-4">
+              <span className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: '#C9A87C' }}>70%</span>
+              <span className="text-xs sm:text-sm font-semibold mb-1" style={{ color: '#FFFFFF' }}>Reduction in Absenteeism</span>
+              <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Measurable within 90 days</span>
+            </div>
+            <div className="flex flex-col items-center text-center px-6 py-4">
+              <span className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: '#C9A87C' }}>80%</span>
+              <span className="text-xs sm:text-sm font-semibold mb-1" style={{ color: '#FFFFFF' }}>Improved Retention Scores</span>
+              <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Employees stay longer, perform better</span>
+            </div>
+            <div className="flex flex-col items-center text-center px-6 py-4">
+              <span className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: '#C9A87C' }}>↓</span>
+              <span className="text-xs sm:text-sm font-semibold mb-1" style={{ color: '#FFFFFF' }}>Reduced Insurance Costs</span>
+              <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Fewer conventional medical visits</span>
+            </div>
+            <div className="flex flex-col items-center text-center px-6 py-4">
+              <span className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: '#C9A87C' }}>★</span>
+              <span className="text-xs sm:text-sm font-semibold mb-1" style={{ color: '#FFFFFF' }}>Tax-Advantaged Benefits</span>
+              <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Wellness programs qualify for employer tax benefits</span>
             </div>
           </div>
         </div>
@@ -376,7 +404,7 @@ export default function Enterprise() {
                   Ready to raise the bar? Contact us to see how Ambé can become your next-gen wellness partner—transforming 
                   your strategy to elevate culture, retention, performance, and ROI.
                 </p>
-                <Button>
+                <Button href="#contact">
                   CONTACT US
                 </Button>
               </div>
@@ -384,7 +412,7 @@ export default function Enterprise() {
           </div>
 
           {/* Contact Form Section */}
-          <div className="pb-12 sm:pb-16 md:pb-20">
+          <div id="contact" className="pb-12 sm:pb-16 md:pb-20">
             <div className="max-w-5xl mx-auto px-6 sm:px-8">
               <div 
                 className="py-8 sm:py-12 md:py-16 px-6 sm:px-8 md:px-12" 

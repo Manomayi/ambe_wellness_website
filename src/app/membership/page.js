@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
@@ -35,11 +36,9 @@ export default function Membership() {
                     Unlimited care. One monthly price.
                   </p>
 
-                  <button
-                    className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
-                  >
+                  <Link href="/signup" className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer">
                     BOOK FREE<br /> CONSULT NOW
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -90,7 +89,7 @@ export default function Membership() {
                       Practitioner Collaboration, Powered by Real-Time Data
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. &apos;Your wellness doesn’t stop at the first call — and neither do we.
+                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call — and neither do we.
                     </p>
                   </div>
                 </div>
@@ -160,7 +159,7 @@ export default function Membership() {
                             Practitioner Collaboration, Powered by Real-Time Data
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. &apos;Your wellness doesn’t stop at the first call — and neither do we.
+                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call — and neither do we.
                           </p>
                         </div>
                       </div>
@@ -1291,7 +1290,7 @@ export default function Membership() {
                 <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8" style={{ color: '#535353' }}>
                   Join the Ambé Membership for personalized, all-inclusive care.
                 </p>
-                <Button>
+                <Button href="/signup">
                   BOOK NOW - PAY AS YOU LIKE
                 </Button>
               </div>
