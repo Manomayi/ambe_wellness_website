@@ -1,4 +1,6 @@
 import ClientAuthProvider from "@/components/auth/ClientAuthProvider";
+import CookieConsentBanner from "@/components/common/CookieConsentBanner";
+import AyurvedaDisclaimerModal from "@/components/common/AyurvedaDisclaimerModal";
 import "./globals.css";
 
 export const metadata = {
@@ -23,6 +25,8 @@ export default function RootLayout({ children }) {
       <body className="antialiased">
         <ClientAuthProvider>
           {children}
+          <AyurvedaDisclaimerModal />
+          <CookieConsentBanner />
         </ClientAuthProvider>
       </body>
     </html>

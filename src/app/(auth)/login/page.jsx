@@ -20,8 +20,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+
       const userType = await signIn(email, password);
-      
+      console.log("userType", userType);
       // Navigate based on user type
       router.push(userType === 'doctor' ? '/doctor/home' : '/user/home');
     } catch (err) {
@@ -62,7 +63,8 @@ export default function LoginPage() {
               error={null}
             />
             {error && <p className="text-red-600 text-center mb-4">{error}</p>}
-            <Button 
+            <Button
+              type="submit"
               disabled={loading}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition"
             >

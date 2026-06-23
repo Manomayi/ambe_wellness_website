@@ -66,7 +66,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signIn = async (email, password) => {
-    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    // Trim the email — leading/trailing whitespace (common with autofill) is
+    // rejected by Firebase as INVALID_LOGIN_CREDENTIALS.
+    const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
     
     // Check user type
     const doctorDoc = await getDoc(doc(db, 'doctors', user.uid));

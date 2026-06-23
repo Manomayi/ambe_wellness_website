@@ -6,10 +6,20 @@ import VideoBackground from '@/components/common/VideoBackground';
 import Navigation from '@/components/navigation/Navigation';
 import { sectionTitleClasses, bannerTitleClasses } from '@/lib/styles/constants';
 import Footer from '@/components/common/Footer';
+import EmailCaptureModal from '@/components/common/EmailCaptureModal';
 
 export default function Resources() {
+  const [guide, setGuide] = React.useState(null); // { title } when modal open, null when closed
+  const openGuide = (title) => setGuide({ title: title || null });
+
   return (
     <div className="min-h-screen bg-white">
+      {/* Guide download gating modal */}
+      <EmailCaptureModal
+        open={guide !== null}
+        guideTitle={guide?.title}
+        onClose={() => setGuide(null)}
+      />
 
       {/* Navigation */}
       <Navigation />
@@ -39,7 +49,7 @@ export default function Resources() {
                 significantly reduce these risks. Let&apos;s reframe health as an act of love.
               </p>
               
-              <Button>
+              <Button onClick={() => openGuide()}>
                 DOWNLOAD FREE EBOOK
               </Button>
             </div>
@@ -302,7 +312,7 @@ export default function Resources() {
 
           {/* Download Button */}
           <div className="text-center">
-            <Button>
+            <Button onClick={() => openGuide()}>
               DOWNLOAD FULL GUIDE
             </Button>
           </div>
@@ -351,9 +361,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Body Care Red Flag List")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Body Care Red Flag List
-              </a>
+              </button>
             </div>
 
             {/* Food & Nutrition */}
@@ -389,9 +399,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Toxic Food Ingredients & Safe Choices")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Toxic Food Ingredients & Safe Choices
-              </a>
+              </button>
             </div>
 
             {/* Home & Environmental Safety */}
@@ -427,9 +437,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Home Detox Checklist")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Home Detox Checklist
-              </a>
+              </button>
             </div>
 
             {/* Pets: Safe Nutrition */}
@@ -465,9 +475,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Safe Pet Nutrition Guide")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Safe Pet Nutrition Guide
-              </a>
+              </button>
             </div>
 
             {/* Cleansing & Detox Protocols */}
@@ -503,9 +513,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Seasonal Cleanse Guide")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Seasonal Cleanse Guide
-              </a>
+              </button>
             </div>
 
             {/* Fasting & Autophagy */}
@@ -531,9 +541,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Fasting Blueprint")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Fasting Blueprint
-              </a>
+              </button>
             </div>
 
             {/* Pharmaceutical Risks */}
@@ -569,9 +579,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Medication Risk Sheet")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Medication Risk Sheet
-              </a>
+              </button>
             </div>
 
             {/* Global Healing & Retreat Centers */}
@@ -607,9 +617,9 @@ export default function Resources() {
                 </div>
               </div>
               
-              <a href="#" className="text-sm underline hover:opacity-80" style={{ color: '#FFD3AC' }}>
+              <button type="button" onClick={() => openGuide("Healing Centers Directory")} className="text-sm underline hover:opacity-80 cursor-pointer text-left" style={{ color: '#FFD3AC' }}>
                 Download Healing Centers Directory
-              </a>
+              </button>
             </div>
           </div>
         </div>

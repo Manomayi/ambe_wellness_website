@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import DsheaDisclaimer from '@/components/common/DsheaDisclaimer';
 import {
   collection,
   doc,
@@ -127,20 +128,17 @@ export default function UserStorePage() {
     <ProtectedRoute userType="user">
       <div className="max-w-7xl mx-auto p-6">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Store</h1>
-        </div>
-
-        {/* Cart Button - Prominent Position */}
-        <div className="mb-6">
           <button
             onClick={() => router.push('/user/cart')}
-            className="w-full max-w-md bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg flex items-center justify-center gap-3 font-medium transition shadow-lg"
+            className="bg-green-600 hover:bg-green-700 py-2.5 px-5 rounded-lg flex items-center gap-2 font-medium transition shadow flex-shrink-0"
+            style={{ color: '#FFFFFF' }}
           >
-            <ShoppingCartIcon className="h-6 w-6" />
+            <ShoppingCartIcon className="h-5 w-5" />
             <span>View Cart</span>
             {cartCount > 0 && (
-              <span className="bg-white text-green-600 px-2 py-1 rounded-full text-sm font-bold">
+              <span className="bg-white text-green-600 px-2 py-0.5 rounded-full text-sm font-bold">
                 {cartCount}
               </span>
             )}
@@ -149,7 +147,7 @@ export default function UserStorePage() {
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
-          <div className="relative max-w-md">
+          <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
@@ -184,7 +182,7 @@ export default function UserStorePage() {
             <p className="text-gray-500">No products found matching your search.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -263,14 +261,14 @@ function ProductCard({ product }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition flex flex-col sm:flex-row min-w-0">
       {/* Product Image */}
-      <div className="h-48 bg-gray-100 relative">
+      <div className="w-full sm:w-2/5 flex-shrink-0 bg-gray-100 relative flex items-center justify-center p-4 min-h-[240px]">
         {product.imageUrl && (
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-contain p-4"
+            className="max-w-full max-h-full object-contain"
           />
         )}
         {discount > 0 && (
@@ -281,11 +279,14 @@ function ProductCard({ product }) {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="flex-1 min-w-0 p-4 sm:p-5">
         <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>
         {product.description && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
         )}
+
+        {/* DSHEA / FDA disclaimer — below the description, on every product */}
+        <DsheaDisclaimer className="mb-3" />
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-3">
@@ -314,17 +315,21 @@ function ProductCard({ product }) {
         {/* Quantity Selector */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-gray-800 font-medium">Quantity:</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-800 flex items-center justify-center font-bold"
+              aria-label="Decrease quantity"
+              className="w-9 h-9 bg-gray-700 hover:bg-gray-800 flex items-center justify-center text-lg font-bold leading-none"
+              style={{ color: '#FFFFFF' }}
             >
-              -
+              −
             </button>
-            <span className="w-8 text-center font-bold text-gray-800">{quantity}</span>
+            <span className="w-10 text-center font-bold text-gray-800">{quantity}</span>
             <button
               onClick={() => setQuantity(quantity + 1)}
-              className="w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-800 flex items-center justify-center font-bold"
+              aria-label="Increase quantity"
+              className="w-9 h-9 bg-gray-700 hover:bg-gray-800 flex items-center justify-center text-lg font-bold leading-none"
+              style={{ color: '#FFFFFF' }}
             >
               +
             </button>
@@ -335,7 +340,8 @@ function ProductCard({ product }) {
         <button
           onClick={addToCart}
           disabled={adding}
-          className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="w-full bg-green-600 py-2.5 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
+          style={{ color: '#FFFFFF' }}
         >
           {adding ? 'Adding...' : 'Add to Cart'}
         </button>

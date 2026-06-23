@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="py-3 sm:py-4">
+    <footer className="relative z-10 py-10 sm:py-14" style={{ backgroundColor: '#1A1A1A' }}>
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
         {/* First row - navigation links */}
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0 mb-6 sm:mb-4">
@@ -27,30 +27,67 @@ export default function Footer() {
           </div>
         </div>
         
+        {/* Footer Disclaimer Strip — renders above the copyright line */}
+        <div className="pt-2 mb-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
+            {/* Supplement Disclaimer — FDA wording must not be altered */}
+            <div>
+              <div className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#FFD3AC' }}>
+                Supplement Disclaimer
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                These statements have not been evaluated by the Food and Drug
+                Administration. Products offered through Ambé are not intended to
+                diagnose, treat, cure, or prevent any disease.
+              </p>
+            </div>
+
+            {/* Practitioner Notice */}
+            <div>
+              <div className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#FFD3AC' }}>
+                Practitioner Notice
+              </div>
+              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                Ambé practitioners hold BAMS degrees (Bachelor of Ayurvedic
+                Medicine and Surgery) from accredited institutions. Ayurveda is
+                not a state-licensed medical practice in the United States. All
+                consultations are traditional Ayurvedic wellness support, not the
+                practice of conventional medicine.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              Ambé wellness programs are educational and supportive in nature.
+              They are not a substitute for diagnosis, treatment, or advice from a
+              licensed medical physician. If you have a medical condition or are
+              taking prescription medications, consult your primary care provider
+              before beginning any wellness program.
+            </p>
+          </div>
+        </div>
+
         {/* Second row - copyright and terms */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-6">
+        <div
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mt-6 pt-6"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}
+        >
           <p style={{ color: 'white' }} className="text-xs sm:text-sm text-left">
-            2026 Ambe All Rights Reserved By Lakshmi Devi Namaha LLC
+            © 2026 Ambé Wellness. All rights reserved. Operated by Lakshmi Devi Namaha LLC DBA Ambé Wellness.
           </p>
-          <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
-            Terms
-          </Link>
-          <Link href="/privacy-policy" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
-            Privacy Policy
-          </Link>
+          <div className="flex gap-6">
+            <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
+              Terms
+            </Link>
+            <Link href="/privacy-policy" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
-        
-        {/* Disclaimer text */}
-        <div className="pt-6">
-          <p style={{ color: 'white' }} className="text-xs leading-relaxed">
-            All content and resources provided by AMBE are intended for <strong>educational purposes only</strong>. They do not constitute medical advice, diagnosis, or treatment.
-            Any cleanse, detox program, or health regimen should be undertaken only under the supervision of AMBE's team of qualified wellness practitioners or 
-            other vetted professionals with appropriate experience. This ensures that your individual constitution ("Prakriti"), health status, 
-            and unique needs are addressed safely. Improper or unsupervised application of these protocols can lead to harm. Always consult your licensed healthcare 
-            provider before starting any new wellness or cleansing program. By using AMBE resources, you acknowledge and
-            accept that you are responsible for your own health decisions.
-          </p>
-        </div>
+
+        {/* Apple ownership fine-print goes below the copyright line — paste the
+            exact wording here when provided. */}
       </div>
     </footer>
   );
