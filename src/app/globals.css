@@ -92,6 +92,9 @@ body {
 /* Temporary: Using Playfair Display as fallback until Richmond font files are added */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 
+/* Shop page fonts — Cormorant Garamond (serif prices/titles) + Jost */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Jost:wght@300;400;500;600&display=swap');
+
 :root {
   --background: #E5E5E5;
   --foreground: #353535;
@@ -161,4 +164,24 @@ input, textarea, select {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Shop credentials ticker — continuous horizontal scroll.
+   The track renders the items twice, so translating by -50% loops seamlessly. */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

@@ -42,8 +42,15 @@ export default function Navigation() {
           
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center gap-4 lg:gap-8 xl:gap-12">
-            <Link 
-              href="/enterprise" 
+            <Link
+              href="/shop"
+              className="text-xs lg:text-sm"
+              style={{ color: pathname === '/shop' ? '#FFD3AC' : 'white' }}
+            >
+              Shop
+            </Link>
+            <Link
+              href="/enterprise"
               className="text-xs lg:text-sm" 
               style={{ color: pathname === '/enterprise' ? '#FFD3AC' : 'white' }}
             >
@@ -109,8 +116,16 @@ export default function Navigation() {
           {/* Mobile menu items */}
           <div className="flex-1 px-8 py-8">
             <div className="flex flex-col space-y-6">
-              <Link 
-                href="/enterprise" 
+              <Link
+                href="/shop"
+                className="text-2xl font-light"
+                style={{ color: pathname === '/shop' ? '#FFD3AC' : '#353535' }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Shop
+              </Link>
+              <Link
+                href="/enterprise"
                 className="text-2xl font-light" 
                 style={{ color: pathname === '/enterprise' ? '#FFD3AC' : '#353535' }}
                 onClick={() => setMobileMenuOpen(false)}
