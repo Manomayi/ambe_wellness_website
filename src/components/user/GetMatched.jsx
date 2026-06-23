@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase/config';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
+
 const HEALTH_FIELDS = [
   { value: 'general_health', label: 'General Health', icon: '🏥' },
   { value: 'womens_health', label: "Women's Health", icon: '👩‍⚕️' },
