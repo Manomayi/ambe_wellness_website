@@ -7,6 +7,9 @@ import Navigation from '@/components/navigation/Navigation';
 import { sectionTitleClasses, bannerTitleClasses } from '@/lib/styles/constants';
 import Footer from '@/components/common/Footer';
 import EmailCaptureModal from '@/components/common/EmailCaptureModal';
+import WellnessFaqAccordion from '@/components/resources/WellnessFaqAccordion';
+import Link from 'next/link';
+import { CONSULT_HREF } from '@/lib/site-config';
 
 export default function Resources() {
   const [guide, setGuide] = React.useState(null); // { title } when modal open, null when closed
@@ -287,7 +290,7 @@ export default function Resources() {
                   <div>
                     <div className="font-semibold mb-2">Health Impact:</div>
                     <p className="text-sm mt-1" style={{ color: '#535353' }}>
-                      Increased toxin exposure, crime risk, stress load.
+                      Elevated cortisol, anxiety, depression, burnout, and immune suppression.
                     </p>
                   </div>
                 </div>
@@ -625,6 +628,36 @@ export default function Resources() {
         </div>
       </section>
 
+      {/* Membership CTA */}
+      <section className="py-12 sm:py-16" style={{ backgroundColor: '#E5E5E5' }}>
+        <div className="max-w-3xl mx-auto px-6 sm:px-8">
+          <div
+            className="rounded-2xl border p-8 sm:p-10 text-center"
+            style={{ borderColor: '#E7E2D9', backgroundColor: '#fff' }}
+          >
+            <p className="text-base sm:text-lg mb-6" style={{ color: '#535353' }}>
+              Your Ambé doctor can personalize everything in these guides for your specific constitution.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/membership"
+                className="px-8 py-3 rounded-full text-sm font-medium tracking-wider uppercase text-center bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
+              >
+                View Membership Plans
+              </Link>
+              <Link
+                href={CONSULT_HREF}
+                className="px-8 py-3 rounded-full text-sm font-medium tracking-wider uppercase text-center border border-[#353535] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
+              >
+                Book Free Consult
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <WellnessFaqAccordion />
+
       {/* Footer Section with Video Background */}
       <section className="relative overflow-hidden">
         {/* Video Background */}
@@ -669,44 +702,6 @@ export default function Resources() {
                     height={128}
                     className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
                   />
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Disclaimer Section */}
-          <div className="py-12 sm:py-16 md:py-20">
-            <div className="max-w-7xl mx-auto px-6 sm:px-8">
-              <div 
-                className="py-8 sm:py-10 px-6 sm:px-8 md:px-12"
-                style={{ 
-                  backgroundColor: 'rgba(244, 244, 244, 0.9)',
-                  borderTopLeftRadius: '120px',
-                  borderTopRightRadius: '0px',
-                  borderBottomRightRadius: '120px',
-                  borderBottomLeftRadius: '0px'
-                }}
-              >
-                <div className={sectionTitleClasses + " text-center mb-6 sm:mb-8 text-xl sm:text-2xl md:text-3xl lg:text-4xl"}>
-                  AMBE Wellness Disclaimer
-                </div>
-                
-                <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
-                  <p className="text-sm sm:text-base text-center leading-relaxed px-4" style={{ color: '#535353' }}>
-                    All content and resources provided by AMBE are intended for **educational purposes only**. They do not constitute 
-                    medical advice, diagnosis, or treatment. Any cleanse, detox program, or health regimen should be undertaken only under 
-                    the supervision of AMBE&apos;s team of qualified wellness practitioners or other vetted professionals with appropriate experience**.
-                  </p>
-                  
-                  <p className="text-sm sm:text-base text-center leading-relaxed px-4" style={{ color: '#535353' }}>
-                    This ensures that your individual constitution (&quot;Prakriti&quot;), health status, and unique needs are addressed safely.
-                  </p>
-                  
-                  <p className="text-sm sm:text-base text-center leading-relaxed px-4" style={{ color: '#535353' }}>
-                    Improper or unsupervised application of these protocols can lead to harm. Always consult your licensed healthcare provider 
-                    before starting any new wellness or cleansing program. By using AMBE resources, you acknowledge and 
-                    accept that you are responsible for your own health decisions.
-                  </p>
                 </div>
               </div>
             </div>

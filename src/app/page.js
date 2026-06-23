@@ -19,6 +19,7 @@ import PricingCallout from "@/components/common/PricingCallout";
 import EmailCaptureAutoPrompt from "@/components/common/EmailCaptureAutoPrompt";
 import DoctorProfileFinePrint, { MedicalDirectorBadge } from "@/components/common/DoctorProfileFinePrint";
 import DoctorProfileModal from "@/components/common/DoctorProfileModal";
+import { CONSULT_HREF } from "@/lib/site-config";
 
 // Carousel component for The Ambé Difference section 
 function AmbeDifferenceCarousel() {
@@ -167,7 +168,7 @@ export default function Home() {
     },
     'biomarkers': {
       title: 'Bio markers and holistic integration',
-      text: 'Bio markers are often not time tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don\'t catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time tested methods, often catching imbalance early on.',
+      text: 'Bio markers are often not time-tested nor really accurate when it comes to hormones because hormones fluctuate day to day if not hour to hour. We often don\'t catch imbalances or deficiencies until its far advanced and harder to treat. We employ lab bio markers along with time-tested methods, often catching imbalance early on.',
       image: '/images/home/hands.png'
     },
     'personalize': {
@@ -239,11 +240,12 @@ export default function Home() {
                     Developed at Stanford
                   </p>
 
-                  <button 
+                  <Link
+                    href={CONSULT_HREF}
                     className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
                   >
                     BOOK FREE<br/> CONSULT NOW
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -840,10 +842,10 @@ export default function Home() {
                   style={{ color: "white" }}
                 >
                   <span className="font-bold underline">55</span>{" "}
-                  <span className="font-light">Million Biomarkers Analyze</span>
+                  <span className="font-light">Million Biomarkers Analyzed</span>
                 </p>
                 
-                <Button className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
+                <Button href={CONSULT_HREF} className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
               </div>
             </div>
           </div>
@@ -890,7 +892,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-sm md:text-base" style={{ color: "#353535" }}>
-                This isn&apos;t science fiction. This is Ambé.'
+                This isn&apos;t science fiction. This is Ambé.
               </p>
             </div>
 
@@ -909,8 +911,8 @@ export default function Home() {
 
               <div className="p-6 sm:p-8" style={{ backgroundColor: "#FFD3AC", borderTopLeftRadius: "60px", borderBottomRightRadius: "60px" }}>
                 <p className="text-sm md:text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
-                  'In a double-blind twin study, identical twins who changed their lifestyle for just 8 weeks
-                  measurably lowered their biological age. Same DNA. Different choices. Different future.'
+                  In a double-blind twin study, identical twins who changed their lifestyle for just 8 weeks
+                  measurably lowered their biological age. Same DNA. Different choices. Different future.
                 </p>
               </div>
             </div>
@@ -918,7 +920,7 @@ export default function Home() {
 
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-7 md:mt-12">
-            <Button className="font-extrabold">BOOK FREE<br/> CONSULT NOW</Button>
+            <Button href={CONSULT_HREF} className="font-extrabold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
@@ -949,13 +951,13 @@ export default function Home() {
                     Precision You Can Trust
                   </div>
                   <p className="text-sm" style={{ color: "#353535" }}>
-                    Doctors cross-trained in time tested and modern science
+                    Doctors cross-trained in time-tested and modern science
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Plans crafted around your Card */}
+            {/* Plans crafted around you Card */}
             <div className="relative bg-[#FFD3AC] py-7 px-5 pr-10" style={{ borderRadius: "0 80px 0 80px" }}>
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0 p-4">
@@ -969,10 +971,10 @@ export default function Home() {
                 </div>
                 <div className="flex-1">
                   <div className="font-semibold text-lg mb-2" style={{ color: "#353535" }}>
-                    Plans crafted around your
+                    Plans crafted around you
                   </div>
                   <p className="text-sm" style={{ color: "#353535" }}>
-                    Plans crafted around your whole self & labs
+                    Whole self &amp; labs
                   </p>
                 </div>
               </div>
@@ -1028,7 +1030,7 @@ export default function Home() {
 
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-12">
-            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+            <Button href={CONSULT_HREF} className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
@@ -1734,7 +1736,7 @@ export default function Home() {
           <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
             Licensed. Global. Guided by science. Every Ambé practitioner is
             trained in traditional medicine and modern clinical
-            frameworks–bringing deep expertise to every personalized plan.
+            frameworks — bringing deep expertise to every personalized plan.
           </p>
 
           {/* Desktop Doctors Grid */}
@@ -1761,6 +1763,13 @@ export default function Home() {
                     <MedicalDirectorBadge />
                   </div>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedDoctor(d)}
+                  className="mt-4 px-6 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
+                >
+                  View Profile
+                </button>
               </div>
             ))}
           </div>
@@ -1827,6 +1836,16 @@ export default function Home() {
                             <MedicalDirectorBadge />
                           </div>
                         )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDoctor(d);
+                          }}
+                          className="mt-4 px-6 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
+                        >
+                          View Profile
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1901,14 +1920,28 @@ export default function Home() {
 
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-12">
-            <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+            <Button href={CONSULT_HREF} className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
           </div>
         </div>
       </section>
 
-      {/* Wellness Benefits Section */}
+      {/* Wellness Benefits Section — Areas of Care */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10">
+            <div
+              className="text-xs font-semibold tracking-widest uppercase mb-3"
+              style={{ color: "#C8996A" }}
+            >
+              What We Treat
+            </div>
+            <div
+              className={sectionTitleClasses + " text-2xl sm:text-3xl md:text-4xl"}
+              style={{ color: "#353535" }}
+            >
+              Areas of Care
+            </div>
+          </div>
           <div className="flex items-center justify-center">
             <div className="relative w-full" style={{ overflow: "hidden" }}>
               {/* Scrollable Container - fixed width to show exactly 3 items */}
@@ -1985,7 +2018,7 @@ export default function Home() {
                     Hormone Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-Balance, not band-aids with adverse long-term effects or dependency'. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
+Balance, not band-aids with adverse long-term effects or dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
                   </p>
                 </div>
               </div>
@@ -2130,20 +2163,20 @@ Your environment heals with you. We give you step-by-step plans for detoxing yo
                 </div>
               </div>
 
-              {/* Whole Kitchen & Your Kitchen */}
+              {/* Healing Kitchen Guide */}
               <div className="flex-none snap-start" style={{ width: "380px" }}>
                 <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
                   <div className="w-16 h-16 mb-4">
                     <Image
                       src="/images/icons/whole_kitchen.png"
-                      alt="Whole Kitchen & Your Kitchen"
+                      alt="Healing Kitchen Guide"
                       width={64}
                       height={64}
                       className="object-contain"
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Whole Kitchen & Your Kitchen
+                    Healing Kitchen Guide
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
 What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a healing center, with Ayurvedic and vet-approved tips for feeding those you love.                  </p>
@@ -2264,7 +2297,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                       style={{ color: "#353535" }}
                     >
                       We&apos;re doctors, entrepreneurs and researchers with
-                      decades of experience. Ambé is built for the soul of the modern man.
+                      decades of experience. Ambé is built for the soul of the modern human.
                     </p>
 
                     {/* Main Quote */}
@@ -2277,9 +2310,6 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                     >
                       With loving support, we can blossom into
                       <br className="hidden sm:block" />
-                      <span className="sm:hidden">
-                        With loving support, we can blossom into{" "}
-                      </span>
                       our full potential.
                     </div>
 
@@ -2288,7 +2318,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                       className="text-right text-sm sm:text-base md:text-lg mt-2 mb-4"
                       style={{ color: "#353535" }}
                     >
-                      -Founder
+                      — Founder
                     </p>
                     
                     {/* Ten trees text */}
@@ -2298,7 +2328,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                     >
                       Ten trees planted per member, per month = 120 trees per year
                       per member. Our health depends on the health of Mother Nature — trees are proven to be the #1
-                      way to purify and nourish the environment and help avert.
+                      way to purify and nourish the environment and help avert environmental decline.
                     </p>
                   </div>
                 </div>
@@ -2307,7 +2337,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
             
             {/* Book Free Consult Button */}
             <div className="flex justify-center mt-12">
-              <Button className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+              <Button href={CONSULT_HREF} className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
             </div>
 
           </div>

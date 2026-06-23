@@ -18,7 +18,7 @@ export default function Footer() {
             <Link href="/download" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
               Download App
             </Link>
-            <Link href="/signin" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
+            <Link href="/login" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
               Sign In
             </Link>
             <Link href="/contact" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
@@ -86,8 +86,13 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Apple ownership fine-print goes below the copyright line — paste the
-            exact wording here when provided. */}
+        <p
+          className="text-center mt-2"
+          style={{ fontSize: "10px", color: "rgba(255,255,255,0.45)" }}
+        >
+          Ambe&apos; Wellness is a product of Lakshmi Devi Namaha LLC. All app-related
+          services are provided under the iOS developer account of Lakshmi Devi Namaha.
+        </p>
       </div>
     </footer>
   );

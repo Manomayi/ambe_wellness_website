@@ -1,11 +1,12 @@
 "use client";
-import React from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
 import Navigation from '@/components/navigation/Navigation';
 import { sectionTitleClasses, bannerTitleClasses } from '@/lib/styles/constants';
 import Footer from '@/components/common/Footer';
+import { CONSULT_HREF } from '@/lib/site-config';
 
 export default function Membership() {
   return (
@@ -35,11 +36,12 @@ export default function Membership() {
                     Unlimited care. One monthly price.
                   </p>
 
-                  <button
+                  <Link
+                    href={CONSULT_HREF}
                     className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
                   >
                     BOOK FREE<br/> CONSULT NOW
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -60,7 +62,7 @@ export default function Membership() {
                       1:1 Video Sessions with Your Specialist
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Each month, you&apos;ll connect face-to-face with your personal Ayurvedic specialist. You can also choose to consult with other practitioners from our multidisciplinary team
+                      Each month, you&apos;ll connect face-to-face with your personal integrative doctor. You can also choose to consult with other practitioners from our multidisciplinary team
                     </p>
                   </div>
                 </div>
@@ -90,7 +92,7 @@ export default function Membership() {
                       Practitioner Collaboration, Powered by Real-Time Data
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call-and
+                      Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call — and neither do we.
                     </p>
                   </div>
                 </div>
@@ -130,7 +132,7 @@ export default function Membership() {
                             1:1 Video Sessions with Your Specialist
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Each month, you&apos;ll connect face-to-face with your personal Ayurvedic specialist. You can also choose to consult with other practitioners from our multidisciplinary team
+                            Each month, you&apos;ll connect face-to-face with your personal integrative doctor. You can also choose to consult with other practitioners from our multidisciplinary team
                           </p>
                         </div>
                       </div>
@@ -160,7 +162,7 @@ export default function Membership() {
                             Practitioner Collaboration, Powered by Real-Time Data
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call-and
+                            Our practitioners don&apos;t work in silos. They communicate behind the scenes, sharing notes and insights to give you a 360° experience. Your wellness doesn&apos;t stop at the first call — and neither do we.
                           </p>
                         </div>
                       </div>
@@ -418,6 +420,9 @@ export default function Membership() {
                   <div className="text-xl sm:text-2xl font-medium" style={{ color: '#353535' }}>
                     $50 A Month
                   </div>
+                  <p className="text-sm mt-2" style={{ color: '#535353' }}>
+                    3-month minimum commitment.
+                  </p>
                 </div>
 
                 {/* Features List */}
@@ -479,7 +484,7 @@ export default function Membership() {
                   style={{ backgroundColor: '#FFD3AC' }}
                 >
                   <div className="text-xl sm:text-2xl font-medium" style={{ color: '#353535' }}>
-                    Excepteur sint
+                    Flexible care on your terms.
                   </div>
                  
                 </div>
@@ -504,18 +509,23 @@ export default function Membership() {
                     </div>
                     <span style={{ color: '#535353' }}>Bath, body, food, and tea products</span>
                   </div>
-                  {/* Invisible placeholders to match left column height */}
-                  <div className="flex items-center gap-3 invisible">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0"></div>
-                    <span>Placeholder</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
+                      <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
+                    </div>
+                    <span style={{ color: '#535353' }}>Book individual consultations</span>
                   </div>
-                  <div className="flex items-center gap-3 invisible">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0"></div>
-                    <span>Placeholder</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
+                      <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
+                    </div>
+                    <span style={{ color: '#535353' }}>No minimum commitment</span>
                   </div>
-                  <div className="flex items-center gap-3 invisible">
-                    <div className="w-4 h-4 rounded-full flex-shrink-0"></div>
-                    <span>Placeholder</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
+                      <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
+                    </div>
+                    <span style={{ color: '#535353' }}>Supplements purchased separately</span>
                   </div>
                 </div>
               </div>
@@ -1259,7 +1269,7 @@ export default function Membership() {
                 <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8" style={{ color: '#535353' }}>
                   Join the Ambe Membership for personalized, all-inclusive care.
                 </p>
-                <Button>
+                <Button href={CONSULT_HREF}>
                   BOOK NOW - PAY AS YOU LIKE
                 </Button>
               </div>

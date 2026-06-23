@@ -1,11 +1,16 @@
 import ClientAuthProvider from "@/components/auth/ClientAuthProvider";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import AyurvedaDisclaimerModal from "@/components/common/AyurvedaDisclaimerModal";
+import { buildPageMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 export const metadata = {
-  title: "Ambe Wellness",
-  description: "We care about your health and wellness",
+  ...buildPageMetadata({
+    title: "Ambé Wellness | Holistic Tele-Wellness",
+    description:
+      "Holistic tele-wellness with integrative doctors trained in Ayurvedic medicine and modern science. Membership from $50/month — consultations, medicines, and messaging included.",
+    path: "/",
+  }),
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
