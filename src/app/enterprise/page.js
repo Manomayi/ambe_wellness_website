@@ -1,13 +1,25 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
 import Navigation from '@/components/navigation/Navigation';
+import EnterpriseRoiStats from '@/components/enterprise/EnterpriseRoiStats';
 import { sectionTitleClasses, bannerTitleClasses, sectionTitleWhiteClasses } from '@/lib/styles/constants';
 import Footer from '@/components/common/Footer';
 
 export default function Enterprise() {
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  function handleInquirySubmit(e) {
+    e.preventDefault();
+    setFormSubmitted(true);
+  }
+
+  function scrollToInquiry() {
+    document.getElementById('enterprise-inquiry')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -34,13 +46,15 @@ export default function Enterprise() {
                 executive suite.
               </p>
               
-              <Button variant="light">
+              <Button variant="light" onClick={scrollToInquiry}>
                 GET STARTED
               </Button>
             </div>
           </div>
         </div>
       </section>
+
+      <EnterpriseRoiStats />
 
       {/* Proven Track Record Section */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
@@ -287,7 +301,7 @@ export default function Enterprise() {
             {/* Left Content */}
             <div className="w-full lg:flex-1 flex flex-col justify-center order-1 lg:order-1">
               <div className={sectionTitleClasses + " mb-6 lg:mb-8 text-2xl sm:text-3xl md:text-4xl text-center lg:text-left"}>
-                Bring Ambe to Your Company
+                Bring Ambe&apos; to Your Company
               </div>
               <p className="text-base sm:text-lg leading-relaxed text-center lg:text-left" style={{ color: '#535353' }}>
                 We offer high-impact, cost-effective wellness programs designed 
@@ -376,7 +390,7 @@ export default function Enterprise() {
                   Ready to raise the bar? Contact us to see how Ambé can become your next-gen wellness partner—transforming 
                   your strategy to elevate culture, retention, performance, and ROI.
                 </p>
-                <Button>
+                <Button onClick={scrollToInquiry}>
                   CONTACT US
                 </Button>
               </div>
@@ -384,7 +398,7 @@ export default function Enterprise() {
           </div>
 
           {/* Contact Form Section */}
-          <div className="pb-12 sm:pb-16 md:pb-20">
+          <div id="enterprise-inquiry" className="pb-12 sm:pb-16 md:pb-20 scroll-mt-8">
             <div className="max-w-5xl mx-auto px-6 sm:px-8">
               <div 
                 className="py-8 sm:py-12 md:py-16 px-6 sm:px-8 md:px-12" 
@@ -399,10 +413,20 @@ export default function Enterprise() {
                   Contact
                 </div>
                 <p className="text-center mb-8 sm:mb-10 md:mb-12 text-sm sm:text-base" style={{ color: '#535353' }}>
-                  Drop us a line for a complementary guide for your team
+                  Drop us a line for a complimentary guide for your team
                 </p>
-                
-                <form className="space-y-6">
+
+                {formSubmitted ? (
+                  <div className="text-center py-8">
+                    <p className="text-lg font-medium mb-2" style={{ color: '#353535' }}>
+                      Thank you — your inquiry has been received.
+                    </p>
+                    <p className="text-sm" style={{ color: '#535353' }}>
+                      We will respond within 2 business days at the email you provided.
+                    </p>
+                  </div>
+                ) : (
+                <form className="space-y-6" onSubmit={handleInquirySubmit}>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <input
@@ -455,6 +479,7 @@ export default function Enterprise() {
                     </Button>
                   </div>
                 </form>
+                )}
               </div>
             </div>
           </div>

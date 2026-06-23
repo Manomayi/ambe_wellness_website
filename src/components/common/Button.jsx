@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { colors } from '@/lib/design-tokens';
+import Link from 'next/link';
 
 export default function Button({ 
   onClick, 
@@ -9,7 +9,8 @@ export default function Button({
   variant = 'primary',
   fullWidth = false,
   className = '',
-  type = 'button'
+  type = 'button',
+  href,
 }) {
   const baseStyles = 'px-20 py-3 rounded-full font-medium transition-all duration-200 text-center inline-block';
   
@@ -20,13 +21,22 @@ export default function Button({
   
   const widthStyles = fullWidth ? 'w-full' : '';
   const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
+  const classes = `${baseStyles} ${variantStyles[variant]} ${widthStyles} ${disabledStyles} ${className}`;
+
+  if (href) {
+    return (
+      <Link href={href} className={classes}>
+        {children}
+      </Link>
+    );
+  }
   
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseStyles} ${variantStyles[variant]} ${widthStyles} ${disabledStyles} ${className}`}
+      className={classes}
     >
       {children}
     </button>

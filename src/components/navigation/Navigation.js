@@ -70,9 +70,13 @@ export default function Navigation() {
             >
               Resources
             </Link>
-            <button className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm hover:bg-white hover:text-black transition-colors whitespace-nowrap" style={{ color: 'white' }}>
+            <Link
+              href="/download"
+              className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm hover:bg-white hover:text-black transition-colors whitespace-nowrap"
+              style={{ color: "white" }}
+            >
               Download App
-            </button>
+            </Link>
             
             {/* Divider */}
             <div className="hidden lg:block h-8 w-px bg-white opacity-50"></div>
@@ -148,13 +152,14 @@ export default function Navigation() {
               >
                 Resources
               </Link>
-              <button 
-                className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit" 
-                style={{ borderColor: '#FFD3AC', backgroundColor: '#FFD3AC', color: '#353535' }}
+              <Link
+                href="/download"
+                className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit"
+                style={{ borderColor: "#FFD3AC", backgroundColor: "#FFD3AC", color: "#353535" }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Download App
-              </button>
+              </Link>
             </div>
           </div>
         </div>

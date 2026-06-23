@@ -33,7 +33,7 @@ export default function PricingCallout() {
               View Membership Plans
             </Link>
             <Link
-              href="/membership"
+              href="/signup"
               className="px-8 py-3 rounded-full text-sm font-medium tracking-wider uppercase text-center transition-all duration-200 border border-[#FFD3AC] hover:bg-[#FFD3AC] hover:text-[#353535]"
               style={{ color: "#FFD3AC" }}
             >
