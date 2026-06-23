@@ -840,7 +840,7 @@ export default function Home() {
                   style={{ color: "white" }}
                 >
                   <span className="font-bold underline">55</span>{" "}
-                  <span className="font-light">Million Bio-Markers analysed</span>
+                  <span className="font-light">Million Biomarkers Analyze</span>
                 </p>
                 
                 <Button className="font-bold mb-12 text-sm px-[90px]">BOOK FREE<br/> CONSULT NOW</Button>
@@ -890,7 +890,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-sm md:text-base" style={{ color: "#353535" }}>
-                This isn&apos;t science fiction. This is Ambé.&quot;
+                This isn&apos;t science fiction. This is Ambé.'
               </p>
             </div>
 
@@ -909,10 +909,8 @@ export default function Home() {
 
               <div className="p-6 sm:p-8" style={{ backgroundColor: "#FFD3AC", borderTopLeftRadius: "60px", borderBottomRightRadius: "60px" }}>
                 <p className="text-sm md:text-base" style={{ color: "#353535", lineHeight: "1.6" }}>
-                  &quot;In a twin double blind study , identical twins lived
-                  differently for just 8 weeks. The twin measurably
-                  lowered their biological age. Same DNA. Different
-                  choices. Different future.&quot;
+                  'In a double-blind twin study, identical twins who changed their lifestyle for just 8 weeks
+                  measurably lowered their biological age. Same DNA. Different choices. Different future.'
                 </p>
               </div>
             </div>
@@ -1987,7 +1985,7 @@ export default function Home() {
                     Hormone Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-Balance, not band-aids with adverse long term affects nor dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
+Balance, not band-aids with adverse long-term effects or dependency'. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
                   </p>
                 </div>
               </div>
@@ -2028,7 +2026,7 @@ Whole-woman care, redefined. From menstruation to menopause, fertility to fibro
                     Men&apos;s Health
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
-More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional and allopathic medicine science to build long-term performance and resilience.                  </p>
+More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional Ayurvedic and modern medical science to build long-term performance and resilience.                  </p>
                 </div>
               </div>
 
@@ -2125,7 +2123,7 @@ Built for you. Not the algorithm. We don’t do fads. We do personalized, long-
                     />
                   </div>
                   <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Whole Body & Mind Health Scans
+                    Home & Environment Detox
                   </div>
                   <p className="text-base" style={{ color: "#353535" }}>
 Your environment heals with you. We give you step-by-step plans for detoxing your space, body care routines, and healing rhythms to keep your inner and outer worlds in sync.                  </p>
