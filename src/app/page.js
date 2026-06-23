@@ -20,7 +20,7 @@ import EmailCaptureAutoPrompt from "@/components/common/EmailCaptureAutoPrompt";
 import DoctorProfileFinePrint, { MedicalDirectorBadge } from "@/components/common/DoctorProfileFinePrint";
 import DoctorProfileModal from "@/components/common/DoctorProfileModal";
 
-// Carousel component for The Ambé Difference section
+// Carousel component for The Ambé Difference section 
 function AmbeDifferenceCarousel() {
   const [currentItem, setCurrentItem] = React.useState(0);
   const carouselItems = [
