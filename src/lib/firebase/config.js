@@ -17,13 +17,6 @@ const firebaseConfig = {
   appId:      process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-console.log('🌐 firebaseConfig:', {
-  key:      process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  domain:   process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  project:  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  appId:    process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-});
-
 // Initialize once
 const app = !getApps().length
   ? initializeApp(firebaseConfig)

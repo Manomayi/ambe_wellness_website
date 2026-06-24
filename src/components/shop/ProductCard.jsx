@@ -55,8 +55,8 @@ export default function ProductCard({ product, onBuy, loading }) {
 
         {credentials.length > 0 && (
           <div className="shop-product-creds">
-            {credentials.map((c) => (
-              <span key={c} className="shop-prod-cred">
+            {credentials.map((c, i) => (
+              <span key={`${c}-${i}`} className="shop-prod-cred">
                 {c}
               </span>
             ))}

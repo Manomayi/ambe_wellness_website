@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
 import { CATEGORIES } from "@/lib/shop/products";
@@ -15,13 +15,27 @@ export default function ShopClient({ products }) {
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
 
+  const catalog = useMemo(
+    () =>
+      products.map((product, index) => ({
+        ...product,
+        id:
+          product.id ??
+          product.stripePriceId
+            ?.replace(/^price_/, "")
+            .replace(/_PLACEHOLDER$/, "") ??
+          `product-${index}`,
+      })),
+    [products]
+  );
+
   const filters = useMemo(() => [ALL, ...CATEGORIES], []);
 
   const visible = useMemo(() => {
     const list =
       activeFilter === ALL
-        ? products
-        : products.filter((p) => p.category === activeFilter);
+        ? catalog
+        : catalog.filter((p) => p.category === activeFilter);
 
     const sorted = [...list];
     if (sort === "Price: Low to High") sorted.sort((a, b) => a.price - b.price);
@@ -32,7 +46,7 @@ export default function ShopClient({ products }) {
           (/new/i.test(b.badge || "") ? 1 : 0) - (/new/i.test(a.badge || "") ? 1 : 0)
       );
     return sorted;
-  }, [products, activeFilter, sort]);
+  }, [catalog, activeFilter, sort]);
 
   async function handleBuy(product) {
     setError("");
@@ -107,12 +121,13 @@ export default function ShopClient({ products }) {
 
           <div className="shop-products-grid">
             {visible.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onBuy={handleBuy}
-                loading={loadingId === product.id}
-              />
+              <Fragment key={product.id}>
+                <ProductCard
+                  product={product}
+                  onBuy={handleBuy}
+                  loading={loadingId === product.id}
+                />
+              </Fragment>
             ))}
           </div>
 

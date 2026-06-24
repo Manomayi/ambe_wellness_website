@@ -2,7 +2,29 @@ import ClientAuthProvider from "@/components/auth/ClientAuthProvider";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import AyurvedaDisclaimerModal from "@/components/common/AyurvedaDisclaimerModal";
 import { buildPageMetadata } from "@/lib/metadata";
+import { Cormorant_Garamond, Jost, Playfair_Display } from "next/font/google";
 import "./globals.css";
+
+const jost = Jost({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-jost",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-playfair",
+  display: "swap",
+});
 
 export const metadata = {
   ...buildPageMetadata({
@@ -19,15 +41,18 @@ export const metadata = {
 };
 
 export const viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className="antialiased">
+    <html
+      lang="en"
+      className={`${jost.variable} ${cormorant.variable} ${playfair.variable}`}
+    >
+      <body className={`${jost.className} antialiased`}>
         <ClientAuthProvider>
           {children}
           <AyurvedaDisclaimerModal />

@@ -1,3 +1,14 @@
+#!/bin/bash
+# Fixes React key warning: restores missing product ids in the shop catalog.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+if [ ! -w src/lib/shop/products.js ]; then
+  echo "Need write access. Run: sudo chown -R \$(whoami):\$(whoami) src/lib/shop src/components/shop src/app/shop"
+  exit 1
+fi
+
+cat > src/lib/shop/products.js << 'EOF'
 // Ambé Shop — product catalog.
 //
 // This module is the single source of truth the /shop page renders from, so
@@ -117,3 +128,6 @@ export async function getProductById(id) {
   const all = await getProducts();
   return all.find((p) => p.id === id) || null;
 }
+EOF
+
+echo "Fixed src/lib/shop/products.js — all products now have unique ids."
