@@ -137,9 +137,11 @@ h2, .h2 {
 }
 
 
-/* Allow elements to inherit their specified colors */
-* {
-  color: inherit;
+/* Keep in @layer base so Tailwind text/color utilities take precedence. */
+@layer base {
+  * {
+    color: inherit;
+  }
 }
 
 /* Ensure form inputs have dark text */

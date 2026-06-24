@@ -45,7 +45,8 @@ export default function DownloadPage() {
               href={APP_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 rounded-full text-sm font-medium tracking-wider uppercase bg-[#353535] text-white hover:opacity-90"
+              className="inline-block px-8 py-4 rounded-full text-sm font-medium tracking-wider uppercase hover:opacity-90"
+              style={{ backgroundColor: "#353535", color: "#FFFFFF" }}
             >
               Download on the App Store
             </a>
@@ -53,7 +54,8 @@ export default function DownloadPage() {
               href={PLAY_STORE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 rounded-full text-sm font-medium tracking-wider uppercase border border-[#353535] text-[#353535] hover:bg-[#353535] hover:text-white"
+              className="inline-block px-8 py-4 rounded-full text-sm font-medium tracking-wider uppercase border transition-colors"
+              style={{ borderColor: "#353535", color: "#353535", backgroundColor: "#FFFFFF" }}
             >
               Get it on Google Play
             </a>
