@@ -58,6 +58,22 @@ function resolvePricing(data) {
   };
 }
 
+function parseRating(value) {
+  const n = typeof value === "number" ? value : parseFloat(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseFeaturedOrder(data) {
+  const value =
+    data.featured_order ??
+    data.sort_order ??
+    data.display_order ??
+    data.order ??
+    data.priority;
+  const n = typeof value === "number" ? value : parseInt(value, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
 function mapProduct(docId, data, parentCategory) {
   const { price, originalPrice, packSize, packs } = resolvePricing(data);
   const name = data.product_name || data.name || data.title || "Product";
@@ -78,6 +94,13 @@ function mapProduct(docId, data, parentCategory) {
       data.certifications ||
       highlights,
     badge: data.badge || (data.new_arrival ? "New" : undefined),
+    featured: Boolean(
+      data.featured ?? data.is_featured ?? data.isFeatured ?? data.doctor_pick
+    ),
+    featuredOrder: parseFeaturedOrder(data),
+    rating: parseRating(
+      data.rating ?? data.average_rating ?? data.avg_rating ?? data.product_rating
+    ),
     stripePriceId: data.stripe_price_id || data.stripePriceId || null,
     packSize,
     packs,
@@ -176,17 +199,41 @@ function parseProductsCollection(snapshot) {
   return dedupeProducts(items);
 }
 
+export function isFirebaseConfigured() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN &&
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+      process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  );
+}
+
 export async function fetchShopProductsFromFirestore() {
+  console.log('Fetching shop products from Firestore...');
+  if (!isFirebaseConfigured()) {
+    throw new Error(
+      "Firebase is not configured on this server. Add NEXT_PUBLIC_FIREBASE_* variables to your hosting platform and redeploy."
+    );
+  }
+
   try {
     const storeSnap = await getDocs(collection(db, "store"));
+    console.log(storeSnap,'storeSnap')
     const fromStore = parseStoreDocuments(storeSnap);
     if (fromStore.length > 0) return fromStore;
 
     const productsSnap = await getDocs(collection(db, "products"));
     return parseProductsCollection(productsSnap);
   } catch (error) {
+ console.error(error,'Error')
+    const code = error?.code || "";
+    if (code === "permission-denied") {
+      throw new Error(
+        "Cannot read products from Firestore. Update security rules to allow public read on the store collection (see Firebase Console → Firestore → Rules)."
+      );
+    }
     console.error("Failed to fetch shop products from Firestore:", error);
-    return [];
+    throw new Error(error?.message || "Failed to load products from Firebase.");
   }
 }
 
@@ -222,4 +269,34 @@ export async function fetchShopProductById(id) {
 export function formatPrice(amount) {
   const n = parsePrice(amount);
   return n % 1 === 0 ? `$${n}` : `$${n.toFixed(2)}`;
+}
+
+/** Sort shop products — matches mobile: featured first by default, then popularity or A–Z. */
+export function sortShopProducts(products, sortOption) {
+  const indexed = products.map((product, index) => ({ product, index }));
+
+  if (sortOption === "Popularity") {
+    return [...indexed]
+      .sort((a, b) => (b.product.rating ?? 0) - (a.product.rating ?? 0))
+      .map(({ product }) => product);
+  }
+
+  if (sortOption === "Name: A to Z") {
+    return [...indexed]
+      .sort((a, b) => a.product.name.localeCompare(b.product.name))
+      .map(({ product }) => product);
+  }
+
+  // Default Order: featured items first (by featuredOrder), then original catalog order.
+  const featured = indexed.filter(({ product }) => product.featured);
+  const rest = indexed.filter(({ product }) => !product.featured);
+
+  featured.sort((a, b) => {
+    const aOrder = a.product.featuredOrder ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = b.product.featuredOrder ?? Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return a.index - b.index;
+  });
+
+  return [...featured, ...rest].map(({ product }) => product);
 }

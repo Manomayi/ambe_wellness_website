@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
-import { fetchShopProductsFromFirestore, getCategoriesFromProducts } from "@/lib/shop/firestore-products";
+import { fetchShopProductsFromFirestore, getCategoriesFromProducts, sortShopProducts } from "@/lib/shop/firestore-products";
 import { CONSULT_HREF } from "@/lib/site-config";
 
 const ALL = "All Products";
-const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Newest"];
+const SORTS = ["Default Order", "Popularity", "Name: A to Z"];
 
 export default function ShopClient({ products: initialProducts = [] }) {
   const [products, setProducts] = useState(initialProducts);
@@ -53,15 +53,7 @@ export default function ShopClient({ products: initialProducts = [] }) {
         ? catalog
         : catalog.filter((p) => p.category === activeFilter);
 
-    const sorted = [...list];
-    if (sort === "Price: Low to High") sorted.sort((a, b) => a.price - b.price);
-    else if (sort === "Price: High to Low") sorted.sort((a, b) => b.price - a.price);
-    else if (sort === "Newest")
-      sorted.sort(
-        (a, b) =>
-          (/new/i.test(b.badge || "") ? 1 : 0) - (/new/i.test(a.badge || "") ? 1 : 0)
-      );
-    return sorted;
+    return sortShopProducts(list, sort);
   }, [catalog, activeFilter, sort]);
 
   async function handleBuy(product) {
