@@ -2,7 +2,6 @@ import Link from "next/link";
 import ShopHeader from "@/components/shop/ShopHeader";
 import CredentialsTicker from "@/components/shop/CredentialsTicker";
 import ShopClient from "@/components/shop/ShopClient";
-import { getProducts } from "@/lib/shop/products";
 import { CONSULT_HREF } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
 import "./shop.css";
@@ -22,9 +21,7 @@ const HERO_BADGES = [
   "Prop 65 Compliant",
 ];
 
-export default async function ShopPage() {
-  const products = await getProducts();
-
+export default function ShopPage() {
   return (
     <div className="shop-page min-h-screen">
       <ShopHeader />
@@ -55,7 +52,7 @@ export default async function ShopPage() {
 
       <CredentialsTicker />
 
-      <ShopClient products={products} />
+      <ShopClient />
 
       <footer className="shop-footer">
         <div className="shop-wrap">

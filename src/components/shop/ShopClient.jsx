@@ -1,35 +1,51 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
-import { CATEGORIES } from "@/lib/shop/products";
+import { fetchShopProductsFromFirestore, getCategoriesFromProducts } from "@/lib/shop/firestore-products";
 import { CONSULT_HREF } from "@/lib/site-config";
 
 const ALL = "All Products";
 const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Newest"];
 
-export default function ShopClient({ products }) {
+export default function ShopClient({ products: initialProducts = [] }) {
+  const [products, setProducts] = useState(initialProducts);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
   const [activeFilter, setActiveFilter] = useState(ALL);
   const [sort, setSort] = useState(SORTS[0]);
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
 
-  const catalog = useMemo(
-    () =>
-      products.map((product, index) => ({
-        ...product,
-        id:
-          product.id ??
-          product.stripePriceId
-            ?.replace(/^price_/, "")
-            .replace(/_PLACEHOLDER$/, "") ??
-          `product-${index}`,
-      })),
-    [products]
-  );
+  useEffect(() => {
+    let cancelled = false;
 
-  const filters = useMemo(() => [ALL, ...CATEGORIES], []);
+    async function load() {
+      setLoading(true);
+      try {
+        const items = await fetchShopProductsFromFirestore();
+        if (!cancelled) setProducts(items);
+      } catch (e) {
+        if (!cancelled) {
+          setError(e.message || "Could not load products.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const catalog = useMemo(() => products, [products]);
+
+  const filters = useMemo(
+    () => [ALL, ...getCategoriesFromProducts(catalog)],
+    [catalog]
+  );
 
   const visible = useMemo(() => {
     const list =
@@ -79,13 +95,18 @@ export default function ShopClient({ products }) {
                 type="button"
                 className={`shop-filter-pill${f === activeFilter ? " active" : ""}`}
                 onClick={() => setActiveFilter(f)}
+                disabled={loading}
               >
                 {f}
               </button>
             ))}
             <div className="shop-filter-sort">
               <span>Sort by</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                disabled={loading}
+              >
                 {SORTS.map((s) => (
                   <option key={s}>{s}</option>
                 ))}
@@ -119,19 +140,32 @@ export default function ShopClient({ products }) {
             </p>
           )}
 
-          <div className="shop-products-grid">
-            {visible.map((product) => (
-              <Fragment key={product.id}>
+          {loading && (
+            <p className="text-center text-sm mt-10" style={{ color: "#6b6862" }}>
+              Loading products…
+            </p>
+          )}
+
+          {!loading && (
+            <div className="shop-products-grid">
+              {visible.map((product, index) => (
                 <ProductCard
+                  key={`${product.id}-${index}`}
                   product={product}
                   onBuy={handleBuy}
                   loading={loadingId === product.id}
                 />
-              </Fragment>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {visible.length === 0 && (
+          {!loading && catalog.length === 0 && (
+            <p className="text-center text-sm mt-10" style={{ color: "#6b6862" }}>
+              No products are available right now. Please check back soon.
+            </p>
+          )}
+
+          {!loading && catalog.length > 0 && visible.length === 0 && (
             <p className="text-center text-sm mt-10" style={{ color: "#6b6862" }}>
               No products in this category yet.
             </p>

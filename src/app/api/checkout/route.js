@@ -16,7 +16,7 @@ export async function POST(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
     return NextResponse.json(
-      { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in the environment." },
+      // { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in the environment." },
       { status: 500 }
     );
   }
