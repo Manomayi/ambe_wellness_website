@@ -32,18 +32,13 @@ const CATALOG = [
     category: "Digestion",
     price: 18,
     originalPrice: 30,
-    image: "/images/icons/herbal.png",
+    image: "/images/icons/digestive_health.png",
     description:
       "A cornerstone classical Ayurvedic formula of three fruits prepared according to ancient texts. Supports digestive health, gentle detoxification, and regular elimination.",
     credentials: ["GMP Certified", "GMO Free", "Classical Formula"],
     stripePriceId: "price_triphala_PLACEHOLDER",
   },
   {
-    id: "ashwagandha-root",
-    name: "Ashwagandha Root",
-    category: "Stress & Sleep",
-    price: 22,
-    originalPrice: 36,
     image: "/images/icons/supplements.png",
     description:
       "Time-tested adaptogenic root, wildcrafted and sustainably sourced. Supports resilience to stress, restful sleep, and sustained energy without stimulants.",
@@ -56,7 +51,7 @@ const CATALOG = [
     category: "Immunity",
     price: 16,
     originalPrice: 26,
-    badge: "NEW",
+    badge: "New",
     image: "/images/icons/herbal.png",
     description:
       "Sacred in 5,000-year Ayurvedic tradition, prepared from wildcrafted Holy Basil. Supports immune resilience, respiratory health, and the body's response to environmental stress.",
@@ -64,11 +59,6 @@ const CATALOG = [
     stripePriceId: "price_tulsi_PLACEHOLDER",
   },
   {
-    id: "boswellia",
-    name: "Boswellia (Shallaki)",
-    category: "Joints & Mobility",
-    price: 24,
-    originalPrice: 40,
     image: "/images/icons/musculoskeletal.png",
     description:
       "Ethically wildcrafted Boswellia resin used for centuries to support joint comfort, mobility, and the body's natural inflammatory response. ISO certified sourcing.",
@@ -76,11 +66,6 @@ const CATALOG = [
     stripePriceId: "price_boswellia_PLACEHOLDER",
   },
   {
-    id: "shatavari",
-    name: "Shatavari",
-    category: "Hormones",
-    price: 26,
-    originalPrice: 44,
     image: "/images/icons/womens_health.png",
     description:
       "A revered classical Ayurvedic women's formula, sustainably wildcrafted. Supports hormonal balance, reproductive health, and vitality across all life stages.",
@@ -88,11 +73,6 @@ const CATALOG = [
     stripePriceId: "price_shatavari_PLACEHOLDER",
   },
   {
-    id: "neem",
-    name: "Neem Leaf Extract",
-    category: "Detox & Cleanse",
-    price: 20,
-    originalPrice: 34,
     image: "/images/icons/healthy-food.png",
     description:
       "One of Ayurveda's most celebrated purifying herbs. Wildcrafted Neem, ethically sourced and third-party tested. Supports skin clarity, blood purification, and natural detoxification pathways.",

@@ -1,24 +1,38 @@
 "use client";
-import React, { useMemo, useState } from "react";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
 import { CATEGORIES } from "@/lib/shop/products";
+import { CONSULT_HREF } from "@/lib/site-config";
 
 const ALL = "All Products";
+const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Newest"];
 
-// Client-side shop: filter pills (pure front-end show/hide) + product grid +
-// Buy Now → Stripe Checkout redirect. Products are passed in from the server
-// page, which reads them from the catalog module.
 export default function ShopClient({ products }) {
   const [activeFilter, setActiveFilter] = useState(ALL);
+  const [sort, setSort] = useState(SORTS[0]);
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
 
   const filters = useMemo(() => [ALL, ...CATEGORIES], []);
 
   const visible = useMemo(() => {
-    if (activeFilter === ALL) return products;
-    return products.filter((p) => p.category === activeFilter);
-  }, [products, activeFilter]);
+    const list =
+      activeFilter === ALL
+        ? products
+        : products.filter((p) => p.category === activeFilter);
+
+    const sorted = [...list];
+    if (sort === "Price: Low to High") sorted.sort((a, b) => a.price - b.price);
+    else if (sort === "Price: High to Low") sorted.sort((a, b) => b.price - a.price);
+    else if (sort === "Newest")
+      sorted.sort(
+        (a, b) =>
+          (/new/i.test(b.badge || "") ? 1 : 0) - (/new/i.test(a.badge || "") ? 1 : 0)
+      );
+    return sorted;
+  }, [products, activeFilter, sort]);
 
   async function handleBuy(product) {
     setError("");
@@ -33,7 +47,6 @@ export default function ShopClient({ products }) {
       if (!res.ok || !data.url) {
         throw new Error(data.error || "Checkout is unavailable right now.");
       }
-      // Redirect to Stripe-hosted Checkout.
       window.location.href = data.url;
     } catch (e) {
       setError(e.message);
@@ -42,51 +55,74 @@ export default function ShopClient({ products }) {
   }
 
   return (
-    <div>
-      {/* Filter pills */}
-      <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12">
-        {filters.map((f) => {
-          const active = f === activeFilter;
-          return (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              className="px-5 py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 border cursor-pointer"
-              style={
-                active
-                  ? { backgroundColor: "white", color: "#2E2E2E", borderColor: "#2E2E2E" }
-                  : { backgroundColor: "white", color: "#6B6B6B", borderColor: "#E2DDD3" }
-              }
-            >
-              {f}
-            </button>
-          );
-        })}
+    <>
+      <div className="shop-filter-bar">
+        <div className="shop-wrap">
+          <div className="shop-filter-inner">
+            {filters.map((f) => (
+              <button
+                key={f}
+                type="button"
+                className={`shop-filter-pill${f === activeFilter ? " active" : ""}`}
+                onClick={() => setActiveFilter(f)}
+              >
+                {f}
+              </button>
+            ))}
+            <div className="shop-filter-sort">
+              <span>Sort by</span>
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                {SORTS.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {error && (
-        <p className="text-center text-sm mb-6" style={{ color: "#C2691C" }}>
-          {error}
-        </p>
-      )}
+      <div className="shop-main">
+        <div className="shop-wrap">
+          <div className="shop-featured-banner">
+            <div>
+              <div className="shop-eyebrow">Doctor&apos;s Picks</div>
+              <h2>
+                Not sure where to start? <em>We can help.</em>
+              </h2>
+              <p>
+                Book a free consultation and your Ayurvedic doctor will build a personalized
+                remedy protocol for your specific constitution — no guesswork.
+              </p>
+            </div>
+            <Link href={CONSULT_HREF} className="shop-btn">
+              Book Free Consult
+            </Link>
+          </div>
 
-      {/* Product grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {visible.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onBuy={handleBuy}
-            loading={loadingId === product.id}
-          />
-        ))}
+          {error && (
+            <p className="text-center text-sm mb-6" style={{ color: "#C2691C" }}>
+              {error}
+            </p>
+          )}
+
+          <div className="shop-products-grid">
+            {visible.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onBuy={handleBuy}
+                loading={loadingId === product.id}
+              />
+            ))}
+          </div>
+
+          {visible.length === 0 && (
+            <p className="text-center text-sm mt-10" style={{ color: "#6b6862" }}>
+              No products in this category yet.
+            </p>
+          )}
+        </div>
       </div>
-
-      {visible.length === 0 && (
-        <p className="text-center text-sm mt-10" style={{ color: "#6B6B6B" }}>
-          No products in this category yet.
-        </p>
-      )}
-    </div>
+    </>
   );
 }

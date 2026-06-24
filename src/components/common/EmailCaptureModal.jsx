@@ -6,8 +6,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Integration point — wire up real email delivery + mailing-list provider here.
 export async function submitEmailCapture(email, { guideTitle } = {}) {
-  // TODO: deliver guides by email and add the address to the mailing list.
-  // For now we simulate the network round-trip and resolve successfully.
   await new Promise((resolve) => setTimeout(resolve, 800));
   return { ok: true, email, guideTitle };
 }
@@ -21,7 +19,6 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
 
   React.useEffect(() => setMounted(true), []);
 
-  // Reset transient state each time the modal is opened.
   React.useEffect(() => {
     if (open) {
       setEmail("");
@@ -31,7 +28,6 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
     }
   }, [open]);
 
-  // Close on Escape + lock body scroll while open.
   React.useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
@@ -68,8 +64,8 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      style={{ backgroundColor: "rgba(26, 26, 26, 0.55)" }}
       onClick={onClose}
       role="presentation"
     >
@@ -77,35 +73,35 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
         role="dialog"
         aria-modal="true"
         aria-label="Get your free Ambé guides"
-        className="relative w-full max-w-lg bg-white rounded-lg p-8 sm:p-10 text-center"
+        className="relative w-full max-w-[520px] rounded-2xl sm:rounded-3xl px-6 py-8 sm:px-10 sm:py-10 text-center shadow-2xl"
+        style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-4 right-4 text-2xl leading-none cursor-pointer hover:opacity-70"
-          style={{ color: "#353535" }}
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 flex items-center justify-center rounded-full text-xl leading-none cursor-pointer hover:bg-[#F4F4F4] transition-colors"
+          style={{ color: "#6b6862" }}
         >
           ×
         </button>
 
         {success ? (
-          <div className="py-6">
+          <div className="py-4 sm:py-6">
             <div
-              className="mx-auto mb-4 flex items-center justify-center w-14 h-14 rounded-full text-2xl"
+              className="mx-auto mb-5 flex items-center justify-center w-14 h-14 rounded-full text-2xl font-semibold"
               style={{ backgroundColor: "#FFD3AC", color: "#353535" }}
             >
               ✓
             </div>
-            <div
-              className="text-2xl sm:text-3xl font-medium mb-2"
-              style={{ color: "#353535", fontFamily: "Richmond" }}
+            <h2
+              className="text-2xl sm:text-[28px] leading-tight font-medium mb-3 select-none"
+              style={{ fontFamily: "'Cormorant Garamond', serif", color: "#1a1a1a" }}
             >
               Check your inbox!
-            </div>
-            <p className="text-sm sm:text-base" style={{ color: "#535353" }}>
+            </h2>
+            <p className="text-sm sm:text-base leading-relaxed" style={{ color: "#535353" }}>
               {guideTitle
                 ? `“${guideTitle}” is on its way to ${email.trim()}.`
                 : `Your Ambé guide library is on its way to ${email.trim()}.`}
@@ -113,26 +109,35 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
           </div>
         ) : (
           <>
-            <div
-              className="text-2xl sm:text-3xl font-medium mb-3"
-              style={{ color: "#353535", fontFamily: "Richmond" }}
-            >
-              {guideTitle ? guideTitle : "8 Expert Guides. Yours Free."}
-            </div>
+            {guideTitle ? (
+              <h2
+                className="text-2xl sm:text-[28px] leading-tight font-medium mb-3 px-6 select-none"
+                style={{ fontFamily: "'Cormorant Garamond', serif", color: "#1a1a1a" }}
+              >
+                {guideTitle}
+              </h2>
+            ) : (
+              <h2
+                className="text-2xl sm:text-[32px] leading-tight font-medium mb-3 px-2 select-none"
+                style={{ fontFamily: "'Cormorant Garamond', serif", color: "#1a1a1a" }}
+              >
+                <span style={{ color: "#C8996A" }}>8</span> Expert Guides.{" "}
+                <em className="italic" style={{ color: "#C8996A" }}>
+                  Yours Free.
+                </em>
+              </h2>
+            )}
+
             <p
-              className="text-sm sm:text-base mb-6 max-w-md mx-auto"
+              className="text-sm sm:text-[15px] mb-7 max-w-md mx-auto leading-relaxed"
               style={{ color: "#535353" }}
             >
               {guideTitle
-                ? "Enter your email and we’ll send this guide straight to your inbox."
-                : "Enter your email and we’ll send the full Ambé guide library to your inbox."}
+                ? "Enter your email and we'll send this guide straight to your inbox."
+                : "Enter your email and we'll send the full Ambé guide library to your inbox."}
             </p>
 
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-              noValidate
-            >
+            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3" noValidate>
               <input
                 type="email"
                 value={email}
@@ -140,22 +145,35 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
                 placeholder="Your email address"
                 aria-label="Your email address"
                 autoFocus
-                className="flex-1 px-4 py-3 rounded-md border focus:outline-none focus:ring-2 text-sm"
-                style={{ borderColor: "#D0D0D0", color: "#353535" }}
+                className="w-full px-5 py-3.5 rounded-full border text-sm outline-none transition-colors focus:border-[#C8996A]"
+                style={{
+                  borderColor: "#E7E2D9",
+                  color: "#1a1a1a",
+                  backgroundColor: "#fff",
+                }}
               />
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-3 rounded-md text-sm font-semibold tracking-wider uppercase whitespace-nowrap transition-all duration-200 bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3.5 rounded-full text-xs sm:text-[13px] font-medium tracking-[0.14em] uppercase transition-all duration-200 bg-[#FFD3AC] text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {submitting ? "Sending…" : "Send My Free Guides"}
+                {submitting
+                  ? "Sending…"
+                  : guideTitle
+                    ? "Send My Guide"
+                    : "Send My Free Guides"}
               </button>
             </form>
+
             {error && (
               <p className="mt-3 text-sm" style={{ color: "#C0392B" }}>
                 {error}
               </p>
             )}
+
+            <p className="mt-5 text-xs leading-relaxed" style={{ color: "#9A948B" }}>
+              No spam — just your guides. Unsubscribe anytime.
+            </p>
           </>
         )}
       </div>

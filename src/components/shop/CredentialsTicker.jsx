@@ -1,41 +1,29 @@
 "use client";
-import React from "react";
 
-// Continuously scrolling credentials ticker — light, with peach ✦ accents
-// between items (matches the ambe-shop-final reference). The track is
-// duplicated so the marquee loops seamlessly; animation lives in globals.css.
-const DEFAULT_ITEMS = [
+const ITEMS = [
   "GMP Certified Manufacturing",
   "FDA-Registered Facility",
   "GMO Free & Purest Quality",
-  "80+ Years of Legacy",
-  "Third-Party Lab Tested",
   "Prop 65 Compliant",
+  "Sustainably & Ethically Sourced",
+  "Time-Tested Formulas",
+  "From the Ancient Vedic Tradition That Gave the World Yoga",
+  "ISO & EU Pharmacopoeia Standards",
   "Ships from the US",
+  "350+ Classical & Proprietary Formulas",
+  "Third-Party Quality Tested",
 ];
 
-export default function CredentialsTicker({ items = DEFAULT_ITEMS }) {
-  // Render the list twice for a gapless loop.
-  const loop = [...items, ...items];
+export default function CredentialsTicker() {
+  const loop = [...ITEMS, ...ITEMS];
 
   return (
-    <div
-      className="w-full overflow-hidden py-4 border-y"
-      style={{ borderColor: "#ECE7DE", backgroundColor: "#FBFAF7" }}
-    >
-      <div className="flex w-max animate-marquee whitespace-nowrap">
+    <div className="shop-creds-band">
+      <div className="shop-creds-track">
         {loop.map((item, i) => (
-          <div key={i} className="flex items-center" aria-hidden={i >= items.length}>
-            <span className="mx-5 text-sm" style={{ color: "#C8996A" }}>
-              ✦
-            </span>
-            <span
-              className="text-xs tracking-[0.18em] uppercase"
-              style={{ color: "#7A746B" }}
-            >
-              {item}
-            </span>
-          </div>
+          <span key={`${item}-${i}`} aria-hidden={i >= ITEMS.length}>
+            <b>✦</b> {item}
+          </span>
         ))}
       </div>
     </div>
