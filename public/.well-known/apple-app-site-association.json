@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "KDD3P2N6N8.com.ambe.wellness",
+        "paths": ["*"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["KDD3P2N6N8.com.ambe.wellness"]
+  }
+}

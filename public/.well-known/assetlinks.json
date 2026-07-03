@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.get_login_creds"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.ambe.wellness",
+    "sha256_cert_fingerprints": [
+      "1A:2F:13:D7:01:19:B5:EB:F6:27:76:EB:5A:58:14:FB:61:1F:E9:CA:5B:3F:2E:9F:D2:E2:D5:8D:9A:F4:50:EE"
+    ]
+  }
+}]

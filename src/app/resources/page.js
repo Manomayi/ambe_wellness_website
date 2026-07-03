@@ -39,7 +39,7 @@ export default function Resources() {
           <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
               <div className={bannerTitleClasses + " mb-6 leading-tight"} style={{ color: 'white' }}>
-                If you think living healthy is expensive, try living unhealthy.
+                Time-tested wisdom for everyday living: food, body care, and the essentials for a healthier life.
               </div>
               <p className="text-white mb-6 text-sm sm:text-base md:text-lg font-light leading-relaxed" style={{ color: 'white' }}>
                 Self-care is the highest expression of love for yourself, your family, your pets. Prevention is king. 
