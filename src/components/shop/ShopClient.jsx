@@ -117,7 +117,7 @@ export default function ShopClient({ products: initialProducts = [] }) {
                 Not sure where to start? <em>We can help.</em>
               </h2>
               <p>
-                Book a free consultation and your Ayurvedic doctor will build a personalized
+                Book a free consultation and your integrative doctor will build a personalized
                 remedy protocol for your specific constitution — no guesswork.
               </p>
             </div>

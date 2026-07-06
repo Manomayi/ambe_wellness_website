@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import VideoBackground from "@/components/common/VideoBackground";
 
 const STATS = [
   {
@@ -27,31 +28,28 @@ const STATS = [
 
 export default function EnterpriseRoiStats() {
   return (
-    <section className="w-full py-12 sm:py-16" style={{ backgroundColor: "#1a1a1a" }}>
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+    <section className="ent-roi-band ent-video-section w-full py-12 sm:py-16">
+      <VideoBackground className="ent-video" />
+      <div className="ent-video-overlay" aria-hidden />
+
+      <div className="ent-video-content max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {STATS.map((s) => (
             <div
               key={s.title}
               className="rounded-2xl border p-6 text-center"
               style={{
-                borderColor: "rgba(255,255,255,0.12)",
-                backgroundColor: "rgba(255,255,255,0.03)",
+                borderColor: "rgba(255,255,255,0.18)",
+                backgroundColor: "rgba(255,255,255,0.08)",
               }}
             >
-              <div
-                className="text-3xl sm:text-4xl font-semibold mb-3"
-                style={{ color: "#FFD3AC", fontFamily: "Cormorant Garamond, serif" }}
-              >
+              <div className="font-heading text-3xl sm:text-4xl font-semibold mb-3 text-ambe-peach">
                 {s.value}
               </div>
-              <div
-                className="text-lg mb-2"
-                style={{ color: "#fff", fontFamily: "Cormorant Garamond, serif" }}
-              >
+              <div className="font-heading text-lg mb-2 text-ambe-cream">
                 {s.title}
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
+              <p className="text-sm leading-relaxed text-ambe-cream/70">
                 {s.desc}
               </p>
             </div>

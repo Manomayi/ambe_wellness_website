@@ -1,14 +1,17 @@
 'use client';
 
-export default function VideoBackground() {
+export default function VideoBackground({
+  src = '/videos/hero_background.mp4',
+  className = 'absolute top-0 left-0 w-full h-full object-cover',
+}) {
   return (
     <video
-      src="/videos/hero_background.mp4"
+      src={src}
       autoPlay
       loop
       muted
       playsInline
-      className="absolute top-0 left-0 w-full h-full object-cover"
+      className={className}
       onError={(e) => {
         console.error('Video failed to load:', e);
       }}

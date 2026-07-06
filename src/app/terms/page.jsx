@@ -652,7 +652,7 @@ You are advised to review this Terms & Conditions periodically for any changes. 
 
 ## Contact Us
 If you have any questions about this Terms & Conditions, You can contact us:
-- By email: info@panaceacorporatewellness.com
+- By email: info@ambewellness.com
 
 `}
         </div>

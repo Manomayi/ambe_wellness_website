@@ -5,10 +5,7 @@ import Image from "next/image";
 import Button from "@/components/common/Button";
 import VideoBackground from "@/components/common/VideoBackground";
 import Navigation from "@/components/navigation/Navigation";
-import {
-  sectionTitleClasses,
-  bannerTitleClasses,
-} from "@/lib/styles/constants";
+import { sectionTitleClasses } from "@/lib/styles/constants";
 import Footer from "@/components/common/Footer";
 import StatsBar from "@/components/common/StatsBar";
 import ComparisonGrid from "@/components/common/ComparisonGrid";
@@ -129,7 +126,7 @@ function AmbeDifferenceCarousel() {
               <div className="font-medium mb-1 text-sm" style={{ color: "#353535" }}>
                 What We Do
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "#535353" }}>
+              <p className="text-xs leading-relaxed" style={{ color: "#353535" }}>
                 {carouselItems[currentItem].whatWeDo}
               </p>
             </div>
@@ -138,7 +135,7 @@ function AmbeDifferenceCarousel() {
               <div className="font-medium mb-1 text-sm" style={{ color: "#353535" }}>
                 Why It Matters
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "#535353" }}>
+              <p className="text-xs leading-relaxed" style={{ color: "#353535" }}>
                 {carouselItems[currentItem].whyItMatters}
               </p>
             </div>
@@ -189,7 +186,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ambe-cream">
       {/* Email capture modal — auto-shows after 8s on first visit this session */}
       <EmailCaptureAutoPrompt />
 
@@ -205,48 +202,68 @@ export default function Home() {
         <VideoBackground />
 
         {/* Semi-transparent black overlay */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        <div className="absolute inset-0 bg-ambe-dark/60 z-10"></div>
 
         <div className="relative z-20">
-          {/* Original Banner Content */}
-          <div className="pt-24 sm:pt-50 pb-6">
-            <div className="w-full flex justify-center">
-              <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
-                <div className="max-w-3xl">
-                  <div
-                    className={bannerTitleClasses + " leading-tight"}
-                    style={{ color: "white" }}
-                  >
-                    Holistic Tele-Wellness
-                  </div>
-                  <p
-                    className="text-white mb-4 text-sm sm:text-base md:text-lg lg:text-xl font-light"
-                    style={{ color: "white" }}
-                  >
-                    Finally Real Doctors Trained In Both Modern Science And
-                    <br />
-                    Traditional Vedic Medicine.
-                  </p>
-                  <p
-                    className="text-white text-2xl lg:text-3xl font-bold"
-                    style={{ color: "white" }}
-                  >
-                    Pay As You Want
-                  </p>
-                  <p
-                    className="text-white mb-6 text-lg lg:text-xl font-bold"
-                    style={{ color: "white" }}
-                  >
-                    Developed at Stanford
-                  </p>
+          {/* Hero Banner Content */}
+          <div className="pt-24 sm:pt-32 lg:pt-36 pb-8 lg:pb-12">
+            <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
+              <div className="max-w-xl lg:max-w-2xl">
+                <p className="text-xs sm:text-sm text-ambe-cream/80 mb-4 font-light tracking-wide">
+                  Accredited Ayurvedic degrees and allopathic training.
+                </p>
 
-                  <Link
-                    href={CONSULT_HREF}
-                    className="px-[52px] sm:px-20 py-3 rounded-full text-sm sm:text-base leading-tight font-medium transition-all duration-200 text-center inline-block bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white cursor-pointer"
-                  >
-                    BOOK FREE<br/> CONSULT NOW
-                  </Link>
+                <div className="inline-flex items-center gap-2 border border-ambe-cream/30 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
+                  <span className="w-1.5 h-1.5 rounded-full bg-ambe-gold shrink-0" />
+                  <span className="text-[10px] sm:text-xs tracking-[0.2em] text-ambe-gold uppercase font-medium">
+                    Instant Care
+                  </span>
                 </div>
+
+                <h1 className="font-heading !text-[1.75rem] sm:!text-4xl md:!text-5xl lg:!text-[3.5rem] !text-ambe-cream font-normal leading-[1.12] mb-4 sm:mb-5 not-italic">
+                  Holistic-Doctor{" "}
+                  <em className="italic !text-ambe-cream font-normal">led care.</em>
+                  <br />
+                  Pay as you{" "}
+                  <em className="italic !text-ambe-cream font-normal">can.</em>
+                </h1>
+
+                <p className="text-ambe-cream/90 text-base sm:text-lg lg:text-xl font-light mb-3 leading-relaxed">
+                  Evidence-based care with heart, tailored just for you.
+                </p>
+
+                <p className="text-ambe-gold text-xs sm:text-sm mb-2 tracking-wide">
+                  Tele-Wellness
+                </p>
+
+                <p className="text-ambe-gold font-semibold text-sm sm:text-base mb-6 sm:mb-8">
+                  Developed at Stanford · Est. 2016
+                </p>
+
+                <ul className="space-y-2 sm:space-y-2.5 mb-8 sm:mb-10">
+                  {[
+                    "Ancient wisdom. Modern science.",
+                    "Doctor-led. Deeply personal.",
+                    "Vetted practitioners with accredited Ayurvedic degrees.",
+                    "No one-size-fits-all. No guesswork.",
+                    "Available anywhere, anytime.",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-3 text-ambe-cream text-sm sm:text-base font-light"
+                    >
+                      <span className="mt-[0.45rem] w-1.5 h-1.5 rounded-full bg-ambe-gold shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href={CONSULT_HREF}
+                  className="btn-primary inline-flex w-full sm:w-auto px-10 sm:px-14 py-3.5 sm:py-4 text-sm sm:text-base tracking-wide cursor-pointer"
+                >
+                  BOOK FREE CONSULT NOW
+                </Link>
               </div>
             </div>
           </div>
@@ -268,7 +285,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Skin & Hair</p>
                   </Link>
                   
                   {/* Women's Health */}
@@ -281,7 +298,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Women&apos;s Health</p>
                   </Link>
                   
                   {/* Men's Health */}
@@ -294,7 +311,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Men&apos;s Health</p>
                   </Link>
                   
                   {/* Digestive Health */}
@@ -307,7 +324,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Digestive Health</p>
                   </Link>
                   
                   {/* Musculoskeletal */}
@@ -320,7 +337,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Musculoskeletal</p>
                   </Link>
                   
                   {/* Mental Health */}
@@ -333,7 +350,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Mental Health</p>
                   </Link>
                   
                   {/* Longevity */}
@@ -346,7 +363,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Longevity</p>
                   </Link>
                   
                   {/* Weight Management */}
@@ -359,7 +376,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Weight<br/>Management</p>
                   </Link>
                   
                   {/* Hormone Health */}
@@ -372,7 +389,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Hormone<br/>Health</p>
                   </Link>
                   
                   {/* Wellness Guides */}
@@ -385,7 +402,7 @@ export default function Home() {
                         className="object-contain"
                       />
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Wellness<br/>Guides</p>
                   </Link>
                 </div>
                 
@@ -421,7 +438,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Skin & Hair</p>
                       </Link>
                       
                       {/* Women's Health */}
@@ -434,7 +451,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Women&apos;s Health</p>
                       </Link>
                       
                       {/* Men's Health */}
@@ -447,7 +464,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Men&apos;s Health</p>
                       </Link>
                       
                       {/* Digestive Health */}
@@ -460,7 +477,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Digestive Health</p>
                       </Link>
                       
                       {/* Musculoskeletal */}
@@ -473,7 +490,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Musculoskeletal</p>
                       </Link>
                       
                       {/* Mental Health */}
@@ -486,7 +503,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Mental Health</p>
                       </Link>
                       
                       {/* Longevity */}
@@ -499,7 +516,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Longevity</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Longevity</p>
                       </Link>
                       
                       {/* Weight Management */}
@@ -512,7 +529,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Weight<br/>Management</p>
                       </Link>
                       
                       {/* Hormone Health */}
@@ -525,7 +542,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Hormone<br/>Health</p>
                       </Link>
                       
                       {/* Wellness Guides */}
@@ -538,7 +555,7 @@ export default function Home() {
                             className="object-contain"
                           />
                         </div>
-                        <p className="text-[8px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
+                        <p className="text-[8px] text-center text-charcoal leading-[0.9]">Wellness<br/>Guides</p>
                       </Link>
                     </div>
                     
@@ -856,18 +873,18 @@ export default function Home() {
       <StatsBar />
 
       {/* Ayurveda Meets Epigenetics Section */}
-      <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#F4F1EA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-12">
             {/* Left Box */}
             <div className="flex-1 bg-white rounded-lg p-6 sm:p-10">
-              <div className="text-2xl sm:text-3xl mb-1 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+              <div className="text-2xl sm:text-3xl mb-1 font-medium not-italic" style={{ color: "#353535" }}>
                 Ayurveda Meets Epigenetics
               </div>
-              <div className="text-2xl sm:text-3xl mb-3 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+              <div className="text-2xl sm:text-3xl mb-3 font-medium not-italic" style={{ color: "#353535" }}>
                 The Future Of Healthcare
               </div>
-              <p className="text-sm md:text-base mb-6" style={{ color: "#535353"}}>
+              <p className="text-sm md:text-base mb-6" style={{ color: "#353535"}}>
                 One system has guided humanity for 5,000 years. The other is at
                 science&apos;s frontier. Together, they transform what healthcare can be.
               </p>
@@ -876,7 +893,7 @@ export default function Home() {
                   <span className="flex items-center justify-center w-5 h-5 rounded-full mr-3 flex-shrink-0 mt-0.5" style={{ backgroundColor: "#FFD3AC" }}>
                     <span style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>✓</span>
                   </span>
-                  <p className="text-sm md:text-base" style={{ color: "#535353" }}>
+                  <p className="text-sm md:text-base" style={{ color: "#353535" }}>
                     Detect potential health issues years — even decades — before
                     symptoms appear.
                   </p>
@@ -885,7 +902,7 @@ export default function Home() {
                   <span className="flex items-center justify-center w-5 h-5 rounded-full mr-3 flex-shrink-0 mt-0.5" style={{ backgroundColor: "#FFD3AC" }}>
                     <span style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>✓</span>
                   </span>
-                  <p className="text-sm md:text-base" style={{ color: "#535353" }}>
+                  <p className="text-sm md:text-base" style={{ color: "#353535" }}>
                     Track in real time how your lifestyle impacts your cellular +
                     mitochondrial health.
                   </p>
@@ -899,10 +916,10 @@ export default function Home() {
             {/* Right Box - Same height as left */}
             <div className="flex-1 bg-white rounded-lg p-6 md:p-8 sm:p-10 flex flex-col justify-between" style={{ border: "0.5px solid #FFD3AC" }}>
               <div>
-                <div className="text-sm md:text-base mb-2 md:mb-4 font-medium not-italic" style={{ color: "#353535", fontFamily: "Richmond" }}>
+                <div className="text-sm md:text-base mb-2 md:mb-4 font-medium not-italic" style={{ color: "#353535" }}>
                   Your DNA Writes The Alphabet Your Epigenetics Write The Story
                 </div>
-                <p className="text-sm md:text-base mb-4 md:mb-8" style={{ color: "#535353", lineHeight: "1.6" }}>
+                <p className="text-sm md:text-base mb-4 md:mb-8" style={{ color: "#353535", lineHeight: "1.6" }}>
                   Your genes don&apos;t decide your fate. Epigenetics — your lifestyle,
                   environment, and consciousness — determine which genes switch on or
                   off. That means your health future is in your hands.
@@ -926,9 +943,9 @@ export default function Home() {
       </section>
 
       {/* The Ambé Difference - Mobile Only */}
-      <section className="md:hidden py-12" style={{ backgroundColor: "#F4F4F4" }}>
+      <section className="md:hidden py-12" style={{ backgroundColor: "#F4F1EA" }}>
         <div className="container mx-auto px-4">
-          <div className="text-3xl text-center mb-8 font-['Richmond'] font-medium" style={{ color: "#353535" }}>
+          <div className="text-3xl text-center mb-8 font-heading font-medium" style={{ color: "#353535" }}>
             The Ambé Difference
           </div>
 
@@ -1014,7 +1031,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className="text-center text-3xl sm:text-4xl md:text-5xl font-medium mb-4"
-            style={{ color: "white", fontFamily: "Richmond" }}
+            style={{ color: "#F4F1EA" }}
           >
             No Hidden Fees. Ever.
           </div>
@@ -1036,14 +1053,14 @@ export default function Home() {
       </section>
 
       {/* Certifications Section */}
-      <section className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32" style={{ backgroundColor: "#F4F1EA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop View - Grid */}
           <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {/* ISO Standards */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
               <div className="text-center mb-4">
-                <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                <div className="text-2xl sm:text-3xl font-medium font-heading" style={{ color: "#353535" }}>
                   Backed By Expertise
                 </div>
               </div>
@@ -1068,7 +1085,7 @@ export default function Home() {
             {/* GDPR */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none">
               <div className="text-center mb-4">
-                <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                <div className="text-2xl sm:text-3xl font-medium font-heading" style={{ color: "#353535" }}>
                   Certified For Safety
                 </div>
               </div>
@@ -1092,7 +1109,7 @@ export default function Home() {
             {/* European Pharmacopoeia */}
             <div className="mx-auto w-full max-w-[300px] sm:max-w-none sm:col-span-2 lg:col-span-1">
               <div className="text-center mb-4">
-                <div className="text-2xl sm:text-3xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                <div className="text-2xl sm:text-3xl font-medium font-heading" style={{ color: "#353535" }}>
                   Trusted By Design
                 </div>
               </div>
@@ -1159,7 +1176,7 @@ export default function Home() {
                   <div className="flex-none w-full px-2">
                     <div className="max-w-[300px] mx-auto">
                       <div className="text-center mb-4">
-                        <div className="text-2xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                        <div className="text-2xl font-medium font-heading" style={{ color: "#353535" }}>
                           Backed By Expertise
                         </div>
                       </div>
@@ -1186,7 +1203,7 @@ export default function Home() {
                   <div className="flex-none w-full px-2">
                     <div className="max-w-[300px] mx-auto">
                       <div className="text-center mb-4">
-                        <div className="text-2xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                        <div className="text-2xl font-medium font-heading" style={{ color: "#353535" }}>
                           Certified For Safety
                         </div>
                       </div>
@@ -1212,7 +1229,7 @@ export default function Home() {
                   <div className="flex-none w-full px-2">
                     <div className="max-w-[300px] mx-auto">
                       <div className="text-center mb-4">
-                        <div className="text-2xl font-medium font-['Richmond']" style={{ color: "#353535" }}>
+                        <div className="text-2xl font-medium font-heading" style={{ color: "#353535" }}>
                           Trusted By Design
                         </div>
                       </div>
@@ -1303,7 +1320,7 @@ export default function Home() {
       </section>
 
       {/* The Ambé Difference Section */}
-      {/* <section className="py-20" style={{ backgroundColor: '#E5E5E5' }}>
+      {/* <section className="py-20" style={{ backgroundColor: '#F4F1EA' }}>
         <div className="max-w-7xl mx-auto px-8">
           <div className={sectionTitleClasses + " mb-16"}>
             The Ambé Difference
@@ -1380,14 +1397,14 @@ export default function Home() {
                 
                 <div className="mb-6">
                   <div className="font-semibold mb-2" style={{ color: '#353535' }}>What We Do</div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
                     Doctors trained in traditional and ayurvedic medicine and modern integrative science. Recognize interactions between herbal and pharmaceutical protocols.
                   </p>
                 </div>
 
                 <div>
                   <div className="font-semibold mb-2" style={{ color: '#353535' }}>Why It Matters</div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#535353' }}>
+                  <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
                     Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric).
                   </p>
                 </div>
@@ -1409,7 +1426,7 @@ export default function Home() {
       {/* Steps Section - no title */}
       <section
         className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#E5E5E5" }}
+        style={{ backgroundColor: "#F4F1EA" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop View - Grid */}
@@ -1434,7 +1451,7 @@ export default function Home() {
                   </div>
                   <p
                     className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#535353" }}
+                    style={{ color: "#353535" }}
                   >
                     Book now, and fill out your secured details to be matched
                     with a doctor specific to your unique needs.
@@ -1460,7 +1477,7 @@ export default function Home() {
                   </div>
                   <p
                     className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#535353" }}
+                    style={{ color: "#353535" }}
                   >
                     Video chat with your specialist.
                   </p>
@@ -1488,7 +1505,7 @@ export default function Home() {
                   </div>
                   <p
                     className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#535353" }}
+                    style={{ color: "#353535" }}
                   >
                     Get customized diet, cleanse, lifestyle, exercise, yoga, and
                     meditation plans by your specialist — plus unlimited
@@ -1515,7 +1532,7 @@ export default function Home() {
                   </div>
                   <p
                     className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#535353" }}
+                    style={{ color: "#353535" }}
                   >
                     Monthly video call — essential care takes persistence.
                   </p>
@@ -1580,7 +1597,7 @@ export default function Home() {
                           <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
                             Book
                           </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
                             Book now, and fill out your secured details to be matched
                             with a doctor specific to your unique needs.
                           </p>
@@ -1600,7 +1617,7 @@ export default function Home() {
                           <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
                             Video Call
                           </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
                             Video chat with your specialist.
                           </p>
                         </div>
@@ -1624,7 +1641,7 @@ export default function Home() {
                           <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
                             Get Care + Unlimited Text
                           </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
                             Get customized diet, cleanse, lifestyle, exercise, yoga, and
                             meditation plans by your specialist — plus unlimited texting.
                           </p>
@@ -1644,7 +1661,7 @@ export default function Home() {
                           <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
                             Monthly Video Follow Up
                           </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
+                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
                             Monthly video call — essential care takes persistence.
                           </p>
                         </div>
@@ -1723,7 +1740,7 @@ export default function Home() {
       <PricingCallout />
 
       {/* Meet the Experts Section */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className={
@@ -1734,7 +1751,7 @@ export default function Home() {
             Meet the Experts
           </div>
           <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
-            Licensed. Global. Guided by science. Every Ambé practitioner is
+            Guided by science. Every Ambé practitioner is
             trained in traditional medicine and modern clinical
             frameworks — bringing deep expertise to every personalized plan.
           </p>
@@ -1926,15 +1943,9 @@ export default function Home() {
       </section>
 
       {/* Wellness Benefits Section — Areas of Care */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10">
-            <div
-              className="text-xs font-semibold tracking-widest uppercase mb-3"
-              style={{ color: "#C8996A" }}
-            >
-              What We Treat
-            </div>
             <div
               className={sectionTitleClasses + " text-2xl sm:text-3xl md:text-4xl"}
               style={{ color: "#353535" }}
@@ -2231,7 +2242,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
       </section>
 
       {/* Nutritionist Comparison Table */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F1EA' }}>
         <div className="max-w-7xl mx-auto px-6 sm:px-8">
           <NutritionistTable />
         </div>
@@ -2240,7 +2251,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
       {/* Biomarkers Q&A Accordion */}
       <section
         className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#E5E5E5" }}
+        style={{ backgroundColor: "#F4F1EA" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <BiomarkersAccordion
@@ -2275,7 +2286,7 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
                 {/* Quote Icon - positioned at the top border */}
                 <div
                   className="absolute left-1/2 transform -translate-x-1/2 -top-10 sm:-top-12 w-20 sm:w-24 h-20 sm:h-24 rounded-full flex items-center justify-center z-10"
-                  style={{ backgroundColor: "#E5E5E5" }}
+                  style={{ backgroundColor: "#F4F1EA" }}
                 >
                   <span
                     className="text-8xl sm:text-9xl"
@@ -2302,11 +2313,8 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
 
                     {/* Main Quote */}
                     <div
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-light leading-snug mb-2 sm:mb-4"
-                      style={{
-                        color: "#353535",
-                        fontFamily: "Playfair Display, serif",
-                      }}
+                      className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-5xl font-light leading-snug mb-2 sm:mb-4"
+                      style={{ color: "#353535" }}
                     >
                       With loving support, we can blossom into
                       <br className="hidden sm:block" />

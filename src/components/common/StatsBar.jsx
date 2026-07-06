@@ -18,18 +18,18 @@ export default function StatsBar() {
               key={stat.label}
               className={
                 "flex flex-col items-center text-center px-4 py-4 md:py-0" +
-                (index > 0 ? " md:border-l md:border-white/15" : "")
+                (index > 0 ? " md:border-l md:border-[#F4F1EA]/15" : "")
               }
             >
               <div
-                className="text-3xl sm:text-4xl font-medium mb-2"
-                style={{ color: "#FFD3AC", fontFamily: "Richmond" }}
+                className="font-heading text-3xl sm:text-4xl font-medium mb-2"
+                style={{ color: "#FFD3AC" }}
               >
                 {stat.value}
               </div>
               <div
                 className="text-[11px] sm:text-xs tracking-wider uppercase leading-snug"
-                style={{ color: "rgba(255,255,255,0.7)" }}
+                style={{ color: "#F4F1EA" }}
               >
                 {stat.label}
               </div>

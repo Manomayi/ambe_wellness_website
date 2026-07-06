@@ -1,98 +1,109 @@
 "use client";
-import React from 'react';
-import Link from 'next/link';
+
+import Link from "next/link";
+import { CONTACT_EMAIL } from "@/lib/site-config";
+
+const NAVIGATE_LINKS = [
+  { href: "/enterprise", label: "Enterprise" },
+  { href: "/membership", label: "Membership" },
+  { href: "/resources", label: "Resources" },
+  { href: "/download", label: "Download App" },
+  { href: "/login", label: "Sign In" },
+];
+
+const AREAS_OF_CARE = [
+  { href: "/", label: "Hormone Health" },
+  { href: "/", label: "Women's Health" },
+  { href: "/", label: "Men's Health" },
+  { href: "/", label: "Mental Health" },
+  { href: "/", label: "Oncology Support" },
+];
+
+const LEGAL_LINKS = [
+  { href: "/terms", label: "Terms" },
+  { href: "/privacy-policy", label: "Privacy Policy" },
+  { href: `mailto:${CONTACT_EMAIL}`, label: "Contact" },
+];
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <p className="text-[11px] tracking-[0.2em] uppercase text-ambe-gold font-medium mb-4">
+        {title}
+      </p>
+      <ul className="space-y-2.5">
+        {links.map((link) => (
+          <li key={link.label}>
+            <Link
+              href={link.href}
+              className="text-sm text-ambe-cream/75 hover:text-ambe-gold transition-colors"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function Footer() {
   return (
-    <footer className="relative z-10 py-10 sm:py-14" style={{ backgroundColor: '#1A1A1A' }}>
-      <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        {/* First row - navigation links */}
-        <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0 mb-6 sm:mb-4">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 lg:gap-12 xl:justify-between xl:flex-1">
-            <Link href="/enterprise" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
-              Enterprise
-            </Link>
-            <Link href="/membership" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
-              Membership
-            </Link>
-            <Link href="/download" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
-              Download App
-            </Link>
-            <Link href="/login" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
-              Sign In
-            </Link>
-            <Link href="/contact" style={{ color: 'white' }} className="text-sm sm:text-base hover:opacity-80 transition-opacity text-left">
-              Contact
-            </Link>
-          </div>
-        </div>
-        
-        {/* Footer Disclaimer Strip — renders above the copyright line */}
-        <div className="pt-2 mb-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
-            {/* Supplement Disclaimer — FDA wording must not be altered */}
-            <div>
-              <div className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#FFD3AC' }}>
-                Supplement Disclaimer
-              </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                These statements have not been evaluated by the Food and Drug
-                Administration. Products offered through Ambé are not intended to
-                diagnose, treat, cure, or prevent any disease.
-              </p>
-            </div>
-
-            {/* Practitioner Notice */}
-            <div>
-              <div className="text-xs font-semibold tracking-widest uppercase mb-2" style={{ color: '#FFD3AC' }}>
-                Practitioner Notice
-              </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                Ambé practitioners hold BAMS degrees (Bachelor of Ayurvedic
-                Medicine and Surgery) from accredited institutions. Ayurveda is
-                not a state-licensed medical practice in the United States. All
-                consultations are traditional Ayurvedic wellness support, not the
-                practice of conventional medicine.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
-            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-              Ambé wellness programs are educational and supportive in nature.
-              They are not a substitute for diagnosis, treatment, or advice from a
-              licensed medical physician. If you have a medical condition or are
-              taking prescription medications, consult your primary care provider
-              before beginning any wellness program.
+    <footer className="bg-ambe-dark text-ambe-cream">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 py-14 sm:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 mb-12">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <p
+              className="font-heading !text-[2rem] sm:!text-[2.25rem] !text-ambe-gold !font-normal tracking-[0.04em] mb-4"
+              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+            >
+              AMBÉ
+            </p>
+            <p className="text-sm text-ambe-cream/70 leading-relaxed max-w-xs">
+              Holistic tele-wellness. Real integrative doctors trained in modern
+              science and traditional Vedic medicine. Wellness for Everyone.
             </p>
           </div>
+
+          <FooterColumn title="Navigate" links={NAVIGATE_LINKS} />
+          <FooterColumn title="Areas of Care" links={AREAS_OF_CARE} />
+          <FooterColumn title="Legal" links={LEGAL_LINKS} />
         </div>
 
-        {/* Second row - copyright and terms */}
         <div
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mt-6 pt-6"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}
+          className="pt-8 space-y-4"
+          style={{ borderTop: "1px solid rgba(244, 241, 234, 0.15)" }}
         >
-          <p style={{ color: 'white' }} className="text-xs sm:text-sm text-left">
-            © 2026 Ambé Wellness. All rights reserved. Operated by Lakshmi Devi Namaha LLC DBA Ambé Wellness.
+          <p className="text-xs text-ambe-cream/60 leading-relaxed max-w-4xl">
+            All content provided by Ambé is for educational purposes only and
+            does not constitute medical advice, diagnosis, or treatment.
           </p>
-          <div className="flex gap-6">
-            <Link href="/terms" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
-              Terms
-            </Link>
-            <Link href="/privacy-policy" style={{ color: 'white' }} className="text-xs sm:text-sm hover:opacity-80 transition-opacity text-left sm:text-left">
-              Privacy Policy
-            </Link>
+
+          <p className="text-xs text-ambe-cream/60 leading-relaxed">
+            © 2026 Ambé Wellness. All rights reserved. Operated by Lakshmi Devi
+            Namaha LLC DBA Ambé Wellness.
+          </p>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 text-xs text-ambe-cream/60">
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="hover:text-ambe-gold transition-colors"
+            >
+              {CONTACT_EMAIL}
+            </a>
+            <div className="flex gap-6">
+              <Link href="/terms" className="hover:text-ambe-gold transition-colors">
+                Terms
+              </Link>
+              <Link
+                href="/privacy-policy"
+                className="hover:text-ambe-gold transition-colors"
+              >
+                Privacy Policy
+              </Link>
+            </div>
           </div>
         </div>
-
-        <p
-          className="text-center mt-2"
-          style={{ fontSize: "10px", color: "rgba(255,255,255,0.45)" }}
-        >
-          Ambe&apos; Wellness is a product of Lakshmi Devi Namaha LLC. All app-related
-          services are provided under the iOS developer account of Lakshmi Devi Namaha.
-        </p>
       </div>
     </footer>
   );

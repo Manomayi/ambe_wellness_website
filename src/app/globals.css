@@ -1,159 +1,207 @@
 @import "tailwindcss";
 
-/* Prevent horizontal scroll on mobile */
+/* ═══════════════════════════════════════════════════════════════════════════
+   AMBÉ WELLNESS — Global brand system (5 colors · 2 fonts)
+   Fonts loaded sitewide via next/font in src/app/layout.js (Cormorant + Jost)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ambe-dark: #1a1a1a;
+  --ambe-charcoal: #353535;
+  --ambe-gold: #c8996a;
+  --ambe-peach: #ffd3ac;
+  --ambe-cream: #f4f1ea;
+
+  --background: var(--ambe-cream);
+  --foreground: var(--ambe-charcoal);
+}
+
+@theme inline {
+  /* Brand palette — only these five */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ambe-dark: var(--ambe-dark);
+  --color-ambe-charcoal: var(--ambe-charcoal);
+  --color-ambe-gold: var(--ambe-gold);
+  --color-ambe-peach: var(--ambe-peach);
+  --color-ambe-cream: var(--ambe-cream);
+  --color-charcoal: var(--ambe-charcoal);
+  --color-peach: var(--ambe-peach);
+  --color-body: var(--ambe-charcoal);
+
+  /* Remap defaults — no pure white/black or browser greys */
+  --color-white: var(--ambe-cream);
+  --color-black: var(--ambe-dark);
+
+  --font-heading: var(--font-cormorant), "Cormorant Garamond", serif;
+  --font-sans: var(--font-jost), "Jost", sans-serif;
+}
+
+/* ── Base ── */
 html,
 body {
   overflow-x: hidden;
   max-width: 100%;
 }
 
-/* Import Richmond Text fonts - for section titles */
-@font-face {
-  font-family: 'Richmond';
-  src: url('/fonts/Richmond-Text-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond';
-  src: url('/fonts/Richmond-Text-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond';
-  src: url('/fonts/Richmond-Text-SemiBold.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond';
-  src: url('/fonts/Richmond-Text-Black.otf') format('opentype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Richmond Display fonts - available for future use */
-@font-face {
-  font-family: 'Richmond Display';
-  src: url('/fonts/Richmond-Display-UltraLight.otf') format('opentype');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond Display';
-  src: url('/fonts/Richmond-Display-Light.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond Display';
-  src: url('/fonts/Richmond-Display-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond Display';
-  src: url('/fonts/Richmond-Display-SemiBold.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond Display';
-  src: url('/fonts/Richmond-Display-Black.otf') format('opentype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Richmond Display';
-  src: url('/fonts/Richmond-Display-UltraBlack.otf') format('opentype');
-  font-weight: 950;
-  font-style: normal;
-  font-display: swap;
-}
-
-:root {
-  --background: #E5E5E5;
-  --foreground: #353535;
-  
-  /* Ambe Brand Colors */
-  --ambe-peach: #FFD3AC;
-  --ambe-charcoal: #353535;
-  --ambe-background: #E5E5E5;
-  --ambe-white: #FFFFFF;
-  --ambe-body: #535353;
-  --ambe-grid: #F4F4F4;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-}
-
-/* Note: Basis Grotesque Arabic Pro would need to be purchased/licensed */
-/* Using system fonts as fallback until the font files are provided */
 body {
-  background: var(--ambe-background);
+  background: var(--ambe-cream);
   color: var(--ambe-charcoal);
   font-size: 16px;
   line-height: 1.5;
   font-family: var(--font-jost), "Jost", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Typography */
-h1, .h1 {
-  font-size: 35px;
+/* Cormorant Garamond — headings, logo, italic accents */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3 {
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   color: var(--ambe-charcoal);
   font-weight: 400;
 }
 
-h2, .h2 {
+.font-heading {
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
+  font-weight: 400;
+}
+
+h1.font-heading,
+h2.font-heading,
+h3.font-heading {
+  font-size: inherit;
+  font-weight: 400;
+  color: inherit;
+}
+
+h1,
+.h1 {
+  font-size: 35px;
+}
+
+h2,
+.h2 {
   font-size: 19px;
-  color: var(--ambe-charcoal);
   font-weight: 500;
 }
 
+em,
+i {
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
+}
+
+/* Jost — body, nav, buttons, labels, footer */
+button,
+nav,
+nav a,
+label,
+footer,
+input,
+textarea,
+select {
+  font-family: var(--font-jost), "Jost", sans-serif;
+}
+
+input,
+textarea,
+select {
+  color: var(--ambe-charcoal);
+  background-color: var(--ambe-cream);
+  border-color: color-mix(in srgb, var(--ambe-charcoal) 20%, transparent);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--ambe-gold);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--ambe-charcoal) 45%, transparent);
+}
+
+/* Links */
+a {
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--ambe-gold);
+}
+
+/* Body copy utility */
 .body-text {
   font-size: 16px;
-  color: var(--ambe-body);
+  color: var(--ambe-charcoal);
   line-height: 1.6;
 }
 
+/* Brand utilities */
+.text-on-dark {
+  color: var(--ambe-cream);
+}
 
-/* Keep in @layer base so Tailwind text/color utilities take precedence. */
+.text-accent {
+  color: var(--ambe-gold);
+}
+
+.bg-brand-dark {
+  background-color: var(--ambe-dark);
+}
+
+.bg-brand-cream {
+  background-color: var(--ambe-cream);
+}
+
+.bg-brand-peach {
+  background-color: var(--ambe-peach);
+}
+
+/* Primary CTA — peach bg, charcoal text */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  background-color: var(--ambe-peach);
+  color: var(--ambe-charcoal);
+  font-family: var(--font-jost), "Jost", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--ambe-charcoal);
+  color: var(--ambe-cream);
+}
+
 @layer base {
   * {
     color: inherit;
   }
-}
 
-/* Ensure form inputs have dark text */
-input, textarea, select {
-  color: #111827; /* gray-900 */
+  ::selection {
+    background-color: var(--ambe-peach);
+    color: var(--ambe-charcoal);
+  }
 }
 
 .text-shadow {
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+  text-shadow: 2px 2px 8px rgba(26, 26, 26, 0.8);
 }
 
-/* Hide scrollbar for wellness benefits section */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -163,8 +211,6 @@ input, textarea, select {
   display: none;
 }
 
-/* Shop credentials ticker — continuous horizontal scroll.
-   The track renders the items twice, so translating by -50% loops seamlessly. */
 @keyframes marquee {
   0% {
     transform: translateX(0);

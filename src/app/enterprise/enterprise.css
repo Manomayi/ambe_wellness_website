@@ -1,0 +1,387 @@
+/* Enterprise page — dark theme + video heroes */
+
+.ent-page {
+  --ent-dark: #1a1a1a;
+  --ent-gold: #c8996a;
+  --ent-cream: #f4f1ea;
+}
+
+.ent-video-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.ent-video-section .ent-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Light dark tint — video stays visible */
+.ent-video-section .ent-video-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(26, 26, 26, 0.48);
+  pointer-events: none;
+}
+
+.ent-video-section .ent-video-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Hero */
+.ent-hero {
+  position: relative;
+  min-height: 88vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 7rem 0 5rem;
+  background: var(--ent-dark);
+}
+
+.ent-hero .ent-video-fallback {
+  position: absolute;
+  inset: 0;
+  background: var(--ent-dark);
+  z-index: 0;
+}
+
+.ent-hero-eyebrow {
+  font-family: "Jost", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ent-gold);
+  margin-bottom: 1.25rem;
+}
+
+.ent-hero h1 {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 400;
+  line-height: 1.12;
+  color: var(--ent-cream);
+  margin-bottom: 1.5rem;
+  max-width: 42rem;
+}
+
+.ent-hero h1 em {
+  font-style: italic;
+  color: var(--ent-gold);
+}
+
+.ent-hero-sub {
+  font-family: "Jost", sans-serif;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 300;
+  line-height: 1.65;
+  color: rgba(244, 241, 234, 0.92);
+  max-width: 36rem;
+}
+
+.ent-hero-cta {
+  display: inline-flex;
+  margin-top: 2rem;
+  padding: 0.875rem 2rem;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(244, 241, 234, 0.85);
+  background: transparent;
+  color: var(--ent-cream);
+  font-family: "Jost", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ent-hero-cta:hover {
+  background: var(--ent-cream);
+  color: var(--ent-dark);
+}
+
+/* ROI stats band — video + dark tint */
+.ent-roi-band {
+  position: relative;
+  overflow: hidden;
+  background: var(--ent-dark);
+}
+
+.ent-roi-band .ent-video-overlay {
+  background: rgba(26, 26, 26, 0.72);
+}
+
+/* Bottom CTA — slightly stronger tint for form readability */
+.ent-cta-band .ent-video-overlay {
+  background: rgba(26, 26, 26, 0.62);
+}
+
+/* Our Offerings */
+.ent-offerings-intro {
+  background: var(--ent-cream);
+  padding: 4.5rem 0 3.5rem;
+}
+
+.ent-offerings-eyebrow {
+  font-family: "Jost", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ent-gold);
+  margin-bottom: 1.25rem;
+}
+
+.ent-offerings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ent-offering-card {
+  background: #8a8478;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ent-offering-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem 2rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .ent-offering-inner {
+    padding: 3.5rem 2rem;
+    gap: 2rem 3rem;
+  }
+}
+
+.ent-offering-number {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 1;
+  color: rgba(200, 153, 106, 0.55);
+  min-width: 3.5rem;
+}
+
+.ent-offering-label {
+  font-family: "Jost", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ent-gold);
+  margin-bottom: 0.75rem;
+}
+
+.ent-offering-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 400;
+  color: var(--ent-cream);
+  margin-bottom: 1rem;
+  line-height: 1.15;
+}
+
+.ent-offering-desc {
+  font-family: "Jost", sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: rgba(244, 241, 234, 0.88);
+  max-width: 40rem;
+  margin-bottom: 1.5rem;
+}
+
+.ent-modalities-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: rgba(26, 26, 26, 0.35);
+  margin-bottom: 1.5rem;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ent-modality-item {
+  flex: 1 1 auto;
+  min-width: 140px;
+  padding: 0.75rem 1rem;
+  font-family: "Jost", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 234, 0.9);
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ent-modality-item:last-child {
+  border-right: none;
+}
+
+.ent-offering-bullets {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem 2rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .ent-offering-bullets {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ent-offering-bullets ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ent-offering-bullets li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+  font-family: "Jost", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: rgba(244, 241, 234, 0.82);
+}
+
+.ent-offering-bullets li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--ent-gold);
+}
+
+.ent-offering-cta {
+  display: inline-flex;
+  padding: 0.75rem 1.75rem;
+  border-radius: 9999px;
+  border: 1.5px solid var(--ent-gold);
+  background: transparent;
+  color: var(--ent-gold);
+  font-family: "Jost", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ent-offering-cta:hover {
+  background: var(--ent-gold);
+  color: var(--ent-dark);
+}
+
+/* Org benefits grid */
+.ent-org-benefits {
+  background: var(--ent-cream);
+  padding: 4.5rem 0 5rem;
+}
+
+.ent-org-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .ent-org-header {
+    margin-bottom: 3.5rem;
+  }
+}
+
+.ent-org-header-line {
+  display: block;
+  width: 2rem;
+  height: 2px;
+  background: var(--ent-gold);
+  margin: 0 auto 1.25rem;
+}
+
+.ent-org-header .ent-offerings-eyebrow {
+  margin-bottom: 1rem;
+}
+
+.ent-org-header h2 {
+  margin-bottom: 0;
+}
+
+.ent-org-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid #e0dbd2;
+}
+
+@media (min-width: 640px) {
+  .ent-org-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ent-org-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ent-org-cell {
+  padding: 2rem 1.75rem;
+  border-bottom: 1px solid #e0dbd2;
+  border-right: 1px solid #e0dbd2;
+}
+
+.ent-org-cell:nth-child(3n) {
+  border-right: none;
+}
+
+@media (max-width: 1023px) {
+  .ent-org-cell:nth-child(3n) {
+    border-right: 1px solid #e0dbd2;
+  }
+  .ent-org-cell:nth-child(2n) {
+    border-right: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .ent-org-cell {
+    border-right: none;
+  }
+}
+
+.ent-org-accent {
+  display: block;
+  width: 2rem;
+  height: 2px;
+  background: var(--ent-gold);
+  margin-bottom: 1rem;
+}
+
+.ent-org-title {
+  font-family: "Jost", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ent-dark);
+  margin-bottom: 0.625rem;
+}
+
+.ent-org-desc {
+  font-family: "Jost", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #535353;
+}

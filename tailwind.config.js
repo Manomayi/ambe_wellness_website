@@ -9,32 +9,25 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary colors from design guide
-        'ambe-peach': '#FFD3AC',
+        'ambe-dark': '#1A1A1A',
         'ambe-charcoal': '#353535',
-        
-        // Neutral colors from design guide
-        'ambe-background': '#E5E5E5',
-        'ambe-white': '#FFFFFF',
-        'ambe-body': '#535353',
-        'ambe-grid': '#F4F4F4',
-        
-        // Shorter aliases for easier use
-        'peach': '#FFD3AC',
-        'charcoal': '#353535',
-        'body': '#535353',
-        'grid-box': '#F4F4F4',
+        'ambe-gold': '#C8996A',
+        'ambe-peach': '#FFD3AC',
+        'ambe-cream': '#F4F1EA',
+        peach: '#FFD3AC',
+        charcoal: '#353535',
+        body: '#353535',
       },
       fontFamily: {
-        'richmond': ['Richmond', 'Playfair Display', 'serif'],
-        'basis': ['Basis Grotesque Arabic Pro', 'sans-serif'],
+        heading: ['var(--font-cormorant)', 'Cormorant Garamond', 'serif'],
+        sans: ['var(--font-jost)', 'Jost', sans-serif],
       },
       fontSize: {
-        'h1': '35px',
-        'h2': '19px',
-        'body': '16px',
+        h1: '35px',
+        h2: '19px',
+        body: '16px',
       },
     },
   },
   plugins: [],
-}
+};

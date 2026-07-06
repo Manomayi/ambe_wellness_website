@@ -51,13 +51,13 @@ export default function AyurvedaDisclaimerModal() {
           Before You Begin
         </div>
         <div
-          className="text-2xl sm:text-3xl font-medium mb-5 leading-tight"
-          style={{ color: "#353535", fontFamily: "Richmond" }}
+          className="font-heading text-2xl sm:text-3xl font-medium mb-5 leading-tight"
+          style={{ color: "#353535" }}
         >
           A Note About Ayurvedic Wellness
         </div>
 
-        <div className="space-y-4 text-sm sm:text-base leading-relaxed" style={{ color: "#535353" }}>
+        <div className="space-y-4 text-sm sm:text-base leading-relaxed" style={{ color: "#353535" }}>
           <p>
             Ambé connects you with practitioners trained in Ayurveda — one of the
             world&apos;s oldest systems of traditional medicine, originating in

@@ -60,14 +60,14 @@ export default function DoctorProfileModal({ doctor, onClose }) {
         </div>
 
         <div
-          className="text-2xl font-medium mb-1"
-          style={{ color: "#353535", fontFamily: "Richmond" }}
+          className="font-heading text-2xl font-medium mb-1"
+          style={{ color: "#353535" }}
         >
           {doctor.name}
         </div>
         <div
           className="text-xs font-semibold tracking-widest uppercase mb-3"
-          style={{ color: "#C2691C" }}
+          style={{ color: "#C8996A" }}
         >
           BAMS · Integrative Doctor
         </div>

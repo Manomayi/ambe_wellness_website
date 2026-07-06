@@ -2,7 +2,7 @@ import ClientAuthProvider from "@/components/auth/ClientAuthProvider";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import AyurvedaDisclaimerModal from "@/components/common/AyurvedaDisclaimerModal";
 import { buildPageMetadata } from "@/lib/metadata";
-import { Cormorant_Garamond, Jost, Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond, Jost } from "next/font/google";
 import "./globals.css";
 
 const jost = Jost({
@@ -16,13 +16,6 @@ const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-cormorant",
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-playfair",
   display: "swap",
 });
 
@@ -50,7 +43,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${jost.variable} ${cormorant.variable} ${playfair.variable}`}
+      className={`${jost.variable} ${cormorant.variable}`}
     >
       <body className={`${jost.className} antialiased`}>
         <ClientAuthProvider>

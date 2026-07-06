@@ -57,17 +57,17 @@ export default function AppDownload() {
           <div className="max-w-xl">
             <div
               className="text-xs font-semibold tracking-widest uppercase mb-3"
-              style={{ color: "#C2691C" }}
+              style={{ color: "#C8996A" }}
             >
               Get the App
             </div>
             <div
-              className="text-2xl sm:text-3xl md:text-4xl font-medium mb-3"
-              style={{ color: "#353535", fontFamily: "Richmond" }}
+              className="font-heading text-2xl sm:text-3xl md:text-4xl font-medium mb-3"
+              style={{ color: "#353535" }}
             >
               Your Wellness Journey in Your Pocket
             </div>
-            <p className="text-sm sm:text-base" style={{ color: "#535353" }}>
+            <p className="text-sm sm:text-base" style={{ color: "#353535" }}>
               Consultations, your wellness plan, and messaging with your
               integrative doctor — all in the Ambé app.
             </p>

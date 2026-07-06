@@ -30,13 +30,10 @@ export default function DownloadPage() {
           >
             Get the App
           </p>
-          <h1
-            className="text-3xl sm:text-4xl font-medium mb-4"
-            style={{ color: "#353535", fontFamily: "Richmond" }}
-          >
+          <h1 className="font-heading text-3xl sm:text-4xl font-medium mb-4 text-charcoal">
             Your Wellness Journey in Your Pocket
           </h1>
-          <p className="text-base mb-10" style={{ color: "#535353" }}>
+          <p className="text-base mb-10" style={{ color: "#353535" }}>
             Consultations, your wellness plan, and messaging with your integrative
             doctor — all in the Ambé app.
           </p>

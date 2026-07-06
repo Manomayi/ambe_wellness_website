@@ -5,7 +5,8 @@ import Button from '@/components/common/Button';
 import VideoBackground from '@/components/common/VideoBackground';
 import Navigation from '@/components/navigation/Navigation';
 import EnterpriseRoiStats from '@/components/enterprise/EnterpriseRoiStats';
-import { sectionTitleClasses, bannerTitleClasses, sectionTitleWhiteClasses } from '@/lib/styles/constants';
+import EnterpriseOfferings from '@/components/enterprise/EnterpriseOfferings';
+import { sectionTitleClasses } from '@/lib/styles/constants';
 import Footer from '@/components/common/Footer';
 
 export default function Enterprise() {
@@ -21,34 +22,33 @@ export default function Enterprise() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
+    <div className="ent-page min-h-screen bg-white">
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="relative min-h-[75vh] flex items-center overflow-hidden py-20">
-        {/* Video Background */}
-        <VideoBackground />
-        
-        {/* Semi-transparent black overlay */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
-        
-        <div className="relative z-20 w-full flex justify-center">
-          <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
+      {/* Hero — artifact top portion */}
+      <section className="ent-hero ent-video-section">
+        <div className="ent-video-fallback" aria-hidden />
+        <VideoBackground className="ent-video" />
+        <div className="ent-video-overlay" aria-hidden />
+
+        <div className="ent-video-content w-full">
+          <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
             <div className="max-w-3xl">
-              <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
-                Pioneers of Corporate Wellness
-              </div>
-              <p className="text-white mb-8 text-base sm:text-lg md:text-xl font-light" style={{ color: 'white' }}>
-                We led the way before &apos;employee experience&apos; was a buzzword. When 
-                companies needed an edge, we delivered relief, support, and 
-                transformative wellness for everyone—from the loading dock to the 
-                executive suite.
+              <p className="ent-hero-eyebrow">Enterprise Wellness</p>
+
+              <h1 className="!text-ambe-cream !font-normal">
+                We led the way before{" "}
+                <em>&ldquo;employee experience&rdquo;</em> was a buzzword.
+              </h1>
+
+              <p className="ent-hero-sub">
+                From warehouse floors to executive suites — three offerings, one
+                proven partner, built to elevate culture, retention, and ROI.
               </p>
-              
-              <Button variant="light" onClick={scrollToInquiry}>
-                GET STARTED
-              </Button>
+
+              <button type="button" className="ent-hero-cta" onClick={scrollToInquiry}>
+                Get Started
+              </button>
             </div>
           </div>
         </div>
@@ -364,12 +364,13 @@ export default function Enterprise() {
         </div>
       </section>
 
+      <EnterpriseOfferings />
+
       {/* CTA and Footer Section with Video Background */}
-      <section className="relative">
-        <VideoBackground />
-        {/* Semi-transparent black overlay */}
-        <div className="absolute inset-0 bg-black/40 z-[1]"></div>
-        <div className="relative z-10">
+      <section className="ent-video-section ent-cta-band relative">
+        <VideoBackground className="ent-video" />
+        <div className="ent-video-overlay" aria-hidden />
+        <div className="ent-video-content relative z-10">
           {/* Let's Design a New Standard Section */}
           <div className="pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-10 md:pb-12">
             <div className="max-w-5xl mx-auto px-6 sm:px-8">

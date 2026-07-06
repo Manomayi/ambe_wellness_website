@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Navigation from "@/components/navigation/Navigation";
 
 const MODALITIES = [
   {
@@ -165,17 +166,6 @@ function InquiryForm() {
 export default function AmbeHealthTechnologyContent() {
   return (
     <div className="aht-page">
-      <header className="aht-header">
-        <div className="aht-nav-inner">
-          <Link href="/" className="aht-logo-word">
-            AMBE<span className="aht-logo-leaf" />
-          </Link>
-          <Link href="/" className="aht-nav-back">
-            ← Back to Ambé Wellness
-          </Link>
-        </div>
-      </header>
-
       <section className="aht-hero">
         <video
           className="aht-hero-video"
@@ -186,54 +176,48 @@ export default function AmbeHealthTechnologyContent() {
           playsInline
         />
         <div className="aht-hero-overlay" />
-        <div className="aht-wrap">
+
+        <Navigation />
+
+        <div className="aht-wrap aht-hero-body">
           <div className="aht-hero-inner">
-            <div className="aht-eyebrow">Next-Generation Systemic Health Technology</div>
+            <div className="aht-eyebrow">Health Technology</div>
             <h1>
-              The science that makes ancient wisdom <em>measurable.</em>
+              <span className="aht-hero-highlight">
+                The science of feeling well
+              </span>{" "}
+              <span className="aht-hero-accent">
+                has never been more advanced.
+              </span>
             </h1>
             <p className="aht-hero-sub">
-              Ambé integrates five clinically validated health technologies into a single,
-              doctor-guided wellness protocol — extending what Ayurvedic medicine has always known
-              into the language of modern science.
+              Five clinically validated technologies — integrated into one
+              doctor-guided protocol that makes ancient wisdom measurable.
             </p>
-            <div className="aht-hero-creds">
-              <div className="aht-hero-cred">
-                <span className="aht-hero-cred-num">NASA</span>
-                <span className="aht-hero-cred-label">Agency-backed research</span>
-              </div>
-              <div className="aht-hero-cred">
-                <span className="aht-hero-cred-num">3,800+</span>
-                <span className="aht-hero-cred-label">Global clinical partners</span>
-              </div>
-              <div className="aht-hero-cred">
-                <span className="aht-hero-cred-num">200+</span>
-                <span className="aht-hero-cred-label">Peer-reviewed studies</span>
-              </div>
-              <div className="aht-hero-cred">
-                <span className="aht-hero-cred-num">5</span>
-                <span className="aht-hero-cred-label">Integrated modalities</span>
-              </div>
-            </div>
             <div className="aht-hero-cta-row">
-              <Link
-                href="#inquiry"
-                className="aht-btn aht-btn-dark"
-                style={{ background: "var(--peach)", color: "var(--near-black)" }}
-              >
-                Request Information
-              </Link>
-              <Link
-                href="#inquiry"
-                className="aht-btn aht-btn-outline"
-                style={{ borderColor: "rgba(255,255,255,0.4)", color: "#fff" }}
-              >
-                Partnership Inquiry
+              <Link href="#modalities" className="aht-btn aht-btn-peach">
+                Explore Modalities
               </Link>
             </div>
           </div>
         </div>
       </section>
+
+      <div className="aht-hero-stats">
+        <div className="aht-wrap">
+          <div className="aht-hero-stats-grid">
+            <div className="aht-hero-stat">
+              <span className="aht-hero-stat-num">NASA</span>
+            </div>
+            <div className="aht-hero-stat">
+              <span className="aht-hero-stat-num">3,800+</span>
+            </div>
+            <div className="aht-hero-stat">
+              <span className="aht-hero-stat-num">200+</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="aht-intro-band">
         <div className="aht-wrap">
@@ -246,7 +230,7 @@ export default function AmbeHealthTechnologyContent() {
         </div>
       </div>
 
-      <section>
+      <section id="modalities">
         <div className="aht-wrap">
           <div className="aht-modalities-header">
             <div className="aht-eyebrow">Five Modalities</div>

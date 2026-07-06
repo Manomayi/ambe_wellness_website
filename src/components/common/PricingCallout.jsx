@@ -10,14 +10,14 @@ export default function PricingCallout() {
           {/* Text */}
           <div>
             <div
-              className="text-2xl sm:text-3xl font-medium mb-2 sm:whitespace-nowrap"
-              style={{ color: "white", fontFamily: "Richmond" }}
+              className="font-heading text-2xl sm:text-3xl font-medium mb-2 sm:whitespace-nowrap"
+              style={{ color: "#F4F1EA" }}
             >
               Membership starts at $50/month.
             </div>
             <p
               className="text-sm sm:text-base"
-              style={{ color: "rgba(255,255,255,0.65)" }}
+              style={{ color: "#F4F1EA" }}
             >
               Everything included — consultations, medicines, unlimited
               messaging.
@@ -34,8 +34,7 @@ export default function PricingCallout() {
             </Link>
             <Link
               href="/signup"
-              className="px-8 py-3 rounded-full text-sm font-medium tracking-wider uppercase text-center transition-all duration-200 border border-[#FFD3AC] hover:bg-[#FFD3AC] hover:text-[#353535]"
-              style={{ color: "#FFD3AC" }}
+              className="px-8 py-3 rounded-full text-sm font-medium tracking-wider uppercase text-center transition-all duration-200 border border-[#FFD3AC] hover:bg-[#FFD3AC] hover:text-[#353535] text-[#FFD3AC]"
             >
               Book Free Consult
             </Link>

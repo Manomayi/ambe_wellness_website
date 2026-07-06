@@ -4,13 +4,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
-export default function Navigation() {
+export default function Navigation({ light = false }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const linkColor = (path) => {
+    if (pathname === path) return "#C8996A";
+    return light ? "#353535" : "white";
+  };
+
+  const navText = light ? "#353535" : "white";
+  const dividerColor = light ? "#C8996A" : "white";
+
   return (
     <>
-      <nav className="absolute top-0 left-0 right-0 z-50 py-4 sm:py-6 sm:border-b border-white">
+      <nav className="absolute top-0 left-0 right-0 z-50 py-4 sm:py-6">
         <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16">
           <div className="flex justify-between items-center">
             {/* Logo */}
@@ -29,7 +37,7 @@ export default function Navigation() {
             <button 
               className="md:hidden relative z-[60]"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{ color: mobileMenuOpen ? '#353535' : 'white' }}
+              style={{ color: mobileMenuOpen ? "#353535" : navText }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileMenuOpen ? (
@@ -45,43 +53,50 @@ export default function Navigation() {
             <Link
               href="/shop"
               className="text-xs lg:text-sm"
-              style={{ color: pathname === '/shop' ? '#FFD3AC' : 'white' }}
+              style={{ color: linkColor("/shop") }}
             >
               Shop
             </Link>
             <Link
               href="/enterprise"
               className="text-xs lg:text-sm" 
-              style={{ color: pathname === '/enterprise' ? '#FFD3AC' : 'white' }}
+              style={{ color: linkColor("/enterprise") }}
             >
               Enterprise
             </Link>
             <Link 
               href="/membership" 
               className="text-xs lg:text-sm" 
-              style={{ color: pathname === '/membership' ? '#FFD3AC' : 'white' }}
+              style={{ color: linkColor("/membership") }}
             >
               Membership
             </Link>
             <Link 
               href="/resources" 
               className="text-xs lg:text-sm" 
-              style={{ color: pathname === '/resources' ? '#FFD3AC' : 'white' }}
+              style={{ color: linkColor("/resources") }}
             >
               Resources
             </Link>
             <Link
               href="/download"
-              className="border border-white px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm hover:bg-white hover:text-black transition-colors whitespace-nowrap"
-              style={{ color: "white" }}
+              className={`border px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm transition-colors whitespace-nowrap ${
+                light
+                  ? "border-charcoal text-charcoal hover:bg-charcoal hover:text-ambe-cream"
+                  : "border-white hover:bg-white hover:text-black"
+              }`}
+              style={{ color: light ? "#353535" : "white" }}
             >
               Download App
             </Link>
             
             {/* Divider */}
-            <div className="hidden lg:block h-8 w-px bg-white opacity-50"></div>
+            <div
+              className="hidden lg:block h-8 w-px opacity-50"
+              style={{ backgroundColor: dividerColor }}
+            />
             
-            <Link href="/login" className="text-xs lg:text-sm" style={{ color: 'white' }}>
+            <Link href="/login" className="text-xs lg:text-sm" style={{ color: navText }}>
               Sign in
             </Link>
           </div>
@@ -97,7 +112,7 @@ export default function Navigation() {
     >
       <div className="flex flex-col h-full">
           {/* Mobile menu header with close button */}
-          <div className="flex justify-between items-center px-6 py-4 border-b" style={{ borderColor: '#E5E5E5' }}>
+          <div className="flex justify-between items-center px-6 py-4 border-b" style={{ borderColor: '#F4F1EA' }}>
             <Link href="/" onClick={() => setMobileMenuOpen(false)}>
               <Image
                 src="/images/logos/ambe_logo.png"

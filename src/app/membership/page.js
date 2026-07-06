@@ -384,13 +384,13 @@ export default function Membership() {
       </section>
 
       {/* No Surprises Section */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F1EA' }}>
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
           <div className="text-center">
             <div className={sectionTitleClasses + " mb-6 sm:mb-8 text-2xl sm:text-3xl md:text-4xl"}>
               No Surprises. Just Results
             </div>
-            <p className="text-base sm:text-lg px-4 sm:px-8 md:px-0" style={{ color: '#535353' }}>
+            <p className="text-base sm:text-lg px-4 sm:px-8 md:px-0" style={{ color: '#353535' }}>
               Most wellness programs leave you with costly supplements and little support. We include everything you need so you can focus on feeling your best.
             </p>
           </div>
@@ -420,7 +420,7 @@ export default function Membership() {
                   <div className="text-xl sm:text-2xl font-medium" style={{ color: '#353535' }}>
                     $50 A Month
                   </div>
-                  <p className="text-sm mt-2" style={{ color: '#535353' }}>
+                  <p className="text-sm mt-2" style={{ color: '#353535' }}>
                     3-month minimum commitment.
                   </p>
                 </div>
@@ -431,49 +431,49 @@ export default function Membership() {
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>One-hour video call monthly</span>
+                    <span style={{ color: '#353535' }}>One-hour video call monthly</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Unlimited text</span>
+                    <span style={{ color: '#353535' }}>Unlimited text</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Personalized protocols</span>
+                    <span style={{ color: '#353535' }}>Personalized protocols</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>All recommended remedies included</span>
+                    <span style={{ color: '#353535' }}>All recommended remedies included</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Bath, body, food, and tea products</span>
+                    <span style={{ color: '#353535' }}>Bath, body, food, and tea products</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>20%+ discount on additional products</span>
+                    <span style={{ color: '#353535' }}>20%+ discount on additional products</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Pay As You Like */}
+            {/* Right Column - Pay as you can */}
             <div className="w-full lg:flex-1">
-              <div className="mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl text-center" style={{ color: '#353535' }}>
-                Pay As You Like
+              <div className="mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl text-center font-heading" style={{ color: '#353535' }}>
+                Pay as you can
               </div>
 
-              {/* Pay As You Like Card - Duplicated from Membership */}
+              {/* Pay as you can card */}
               <div
                 className="rounded-2xl mb-8 pt-4 sm:pt-6 max-w-md mx-auto lg:max-w-none"
                 style={{ backgroundColor: 'white' }}
@@ -495,37 +495,37 @@ export default function Membership() {
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Personalized protocols</span>
+                    <span style={{ color: '#353535' }}>Personalized protocols</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Recommended remedies, not all included</span>
+                    <span style={{ color: '#353535' }}>Recommended remedies, not all included</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Bath, body, food, and tea products</span>
+                    <span style={{ color: '#353535' }}>Bath, body, food, and tea products</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Book individual consultations</span>
+                    <span style={{ color: '#353535' }}>Book individual consultations</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>No minimum commitment</span>
+                    <span style={{ color: '#353535' }}>No minimum commitment</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FFD3AC' }}>
                       <span className="text-[10px] font-black" style={{ color: 'white' }}>✓</span>
                     </div>
-                    <span style={{ color: '#535353' }}>Supplements purchased separately</span>
+                    <span style={{ color: '#353535' }}>Supplements purchased separately</span>
                   </div>
                 </div>
               </div>
@@ -561,7 +561,7 @@ export default function Membership() {
                 <span className="text-sm" style={{ color: '#353535' }}>1 hr/month included</span>
               </div>
               <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
+                <span style={{ color: '#353535' }}>X</span>
               </div>
             </div>
 
@@ -574,7 +574,7 @@ export default function Membership() {
                 <span style={{ color: '#353535' }}>✓</span>
               </div>
               <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
+                <span style={{ color: '#353535' }}>X</span>
               </div>
             </div>
 
@@ -587,7 +587,7 @@ export default function Membership() {
                 <span style={{ color: '#353535' }}>✓</span>
               </div>
               <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
+                <span style={{ color: '#353535' }}>X</span>
               </div>
             </div>
 
@@ -600,7 +600,7 @@ export default function Membership() {
                 <span style={{ color: '#353535' }}>$50</span>
               </div>
               <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span className="text-sm" style={{ color: '#535353' }}>$350-$1200/mo</span>
+                <span className="text-sm" style={{ color: '#353535' }}>$350-$1200/mo</span>
               </div>
             </div>
 
@@ -613,7 +613,7 @@ export default function Membership() {
                 <span style={{ color: '#353535' }}>20%+ off</span>
               </div>
               <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>Full Retail Price</span>
+                <span style={{ color: '#353535' }}>Full Retail Price</span>
               </div>
             </div>
 
@@ -626,7 +626,7 @@ export default function Membership() {
                 <span style={{ color: '#353535' }}>Included</span>
               </div>
               <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                <span style={{ color: '#535353' }}>X</span>
+                <span style={{ color: '#353535' }}>X</span>
               </div>
             </div>
 
@@ -639,7 +639,7 @@ export default function Membership() {
                   <span style={{ color: '#353535' }}>✓</span>
                 </div>
                 <div className="h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                  <span style={{ color: '#535353' }}>X</span>
+                  <span style={{ color: '#353535' }}>X</span>
                 </div>
               </div>
             </div>
@@ -670,7 +670,7 @@ export default function Membership() {
                     <span className="text-xs text-center" style={{ color: '#353535' }}>1 hr/month included</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                    <span className="text-sm" style={{ color: '#535353' }}>X</span>
+                    <span className="text-sm" style={{ color: '#353535' }}>X</span>
                   </div>
                 </div>
 
@@ -683,7 +683,7 @@ export default function Membership() {
                     <span className="text-sm" style={{ color: '#353535' }}>✓</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                    <span className="text-sm" style={{ color: '#535353' }}>X</span>
+                    <span className="text-sm" style={{ color: '#353535' }}>X</span>
                   </div>
                 </div>
 
@@ -696,7 +696,7 @@ export default function Membership() {
                     <span className="text-sm" style={{ color: '#353535' }}>✓</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                    <span className="text-sm" style={{ color: '#535353' }}>X</span>
+                    <span className="text-sm" style={{ color: '#353535' }}>X</span>
                   </div>
                 </div>
 
@@ -709,7 +709,7 @@ export default function Membership() {
                     <span className="text-sm" style={{ color: '#353535' }}>$50</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center px-2" style={{ backgroundColor: 'white' }}>
-                    <span className="text-xs text-center" style={{ color: '#535353' }}>$350-$1200/mo</span>
+                    <span className="text-xs text-center" style={{ color: '#353535' }}>$350-$1200/mo</span>
                   </div>
                 </div>
 
@@ -722,7 +722,7 @@ export default function Membership() {
                     <span className="text-sm" style={{ color: '#353535' }}>20%+ off</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center px-2" style={{ backgroundColor: 'white' }}>
-                    <span className="text-xs text-center" style={{ color: '#535353' }}>Full Retail Price</span>
+                    <span className="text-xs text-center" style={{ color: '#353535' }}>Full Retail Price</span>
                   </div>
                 </div>
 
@@ -735,7 +735,7 @@ export default function Membership() {
                     <span className="text-sm" style={{ color: '#353535' }}>Included</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                    <span className="text-sm" style={{ color: '#535353' }}>X</span>
+                    <span className="text-sm" style={{ color: '#353535' }}>X</span>
                   </div>
                 </div>
 
@@ -748,7 +748,7 @@ export default function Membership() {
                     <span className="text-sm" style={{ color: '#353535' }}>✓</span>
                   </div>
                   <div className="h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'white' }}>
-                    <span className="text-sm" style={{ color: '#535353' }}>X</span>
+                    <span className="text-sm" style={{ color: '#353535' }}>X</span>
                   </div>
                 </div>
               </div>
@@ -758,7 +758,7 @@ export default function Membership() {
       </section>
 
       {/* Professional Comparison Section - Copied from Homepage */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#E5E5E5' }}>
+      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F1EA' }}>
         <div className="max-w-7xl mx-auto px-6 sm:px-8">
           {/* Desktop Grid View */}
           <div className="hidden lg:block overflow-x-auto">
@@ -785,13 +785,13 @@ export default function Membership() {
               <span className="text-base leading-none" style={{ color: '#353535' }}>Educational Pathway</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Varies widely (certificate to degree)</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Accredited BS/MS in Dietetics + 1200+ hrs supervised practice</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>5.5-year degree (BAMS) or equivalent, with internship in Ayurveda</span>
             </div>
 
             {/* Governing Body */}
@@ -799,143 +799,143 @@ export default function Membership() {
               <span className="text-base leading-none" style={{ color: '#353535' }}>Governing Body / License</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>None or limited (not legally protected)</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Licensed by CDR (Commission on Dietetic Registration)</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Licensed by Ayurvedic Medical Boards (India and some global orgs)</span>
             </div>
             {/* Focus of Training */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Focus of Training</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>General nutrition, food science</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>General nutrition, food science</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Clinical nutrition, disease-related dietary plans</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Clinical nutrition, disease-related dietary plans</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Mind-body-spirit nutrition, doshas, digestion, daily/life cycles (Dinacharya/Ritucharya)</span>
             </div>
             {/* Training in Herbs */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal to none</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Minimal to none</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal (only within supplement guidelines)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Minimal (only within supplement guidelines)</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Extensive—hundreds of hours in herbal pharmacology, rasa, virya, vipaka</span>
             </div>
             {/* View of Food */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>View of Food</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrients & calories</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Macronutrients & calories</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Macronutrient & micronutrient balance; pathology-based</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Macronutrient & micronutrient balance; pathology-based</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Food as medicine (Ahara), categorized by qualities, energetics, season, emotional effects</span>
             </div>
             {/* Personalization */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Personalization Approach</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Generic plans or macro-based diets</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Personalized to medical conditions</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Personalized to medical conditions</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Deeply individualized based on prakriti, vikriti, agni, and mental/emotional state</span>
             </div>
             {/* Understanding Digestion */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Understanding of Digestion</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Caloric intake, GI health (basic)</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Detailed GI pathologies, fiber, enzyme responses</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Detailed GI pathologies, fiber, enzyme responses</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Agni theory, ama (toxicity), 13 types of digestive fire, subtle body digestion</span>
             </div>
             {/* Mind-Body Integration */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Mind-Body Integration</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Rarely addressed</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Rarely addressed</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Minimal integration</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Minimal integration</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Central to diagnosis and treatment—mental gunas, emotional causation of imbalance</span>
             </div>
             {/* Spiritual Lens */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Not included</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Not included</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Not included</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Rooted in Vedic philosophy, karma, and ethics; food impacts consciousness</span>
             </div>
             {/* Treatment Modalities */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Treatment Modalities</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Diet plans, calorie tracking</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Medical nutrition therapy</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Medical nutrition therapy</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Food therapy + herbs, lifestyle routines, detox (Panchakarma), breath, meditation, rituals</span>
             </div>
             {/* Scope of Practice */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Scope of Practice</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Wellness support</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Wellness support</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Disease prevention & management</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Disease prevention & management</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Holistic care across mental, physical, and spiritual domains</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Holistic care across mental, physical, and spiritual domains</span>
             </div>
             {/* Time-Tested Tradition */}
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
               <span className="text-base leading-none" style={{ color: '#353535' }}>Time-Tested Tradition</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Modern (~50-100 years of development)</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Modern (~50-100 years of development)</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Scientific framework from 20th century</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Scientific framework from 20th century</span>
             </div>
             <div className="h-14 border flex items-center px-4" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-              <span className="text-base leading-none" style={{ color: '#535353' }}>Over 5,000 years of lineage-tested protocols</span>
+              <span className="text-base leading-none" style={{ color: '#353535' }}>Over 5,000 years of lineage-tested protocols</span>
             </div>
           </div>
           </div>
@@ -1011,7 +1011,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Educational Pathway</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Varies widely (certificate to degree)</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Varies widely (certificate to degree)</span>
                     </div>
 
                     {/* Governing Body */}
@@ -1019,7 +1019,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Governing Body / License</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>None or limited (not legally protected)</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>None or limited (not legally protected)</span>
                     </div>
 
                     {/* Focus of Training */}
@@ -1027,7 +1027,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Focus of Training</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>General nutrition, food science</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>General nutrition, food science</span>
                     </div>
 
                     {/* Training in Herbs */}
@@ -1035,7 +1035,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Training in Herbs & Botanicals</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Minimal to none</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Minimal to none</span>
                     </div>
 
                     {/* View of Food */}
@@ -1043,7 +1043,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>View of Food</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Macronutrients & calories</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Macronutrients & calories</span>
                     </div>
 
                     {/* Personalization */}
@@ -1051,7 +1051,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Personalization Approach</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Generic plans or macro-based diets</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Generic plans or macro-based diets</span>
                     </div>
 
                     {/* Understanding Digestion */}
@@ -1059,7 +1059,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Understanding of Digestion</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Caloric intake, GI health (basic)</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Caloric intake, GI health (basic)</span>
                     </div>
 
                     {/* Mind-Body Integration */}
@@ -1067,7 +1067,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Mind-Body Integration</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Rarely addressed</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Rarely addressed</span>
                     </div>
 
                     {/* Spiritual Lens */}
@@ -1075,7 +1075,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Spiritual/Ethical Lens</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Not included</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Not included</span>
                     </div>
 
                     {/* Treatment Modalities */}
@@ -1083,7 +1083,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Treatment Modalities</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Diet plans, calorie tracking</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Diet plans, calorie tracking</span>
                     </div>
 
                     {/* Scope of Practice */}
@@ -1091,7 +1091,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Scope of Practice</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Wellness support</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Wellness support</span>
                     </div>
 
                     {/* Time-Tested Tradition */}
@@ -1099,7 +1099,7 @@ export default function Membership() {
                       <span className="text-sm leading-tight" style={{ color: '#353535' }}>Time-Tested Tradition</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Modern (~50-100 years)</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Modern (~50-100 years)</span>
                     </div>
                   </div>
                 </div>
@@ -1117,98 +1117,98 @@ export default function Membership() {
 
                     {/* Educational Pathway */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Accredited BS/MS + 1200+ hrs practice</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Accredited BS/MS + 1200+ hrs practice</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>5.5-year BAMS degree</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>5.5-year BAMS degree</span>
                     </div>
 
                     {/* Governing Body */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Licensed by CDR</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Licensed by CDR</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Ayurvedic Medical Boards</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Ayurvedic Medical Boards</span>
                     </div>
 
                     {/* Focus of Training */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Clinical nutrition, disease plans</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Clinical nutrition, disease plans</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Mind-body-spirit, doshas</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Mind-body-spirit, doshas</span>
                     </div>
 
                     {/* Training in Herbs */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Minimal (supplements only)</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Minimal (supplements only)</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Extensive herbal training</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Extensive herbal training</span>
                     </div>
 
                     {/* View of Food */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Macro & micronutrients</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Macro & micronutrients</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Food as medicine (Ahara)</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Food as medicine (Ahara)</span>
                     </div>
 
                     {/* Personalization */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Medical conditions based</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Medical conditions based</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#F4F4F4', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Prakriti, vikriti, agni based</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Prakriti, vikriti, agni based</span>
                     </div>
 
                     {/* Understanding Digestion */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>GI pathologies, enzymes</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>GI pathologies, enzymes</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Agni theory, 13 digestive fires</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Agni theory, 13 digestive fires</span>
                     </div>
 
                     {/* Mind-Body Integration */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Minimal integration</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Minimal integration</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Central to treatment</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Central to treatment</span>
                     </div>
 
                     {/* Spiritual Lens */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Not included</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Not included</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Vedic philosophy, karma</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Vedic philosophy, karma</span>
                     </div>
 
                     {/* Treatment Modalities */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Medical nutrition therapy</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Medical nutrition therapy</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Food, herbs, lifestyle, detox</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Food, herbs, lifestyle, detox</span>
                     </div>
 
                     {/* Scope of Practice */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Disease prevention/mgmt</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Disease prevention/mgmt</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>Holistic care all domains</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>Holistic care all domains</span>
                     </div>
 
                     {/* Time-Tested Tradition */}
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>20th century framework</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>20th century framework</span>
                     </div>
                     <div className="h-14 border flex items-center px-2" style={{ backgroundColor: '#EDEDED', borderColor: '#F5B880' }}>
-                      <span className="text-sm leading-tight" style={{ color: '#535353' }}>5,000+ years lineage</span>
+                      <span className="text-sm leading-tight" style={{ color: '#353535' }}>5,000+ years lineage</span>
                     </div>
                   </div>
                 </div>
@@ -1266,11 +1266,11 @@ export default function Membership() {
                 <div className={sectionTitleClasses + " mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl"}>
                   Ready to Feel Your Best?
                 </div>
-                <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8" style={{ color: '#535353' }}>
+                <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8" style={{ color: '#353535' }}>
                   Join the Ambe Membership for personalized, all-inclusive care.
                 </p>
                 <Button href={CONSULT_HREF}>
-                  BOOK NOW - PAY AS YOU LIKE
+                  BOOK NOW - PAY AS YOU CAN
                 </Button>
               </div>
             </div>

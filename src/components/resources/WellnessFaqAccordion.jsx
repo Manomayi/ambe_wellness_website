@@ -13,7 +13,7 @@ const FAQ_ITEMS = [
     category: "Getting Started",
     question: "How do I get started?",
     answer:
-      "Book a free consult, complete your wellness intake, and get matched with an integrative doctor. From there, you can choose a membership plan or pay as you like for individual consultations.",
+      "Book a free consult, complete your wellness intake, and get matched with an integrative doctor. From there, you can choose a membership plan or pay as you can for individual consultations.",
   },
   {
     category: "Plans & Pricing",
@@ -23,9 +23,9 @@ const FAQ_ITEMS = [
   },
   {
     category: "Plans & Pricing",
-    question: "What is Pay As You Like?",
+    question: "What is Pay as you can?",
     answer:
-      "Pay As You Like lets you book individual consultations without a monthly membership. There is no minimum commitment, and supplements are purchased separately.",
+      "Pay as you can lets you book individual consultations without a monthly membership. There is no minimum commitment, and supplements are purchased separately.",
   },
   {
     category: "Products & Remedies",
@@ -99,11 +99,11 @@ export default function WellnessFaqAccordion() {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#E5E5E5" }}>
+    <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
       <div className="max-w-3xl mx-auto px-6 sm:px-8">
         <div
-          className="text-2xl sm:text-3xl md:text-4xl text-center mb-8 sm:mb-10"
-          style={{ color: "#353535", fontFamily: "Richmond" }}
+          className="font-heading text-2xl sm:text-3xl md:text-4xl mb-8 sm:mb-10 text-center"
+          style={{ color: "#353535" }}
         >
           Q&amp;A
         </div>
