@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { CONTACT_EMAIL } from "@/lib/site-config";
 
 const NAVIGATE_LINKS = [
@@ -53,12 +54,15 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 sm:px-8 py-14 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 mb-12">
           <div className="sm:col-span-2 lg:col-span-1">
-            <p
-              className="font-heading !text-[2rem] sm:!text-[2.25rem] !text-ambe-gold !font-normal tracking-[0.04em] mb-4"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
-            >
-              AMBÉ
-            </p>
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/images/logos/ambe_logo.png"
+                alt="Ambé Wellness"
+                width={120}
+                height={40}
+                className="w-[120px] h-auto"
+              />
+            </Link>
             <p className="text-sm text-ambe-cream/70 leading-relaxed max-w-xs">
               Holistic tele-wellness. Real integrative doctors trained in modern
               science and traditional Vedic medicine. Wellness for Everyone.

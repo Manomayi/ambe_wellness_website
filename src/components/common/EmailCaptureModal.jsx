@@ -97,7 +97,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
             </div>
             <h2
               className="text-2xl sm:text-[28px] leading-tight font-medium mb-3 select-none"
-              style={{ fontFamily: "'Cormorant Garamond', serif", color: "#1a1a1a" }}
+              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1a1a1a" }}
             >
               Check your inbox!
             </h2>
@@ -112,14 +112,14 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
             {guideTitle ? (
               <h2
                 className="text-2xl sm:text-[28px] leading-tight font-medium mb-3 px-6 select-none"
-                style={{ fontFamily: "'Cormorant Garamond', serif", color: "#1a1a1a" }}
+                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1a1a1a" }}
               >
                 {guideTitle}
               </h2>
             ) : (
               <h2
                 className="text-2xl sm:text-[32px] leading-tight font-medium mb-3 px-2 select-none"
-                style={{ fontFamily: "'Cormorant Garamond', serif", color: "#1a1a1a" }}
+                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1a1a1a" }}
               >
                 <span style={{ color: "#C8996A" }}>8</span> Expert Guides.{" "}
                 <em className="italic" style={{ color: "#C8996A" }}>

@@ -14,11 +14,25 @@ import NutritionistTable from "@/components/common/NutritionistTable";
 import AppDownload from "@/components/common/AppDownload";
 import PricingCallout from "@/components/common/PricingCallout";
 import EmailCaptureAutoPrompt from "@/components/common/EmailCaptureAutoPrompt";
-import DoctorProfileFinePrint, { MedicalDirectorBadge } from "@/components/common/DoctorProfileFinePrint";
+import { MedicalDirectorBadge } from "@/components/common/DoctorProfileFinePrint";
 import DoctorProfileModal from "@/components/common/DoctorProfileModal";
 import { CONSULT_HREF } from "@/lib/site-config";
 
-// Carousel component for The Ambé Difference section 
+// Health categories shown in the "Trusted By" marquee carousel
+const healthCategories = [
+  { icon: "/images/icons/skin_hair.png", label: "Skin & Hair" },
+  { icon: "/images/icons/womens_health.png", label: "Women’s Health" },
+  { icon: "/images/icons/mens_health.png", label: "Men’s Health" },
+  { icon: "/images/icons/digestive_health.png", label: "Digestive Health" },
+  { icon: "/images/icons/musculoskeletal.png", label: "Musculoskeletal" },
+  { icon: "/images/icons/mental_health.png", label: "Mental Health" },
+  { icon: "/images/icons/longevity.png", label: "Longevity" },
+  { icon: "/images/icons/weight_mgmt.png", label: "Weight Management" },
+  { icon: "/images/icons/hormone_health.png", label: "Hormone Health" },
+  { icon: "/images/icons/wellness_guides.png", label: "Wellness Guides" },
+];
+
+// Carousel component for The Ambé Difference section
 function AmbeDifferenceCarousel() {
   const [currentItem, setCurrentItem] = React.useState(0);
   const carouselItems = [
@@ -273,137 +287,28 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
               {/* Icons Section */}
               <div className="mb-8 sm:mb-10 px-4">
-                {/* Desktop view - grid */}
-                <div className="hidden sm:grid grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
-                  {/* Skin & Hair */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/skin_hair.png"
-                        alt="Skin & Hair"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Skin & Hair</p>
-                  </Link>
-                  
-                  {/* Women's Health */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/womens_health.png"
-                        alt="Women's Health"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Women&apos;s Health</p>
-                  </Link>
-                  
-                  {/* Men's Health */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/mens_health.png"
-                        alt="Men's Health"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Men&apos;s Health</p>
-                  </Link>
-                  
-                  {/* Digestive Health */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/digestive_health.png"
-                        alt="Digestive Health"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Digestive Health</p>
-                  </Link>
-                  
-                  {/* Musculoskeletal */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/musculoskeletal.png"
-                        alt="Musculoskeletal"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Musculoskeletal</p>
-                  </Link>
-                  
-                  {/* Mental Health */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/mental_health.png"
-                        alt="Mental Health"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Mental Health</p>
-                  </Link>
-                  
-                  {/* Longevity */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/longevity.png"
-                        alt="Longevity"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Longevity</p>
-                  </Link>
-                  
-                  {/* Weight Management */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/weight_mgmt.png"
-                        alt="Weight Management"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Weight<br/>Management</p>
-                  </Link>
-                  
-                  {/* Hormone Health */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/hormone_health.png"
-                        alt="Hormone Health"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Hormone<br/>Health</p>
-                  </Link>
-                  
-                  {/* Wellness Guides */}
-                  <Link href="/membership" className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image
-                        src="/images/icons/wellness_guides.png"
-                        alt="Wellness Guides"
-                        fill
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-[11px] text-center text-charcoal leading-[0.9]">Wellness<br/>Guides</p>
-                  </Link>
+                {/* Desktop view - auto-scrolling marquee carousel */}
+                <div className="hidden sm:block overflow-hidden max-w-6xl mx-auto">
+                  <div className="flex w-max animate-marquee gap-4 md:gap-5">
+                    {[...healthCategories, ...healthCategories].map((cat, i) => (
+                      <Link
+                        key={`${cat.label}-${i}`}
+                        href="/membership"
+                        aria-hidden={i >= healthCategories.length ? true : undefined}
+                        className="flex-none bg-white rounded-full p-2 flex flex-col items-center justify-center w-24 h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform"
+                      >
+                        <div className="w-12 h-12 md:w-14 md:h-14 mb-1 relative">
+                          <Image
+                            src={cat.icon}
+                            alt={cat.label}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <p className="text-[11px] text-center text-charcoal leading-[0.9]">{cat.label}</p>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
                 
                 {/* Mobile view - scrollable with arrows */}
@@ -1431,8 +1336,6 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop View - Grid */}
           <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-8 sm:gap-y-12 md:gap-y-16">
-            {/* Left Column - Steps 1 & 2 */}
-            <div className="space-y-8 sm:space-y-12 md:space-y-16">
               {/* Step 1 - Book */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
                 <Image
@@ -1483,10 +1386,7 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-            </div>
 
-            {/* Right Column - Steps 3 & 4 */}
-            <div className="space-y-8 sm:space-y-12 md:space-y-16">
               {/* Step 3 - Get Care + Unlimited Text */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
                 <Image
@@ -1538,7 +1438,6 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-            </div>
           </div>
 
           {/* Mobile View - Carousel with Arrows */}
@@ -1932,9 +1831,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Doctor Profile Fine Print — identical for every practitioner */}
-          <DoctorProfileFinePrint className="mt-10 sm:mt-12 max-w-4xl mx-auto" />
-
           {/* Book Free Consult Button - Centered Below */}
           <div className="flex justify-center mt-12">
             <Button href={CONSULT_HREF} className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
@@ -1945,14 +1841,14 @@ export default function Home() {
       {/* Wellness Benefits Section — Areas of Care */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10">
+          {/* <div className="text-center mb-8 sm:mb-10">
             <div
               className={sectionTitleClasses + " text-2xl sm:text-3xl md:text-4xl"}
               style={{ color: "#353535" }}
             >
               Areas of Care
             </div>
-          </div>
+          </div> */}
           <div className="flex items-center justify-center">
             <div className="relative w-full" style={{ overflow: "hidden" }}>
               {/* Scrollable Container - fixed width to show exactly 3 items */}

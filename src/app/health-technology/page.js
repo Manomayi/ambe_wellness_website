@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 const ACCENT = "#C8996A";
-const SERIF = "'Cormorant Garamond', serif";
+const SERIF = "var(--font-cormorant), 'Cormorant Garamond', serif";
 
 const STATS = [
   { value: "NASA", label: "Agency-backed research" },
@@ -133,7 +133,7 @@ export default function HealthTechnologyPage() {
         <Kicker>Next-Generation Systemic Health Technology</Kicker>
         <h1
           className="text-4xl sm:text-5xl md:text-6xl leading-tight mb-6 max-w-3xl"
-          style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 500 }}
+          style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
         >
           The science that makes ancient wisdom measurable.
         </h1>
@@ -149,7 +149,7 @@ export default function HealthTechnologyPage() {
             <div key={s.label}>
               <div
                 className="text-3xl sm:text-4xl mb-1"
-                style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 600 }}
+                style={{ fontFamily: SERIF, color: "#353535", fontWeight: 600 }}
               >
                 {s.value}
               </div>
@@ -164,13 +164,13 @@ export default function HealthTechnologyPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <Link
             href="#work-with-us"
-            className="inline-block text-center px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase transition-all duration-200 bg-[#FFD3AC] text-[#2E2E2E] hover:bg-[#2E2E2E] hover:text-white"
+            className="inline-block text-center px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase transition-all duration-200 bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white"
           >
             Request Information
           </Link>
           <Link
             href="#work-with-us"
-            className="inline-block text-center px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase transition-all duration-200 border border-[#2E2E2E] text-[#2E2E2E] hover:bg-[#2E2E2E] hover:text-white"
+            className="inline-block text-center px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase transition-all duration-200 border border-[#353535] text-[#353535] hover:bg-[#353535] hover:text-white"
           >
             Partnership Inquiry
           </Link>
@@ -200,7 +200,7 @@ export default function HealthTechnologyPage() {
         <Kicker center>Five Modalities</Kicker>
         <h2
           className="text-3xl sm:text-4xl md:text-5xl text-center mb-4"
-          style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 500 }}
+          style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
         >
           The technologies behind the results
         </h2>
@@ -222,7 +222,7 @@ export default function HealthTechnologyPage() {
               {/* Tagline — faint serif italic */}
               <div
                 className="text-xl sm:text-2xl italic leading-snug mb-8"
-                style={{ fontFamily: SERIF, color: "#D8D2C8" }}
+                style={{ fontFamily: SERIF, color: "#F4F1EA" }}
               >
                 {m.tagline[0]}
                 <br />
@@ -237,11 +237,11 @@ export default function HealthTechnologyPage() {
               </div>
               <h3
                 className="text-2xl sm:text-3xl md:text-4xl mb-3"
-                style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 500 }}
+                style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
               >
                 {m.title}
               </h3>
-              <div className="text-sm font-semibold mb-5" style={{ color: "#2E2E2E" }}>
+              <div className="text-sm font-semibold mb-5" style={{ color: "#353535" }}>
                 {m.label}
               </div>
               <p className="text-base leading-relaxed mb-8 max-w-3xl" style={{ color: "#6B6B6B" }}>
@@ -257,7 +257,7 @@ export default function HealthTechnologyPage() {
                   ✦
                 </span>
                 <p className="text-sm leading-relaxed" style={{ color: "#6B6B6B" }}>
-                  <span className="font-semibold" style={{ color: "#2E2E2E" }}>
+                  <span className="font-semibold" style={{ color: "#353535" }}>
                     {m.calloutLead}
                   </span>{" "}
                   {m.calloutBody}
@@ -273,7 +273,7 @@ export default function HealthTechnologyPage() {
         <Kicker center>Collectively</Kicker>
         <h2
           className="text-3xl sm:text-4xl md:text-5xl text-center mb-4 max-w-3xl mx-auto"
-          style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 500 }}
+          style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
         >
           Next-generation technology, guided by ancient intelligence.
         </h2>
@@ -299,7 +299,7 @@ export default function HealthTechnologyPage() {
               </div>
               <h3
                 className="text-xl mb-2"
-                style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 600 }}
+                style={{ fontFamily: SERIF, color: "#353535", fontWeight: 600 }}
               >
                 {s.name}
               </h3>
@@ -316,7 +316,7 @@ export default function HealthTechnologyPage() {
         <Kicker center>Work With Us</Kicker>
         <h2
           className="text-3xl sm:text-4xl md:text-5xl text-center mb-4"
-          style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 500 }}
+          style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
         >
           Request Information or Partnership Inquiry
         </h2>

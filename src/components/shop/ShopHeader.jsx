@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { CONSULT_HREF } from "@/lib/site-config";
 
 const NAV_LINKS = [
@@ -13,8 +14,14 @@ export default function ShopHeader() {
   return (
     <header className="shop-header">
       <div className="shop-nav-inner">
-        <Link href="/" className="shop-logo-word">
-          AMBE<span className="shop-logo-leaf" />
+        <Link href="/" className="shop-logo">
+          <Image
+            src="/images/logos/ambe_logo.png"
+            alt="Ambé Wellness"
+            width={110}
+            height={36}
+            priority
+          />
         </Link>
 
         <nav className="shop-nav-links">

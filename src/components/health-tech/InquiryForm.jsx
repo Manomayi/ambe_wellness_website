@@ -30,7 +30,7 @@ export default function InquiryForm() {
         </div>
         <h3
           className="text-2xl mb-2"
-          style={{ fontFamily: "'Cormorant Garamond', serif", color: "#2E2E2E", fontWeight: 600 }}
+          style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#353535", fontWeight: 600 }}
         >
           Thank you — your inquiry has been received.
         </h3>
@@ -41,8 +41,8 @@ export default function InquiryForm() {
     );
   }
 
-  const labelStyle = { color: "#2E2E2E" };
-  const fieldStyle = { borderColor: "#E2DDD3", color: "#2E2E2E" };
+  const labelStyle = { color: "#353535" };
+  const fieldStyle = { borderColor: "#E2DDD3", color: "#353535" };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -138,7 +138,7 @@ export default function InquiryForm() {
       <div className="text-center pt-2">
         <button
           type="submit"
-          className="inline-block px-10 py-3 rounded-full text-xs font-medium tracking-[0.18em] uppercase transition-all duration-200 bg-[#FFD3AC] text-[#2E2E2E] hover:bg-[#2E2E2E] hover:text-white"
+          className="inline-block px-10 py-3 rounded-full text-xs font-medium tracking-[0.18em] uppercase transition-all duration-200 bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white"
         >
           Submit Inquiry
         </button>

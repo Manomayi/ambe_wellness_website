@@ -10,7 +10,7 @@
 
   background: #fff;
   color: var(--near-black);
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-weight: 300;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -31,12 +31,12 @@
 .aht-page h2,
 .aht-page h3,
 .aht-page h4 {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-weight: 500;
 }
 
 .aht-eyebrow {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 2.5px;
@@ -52,7 +52,7 @@
   font-size: 13px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   cursor: pointer;
   border: none;
 }
@@ -181,7 +181,7 @@
 }
 
 .aht-hero-stat-num {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 500;
   color: var(--gold);
@@ -205,7 +205,7 @@
 }
 
 .aht-intro-band p em {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-style: italic;
   color: var(--gold);
   font-size: 20px;
@@ -276,7 +276,7 @@
 .aht-mod-icon {
   position: relative;
   z-index: 2;
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-style: italic;
   font-size: 18px;
   color: #fff;
@@ -293,7 +293,7 @@
 }
 
 .aht-mod-num {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -428,7 +428,7 @@
 }
 
 .aht-coll-title {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-size: 20px;
   color: #fff;
   margin-bottom: 8px;
@@ -492,7 +492,7 @@
   border: 1px solid var(--hairline);
   border-radius: 10px;
   padding: 13px 16px;
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 14px;
   color: var(--near-black);
   background: #fff;

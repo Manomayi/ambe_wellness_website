@@ -10,7 +10,7 @@
 
   background: var(--grey-bg);
   color: var(--near-black);
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-weight: 300;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -25,12 +25,12 @@
 .shop-page h1,
 .shop-page h2,
 .shop-page h3 {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-weight: 500;
 }
 
 .shop-eyebrow {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 2.5px;
@@ -46,7 +46,7 @@
   font-size: 12.5px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   cursor: pointer;
   border: none;
   text-decoration: none;
@@ -71,7 +71,7 @@
 }
 
 .shop-logo-word {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-weight: 700;
   font-size: 24px;
   letter-spacing: -0.5px;
@@ -209,7 +209,7 @@
   border: 1px solid var(--hairline);
   background: #fff;
   color: var(--charcoal);
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
 }
 
 .shop-filter-pill.active {
@@ -237,7 +237,7 @@
   border-radius: 8px;
   padding: 8px 32px 8px 12px;
   min-width: 148px;
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 13px;
   color: var(--charcoal);
   background: #fff;
@@ -354,14 +354,14 @@
 }
 
 .shop-product-name {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-size: 20px;
   line-height: 1.2;
   color: var(--near-black);
 }
 
 .shop-product-meta {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 12px;
   color: #5c5852;
   margin-top: 4px;
@@ -370,7 +370,7 @@
 }
 
 .shop-product-desc {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 13.5px;
   font-weight: 400;
   color: #3d3a36;
@@ -385,7 +385,7 @@
 }
 
 .shop-product-dshea {
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-size: 10.5px;
   color: #6b6560;
   margin-top: 10px;
@@ -430,7 +430,7 @@
 }
 
 .shop-price-now {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-size: 24px;
   font-weight: 600;
   color: var(--near-black);
@@ -450,7 +450,7 @@
   border: none;
   border-radius: 100px;
   padding: 12px 22px;
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.8px;
@@ -537,7 +537,7 @@
 }
 
 .shop-sheet-title {
-  font-family: "Cormorant Garamond", serif;
+  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
   font-size: 26px;
   line-height: 1.2;
   color: var(--near-black);
@@ -617,7 +617,7 @@
   border: none;
   border-radius: 100px;
   padding: 14px 24px;
-  font-family: "Jost", sans-serif;
+  font-family: var(--font-jost), "Jost", sans-serif;
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.8px;

@@ -34,11 +34,13 @@ export default function DoctorProfileFinePrint({ className = "" }) {
       <p className="text-sm leading-relaxed" style={{ color: "#535353" }}>
         This practitioner holds a BAMS degree (Bachelor of Ayurvedic Medicine
         and Surgery) from an accredited institution recognized by India&apos;s
-        Central Council of Indian Medicine (CCIM). Ayurveda is not a
-        state-licensed medical practice in the United States. Consultations
-        through Ambé constitute traditional Ayurvedic wellness education and
-        support — not the diagnosis or treatment of disease under US law. For
-        medical concerns, please consult a licensed physician.
+        Central Council of Indian Medicine (CCIM), and has also completed
+        allopathic (Western) medical training. This training is not equivalent
+        to, and does not confer, medical licensure in the United States.
+        Ayurveda is not a state-licensed medical practice in the United States.
+        Consultations through Ambé constitute traditional Ayurvedic wellness
+        education and support — not the diagnosis or treatment of disease under
+        US law. For medical concerns, please consult a licensed physician.
       </p>
     </div>
   );

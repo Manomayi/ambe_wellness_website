@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 const ACCENT = "#C8996A";
-const SERIF = "'Cormorant Garamond', serif";
+const SERIF = "var(--font-cormorant), 'Cormorant Garamond', serif";
 
 // Confirmation page shown after a successful Stripe Checkout.
 export default function ShopSuccessPage() {
@@ -23,7 +23,7 @@ export default function ShopSuccessPage() {
             className="w-16 h-16 mx-auto mb-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: "#FFD3AC" }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E2E2E" strokeWidth="2.5">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2.5">
               <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
@@ -36,7 +36,7 @@ export default function ShopSuccessPage() {
           </div>
           <h1
             className="text-4xl sm:text-5xl mb-5"
-            style={{ fontFamily: SERIF, color: "#2E2E2E", fontWeight: 500 }}
+            style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
           >
             Thank you for your order
           </h1>
@@ -48,13 +48,13 @@ export default function ShopSuccessPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/shop"
-              className="px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase text-center transition-all duration-200 bg-[#FFD3AC] text-[#2E2E2E] hover:bg-[#2E2E2E] hover:text-white"
+              className="px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase text-center transition-all duration-200 bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white"
             >
               Continue Shopping
             </Link>
             <Link
               href="/membership"
-              className="px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase text-center transition-all duration-200 border border-[#2E2E2E] text-[#2E2E2E] hover:bg-[#2E2E2E] hover:text-white"
+              className="px-8 py-3 rounded-full text-xs sm:text-sm font-medium tracking-[0.18em] uppercase text-center transition-all duration-200 border border-[#353535] text-[#353535] hover:bg-[#353535] hover:text-white"
             >
               Book Free Consult
             </Link>
