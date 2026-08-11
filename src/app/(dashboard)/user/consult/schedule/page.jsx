@@ -225,15 +225,24 @@ export default function ScheduleConsultationPage() {
       console.error('Error scheduling appointment:', error);
       
       let errorMessage = 'Failed to schedule appointment. Please try again.';
-      
-      if (error.message?.includes('already-exists')) {
-        if (error.message.includes('time slot')) {
+
+      // Callable errors carry the code on error.code ("functions/already-exists"),
+      // not in the message — checking only the message silently fell through to
+      // the generic error for both of these cases.
+      const isAlreadyExists =
+        error.code?.includes('already-exists') ||
+        error.message?.includes('already-exists');
+
+      if (isAlreadyExists) {
+        if (error.message?.includes('time slot')) {
           errorMessage = 'This time slot is already booked. Please select another time.';
-        } else if (error.message.includes('upcoming appointment')) {
-          errorMessage = 'You already have an upcoming appointment scheduled.';
+        } else if (error.message?.includes('upcoming appointment')) {
+          errorMessage =
+            'You already have an upcoming appointment scheduled. ' +
+            'Please edit or reschedule it from the Consult page.';
         }
       }
-      
+
       alert(errorMessage);
     } finally {
       setScheduling(false);

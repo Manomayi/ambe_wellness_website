@@ -101,6 +101,10 @@ function mapProduct(docId, data, parentCategory) {
     rating: parseRating(
       data.rating ?? data.average_rating ?? data.avg_rating ?? data.product_rating
     ),
+    reviewCount: Number(data.review_count) || 0,
+    // Units sold, maintained by the incrementProductSalesOnPurchase Cloud
+    // Function. Drives the Best Sellers sort on both web and mobile.
+    salesCount: Number(data.sales_count) || 0,
     stripePriceId: data.stripe_price_id || data.stripePriceId || null,
     packSize,
     packs,
@@ -276,8 +280,23 @@ export function sortShopProducts(products, sortOption) {
   const indexed = products.map((product, index) => ({ product, index }));
 
   if (sortOption === "Popularity") {
+    // "Best Sellers" — units sold first, matching the mobile app's ordering so
+    // the same catalogue reads the same on both surfaces. Rating and review
+    // count are tie-breakers only, so a single 5-star review cannot outrank a
+    // genuine best seller.
     return [...indexed]
-      .sort((a, b) => (b.product.rating ?? 0) - (a.product.rating ?? 0))
+      .sort((a, b) => {
+        const bySales = (b.product.salesCount ?? 0) - (a.product.salesCount ?? 0);
+        if (bySales !== 0) return bySales;
+
+        const byRating = (b.product.rating ?? 0) - (a.product.rating ?? 0);
+        if (byRating !== 0) return byRating;
+
+        const byReviews = (b.product.reviewCount ?? 0) - (a.product.reviewCount ?? 0);
+        if (byReviews !== 0) return byReviews;
+
+        return a.product.name.localeCompare(b.product.name);
+      })
       .map(({ product }) => product);
   }
 
