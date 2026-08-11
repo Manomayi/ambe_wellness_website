@@ -1,21 +1,26 @@
 "use client";
 import React from "react";
 import { createPortal } from "react-dom";
-import { isDisclaimerSatisfied, acknowledgeDisclaimer } from "@/lib/consent";
+import { usePathname } from "next/navigation";
+import { isDisclaimerPending, acknowledgeDisclaimer } from "@/lib/consent";
 
-// Ayurveda Disclaimer Modal (item 68): full-screen overlay shown once on first
-// visit. The continue button stays disabled until the checkbox is checked.
-// Acknowledgement is remembered in localStorage (ambe_disclaimer_v1) and gates
-// the cookie banner + 8-second email modal.
+// Ayurveda Disclaimer Modal (item 68): full-screen overlay shown once, when the
+// visitor enters the booking flow — not on a general first visit, so browsing
+// the marketing site isn't gated by a medical acknowledgement. The continue
+// button stays disabled until the checkbox is checked, and acknowledgement is
+// remembered in localStorage (ambe_disclaimer_v1).
 export default function AyurvedaDisclaimerModal() {
+  const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [agreed, setAgreed] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
-    if (!isDisclaimerSatisfied()) setOpen(true);
-  }, []);
+    // Re-checked per navigation: the visitor may land on the marketing site and
+    // only later click through into booking.
+    setOpen(isDisclaimerPending(pathname));
+  }, [pathname]);
 
   // Lock body scroll while the overlay is up.
   React.useEffect(() => {

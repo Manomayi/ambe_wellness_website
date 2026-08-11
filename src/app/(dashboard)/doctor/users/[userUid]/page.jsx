@@ -10,6 +10,8 @@ import {
   query,
   orderBy,
   getDocs,
+  doc,
+  getDoc,
 } from 'firebase/firestore';
 import { ChevronRightIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
@@ -21,6 +23,7 @@ export default function UserCompleteProfilePage() {
 
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async user => {
@@ -35,10 +38,14 @@ export default function UserCompleteProfilePage() {
           collection(db, 'users', userUid, 'appointments_history'),
           orderBy('time', 'desc')
         );
-        const snap = await getDocs(hist);
+        const [snap, profileSnap] = await Promise.all([
+          getDocs(hist),
+          getDoc(doc(db, 'users', userUid)),
+        ]);
         setAppointments(
-          snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+          snap.docs.map(d => ({ id: d.id, ...d.data() }))
         );
+        setProfile(profileSnap.exists() ? profileSnap.data() : null);
       } catch (e) {
         console.error('Error loading history:', e);
       } finally {
@@ -72,6 +79,23 @@ export default function UserCompleteProfilePage() {
         <h1 className="text-2xl font-semibold text-gray-800">
           {userName}
         </h1>
+      </div>
+
+      {/* Patient details — sex at birth also decides which questions the
+          extended questionnaire asks, so it's needed to read the answers
+          correctly. "Not provided" means every question was shown. */}
+      <div className="space-y-2">
+        <p className="text-sm uppercase font-semibold text-gray-600">
+          Patient Details
+        </p>
+        <div className="bg-white shadow rounded-lg p-4">
+          <p className="text-xs uppercase tracking-wide text-gray-500">
+            Sex at Birth
+          </p>
+          <p className="font-medium text-gray-800">
+            {profile?.genderAtBirth?.trim() || 'Not provided'}
+          </p>
+        </div>
       </div>
 
       {/* Questionnaire Section */}

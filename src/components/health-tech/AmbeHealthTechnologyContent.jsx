@@ -187,7 +187,7 @@ export default function AmbeHealthTechnologyContent() {
                 The science of feeling well
               </span>{" "}
               <span className="aht-hero-accent">
-                has never been more advanced.
+                has advanced.
               </span>
             </h1>
             <p className="aht-hero-sub">

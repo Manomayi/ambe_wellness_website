@@ -29,6 +29,19 @@ export default function Membership() {
             <div className="w-full flex justify-center">
               <div className="w-full max-w-7xl px-6 sm:px-8 lg:px-16">
                 <div className="max-w-3xl">
+                  {/* Membership is not open yet — mirrors the "Coming Soon"
+                      treatment on the mobile app's membership screen. */}
+                  <div
+                    className="inline-flex items-center justify-center mb-5 px-7 py-2.5 rounded-full border-2 text-sm font-extrabold tracking-wide uppercase"
+                    style={{
+                      borderColor: '#FFD3AC',
+                      color: '#FFD3AC',
+                      backgroundColor: 'rgba(255, 211, 172, 0.08)',
+                    }}
+                  >
+                    Coming Soon
+                  </div>
+
                   <div className={bannerTitleClasses + " mb-4 leading-tight"} style={{ color: 'white' }}>
                     Your Wellness. Fully Covered.
                   </div>

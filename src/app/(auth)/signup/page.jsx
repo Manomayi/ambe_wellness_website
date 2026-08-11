@@ -24,6 +24,9 @@ export default function SignUpPage() {
     password: '',
     confirmPassword: '',
     phone: '',
+    // Sex assigned at birth. Only 'Male' narrows the extended questionnaire;
+    // every other value — including blank — leaves all questions in place.
+    genderAtBirth: '',
     specialization: '',
     customSpecialization: '',
   });
@@ -150,12 +153,19 @@ export default function SignUpPage() {
 
       // Call cloud function to create user profile
       const createUser = httpsCallable(functions, 'createUser');
+      // createUser requires `password` and `role`; without them it rejects with
+      // "Name and role are required" and no Firestore profile is ever written,
+      // leaving an orphaned Auth account. `user_type` is kept for backwards
+      // compatibility with anything still reading it.
       const result = await createUser({
         uid: user.uid,
         email: formData.email,
+        password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
+        gender_at_birth: formData.genderAtBirth,
+        role: formData.userType,
         user_type: formData.userType,
         specialization: formData.specialization,
         customSpecialization: formData.customSpecialization,
@@ -251,6 +261,27 @@ export default function SignUpPage() {
                   )}
                 </div>
               </div>
+
+              {formData.userType !== 'doctor' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Sex at Birth <span className="font-normal text-gray-500">(optional)</span>
+                  </label>
+                  <select
+                    value={formData.genderAtBirth}
+                    onChange={(e) => updateFormData('genderAtBirth', e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Used only to skip health questions that do not apply to you.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium mb-1">Email</label>

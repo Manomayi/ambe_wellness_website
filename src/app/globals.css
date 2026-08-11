@@ -228,3 +228,12 @@ a:hover {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* The marquee now runs on touch too, where there is no hover to pause it.
+   Respect the OS "reduce motion" setting rather than moving content
+   indefinitely with no way to stop it. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}

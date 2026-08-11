@@ -1,17 +1,19 @@
 "use client";
 import React from "react";
+import { usePathname } from "next/navigation";
 import EmailCaptureModal from "@/components/common/EmailCaptureModal";
 import {
   DISCLAIMER_ACK_EVENT,
   EMAIL_SESSION_SHOWN_KEY,
-  isDisclaimerSatisfied,
+  isDisclaimerPending,
 } from "@/lib/consent";
 
-// Homepage auto-prompt: opens the email capture modal `delayMs` after the
-// Ayurveda Disclaimer is acknowledged, once per browser session. If the
-// disclaimer was acknowledged on a previous visit the timer starts on mount;
-// otherwise it waits for the acknowledgement event so the two never stack.
+// Homepage auto-prompt: opens the email capture modal `delayMs` after mount,
+// once per browser session. On a booking route — where the Ayurveda Disclaimer
+// takes over the screen — it waits for that acknowledgement first so the two
+// never stack.
 export default function EmailCaptureAutoPrompt({ delayMs = 8000 }) {
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -25,7 +27,7 @@ export default function EmailCaptureAutoPrompt({ delayMs = 8000 }) {
       }, delayMs);
     };
 
-    if (isDisclaimerSatisfied()) {
+    if (!isDisclaimerPending(pathname)) {
       startTimer();
       return () => clearTimeout(timer);
     }
@@ -36,7 +38,7 @@ export default function EmailCaptureAutoPrompt({ delayMs = 8000 }) {
       window.removeEventListener(DISCLAIMER_ACK_EVENT, onAck);
       clearTimeout(timer);
     };
-  }, [delayMs]);
+  }, [delayMs, pathname]);
 
   return <EmailCaptureModal open={open} onClose={() => setOpen(false)} />;
 }

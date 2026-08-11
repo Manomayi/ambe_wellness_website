@@ -1,29 +1,32 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   COOKIE_CONSENT_KEY,
   DISCLAIMER_ACK_EVENT,
-  isDisclaimerSatisfied,
+  isDisclaimerPending,
 } from "@/lib/consent";
 
 // Sitewide GDPR cookie banner: sticky bottom on first visit, hides once a
-// choice is made (remembered in localStorage). Shows only after the Ayurveda
-// Disclaimer Modal is satisfied so the two never stack on first visit.
+// choice is made (remembered in localStorage). It defers only while the
+// Ayurveda Disclaimer is actually on screen — on a booking route — so the two
+// never stack, while consent is still requested everywhere else on first visit.
 export default function CookieConsentBanner() {
+  const pathname = usePathname();
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
     if (localStorage.getItem(COOKIE_CONSENT_KEY)) return; // already chose
     const show = () => setVisible(true);
-    if (isDisclaimerSatisfied()) {
+    if (!isDisclaimerPending(pathname)) {
       show();
       return;
     }
-    // Wait for the disclaimer to be acknowledged, then appear.
+    // The disclaimer is up on this route — appear once it's acknowledged.
     window.addEventListener(DISCLAIMER_ACK_EVENT, show, { once: true });
     return () => window.removeEventListener(DISCLAIMER_ACK_EVENT, show);
-  }, []);
+  }, [pathname]);
 
   const choose = (choice) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, choice);
