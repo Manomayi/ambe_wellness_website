@@ -16,7 +16,7 @@ export async function POST(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
     return NextResponse.json(
-      // { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in the environment." },
+      { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in the environment." },
       { status: 500 }
     );
   }
@@ -33,9 +33,9 @@ export async function POST(request) {
   }
 
   const product = await getProductById(productId);
-  if (!product || !product.stripePriceId) {
+  if (!product) {
     return NextResponse.json(
-      { error: "Product not found or has no Stripe price." },
+      { error: "Product not found." },
       { status: 404 }
     );
   }
@@ -48,9 +48,32 @@ export async function POST(request) {
 
   try {
     const stripe = new Stripe(secretKey);
+
+    const hasExplicitStripePrice =
+      Boolean(product.stripePriceId) &&
+      !product.stripePriceId.includes("PLACEHOLDER");
+
+    const lineItem = hasExplicitStripePrice
+      ? { price: product.stripePriceId, quantity: 1 }
+      : {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: product.name || "Ayurvedic Product",
+              images:
+                product.image && product.image.startsWith("http")
+                  ? [product.image]
+                  : undefined,
+              description: product.description ? product.description.slice(0, 500) : undefined,
+            },
+            unit_amount: Math.round((product.price || 10) * 100),
+          },
+          quantity: 1,
+        };
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: [{ price: product.stripePriceId, quantity: 1 }],
+      line_items: [lineItem],
       mode: "payment",
       success_url: `${origin}/shop/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/shop`,
@@ -60,7 +83,7 @@ export async function POST(request) {
   } catch (err) {
     console.error("Stripe checkout error:", err);
     return NextResponse.json(
-      { error: "Could not start checkout. Please try again." },
+      { error: err.message || "Could not start checkout. Please try again." },
       { status: 502 }
     );
   }

@@ -84,57 +84,106 @@ const rows = [
   ],
 ];
 
-const BORDER = "1px solid #F5B880";
+const BORDER_COLOR = "#F5B880";
+const HEADER_BG = "#FFD3AC";
+
+// Sticky cells need `border-collapse: separate` — with `collapse`, browsers drop
+// the borders on stuck cells. Borders are applied per-side instead, with the
+// container carrying the top and left edge.
+const cellBorders = {
+  borderRight: `1px solid ${BORDER_COLOR}`,
+  borderBottom: `1px solid ${BORDER_COLOR}`,
+};
 
 export default function NutritionistTable() {
   return (
-    <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
-      <table
-        className="w-full min-w-[820px] border-collapse"
-        style={{ tableLayout: "fixed" }}
+    <>
+      <p className="sm:hidden text-xs mb-2 italic" style={{ color: "#7A736A" }}>
+        Scroll sideways to compare — the first column stays in view.
+      </p>
+
+      <div
+        className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0"
+        // Labelled and focusable so the scroll region is reachable by keyboard.
+        role="region"
+        aria-label="Comparison of nutritionist, registered dietitian and Ayurvedic practitioner training"
+        tabIndex={0}
       >
-        <colgroup>
-          <col style={{ width: "20%" }} />
-          <col style={{ width: "23%" }} />
-          <col style={{ width: "27%" }} />
-          <col style={{ width: "30%" }} />
-        </colgroup>
-        <thead>
-          <tr>
-            {headers.map((h) => (
-              <th
-                key={h}
-                className="text-left align-middle px-4 py-3 font-bold text-base sm:text-lg"
-                style={{ backgroundColor: "#FFD3AC", color: "#353535", border: BORDER }}
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, rowIndex) => (
-            <tr
-              key={row[0]}
-              style={{ backgroundColor: rowIndex % 2 === 0 ? "#FFFFFF" : "#F4F4F4" }}
-            >
-              {row.map((cell, colIndex) => (
-                <td
-                  key={colIndex}
-                  className="align-top px-4 py-3 text-sm sm:text-base leading-snug"
+        <table
+          className="w-full min-w-[760px]"
+          style={{
+            tableLayout: "fixed",
+            borderCollapse: "separate",
+            borderSpacing: 0,
+            borderTop: `1px solid ${BORDER_COLOR}`,
+            borderLeft: `1px solid ${BORDER_COLOR}`,
+          }}
+        >
+          <colgroup>
+            <col style={{ width: "22%" }} />
+            <col style={{ width: "23%" }} />
+            <col style={{ width: "26%" }} />
+            <col style={{ width: "29%" }} />
+          </colgroup>
+          <thead>
+            <tr>
+              {headers.map((header, colIndex) => (
+                <th
+                  key={header}
+                  scope="col"
+                  className="text-left align-bottom px-4 py-4 sm:px-5 font-bold text-[15px] sm:text-lg leading-tight"
                   style={{
-                    border: BORDER,
-                    color: colIndex === 0 ? "#353535" : "#535353",
-                    fontWeight: colIndex === 0 ? 600 : 400,
+                    ...cellBorders,
+                    backgroundColor: HEADER_BG,
+                    color: "#353535",
+                    // Header stays visible while reading down 12 rows; the first
+                    // header cell also pins left, so it sits above both.
+                    position: "sticky",
+                    top: 0,
+                    ...(colIndex === 0
+                      ? { left: 0, zIndex: 3 }
+                      : { zIndex: 2 }),
                   }}
                 >
-                  {cell}
-                </td>
+                  {header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => {
+              const rowBg = rowIndex % 2 === 0 ? "#FFFFFF" : "#F6F2EC";
+              return (
+                <tr key={row[0]}>
+                  {row.map((cell, colIndex) => {
+                    const isFeature = colIndex === 0;
+                    return (
+                      <td
+                        key={colIndex}
+                        scope={isFeature ? "row" : undefined}
+                        className="align-top px-4 py-4 sm:px-5 text-[13.5px] sm:text-[15px] leading-relaxed"
+                        style={{
+                          ...cellBorders,
+                          // Opaque background is required on the pinned column,
+                          // otherwise scrolled content shows through it.
+                          backgroundColor: rowBg,
+                          color: isFeature ? "#353535" : "#535353",
+                          fontWeight: isFeature ? 600 : 400,
+                          ...(isFeature
+                            ? { position: "sticky", left: 0, zIndex: 1 }
+                            : {}),
+                        }}
+                      >
+                        {cell}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
