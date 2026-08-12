@@ -104,7 +104,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
             <p className="text-sm sm:text-base leading-relaxed" style={{ color: "#535353" }}>
               {guideTitle
                 ? `“${guideTitle}” is on its way to ${email.trim()}.`
-                : `Your Ambé guide library is on its way to ${email.trim()}.`}
+                : `Your eight Ambé guides are on their way to ${email.trim()}.`}
             </p>
           </div>
         ) : (
@@ -133,8 +133,8 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
               style={{ color: "#535353" }}
             >
               {guideTitle
-                ? "Enter your email and we'll send this guide straight to your inbox."
-                : "Enter your email and we'll send the full Ambé guide library to your inbox."}
+                ? "Written by our integrative doctors — practical Ayurvedic guidance you can start using today. Tell us where to send it."
+                : "Clean body care, seasonal detox, anti-inflammatory eating, everyday herbs, and more — eight guides from our integrative doctors, rooted in traditional Ayurveda and written for modern life."}
             </p>
 
             <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3" noValidate>

@@ -135,7 +135,7 @@ export default function HealthTechnologyPage() {
           className="text-4xl sm:text-5xl md:text-6xl leading-tight mb-6 max-w-3xl"
           style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}
         >
-          The science that makes ancient wisdom measurable.
+          The science of feeling well has advanced.
         </h1>
         <p className="text-base sm:text-lg max-w-2xl mb-10 leading-relaxed" style={{ color: "#6B6B6B" }}>
           Ambé integrates five clinically validated health technologies into a

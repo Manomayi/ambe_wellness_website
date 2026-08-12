@@ -13,7 +13,6 @@ import ComparisonGrid from "@/components/common/ComparisonGrid";
 import BiomarkersAccordion from "@/components/common/BiomarkersAccordion";
 import NutritionistTable from "@/components/common/NutritionistTable";
 import AppDownload from "@/components/common/AppDownload";
-import PricingCallout from "@/components/common/PricingCallout";
 import EmailCaptureAutoPrompt from "@/components/common/EmailCaptureAutoPrompt";
 import { MedicalDirectorBadge } from "@/components/common/DoctorProfileFinePrint";
 import DoctorProfileModal from "@/components/common/DoctorProfileModal";
@@ -618,8 +617,11 @@ export default function Home() {
       <StatsBar />
 
       {/* Ayurveda Meets Epigenetics Section */}
-      <section className="py-16 sm:py-20 md:py-24" style={{ backgroundColor: "#F4F1EA" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 sm:py-20 md:py-24">
+        <VideoBackground />
+        {/* Semi-transparent black overlay keeps the white cards legible */}
+        <div className="absolute inset-0 bg-black/40 z-[1]"></div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-12">
             {/* Left Box */}
             <div className="flex-1 bg-white rounded-lg p-6 sm:p-10">
@@ -909,8 +911,8 @@ export default function Home() {
         style={{ backgroundColor: "#F4F1EA" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Desktop View - Grid */}
-          <div className="hidden sm:grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-8 sm:gap-y-12 md:gap-y-16">
+          {/* Responsive Steps Grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-10 sm:gap-y-12 md:gap-y-16">
               {/* Step 1 - Book */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
                 <Image
@@ -1014,204 +1016,8 @@ export default function Home() {
                 </div>
               </div>
           </div>
-
-          {/* Mobile View - Carousel with Arrows */}
-          <div className="sm:hidden">
-            <div className="flex items-center gap-1">
-              {/* Left Arrow */}
-              <button
-                onClick={() => {
-                  const currentIndex = parseInt(document.querySelector('.steps-dot-active')?.dataset?.index || '0');
-                  const newIndex = Math.max(0, currentIndex - 1);
-                  const offset = -newIndex * 100; // 100% width for each page
-
-                  // Update carousel
-                  const carousel = document.getElementById('steps-carousel');
-                  carousel.style.transform = `translateX(${offset}%)`;
-
-                  // Update dot colors
-                  const dots = document.querySelectorAll('.steps-dot');
-                  dots.forEach((dot, i) => {
-                    dot.classList.remove('steps-dot-active');
-                    if (i === newIndex) {
-                      dot.classList.add('steps-dot-active');
-                      dot.dataset.index = newIndex;
-                    }
-                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
-                  });
-                }}
-                className="flex-shrink-0 -ml-1"
-                aria-label="Previous steps"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-
-              {/* Carousel Content */}
-              <div className="flex-1 overflow-hidden">
-                <div
-                  id="steps-carousel"
-                  className="flex transition-transform duration-300"
-                  style={{ transform: 'translateX(0px)' }}
-                >
-                  {/* First Page - Steps 1 & 2 */}
-                  <div className="flex-none w-full px-2">
-                    <div className="space-y-8">
-                      {/* Step 1 - Book */}
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src="/images/home/step1.png"
-                          alt="Step 1"
-                          width={96}
-                          height={72}
-                          className="w-24 h-20 object-contain flex-shrink-0"
-                        />
-                        <div className="flex-1">
-                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
-                            Book
-                          </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
-                            Book now, and fill out your secured details to be matched
-                            with a doctor specific to your unique needs.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Step 2 - Video Call */}
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src="/images/home/step2.png"
-                          alt="Step 2"
-                          width={96}
-                          height={72}
-                          className="w-24 h-20 object-contain flex-shrink-0"
-                        />
-                        <div className="flex-1">
-                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
-                            Video Call
-                          </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
-                            Video chat with your specialist.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Second Page - Steps 3 & 4 */}
-                  <div className="flex-none w-full px-2">
-                    <div className="space-y-8">
-                      {/* Step 3 - Get Care + Unlimited Text */}
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src="/images/home/step3.png"
-                          alt="Step 3"
-                          width={96}
-                          height={72}
-                          className="w-24 h-20 object-contain flex-shrink-0"
-                        />
-                        <div className="flex-1">
-                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
-                            Get Care + Unlimited Text
-                          </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
-                            Get customized diet, cleanse, lifestyle, exercise, yoga, and
-                            meditation plans by your specialist — plus unlimited texting.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Step 4 - Monthly Video Follow Up */}
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src="/images/home/step4.png"
-                          alt="Step 4"
-                          width={96}
-                          height={72}
-                          className="w-24 h-20 object-contain flex-shrink-0"
-                        />
-                        <div className="flex-1">
-                          <div className="text-lg font-semibold mb-1" style={{ color: "#353535" }}>
-                            Monthly Video Follow Up
-                          </div>
-                          <p className="text-sm leading-relaxed" style={{ color: "#353535" }}>
-                            Monthly video call — essential care takes persistence.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Arrow */}
-              <button
-                onClick={() => {
-                  const currentIndex = parseInt(document.querySelector('.steps-dot-active')?.dataset?.index || '0');
-                  const newIndex = Math.min(1, currentIndex + 1); // Max 1 for 2 pages
-
-                  const offset = -newIndex * 100; // 100% width for each page
-
-                  // Update carousel
-                  const carousel = document.getElementById('steps-carousel');
-                  carousel.style.transform = `translateX(${offset}%)`;
-
-                  // Update dot colors
-                  const dots = document.querySelectorAll('.steps-dot');
-                  dots.forEach((dot, i) => {
-                    dot.classList.remove('steps-dot-active');
-                    if (i === newIndex) {
-                      dot.classList.add('steps-dot-active');
-                      dot.dataset.index = newIndex;
-                    }
-                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
-                  });
-                }}
-                className="flex-shrink-0 -mr-1"
-                aria-label="Next steps"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Dots Navigation */}
-            <div className="flex justify-center gap-2 mt-6">
-              {[0, 1].map((index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors steps-dot ${index === 0 ? 'steps-dot-active' : ''}`}
-                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
-                  data-index={index}
-                  onClick={() => {
-                    const offset = -index * 100; // 100% width for each page
-
-                    // Update carousel
-                    const carousel = document.getElementById('steps-carousel');
-                    carousel.style.transform = `translateX(${offset}%)`;
-
-                    // Update dot colors
-                    const dots = document.querySelectorAll('.steps-dot');
-                    dots.forEach((dot, i) => {
-                      dot.classList.remove('steps-dot-active');
-                      if (i === index) {
-                        dot.classList.add('steps-dot-active');
-                        dot.dataset.index = index;
-                      }
-                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
-                    });
-                  }}
-                />
-              ))}
-            </div>
-          </div>
         </div>
       </section>
-
-      {/* Pricing Callout Band - charcoal band after the steps grid */}
-      <PricingCallout />
 
       {/* Meet the Experts Section */}
       <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
