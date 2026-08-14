@@ -51,7 +51,7 @@ export default function ShopClient({ products: initialProducts = [] }) {
     const setWithoutSpecial = rawCategories.filter(
       (c) => c !== ALL && c !== MOST_POPULAR && c !== FAVORITES
     );
-    return [ALL, MOST_POPULAR, FAVORITES, ...setWithoutSpecial];
+    return [MOST_POPULAR, FAVORITES, ALL, ...setWithoutSpecial];
   }, [catalog]);
 
   const visible = useMemo(() => {
@@ -73,6 +73,26 @@ export default function ShopClient({ products: initialProducts = [] }) {
     return sortShopProducts(list, sort);
   }, [catalog, activeFilter, sort, favorites]);
 
+  // Reset loading state when navigating back to the page from Stripe checkout (BFCache / back button)
+  useEffect(() => {
+    function resetLoading() {
+      setLoadingId(null);
+    }
+
+    window.addEventListener("pageshow", resetLoading);
+    window.addEventListener("focus", resetLoading);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        resetLoading();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("pageshow", resetLoading);
+      window.removeEventListener("focus", resetLoading);
+    };
+  }, []);
+
   async function handleBuy(product) {
     setError("");
     setLoadingId(product.id);
@@ -87,6 +107,10 @@ export default function ShopClient({ products: initialProducts = [] }) {
         throw new Error(data.error || "Checkout is unavailable right now.");
       }
       window.location.href = data.url;
+      // Safety timeout to reset loading state if user returns or navigation cancels
+      setTimeout(() => {
+        setLoadingId(null);
+      }, 3000);
     } catch (e) {
       setError(e.message);
       setLoadingId(null);
