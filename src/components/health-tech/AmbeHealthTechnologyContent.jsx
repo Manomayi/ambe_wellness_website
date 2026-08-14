@@ -191,9 +191,33 @@ export default function AmbeHealthTechnologyContent() {
               </span>
             </h1>
             <p className="aht-hero-sub">
-              Five clinically validated technologies — integrated into one
+              Clinically validated technologies — integrated into one
               doctor-guided protocol that makes ancient wisdom measurable.
             </p>
+            <div className="aht-hero-stats-inline">
+              <div className="aht-hero-stat">
+                <span className="aht-hero-stat-num">NASA</span>
+                <span className="aht-hero-stat-lbl">Agency-backed research</span>
+              </div>
+              <div className="aht-hero-stat">
+                <span className="aht-hero-stat-num">3,800+</span>
+                <span className="aht-hero-stat-lbl">Global clinical partners</span>
+              </div>
+              <div className="aht-hero-stat">
+                <span className="aht-hero-stat-num">200+</span>
+                <span className="aht-hero-stat-lbl">Peer-reviewed studies</span>
+              </div>
+            </div>
+
+            <div className="aht-hero-quote">
+              <p>
+                &ldquo;These are not supplements, apps, or generic wellness programs. These are{" "}
+                <em>systemic health technologies</em> — each with a documented clinical mechanism,
+                independently studied, and brought together under doctor-supervised integrative
+                protocols designed for real health outcomes.&rdquo;
+              </p>
+            </div>
+
             <div className="aht-hero-cta-row">
               <Link href="#modalities" className="aht-btn aht-btn-peach">
                 Explore Modalities
@@ -203,37 +227,9 @@ export default function AmbeHealthTechnologyContent() {
         </div>
       </section>
 
-      <div className="aht-hero-stats">
-        <div className="aht-wrap">
-          <div className="aht-hero-stats-grid">
-            <div className="aht-hero-stat">
-              <span className="aht-hero-stat-num">NASA</span>
-            </div>
-            <div className="aht-hero-stat">
-              <span className="aht-hero-stat-num">3,800+</span>
-            </div>
-            <div className="aht-hero-stat">
-              <span className="aht-hero-stat-num">200+</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="aht-intro-band">
-        <div className="aht-wrap">
-          <p>
-            These are not supplements, apps, or generic wellness programs. These are{" "}
-            <em>systemic health technologies</em> — each with a documented clinical mechanism,
-            independently studied, and brought together under doctor-supervised integrative
-            protocols designed for real health outcomes.
-          </p>
-        </div>
-      </div>
-
       <section id="modalities">
         <div className="aht-wrap">
           <div className="aht-modalities-header">
-            <div className="aht-eyebrow">Five Modalities</div>
             <h2>The technologies behind the results</h2>
             <p>
               Each modality addresses a distinct physiological domain. Together they form a

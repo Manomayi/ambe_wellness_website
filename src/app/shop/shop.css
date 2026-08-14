@@ -329,12 +329,18 @@
   font-size: 15px;
   color: var(--muted);
   z-index: 3;
+  transition: all 0.2s ease;
 }
 
-.shop-fav-btn:hover,
+.shop-fav-btn:hover {
+  color: #C2691C;
+  border-color: #C2691C;
+}
+
 .shop-fav-btn.active {
-  color: var(--gold);
-  border-color: var(--gold);
+  color: #C2691C;
+  border-color: #C2691C;
+  background: #FFF8F2;
 }
 
 .shop-product-info {

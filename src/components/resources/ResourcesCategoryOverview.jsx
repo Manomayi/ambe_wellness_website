@@ -18,7 +18,7 @@ export default function ResourcesCategoryOverview({ onSelectCategory }) {
         </h2>
 
         <p className="text-ambe-cream/80 text-sm sm:text-base max-w-2xl mx-auto mb-12 sm:mb-16 leading-relaxed">
-          All resources are free, doctor-curated, and grounded in both Ayurvedic
+          All resources are complimentary, doctor-curated, and grounded in both Ayurvedic
           tradition and modern research.
         </p>
 

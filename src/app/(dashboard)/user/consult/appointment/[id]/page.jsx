@@ -88,8 +88,8 @@ export default function UserAppointmentPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -99,13 +99,13 @@ export default function UserAppointmentPage() {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Appointment Not Found</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Appointment Not Found</h2>
+          <p className="text-sm text-[#6B6862] mb-6">
             The appointment you're looking for doesn't exist or has been cancelled.
           </p>
           <button
             onClick={() => router.push('/user/consult')}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
           >
             Back to Consultations
           </button>
@@ -137,50 +137,50 @@ export default function UserAppointmentPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <button
           onClick={() => router.push('/user/consult')}
-          className="mb-6 text-gray-600 hover:text-gray-800 flex items-center"
+          className="text-[#6B6862] hover:text-[#1A1A1A] text-sm flex items-center font-medium"
         >
           ← Back to Consultations
         </button>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        <div className="bg-white border border-[#E7E2D9] rounded-2xl shadow-sm p-8">
+          <h1 className="text-3xl font-bold text-[#1A1A1A] mb-6">
             Video Consultation
           </h1>
 
           {/* Doctor Info */}
-          <div className="bg-gray-50 rounded-lg p-6 mb-6">
+          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-6 mb-6">
             <div className="flex items-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <UserIcon className="w-8 h-8 text-green-600" />
+              <div className="w-14 h-14 bg-white border border-[#E7E2D9] rounded-full flex items-center justify-center">
+                <UserIcon className="w-7 h-7 text-[#C8996A]" />
               </div>
               <div className="ml-4">
-                <h3 className="font-semibold text-lg">
+                <h3 className="font-semibold text-lg text-[#1A1A1A]">
                   Dr. {appointment.doctor_name}
                 </h3>
-                <p className="text-gray-600">Healthcare Provider</p>
+                <p className="text-xs text-[#8C827A] uppercase tracking-wider">Healthcare Provider</p>
               </div>
             </div>
           </div>
 
           {/* Appointment Details */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center text-gray-700">
-              <CalendarIcon className="w-5 h-5 mr-3" />
+          <div className="space-y-3 mb-8">
+            <div className="flex items-center text-sm text-[#1A1A1A]">
+              <CalendarIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
               <span>{formatAppointmentTime(appointment.time)}</span>
             </div>
-            <div className="flex items-center text-gray-700">
-              <ClockIcon className="w-5 h-5 mr-3" />
+            <div className="flex items-center text-sm text-[#1A1A1A]">
+              <ClockIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
               <span>Duration: 30 minutes</span>
             </div>
           </div>
 
           {/* Status Messages */}
           {appointment.completed && (
-            <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-6">
-              <p className="text-gray-700">
+            <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 mb-6">
+              <p className="text-sm text-[#6B6862]">
                 This appointment has been completed. To view the consultation report, 
                 please visit your consultation history.
               </p>
@@ -188,8 +188,8 @@ export default function UserAppointmentPage() {
           )}
 
           {!appointment.completed && !canJoinCall && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <p className="text-yellow-800">
+            <div className="bg-[#FAF8F5] border border-[#C8996A]/30 rounded-xl p-4 mb-6">
+              <p className="text-sm text-[#353535]">
                 Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.
                 You can join the call 5 minutes before the scheduled time.
               </p>
@@ -197,11 +197,11 @@ export default function UserAppointmentPage() {
           )}
 
           {canJoinCall && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <p className="text-green-800 font-medium mb-2">
+            <div className="bg-[#FAF8F5] border border-[#C8996A] rounded-xl p-4 mb-6">
+              <p className="text-[#1A1A1A] font-semibold text-sm mb-1">
                 Your appointment is happening now!
               </p>
-              <p className="text-green-700 text-sm">
+              <p className="text-xs text-[#6B6862]">
                 Click the button below to join the video consultation with your doctor.
               </p>
             </div>
@@ -211,7 +211,7 @@ export default function UserAppointmentPage() {
           {canJoinCall && (
             <button
               onClick={() => setInCall(true)}
-              className="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 transition flex items-center justify-center text-lg font-medium"
+              className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl transition flex items-center justify-center text-base font-semibold uppercase tracking-wider shadow-sm"
             >
               <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />

@@ -118,7 +118,7 @@ export default function UserStorePage() {
     return (
       <ProtectedRoute userType="user">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#C8996A] border-t-transparent" />
         </div>
       </ProtectedRoute>
     );
@@ -126,19 +126,18 @@ export default function UserStorePage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Store</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold text-[#1A1A1A]">Store</h1>
           <button
             onClick={() => router.push('/user/cart')}
-            className="bg-green-600 hover:bg-green-700 py-2.5 px-5 rounded-lg flex items-center gap-2 font-medium transition shadow flex-shrink-0"
-            style={{ color: '#FFFFFF' }}
+            className="bg-[#1A1A1A] hover:bg-[#353535] text-[#FFD3AC] py-2.5 px-5 rounded-lg flex items-center gap-2 font-medium text-sm transition shadow flex-shrink-0"
           >
             <ShoppingCartIcon className="h-5 w-5" />
             <span>View Cart</span>
             {cartCount > 0 && (
-              <span className="bg-white text-green-600 px-2 py-0.5 rounded-full text-sm font-bold">
+              <span className="bg-[#FFD3AC] text-[#1A1A1A] px-2 py-0.5 rounded-full text-sm font-bold">
                 {cartCount}
               </span>
             )}
@@ -146,15 +145,15 @@ export default function UserStorePage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
+        <div className="space-y-4">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8C827A]" />
             <input
               type="text"
               placeholder="Search products..."
               value={search}
               onChange={e => setSearch(e.target.value.toLowerCase())}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
             />
           </div>
 
@@ -166,8 +165,8 @@ export default function UserStorePage() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                   selectedCategory === category
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-[#1A1A1A] text-[#FFD3AC]'
+                    : 'bg-white border border-[#E7E2D9] text-[#535353] hover:bg-[#FAF8F5]'
                 }`}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -178,7 +177,7 @@ export default function UserStorePage() {
 
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 bg-white border border-[#E7E2D9] rounded-xl">
             <p className="text-gray-500">No products found matching your search.</p>
           </div>
         ) : (
@@ -249,8 +248,6 @@ function ProductCard({ product }) {
       // Reset after adding
       setQuantity(1);
       setSelectedVariant('');
-      
-      // Show success (you might want to use a toast notification instead)
       alert('Added to cart successfully!');
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -261,18 +258,20 @@ function ProductCard({ product }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition flex flex-col sm:flex-row min-w-0">
+    <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm overflow-hidden hover:shadow-md transition flex flex-col sm:flex-row min-w-0">
       {/* Product Image */}
-      <div className="w-full sm:w-2/5 flex-shrink-0 bg-gray-100 relative flex items-center justify-center p-4 min-h-[240px]">
-        {product.imageUrl && (
+      <div className="w-full sm:w-2/5 flex-shrink-0 bg-[#FAF8F5] relative flex items-center justify-center p-4 min-h-[240px]">
+        {product.imageUrl ? (
           <img
             src={product.imageUrl}
             alt={product.name}
             className="max-w-full max-h-full object-contain"
           />
+        ) : (
+          <div className="text-4xl text-[#C8996A]">🌿</div>
         )}
         {discount > 0 && (
-          <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+          <span className="absolute top-2 right-2 bg-[#FFD3AC] text-[#1A1A1A] text-xs font-bold px-2 py-1 rounded">
             {discount}% OFF
           </span>
         )}
@@ -280,19 +279,19 @@ function ProductCard({ product }) {
 
       {/* Product Info */}
       <div className="flex-1 min-w-0 p-4 sm:p-5">
-        <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>
+        <h3 className="font-semibold text-lg text-[#1A1A1A] mb-2">{product.name}</h3>
         {product.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
+          <p className="text-sm text-[#6B6862] mb-3 line-clamp-2">{product.description}</p>
         )}
 
-        {/* DSHEA / FDA disclaimer — below the description, on every product */}
+        {/* DSHEA / FDA disclaimer */}
         <DsheaDisclaimer className="mb-3" />
 
         {/* Price */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg font-bold text-gray-900">${price}</span>
+          <span className="text-lg font-bold text-[#1A1A1A]">${price}</span>
           {originalPrice > price && (
-            <span className="text-sm text-gray-500 line-through">${originalPrice}</span>
+            <span className="text-sm text-[#8C827A] line-through">${originalPrice}</span>
           )}
         </div>
 
@@ -301,7 +300,7 @@ function ProductCard({ product }) {
           <select
             value={selectedVariant}
             onChange={e => setSelectedVariant(e.target.value)}
-            className="w-full mb-3 p-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 font-medium"
+            className="w-full mb-3 p-2 border border-[#E7E2D9] bg-[#FAF8F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A] font-medium"
           >
             <option value="">Select Option</option>
             {variants.map((variant) => (
@@ -314,22 +313,20 @@ function ProductCard({ product }) {
 
         {/* Quantity Selector */}
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-gray-800 font-medium">Quantity:</span>
-          <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
+          <span className="text-sm text-[#1A1A1A] font-medium">Quantity:</span>
+          <div className="flex items-center border border-[#E7E2D9] rounded-full overflow-hidden bg-[#FAF8F5]">
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
               aria-label="Decrease quantity"
-              className="w-9 h-9 bg-gray-700 hover:bg-gray-800 flex items-center justify-center text-lg font-bold leading-none"
-              style={{ color: '#FFFFFF' }}
+              className="w-9 h-9 hover:bg-[#E7E2D9] flex items-center justify-center text-lg font-bold text-[#1A1A1A] leading-none transition"
             >
               −
             </button>
-            <span className="w-10 text-center font-bold text-gray-800">{quantity}</span>
+            <span className="w-10 text-center font-bold text-sm text-[#1A1A1A]">{quantity}</span>
             <button
               onClick={() => setQuantity(quantity + 1)}
               aria-label="Increase quantity"
-              className="w-9 h-9 bg-gray-700 hover:bg-gray-800 flex items-center justify-center text-lg font-bold leading-none"
-              style={{ color: '#FFFFFF' }}
+              className="w-9 h-9 hover:bg-[#E7E2D9] flex items-center justify-center text-lg font-bold text-[#1A1A1A] leading-none transition"
             >
               +
             </button>
@@ -340,8 +337,7 @@ function ProductCard({ product }) {
         <button
           onClick={addToCart}
           disabled={adding}
-          className="w-full bg-green-600 py-2.5 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
-          style={{ color: '#FFFFFF' }}
+          className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-2.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition font-medium text-sm"
         >
           {adding ? 'Adding...' : 'Add to Cart'}
         </button>

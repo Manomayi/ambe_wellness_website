@@ -2,8 +2,12 @@
 
 import { useEffect } from "react";
 import { formatPrice } from "@/lib/shop/firestore-products";
+import { useFavorites } from "@/lib/shop/favorites";
 
 export default function ProductDetailSheet({ product, open, onClose, onBuy, loading }) {
+  const { isFavorite, toggle } = useFavorites();
+  const wished = product ? isFavorite(product.id) : false;
+
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -50,8 +54,19 @@ export default function ProductDetailSheet({ product, open, onClose, onBuy, load
       >
         <div className="shop-sheet-handle" aria-hidden="true" />
 
-        <div className="shop-sheet-image-wrap">
+        <div className="shop-sheet-image-wrap" style={{ position: "relative" }}>
           <img src={image} alt={name} className="shop-sheet-image" />
+          <button
+            type="button"
+            className={`shop-fav-btn${wished ? " active" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggle(product.id);
+            }}
+            aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            {wished ? "♥" : "♡"}
+          </button>
         </div>
 
         <div className="shop-sheet-body">

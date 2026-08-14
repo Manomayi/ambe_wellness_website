@@ -144,12 +144,12 @@ export default function UserHomePage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Ambe</h1>
-            <h2 className="text-3xl font-normal text-gray-800">
+            <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2">Ambe</h1>
+            <h2 className="text-3xl font-normal text-[#1A1A1A]">
               Hello {firstName},
             </h2>
           </div>
@@ -158,20 +158,22 @@ export default function UserHomePage() {
         {/* Things To Do Section */}
         {thingsToDoTasks.length > 0 && (
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">THINGS TO DO</h3>
+            <h3 className="text-xl font-semibold text-[#1A1A1A] mb-4">THINGS TO DO</h3>
             <div className="space-y-3">
               {thingsToDoTasks.map((task) => (
                 <button
                   key={task.id}
                   onClick={task.onSelect}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 border border-green-400 rounded-lg p-4 hover:from-green-600 hover:to-green-700 transition-all shadow-lg text-left"
+                  className="w-full bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-4 transition-all duration-200 shadow-sm hover:shadow-md text-left"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h4 className="font-bold text-white mb-2">{task.title}</h4>
-                      <p className="text-sm text-white opacity-90">{task.subtitle}</p>
+                      <h4 className="font-bold text-base text-[#1A1A1A] mb-1">{task.title}</h4>
+                      <p className="text-sm text-[#6B6862]">{task.subtitle}</p>
                     </div>
-                    <ChevronRightIcon className="h-5 w-5 text-white ml-4" />
+                    <div className="w-8 h-8 rounded-full bg-[#FAF8F5] flex items-center justify-center flex-shrink-0 ml-4">
+                      <ChevronRightIcon className="h-4 w-4 text-[#1A1A1A]" />
+                    </div>
                   </div>
                 </button>
               ))}
@@ -179,51 +181,59 @@ export default function UserHomePage() {
           </div>
         )}
 
-        {/* Quick Actions - Keep as requested */}
+        {/* Quick Actions */}
         <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">QUICK ACTIONS</h3>
+          <h3 className="text-xl font-semibold text-[#1A1A1A] mb-4">QUICK ACTIONS</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button
               onClick={() => router.push('/user/consult')}
-              className="bg-white border border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors"
+              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
             >
-              <CalendarIcon className="h-8 w-8 text-green-600 mb-3 mx-auto" />
-              <h4 className="font-semibold text-gray-800">Consultations</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
+                <CalendarIcon className="h-6 w-6 text-[#1A1A1A]" />
+              </div>
+              <h4 className="font-semibold text-base text-[#1A1A1A]">Consultations</h4>
+              <p className="text-sm text-[#6B6862] mt-1">
                 Book or view
               </p>
             </button>
 
             <button
               onClick={() => router.push('/user/consult/message_doctor')}
-              className="bg-white border border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors"
+              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
               disabled={!profile?.doctor}
             >
-              <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600 mb-3 mx-auto" />
-              <h4 className="font-semibold text-gray-800">Messages</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
+                <ChatBubbleLeftRightIcon className="h-6 w-6 text-[#1A1A1A]" />
+              </div>
+              <h4 className="font-semibold text-base text-[#1A1A1A]">Messages</h4>
+              <p className="text-sm text-[#6B6862] mt-1">
                 Chat with doctor
               </p>
             </button>
 
             <button
               onClick={() => router.push('/user/store')}
-              className="bg-white border border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors"
+              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
             >
-              <ShoppingBagIcon className="h-8 w-8 text-purple-600 mb-3 mx-auto" />
-              <h4 className="font-semibold text-gray-800">Store</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
+                <ShoppingBagIcon className="h-6 w-6 text-[#1A1A1A]" />
+              </div>
+              <h4 className="font-semibold text-base text-[#1A1A1A]">Store</h4>
+              <p className="text-sm text-[#6B6862] mt-1">
                 Browse products
               </p>
             </button>
 
             <button
               onClick={() => router.push('/user/cart')}
-              className="bg-white border border-gray-300 rounded-lg p-6 hover:border-green-500 transition-colors"
+              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
             >
-              <ShoppingCartIcon className="h-8 w-8 text-yellow-600 mb-3 mx-auto" />
-              <h4 className="font-semibold text-gray-800">Cart</h4>
-              <p className="text-sm text-gray-600 mt-1">
+              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
+                <ShoppingCartIcon className="h-6 w-6 text-[#1A1A1A]" />
+              </div>
+              <h4 className="font-semibold text-base text-[#1A1A1A]">Cart</h4>
+              <p className="text-sm text-[#6B6862] mt-1">
                 View your cart
               </p>
             </button>
@@ -232,18 +242,18 @@ export default function UserHomePage() {
 
         {/* What's New Section */}
         <div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">COMING SOON</h3>
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 border border-purple-400 rounded-lg p-4 shadow-lg">
-            <h4 className="font-bold text-white mb-2">Courses section opening soon</h4>
-            <p className="text-sm text-white opacity-90">
-              We are proud to announce our new courses section. Stay tuned for more updates
+          <h3 className="text-xl font-semibold text-[#1A1A1A] mb-4">COMING SOON</h3>
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 shadow-sm">
+            <h4 className="font-bold text-lg text-[#1A1A1A] mb-2">Courses section opening soon</h4>
+            <p className="text-sm text-[#6B6862] leading-relaxed">
+              We are proud to announce our new courses section. Stay tuned for more updates.
             </p>
           </div>
         </div>
 
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
           </div>
         )}
       </div>

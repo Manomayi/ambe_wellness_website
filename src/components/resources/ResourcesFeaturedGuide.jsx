@@ -48,9 +48,9 @@ export default function ResourcesFeaturedGuide({ onDownload }) {
             <button
               type="button"
               onClick={() => onDownload?.(GUIDE_TITLE)}
-              className="inline-flex items-center justify-center px-10 py-3.5 rounded-full text-xs sm:text-sm font-semibold tracking-[0.15em] uppercase bg-ambe-peach text-charcoal hover:bg-charcoal hover:text-ambe-cream transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center px-10 py-3.5 rounded-full text-xs sm:text-sm font-semibold tracking-[0.15em] uppercase bg-ambe-peach text-charcoal hover:bg-charcoal hover:text-ambe-cream transition-colors cursor-pointer shadow-sm"
             >
-              Download Free
+              Complimentary Download
             </button>
           </div>
         </div>

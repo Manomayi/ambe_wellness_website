@@ -50,19 +50,19 @@ export default function NotificationsPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-12">
-            <BellIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No notifications yet</p>
+            <BellIcon className="h-16 w-16 text-[#8C827A] mx-auto mb-4" />
+            <p className="text-sm text-[#6B6862]">No notifications yet</p>
           </div>
         ) : (
           <div className="space-y-3">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className="bg-white rounded-lg shadow p-4 border border-gray-200"
+                className="bg-white rounded-xl shadow-sm p-4 border border-[#E7E2D9]"
               >
                 <h3 className="font-semibold text-gray-800 mb-1">
                   {notification.title}

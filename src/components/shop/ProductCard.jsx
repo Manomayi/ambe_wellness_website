@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatPrice } from "@/lib/shop/firestore-products";
 import ProductDetailSheet from "@/components/shop/ProductDetailSheet";
+import { useFavorites } from "@/lib/shop/favorites";
 
 const FALLBACK_IMAGE = "/images/icons/herbal.png";
 
@@ -20,7 +21,8 @@ export default function ProductCard({ product, onBuy, loading }) {
     packSize,
   } = product;
 
-  const [wished, setWished] = useState(false);
+  const { isFavorite, toggle } = useFavorites();
+  const wished = isFavorite(product.id);
   const [imgSrc, setImgSrc] = useState(image || FALLBACK_IMAGE);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -70,7 +72,7 @@ export default function ProductCard({ product, onBuy, loading }) {
           className={`shop-fav-btn${wished ? " active" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
-            setWished((w) => !w);
+            toggle(product.id);
           }}
           aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
         >

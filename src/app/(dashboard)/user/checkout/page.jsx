@@ -207,8 +207,8 @@ export default function UserCheckoutPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -216,20 +216,20 @@ export default function UserCheckoutPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <h1 className="text-2xl font-bold text-[#1A1A1A] mb-6">Checkout</h1>
 
         {/* Delivery Address Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Delivery Address</h2>
-          <div className="bg-gray-100 border border-green-300 rounded-lg p-4">
+          <h2 className="text-lg font-bold text-[#1A1A1A] mb-3">Delivery Address</h2>
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <p className="text-gray-900 font-medium">
+              <p className="text-[#1A1A1A] font-medium text-sm">
                 {deliveryAddress || 'No address provided'}
               </p>
               <button
                 onClick={() => setShowAddressModal(true)}
-                className="text-green-600 font-medium hover:underline"
+                className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider"
               >
                 {deliveryAddress ? 'UPDATE' : 'ADD'}
               </button>
@@ -239,16 +239,16 @@ export default function UserCheckoutPage() {
 
         {/* Subscription Status Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Subscription Status</h2>
-          <div className="bg-gray-100 border border-green-300 rounded-lg p-4">
+          <h2 className="text-lg font-bold text-[#1A1A1A] mb-3">Subscription Status</h2>
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <p className="text-gray-900 font-medium">
+              <p className="text-[#1A1A1A] font-medium text-sm">
                 {userData?.subscription?.active ? 'Active' : 'Inactive'}
               </p>
               {!userData?.subscription?.active && (
                 <button
                   onClick={() => router.push('/user/payment')}
-                  className="text-green-600 font-medium hover:underline"
+                  className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider"
                 >
                   SUBSCRIBE
                 </button>
@@ -259,46 +259,46 @@ export default function UserCheckoutPage() {
 
         {/* Order Summary Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Order Summary</h2>
-          <div className="bg-gray-100 border border-green-300 rounded-lg p-4">
-            <div className="space-y-3">
+          <h2 className="text-lg font-bold text-[#1A1A1A] mb-3">Order Summary</h2>
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-900">Subtotal</span>
-                <span className="text-gray-900 font-medium">${subtotal.toFixed(2)}</span>
+                <span className="text-[#6B6862]">Subtotal</span>
+                <span className="text-[#1A1A1A] font-medium">${subtotal.toFixed(2)}</span>
               </div>
               
               {subscriptionDiscount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-900">Subscription Discount</span>
-                  <span className="text-green-600 font-medium">-${subscriptionDiscount.toFixed(2)}</span>
+                  <span className="text-[#6B6862]">Subscription Discount</span>
+                  <span className="text-[#C8996A] font-medium">-${subscriptionDiscount.toFixed(2)}</span>
                 </div>
               )}
               
               {referralDiscount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-900">
+                  <span className="text-[#6B6862]">
                     {userData?.referred_by && !userData?.has_made_purchase
                       ? 'First Purchase Referral Discount (25%)'
                       : `Referral Discount (25% - ${(userData?.referral_credits || 0) - 1} left)`}
                   </span>
-                  <span className="text-green-600 font-medium">-${referralDiscount.toFixed(2)}</span>
+                  <span className="text-[#C8996A] font-medium">-${referralDiscount.toFixed(2)}</span>
                 </div>
               )}
               
               <div className="flex justify-between">
-                <span className="text-gray-900">Tax</span>
-                <span className="text-gray-900 font-medium">${tax.toFixed(2)}</span>
+                <span className="text-[#6B6862]">Tax</span>
+                <span className="text-[#1A1A1A] font-medium">${tax.toFixed(2)}</span>
               </div>
               
               <div className="flex justify-between">
-                <span className="text-gray-900">Shipping</span>
-                <span className="text-gray-900 font-medium">${shipping.toFixed(2)}</span>
+                <span className="text-[#6B6862]">Shipping</span>
+                <span className="text-[#1A1A1A] font-medium">${shipping.toFixed(2)}</span>
               </div>
               
-              <div className="border-t border-gray-300 pt-3">
+              <div className="border-t border-[#E7E2D9] pt-3">
                 <div className="flex justify-between">
-                  <span className="text-xl font-bold text-gray-900">Total</span>
-                  <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-[#1A1A1A]">Total</span>
+                  <span className="text-xl font-bold text-[#1A1A1A]">${total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -309,7 +309,7 @@ export default function UserCheckoutPage() {
         <button
           onClick={handlePlaceOrder}
           disabled={processing || cartItems.length === 0}
-          className="w-full bg-green-600 text-white py-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider"
         >
           {processing ? 'Processing...' : 'PLACE ORDER'}
         </button>
@@ -317,8 +317,8 @@ export default function UserCheckoutPage() {
         {/* Address Modal */}
         {showAddressModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">
                 {deliveryAddress ? 'Update Address' : 'Add Address'}
               </h3>
               
@@ -329,14 +329,14 @@ export default function UserCheckoutPage() {
                     placeholder="Street Number"
                     value={addressForm.streetNumber}
                     onChange={(e) => setAddressForm({...addressForm, streetNumber: e.target.value})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
                   />
                   <input
                     type="text"
                     placeholder="Street Name"
                     value={addressForm.streetName}
                     onChange={(e) => setAddressForm({...addressForm, streetName: e.target.value})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
                   />
                 </div>
                 
@@ -345,7 +345,7 @@ export default function UserCheckoutPage() {
                   placeholder="City"
                   value={addressForm.city}
                   onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
                 />
                 
                 <div className="grid grid-cols-2 gap-3">
@@ -354,14 +354,14 @@ export default function UserCheckoutPage() {
                     placeholder="State"
                     value={addressForm.state}
                     onChange={(e) => setAddressForm({...addressForm, state: e.target.value})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
                   />
                   <input
                     type="text"
                     placeholder="ZIP Code"
                     value={addressForm.zipCode}
                     onChange={(e) => setAddressForm({...addressForm, zipCode: e.target.value})}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
                   />
                 </div>
                 
@@ -370,20 +370,20 @@ export default function UserCheckoutPage() {
                   placeholder="Country"
                   value={addressForm.country}
                   onChange={(e) => setAddressForm({...addressForm, country: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
                 />
               </div>
               
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowAddressModal(false)}
-                  className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                  className="flex-1 py-3 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] font-medium text-sm text-[#1A1A1A]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={updateDeliveryAddress}
-                  className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-lg font-medium text-sm transition"
                 >
                   Save Address
                 </button>

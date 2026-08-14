@@ -62,52 +62,52 @@ export default function EditEmailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-green-600 border-t-transparent rounded-full" />
+        <div className="animate-spin h-10 w-10 border-2 border-[#C8996A] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-800">Edit Email</h1>
+    <div className="max-w-lg mx-auto bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
+      <h1 className="text-2xl font-bold text-[#1A1A1A]">Edit Email</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <p className="text-gray-600 text-sm">
+        <p className="text-[#6B6862] text-sm">
           You will be logged out after changing your email and must log back in.
         </p>
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Current Email</label>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Current Email</label>
           <input
             type="email"
             value={currentEmail}
             disabled
-            className="w-full p-2 border border-gray-300 bg-white rounded-lg"
+            className="w-full p-2.5 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#8C827A] rounded-lg cursor-not-allowed"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">New Email</label>
+          <label className="block text-sm font-medium text-[#1A1A1A] mb-1">New Email</label>
           <input
             type="email"
             value={newEmail}
             onChange={e => setNewEmail(e.target.value)}
-            className="w-full p-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
+            className="w-full p-2.5 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#1A1A1A] rounded-lg focus:outline-none focus:border-[#C8996A]"
           />
         </div>
         {requiresReauth && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2.5 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#1A1A1A] rounded-lg focus:outline-none focus:border-[#C8996A]"
             />
           </div>
         )}
         <button
           type="submit"
           disabled={submitting}
-          className={`w-full py-3 rounded-lg text-white font-semibold shadow transition ${submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+          className={`w-full py-3 rounded-lg text-sm font-semibold uppercase tracking-wider shadow-sm transition ${submitting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white'}`}
         >
           {submitting ? 'Updating…' : 'Update'}
         </button>

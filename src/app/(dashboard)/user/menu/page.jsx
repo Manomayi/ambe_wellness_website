@@ -85,7 +85,7 @@ export default function UserMenuPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin h-10 w-10 rounded-full border-2 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
@@ -134,7 +134,7 @@ export default function UserMenuPage() {
         {
           label: 'Subscription',
           icon: ArrowPathRoundedSquareIcon,
-          route: '/user/subscription',
+          route: '/user/payment',
         },
       ],
     },
@@ -149,7 +149,7 @@ export default function UserMenuPage() {
         {
           label: 'Request a New Doctor',
           icon: UserPlusIcon,
-          route: '/user/request-doctor',
+          route: '/user/get-matched',
         },
         {
           label: 'Refer a Friend',
@@ -159,7 +159,7 @@ export default function UserMenuPage() {
         {
           label: 'Notifications',
           icon: Cog6ToothIcon,
-          route: '/user/notifications-settings',
+          route: '/user/notifications',
         },
       ],
     },
@@ -170,30 +170,42 @@ export default function UserMenuPage() {
           label: 'Delete Account',
           icon: TrashIcon,
           route: '/user/delete-account',
+          isDanger: true,
         },
         {
           label: 'Logout',
           icon: ArrowRightOnRectangleIcon,
           action: handleLogout,
+          isDanger: false,
         },
       ],
     },
   ];
 
   return (
-    <div className="space-y-12">
+    <div className="max-w-4xl mx-auto space-y-10">
       {/* Profile */}
       <div className="flex flex-col items-center space-y-4">
-        <img
-          src={profile.photoURL}
-          alt={profile.name}
-          className="h-28 w-28 rounded-full object-cover"
-        />
+        <div className="relative">
+          <div className="h-28 w-28 rounded-full overflow-hidden border-2 border-[#C8996A]/30 bg-[#FAF8F5]">
+            {profile.photoURL ? (
+              <img
+                src={profile.photoURL}
+                alt={profile.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-3xl font-bold text-[#1A1A1A] bg-[#FFD3AC]/30">
+                {profile.name ? profile.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+            )}
+          </div>
+        </div>
         <button
           onClick={handlePhotoClick}
-          className="inline-flex items-center space-x-2 text-green-600 hover:underline"
+          className="inline-flex items-center space-x-2 text-sm font-medium text-[#C8996A] hover:underline"
         >
-          <PencilIcon className="h-5 w-5" />
+          <PencilIcon className="h-4 w-4" />
           <span>Change Photo</span>
         </button>
         <input
@@ -208,10 +220,10 @@ export default function UserMenuPage() {
       {/* Menu Sections */}
       {menuSections.map((section, idx) => (
         <div key={idx}>
-          <h3 className="text-sm uppercase font-semibold text-gray-600 mb-4">
+          <h3 className="text-sm uppercase font-semibold text-[#6B6862] mb-4">
             {section.title}
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {section.items.map((item, i) => {
               const Icon = item.icon;
               return (
@@ -220,34 +232,43 @@ export default function UserMenuPage() {
                   onClick={() =>
                     item.route ? router.push(item.route) : item.action()
                   }
-                  className="
+                  className={`
                     w-full
                     bg-white
-                    shadow-md
+                    border
+                    border-[#E7E2D9]
+                    hover:border-[#C8996A]
                     rounded-xl
-                    p-6
+                    p-5
                     flex
                     items-center
                     justify-between
-                    border-l-4
-                    border-green-600
-                    hover:shadow-lg
+                    shadow-sm
+                    hover:shadow-md
                     transition
-                  "
+                    text-left
+                    ${item.isDanger ? 'hover:border-red-300' : ''}
+                  `}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="bg-green-600 p-3 rounded-full flex-shrink-0">
-                      <Icon className="h-6 w-6 text-white" />
+                    <div className={`p-3 rounded-full flex-shrink-0 ${
+                      item.isDanger ? 'bg-red-50 text-red-600' : 'bg-[#FAF8F5] text-[#1A1A1A]'
+                    }`}>
+                      <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-800 text-left">{item.label}</p>
+                      <p className={`font-bold text-base text-left ${
+                        item.isDanger ? 'text-red-600' : 'text-[#1A1A1A]'
+                      }`}>
+                        {item.label}
+                      </p>
                       {item.value && (
-                        <p className="text-gray-600 text-sm">{item.value}</p>
+                        <p className="text-sm text-[#6B6862]">{item.value}</p>
                       )}
                     </div>
                   </div>
-                  <div className="bg-green-600 p-2 rounded-full flex-shrink-0">
-                    <ArrowRightIcon className="h-4 w-4 text-white" />
+                  <div className="w-8 h-8 rounded-full bg-[#FAF8F5] flex items-center justify-center flex-shrink-0">
+                    <ArrowRightIcon className="h-4 w-4 text-[#1A1A1A]" />
                   </div>
                 </button>
               );

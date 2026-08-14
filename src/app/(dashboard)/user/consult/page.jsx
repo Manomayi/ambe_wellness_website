@@ -141,22 +141,22 @@ export default function UserConsultPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Consultations</h1>
+      <div className="max-w-6xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold text-[#1A1A1A] mb-8">Consultations</h1>
 
         {/* No Doctor Assigned */}
         {!profile?.doctor && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 mb-8 shadow-sm">
             <div className="flex items-start">
-              <ExclamationCircleIcon className="h-6 w-6 text-yellow-600 mr-3 mt-0.5" />
+              <ExclamationCircleIcon className="h-6 w-6 text-[#C8996A] mr-3 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-yellow-800">No Healthcare Provider Assigned</h3>
-                <p className="text-yellow-700 text-sm mt-1">
+                <h3 className="font-semibold text-lg text-[#1A1A1A]">No Healthcare Provider Assigned</h3>
+                <p className="text-sm text-[#6B6862] mt-1">
                   Complete your health assessment to get matched with a healthcare provider.
                 </p>
                 <button 
                   onClick={() => router.push('/user/get-matched')}
-                  className="mt-3 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition"
+                  className="mt-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                 >
                   Get Matched Now
                 </button>
@@ -168,11 +168,11 @@ export default function UserConsultPage() {
         {/* Doctor Info Card */}
         {profile?.doctor && (
           <>
-            <h2 className="text-xl font-semibold text-black mb-4">MY DOCTOR</h2>
-            <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">MY DOCTOR</h2>
+            <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-6 mb-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-16 h-16 bg-[#FAF8F5] border border-[#E7E2D9] rounded-full overflow-hidden">
                     {doctorInfo?.profile_picture ? (
                       <img 
                         src={doctorInfo.profile_picture} 
@@ -180,52 +180,52 @@ export default function UserConsultPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-green-100 flex items-center justify-center">
+                      <div className="w-full h-full flex items-center justify-center">
                         <span className="text-2xl">👨‍⚕️</span>
                       </div>
                     )}
                   </div>
                   <div className="ml-4">
-                    <h3 className="font-semibold text-lg text-gray-900">
+                    <h3 className="font-semibold text-lg text-[#1A1A1A]">
                       Dr. {doctorInfo?.first_name || profile.doctor.first_name} {doctorInfo?.last_name || profile.doctor.last_name}
                     </h3>
                     {doctorInfo?.title && (
-                      <p className="text-gray-700">{doctorInfo.title}</p>
+                      <p className="text-sm text-[#C8996A] font-medium">{doctorInfo.title}</p>
                     )}
                     {doctorInfo?.field && doctorInfo.field.length > 0 && (
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-[#6B6862] mt-1">
                         {getHealthFieldLabels(doctorInfo.field).join(', ')}
                       </p>
                     )}
                   </div>
                 </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => router.push('/user/consult/message_doctor')}
-                  disabled={!canMessage}
-                  className={`flex items-center px-4 py-2 rounded-lg transition ${
-                    canMessage 
-                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                  Message
-                </button>
-                <button
-                  onClick={() => router.push('/user/consult/schedule')}
-                  className="flex items-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-                >
-                  <CalendarIcon className="h-5 w-5 mr-2" />
-                  Schedule
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => router.push('/user/consult/message_doctor')}
+                    disabled={!canMessage}
+                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition ${
+                      canMessage 
+                        ? 'bg-[#1A1A1A] text-white hover:bg-[#353535]' 
+                        : 'bg-[#FAF8F5] text-[#8C827A] cursor-not-allowed border border-[#E7E2D9]'
+                    }`}
+                  >
+                    <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
+                    Message
+                  </button>
+                  <button
+                    onClick={() => router.push('/user/consult/schedule')}
+                    className="flex items-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    <CalendarIcon className="h-5 w-5 mr-2" />
+                    Schedule
+                  </button>
+                </div>
               </div>
-            </div>
-            {!canMessage && (
-              <p className="text-sm text-gray-500 mt-3">
-                Complete your first consultation to enable messaging
-              </p>
-            )}
+              {!canMessage && (
+                <p className="text-sm text-[#8C827A] mt-3">
+                  Complete your first consultation to enable messaging
+                </p>
+              )}
             </div>
           </>
         )}
@@ -233,25 +233,25 @@ export default function UserConsultPage() {
         {/* Upcoming Appointments */}
         {upcomingAppointments.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-black mb-4">UPCOMING APPOINTMENTS</h2>
+            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">UPCOMING APPOINTMENTS</h2>
             <div className="space-y-4">
               {upcomingAppointments.map((appointment) => {
                 const isNow = isAppointmentNow(appointment);
                 return (
                   <div key={appointment.id}>
                     {isNow && (
-                      <h3 className="text-lg font-semibold text-black mb-2">HAPPENING NOW</h3>
+                      <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2">HAPPENING NOW</h3>
                     )}
-                    <div className={`bg-white rounded-lg shadow p-6 ${
-                      isNow ? 'ring-2 ring-green-500' : ''
+                    <div className={`bg-white border rounded-xl shadow-sm p-6 ${
+                      isNow ? 'border-[#C8996A] ring-2 ring-[#FFD3AC]' : 'border-[#E7E2D9]'
                     }`}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="font-semibold text-lg">
+                          <h3 className="font-semibold text-lg text-[#1A1A1A]">
                             Dr. {appointment.doctor_name}
                           </h3>
-                          <p className="text-gray-600 flex items-center mt-1">
-                            <ClockIcon className="h-4 w-4 mr-1" />
+                          <p className="text-sm text-[#6B6862] flex items-center mt-1">
+                            <ClockIcon className="h-4 w-4 mr-1 text-[#C8996A]" />
                             {formatAppointmentTime(appointment.time)}
                           </p>
                         </div>
@@ -259,7 +259,7 @@ export default function UserConsultPage() {
                           {isNow ? (
                             <button
                               onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
-                              className="flex items-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+                              className="flex items-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
                             >
                               <VideoCameraIcon className="h-5 w-5 mr-2" />
                               Join Call
@@ -268,13 +268,13 @@ export default function UserConsultPage() {
                             <>
                               <button
                                 onClick={() => router.push('/user/consult/schedule')}
-                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                                className="px-4 py-2 border border-[#E7E2D9] rounded-lg text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF8F5] transition"
                               >
                                 Reschedule
                               </button>
                               <button
                                 onClick={() => alert('Cancel functionality coming soon')}
-                                className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"
+                                className="px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition"
                               >
                                 Cancel
                               </button>
@@ -292,17 +292,17 @@ export default function UserConsultPage() {
 
         {/* No Upcoming Appointments */}
         {profile?.doctor && upcomingAppointments.length === 0 && !loading && (
-          <div className="bg-gray-50 rounded-lg p-8 text-center mb-8">
-            <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-700 mb-2">
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 text-center mb-8 shadow-sm">
+            <CalendarIcon className="h-12 w-12 text-[#C8996A] mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-[#1A1A1A] mb-2">
               No Upcoming Appointments
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-sm text-[#6B6862] mb-4">
               Schedule a consultation with your healthcare provider
             </p>
             <button
               onClick={() => router.push('/user/consult/schedule')}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-2 rounded-lg text-sm font-medium transition shadow-sm"
             >
               Schedule Consultation
             </button>
@@ -312,26 +312,26 @@ export default function UserConsultPage() {
         {/* Past Appointments */}
         {pastAppointments.length > 0 && (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Consultation History</h2>
+            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">Consultation History</h2>
             <div className="space-y-3">
               {pastAppointments.map((appointment) => (
                 <div 
                   key={appointment.id}
-                  className="bg-white rounded-lg shadow p-4 hover:shadow-md transition cursor-pointer"
+                  className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-4 hover:shadow-md transition cursor-pointer"
                   onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">
+                      <h4 className="font-medium text-base text-[#1A1A1A]">
                         Dr. {appointment.doctor_name}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-[#6B6862]">
                         {formatAppointmentTime(appointment.time)}
                       </p>
                     </div>
-                    <div className="flex items-center text-gray-400">
+                    <div className="flex items-center text-[#C8996A]">
                       <DocumentTextIcon className="h-5 w-5 mr-1" />
-                      <span className="text-sm">View Report</span>
+                      <span className="text-sm font-medium">View Report</span>
                     </div>
                   </div>
                 </div>
@@ -343,7 +343,7 @@ export default function UserConsultPage() {
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
           </div>
         )}
       </div>

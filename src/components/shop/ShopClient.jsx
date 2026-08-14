@@ -4,15 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
 import { fetchShopProductsFromFirestore, getCategoriesFromProducts, sortShopProducts } from "@/lib/shop/firestore-products";
+import { useFavorites } from "@/lib/shop/favorites";
 import { CONSULT_HREF } from "@/lib/site-config";
 
 const ALL = "All Products";
-const SORTS = ["Default Order", "Popularity", "Name: A to Z"];
+const MOST_POPULAR = "Most Popular";
+const FAVORITES = "Favorites";
+const SORTS = ["Popularity", "Default Order", "Name: A to Z"];
 
 export default function ShopClient({ products: initialProducts = [] }) {
+  const { favorites } = useFavorites();
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(initialProducts.length === 0);
-  const [activeFilter, setActiveFilter] = useState(ALL);
+  const [activeFilter, setActiveFilter] = useState(MOST_POPULAR);
   const [sort, setSort] = useState(SORTS[0]);
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
@@ -42,19 +46,32 @@ export default function ShopClient({ products: initialProducts = [] }) {
 
   const catalog = useMemo(() => products, [products]);
 
-  const filters = useMemo(
-    () => [ALL, ...getCategoriesFromProducts(catalog)],
-    [catalog]
-  );
+  const filters = useMemo(() => {
+    const rawCategories = getCategoriesFromProducts(catalog);
+    const setWithoutSpecial = rawCategories.filter(
+      (c) => c !== ALL && c !== MOST_POPULAR && c !== FAVORITES
+    );
+    return [ALL, MOST_POPULAR, FAVORITES, ...setWithoutSpecial];
+  }, [catalog]);
 
   const visible = useMemo(() => {
-    const list =
-      activeFilter === ALL
-        ? catalog
-        : catalog.filter((p) => p.category === activeFilter);
+    let list = catalog;
+
+    if (activeFilter === FAVORITES) {
+      list = catalog.filter((p) => favorites.includes(p.id));
+      return sortShopProducts(list, sort);
+    }
+
+    if (activeFilter === MOST_POPULAR) {
+      return sortShopProducts(list, "Popularity");
+    }
+
+    if (activeFilter !== ALL) {
+      list = catalog.filter((p) => p.category === activeFilter || p.subcategory === activeFilter);
+    }
 
     return sortShopProducts(list, sort);
-  }, [catalog, activeFilter, sort]);
+  }, [catalog, activeFilter, sort, favorites]);
 
   async function handleBuy(product) {
     setError("");
@@ -81,17 +98,23 @@ export default function ShopClient({ products: initialProducts = [] }) {
       <div className="shop-filter-bar">
         <div className="shop-wrap">
           <div className="shop-filter-inner">
-            {filters.map((f) => (
-              <button
-                key={f}
-                type="button"
-                className={`shop-filter-pill${f === activeFilter ? " active" : ""}`}
-                onClick={() => setActiveFilter(f)}
-                disabled={loading}
-              >
-                {f}
-              </button>
-            ))}
+            {filters.map((f) => {
+              const label =
+                f === FAVORITES && favorites.length > 0
+                  ? `Favorites (${favorites.length})`
+                  : f;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  className={`shop-filter-pill${f === activeFilter ? " active" : ""}`}
+                  onClick={() => setActiveFilter(f)}
+                  disabled={loading}
+                >
+                  {label}
+                </button>
+              );
+            })}
             <div className="shop-filter-sort">
               <span>Sort by</span>
               <select
@@ -157,7 +180,19 @@ export default function ShopClient({ products: initialProducts = [] }) {
             </p>
           )}
 
-          {!loading && catalog.length > 0 && visible.length === 0 && (
+          {!loading && catalog.length > 0 && activeFilter === FAVORITES && visible.length === 0 && (
+            <div className="text-center py-16">
+              <div className="text-3xl mb-3" style={{ color: "#C2691C" }}>♡</div>
+              <p className="text-base font-medium mb-1" style={{ color: "#353535" }}>
+                No favorites saved yet
+              </p>
+              <p className="text-sm" style={{ color: "#6b6862" }}>
+                Click the heart icon on any product card to save it to your favorites list.
+              </p>
+            </div>
+          )}
+
+          {!loading && catalog.length > 0 && activeFilter !== FAVORITES && visible.length === 0 && (
             <p className="text-center text-sm mt-10" style={{ color: "#6b6862" }}>
               No products in this category yet.
             </p>

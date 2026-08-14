@@ -270,7 +270,7 @@ export default function ScheduleConsultationPage() {
     return (
       <ProtectedRoute userType="user">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#C8996A] border-t-transparent" />
         </div>
       </ProtectedRoute>
     );
@@ -280,13 +280,13 @@ export default function ScheduleConsultationPage() {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">No Doctor Assigned</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">No Doctor Assigned</h2>
+          <p className="text-sm text-[#6B6862] mb-6">
             You need to be matched with a healthcare provider before scheduling consultations.
           </p>
           <button
             onClick={() => router.push('/user/get-matched')}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
           >
             Get Matched Now
           </button>
@@ -299,13 +299,13 @@ export default function ScheduleConsultationPage() {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Schedule Not Available</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Schedule Not Available</h2>
+          <p className="text-sm text-[#6B6862] mb-6">
             Your doctor has not set their availability yet. Please try again later or contact support.
           </p>
           <button
             onClick={() => router.push('/user/consult')}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
           >
             Back to Consultations
           </button>
@@ -380,11 +380,11 @@ export default function ScheduleConsultationPage() {
                       disabled={!isAvailable || isPast}
                       className={`p-3 rounded-lg text-center transition-all ${
                         isSelected
-                          ? 'bg-green-600 text-white font-semibold'
+                          ? 'bg-[#1A1A1A] text-[#FFD3AC] font-semibold ring-2 ring-[#FFD3AC]'
                           : isAvailable && !isPast
-                          ? 'bg-white text-gray-900 font-medium hover:bg-green-50 hover:text-green-700 cursor-pointer'
+                          ? 'bg-white text-[#1A1A1A] font-medium hover:bg-[#FAF8F5] hover:text-[#C8996A] cursor-pointer'
                           : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                      } ${isToday && isAvailable && !isPast ? 'ring-2 ring-green-600' : ''}`}
+                      } ${isToday && isAvailable && !isPast ? 'ring-2 ring-[#C8996A]' : ''}`}
                     >
                       <div className="text-sm">{date.getDate()}</div>
                       {isToday && <div className="text-xs">Today</div>}
@@ -395,13 +395,13 @@ export default function ScheduleConsultationPage() {
               
               {/* Timezone info */}
               {doctorTimezone && userTimezone && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-xs text-blue-800">
+                <div className="mt-4 p-3 bg-[#FAF8F5] border border-[#E7E2D9] rounded-lg">
+                  <p className="text-xs text-[#6B6862]">
                     <span className="block">Your timezone: {userTimezone}</span>
                     {doctorTimezone !== userTimezone && (
                       <>
                         <span className="block">Doctor's timezone: {doctorTimezone}</span>
-                        <span className="block mt-1 font-medium">
+                        <span className="block mt-1 font-medium text-[#1A1A1A]">
                           Time difference: {moment.tz(userTimezone).format('Z')} (You) vs {moment.tz(doctorTimezone).format('Z')} (Doctor)
                         </span>
                       </>
@@ -414,13 +414,13 @@ export default function ScheduleConsultationPage() {
 
           {/* Time Slots */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <ClockIcon className="h-6 w-6 mr-2" />
+            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4 flex items-center">
+              <ClockIcon className="h-6 w-6 mr-2 text-[#C8996A]" />
               Available Time Slots
             </h2>
             
             {selectedDate ? (
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-4">
                 {availableSlots.length > 0 ? (
                   <div className="grid grid-cols-3 gap-3">
                     {availableSlots.map((slot, index) => (
@@ -429,15 +429,15 @@ export default function ScheduleConsultationPage() {
                         onClick={() => setSelectedSlot(slot)}
                         className={`p-3 rounded-lg border-2 transition-all font-medium ${
                           selectedSlot?.time === slot.time
-                            ? 'border-green-600 bg-green-600 text-white'
-                            : 'border-gray-300 bg-white text-gray-900 hover:border-green-500 hover:bg-green-50'
+                            ? 'border-[#1A1A1A] bg-[#1A1A1A] text-[#FFD3AC]'
+                            : 'border-[#E7E2D9] bg-white text-[#1A1A1A] hover:border-[#C8996A] hover:bg-[#FAF8F5]'
                         }`}
                       >
                         <div>
-                          <div className="font-semibold">{slot.userDisplay}</div>
+                          <div className="font-semibold text-sm">{slot.userDisplay}</div>
                           {doctorTimezone !== userTimezone && (
                             <div className={`text-xs mt-0.5 ${
-                              selectedSlot?.time === slot.time ? 'text-green-100' : 'text-gray-500'
+                              selectedSlot?.time === slot.time ? 'text-[#FFD3AC]/80' : 'text-[#8C827A]'
                             }`}>
                               ({slot.doctorDisplay} Dr's time)
                             </div>
@@ -447,13 +447,13 @@ export default function ScheduleConsultationPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-8">
+                  <p className="text-sm text-[#6B6862] text-center py-8">
                     No available time slots for this date
                   </p>
                 )}
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-lg p-8 text-center text-gray-500">
+              <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-8 text-center text-sm text-[#6B6862]">
                 Please select a date to view available time slots
               </div>
             )}
@@ -462,40 +462,32 @@ export default function ScheduleConsultationPage() {
 
         {/* Confirmation */}
         {selectedSlot && (
-          <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
-            <h3 className="font-semibold text-lg mb-2">Confirm Your Appointment</h3>
-            <p className="text-gray-700 mb-4">
-              <strong>Date:</strong> {selectedDate.toLocaleDateString('en-US', { 
+          <div className="mt-8 bg-white border border-[#E7E2D9] rounded-xl p-6 shadow-sm">
+            <h3 className="font-semibold text-lg text-[#1A1A1A] mb-2">Confirm Your Appointment</h3>
+            <p className="text-sm text-[#6B6862] mb-4 space-y-1">
+              <strong className="text-[#1A1A1A]">Date:</strong> {selectedDate.toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
               })}
               <br />
-              <strong>Time:</strong> {selectedSlot.userDisplay} (Your time)
+              <strong className="text-[#1A1A1A]">Time:</strong> {selectedSlot.userDisplay} (Your time)
               {doctorTimezone !== userTimezone && (
                 <>
                   <br />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-xs text-[#8C827A]">
                     {selectedSlot.doctorDisplay} (Doctor's time)
                   </span>
                 </>
               )}
               <br />
-              <strong>Duration:</strong> 60 minutes
-              {doctorTimezone !== userTimezone && (
-                <>
-                  <br />
-                  <span className="text-sm text-blue-700 font-medium">
-                    Note: This appointment will occur at {selectedSlot.userDisplay} in your timezone
-                  </span>
-                </>
-              )}
+              <strong className="text-[#1A1A1A]">Duration:</strong> 60 minutes
             </p>
             <button
               onClick={handleSchedule}
               disabled={scheduling}
-              className="w-full md:w-auto bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+              className="w-full md:w-auto bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-8 py-3 rounded-lg font-medium text-sm transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
             >
               {scheduling ? 'Scheduling...' : 'Confirm Appointment'}
             </button>

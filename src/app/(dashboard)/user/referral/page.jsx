@@ -91,8 +91,8 @@ export default function ReferFriendPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -100,43 +100,45 @@ export default function ReferFriendPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-        <h1 className="text-3xl font-bold text-gray-800">Refer a Friend</h1>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-[#1A1A1A]">Refer a Friend</h1>
 
         {/* Main Offer Card */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-8 text-white shadow-xl">
-          <div className="text-center space-y-4">
-            <GiftIcon className="h-20 w-20 mx-auto" />
-            <div>
-              <h2 className="text-4xl font-bold">Get 25% OFF</h2>
-              <p className="text-2xl">Your Next Order</p>
-            </div>
-            <p className="text-lg max-w-md mx-auto">
-              Share your referral code with friends and both of you will receive 25% off your next order!
+        <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-[#E7E2D9] shadow-sm">
+          <GiftIcon className="h-16 w-16 mx-auto text-[#C8996A] mb-4" />
+          <div className="mb-4">
+            <h2 className="font-heading font-serif text-3xl sm:text-4xl text-[#1A1A1A] mb-1">
+              Get 25% OFF
+            </h2>
+            <p className="text-2xl text-[#1A1A1A] font-normal">
+              Your Next Order
             </p>
           </div>
+          <p className="text-base text-[#6B6862] max-w-md mx-auto leading-relaxed">
+            Share your referral code with friends and both of you will receive 25% off your next order!
+          </p>
         </div>
 
         {/* Referral Code Section */}
-        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800 text-center mb-4">Your Referral Code</h3>
-          <div className="bg-white rounded-lg p-4 flex items-center justify-center gap-4">
-            <span className="text-2xl font-bold tracking-wider text-gray-900">{referralCode}</span>
+        <div className="bg-white rounded-xl p-6 border border-[#E7E2D9] shadow-sm">
+          <h3 className="text-lg font-bold text-[#1A1A1A] text-center mb-4">Your Referral Code</h3>
+          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-lg p-4 flex items-center justify-center gap-4">
+            <span className="text-2xl font-bold tracking-widest text-[#1A1A1A]">{referralCode}</span>
             <button
               onClick={copyToClipboard}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 hover:bg-[#E7E2D9] rounded-lg transition"
               title="Copy code"
             >
               {copied ? (
-                <CheckIcon className="h-6 w-6 text-green-600" />
+                <CheckIcon className="h-6 w-6 text-[#C8996A]" />
               ) : (
-                <DocumentDuplicateIcon className="h-6 w-6 text-gray-600" />
+                <DocumentDuplicateIcon className="h-6 w-6 text-[#8C827A]" />
               )}
             </button>
           </div>
           <button
             onClick={shareReferralCode}
-            className="w-full mt-4 bg-green-600 text-white py-3 px-6 rounded-full hover:bg-green-700 transition flex items-center justify-center gap-2"
+            className="w-full mt-4 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-sm uppercase tracking-wider"
           >
             <ShareIcon className="h-5 w-5" />
             Share Code
@@ -145,24 +147,24 @@ export default function ReferFriendPage() {
 
         {/* Referral Stats */}
         {(referralCount > 0 || referralCredits > 0) && (
-          <div className="bg-green-50 rounded-xl p-6 border border-green-200">
-            <h3 className="text-xl font-bold text-gray-800 text-center mb-6">Your Referral Stats</h3>
+          <div className="bg-white rounded-xl p-6 border border-[#E7E2D9] shadow-sm">
+            <h3 className="text-lg font-bold text-[#1A1A1A] text-center mb-6">Your Referral Stats</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-4xl font-bold text-green-600">{referralCount}</p>
-                <p className="text-gray-600">Friends Referred</p>
+              <div className="text-center p-4 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl">
+                <p className="text-3xl font-bold text-[#C8996A]">{referralCount}</p>
+                <p className="text-xs font-medium text-[#6B6862] uppercase tracking-wider mt-1">Friends Referred</p>
               </div>
-              <div className="text-center">
-                <p className="text-4xl font-bold text-green-600">{referralCredits}</p>
-                <p className="text-gray-600">Discounts Available</p>
+              <div className="text-center p-4 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl">
+                <p className="text-3xl font-bold text-[#C8996A]">{referralCredits}</p>
+                <p className="text-xs font-medium text-[#6B6862] uppercase tracking-wider mt-1">Discounts Available</p>
               </div>
             </div>
           </div>
         )}
 
         {/* How it Works */}
-        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">How it works:</h3>
+        <div className="bg-white rounded-xl p-6 border border-[#E7E2D9] shadow-sm">
+          <h3 className="text-lg font-bold text-[#1A1A1A] mb-4">How it works:</h3>
           <div className="space-y-4">
             <StepWidget number="1" text="Share your unique referral code with friends" />
             <StepWidget number="2" text="Your friend signs up using your code" />
@@ -177,11 +179,11 @@ export default function ReferFriendPage() {
 
 function StepWidget({ number, text }) {
   return (
-    <div className="flex items-start gap-4">
-      <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+    <div className="flex items-center gap-4">
+      <div className="w-8 h-8 bg-[#FAF8F5] border border-[#E7E2D9] text-[#C8996A] rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm">
         {number}
       </div>
-      <p className="text-gray-700">{text}</p>
+      <p className="text-sm text-[#353535]">{text}</p>
     </div>
   );
 }

@@ -9,6 +9,19 @@ import Footer from '@/components/common/Footer';
 import NutritionistTable from '@/components/common/NutritionistTable';
 import { CONSULT_HREF } from '@/lib/site-config';
 
+const healthCategories = [
+  { icon: "/images/icons/skin_hair.png", label: "Skin & Hair" },
+  { icon: "/images/icons/womens_health.png", label: "Women’s Health" },
+  { icon: "/images/icons/mens_health.png", label: "Men’s Health" },
+  { icon: "/images/icons/digestive_health.png", label: "Digestive Health" },
+  { icon: "/images/icons/musculoskeletal.png", label: "Musculoskeletal" },
+  { icon: "/images/icons/mental_health.png", label: "Mental Health" },
+  { icon: "/images/icons/longevity.png", label: "Longevity" },
+  { icon: "/images/icons/weight_mgmt.png", label: "Weight Management" },
+  { icon: "/images/icons/hormone_health.png", label: "Hormone Health" },
+  { icon: "/images/icons/wellness_guides.png", label: "Wellness Guides" },
+];
+
 export default function Membership() {
   return (
     <div className="min-h-screen bg-white">
@@ -70,7 +83,7 @@ export default function Membership() {
                 <div className="flex justify-center">
                   <div className="bg-[#FFD3AC] rounded-full w-96 h-96 p-10 flex flex-col items-center justify-center text-center">
                     <div className="mb-4 w-16 h-16 relative">
-                      <Image src="/images/icons/video_sessions.png" alt="Video Sessions" fill className="object-contain" />
+                      <Image src="/images/icons/video_sessions.png" alt="Video Sessions" fill className="object-contain brightness-0" />
                     </div>
                     <h3 className="text-lg font-semibold mb-3" style={{ color: '#353535' }}>
                       1:1 Video Sessions with Your Specialist
@@ -85,7 +98,7 @@ export default function Membership() {
                 <div className="flex justify-center">
                   <div className="bg-[#FFD3AC] rounded-full w-96 h-96 p-10 flex flex-col items-center justify-center text-center">
                     <div className="mb-4 w-16 h-16 relative">
-                      <Image src="/images/icons/unlimited_text.png" alt="Unlimited Text" fill className="object-contain" />
+                      <Image src="/images/icons/unlimited_text.png" alt="Unlimited Text" fill className="object-contain brightness-0" />
                     </div>
                     <h3 className="text-lg font-semibold mb-3" style={{ color: '#353535' }}>
                       Unlimited Text Access to Practitioners
@@ -100,7 +113,7 @@ export default function Membership() {
                 <div className="flex justify-center">
                   <div className="bg-[#FFD3AC] rounded-full w-96 h-96 p-10 flex flex-col items-center justify-center text-center">
                     <div className="mb-4 w-16 h-16 relative">
-                      <Image src="/images/icons/practitioner_collaboration.png" alt="Practitioner Collaboration" fill className="object-contain" />
+                      <Image src="/images/icons/practitioner_collaboration.png" alt="Practitioner Collaboration" fill className="object-contain brightness-0" />
                     </div>
                     <h3 className="text-lg font-semibold mb-3" style={{ color: '#353535' }}>
                       Practitioner Collaboration, Powered by Real-Time Data
@@ -140,7 +153,7 @@ export default function Membership() {
                       <div className="flex-none w-full flex justify-center snap-center">
                         <div className="bg-[#FFD3AC] rounded-full w-80 h-80 p-8 flex flex-col items-center justify-center text-center">
                           <div className="mb-4 w-16 h-16 relative">
-                            <Image src="/images/icons/video_sessions.png" alt="Video Sessions" fill className="object-contain" />
+                            <Image src="/images/icons/video_sessions.png" alt="Video Sessions" fill className="object-contain brightness-0" />
                           </div>
                           <h3 className="text-lg font-semibold mb-3" style={{ color: '#353535' }}>
                             1:1 Video Sessions with Your Specialist
@@ -155,7 +168,7 @@ export default function Membership() {
                       <div className="flex-none w-full flex justify-center snap-center">
                         <div className="bg-[#FFD3AC] rounded-full w-80 h-80 p-8 flex flex-col items-center justify-center text-center">
                           <div className="mb-4 w-16 h-16 relative">
-                            <Image src="/images/icons/unlimited_text.png" alt="Unlimited Text" fill className="object-contain" />
+                            <Image src="/images/icons/unlimited_text.png" alt="Unlimited Text" fill className="object-contain brightness-0" />
                           </div>
                           <h3 className="text-lg font-semibold mb-3" style={{ color: '#353535' }}>
                             Unlimited Text Access to Practitioners
@@ -170,7 +183,7 @@ export default function Membership() {
                       <div className="flex-none w-full flex justify-center snap-center">
                         <div className="bg-[#FFD3AC] rounded-full w-80 h-80 p-8 flex flex-col items-center justify-center text-center">
                           <div className="mb-4 w-16 h-16 relative">
-                            <Image src="/images/icons/practitioner_collaboration.png" alt="Practitioner Collaboration" fill className="object-contain" />
+                            <Image src="/images/icons/practitioner_collaboration.png" alt="Practitioner Collaboration" fill className="object-contain brightness-0" />
                           </div>
                           <h3 className="text-lg font-semibold mb-3" style={{ color: '#353535' }}>
                             Practitioner Collaboration, Powered by Real-Time Data
@@ -201,194 +214,57 @@ export default function Membership() {
             </div>
           </div>
 
-          {/* Icons Section - Copied from home page */}
+          {/* Icons Section */}
           <div className="pb-8 sm:pb-10 md:pb-12">
             <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
               <div className="mb-8 sm:mb-10 px-4">
-                {/* Desktop view - grid */}
-                <div className="hidden sm:grid grid-cols-5 lg:grid-cols-10 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
-                  {/* Skin & Hair */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/skin_hair.png" alt="Skin & Hair" fill className="object-contain" />
+                {/* Desktop view - 10-grid */}
+                <div className="hidden lg:grid grid-cols-10 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
+                  {healthCategories.map((cat) => (
+                    <div
+                      key={cat.label}
+                      className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform"
+                    >
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
+                        <Image
+                          src={cat.icon}
+                          alt={cat.label}
+                          fill
+                          className="object-contain brightness-0"
+                        />
+                      </div>
+                      <p className="text-[11px] text-center text-charcoal leading-[0.9]">
+                        {cat.label}
+                      </p>
                     </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
-                  </div>
-
-                  {/* Women's Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/womens_health.png" alt="Women&apos;s Health" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
-                  </div>
-
-                  {/* Men's Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/mens_health.png" alt="Men&apos;s Health" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
-                  </div>
-
-                  {/* Digestive Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/digestive_health.png" alt="Digestive Health" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
-                  </div>
-
-                  {/* Musculoskeletal */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/musculoskeletal.png" alt="Musculoskeletal" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
-                  </div>
-
-                  {/* Mental Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/mental_health.png" alt="Mental Health" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
-                  </div>
-
-                  {/* Longevity */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/longevity.png" alt="Longevity" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
-                  </div>
-
-                  {/* Weight Management */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/weight_mgmt.png" alt="Weight Management" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
-                  </div>
-
-                  {/* Hormone Health */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/hormone_health.png" alt="Hormone Health" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
-                  </div>
-
-                  {/* Wellness Guides */}
-                  <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
-                      <Image src="/images/icons/wellness_guides.png" alt="Wellness Guides" fill className="object-contain" />
-                    </div>
-                    <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Mobile view - horizontal scroll with arrows */}
-                <div className="sm:hidden">
-                  <div className="flex items-center gap-2">
-                    {/* Left Arrow */}
-                    <button
-                      onClick={() => {
-                        const scrollContainer = document.getElementById('icon-scroll');
-                        scrollContainer.scrollBy({ left: -200, behavior: 'smooth' });
-                      }}
-                      className="flex-shrink-0"
-                      aria-label="Previous icon"
-                    >
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                        <path d="M15 18l-6-6 6-6" />
-                      </svg>
-                    </button>
-
-                    {/* Scrollable Container */}
-                    <div className="flex-1 overflow-hidden">
-                      <div
-                        id="icon-scroll"
-                        className="flex gap-3 overflow-x-auto scrollbar-hide"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitScrollbar: { display: 'none' } }}
-                      >
-                    {/* All 10 icons repeated for mobile */}
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/skin_hair.png" alt="Skin & Hair" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Skin & Hair</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/womens_health.png" alt="Women&apos;s Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Women&apos;s Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/mens_health.png" alt="Men&apos;s Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Men&apos;s Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/digestive_health.png" alt="Digestive Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Digestive Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/musculoskeletal.png" alt="Musculoskeletal" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Musculoskeletal</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/mental_health.png" alt="Mental Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Mental Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/longevity.png" alt="Longevity" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Longevity</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/weight_mgmt.png" alt="Weight Management" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Weight<br/>Management</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/hormone_health.png" alt="Hormone Health" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Hormone<br/>Health</p>
-                    </div>
-                    <div className="bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 flex-shrink-0">
-                      <div className="w-10 h-10 mb-1 relative">
-                        <Image src="/images/icons/wellness_guides.png" alt="Wellness Guides" fill className="object-contain" />
-                      </div>
-                      <p className="text-[11px] text-center text-gray-800 leading-[0.9]">Wellness<br/>Guides</p>
-                    </div>
-                      </div>
-                    </div>
-
-                    {/* Right Arrow */}
-                    <button
-                      onClick={() => {
-                        const scrollContainer = document.getElementById('icon-scroll');
-                        scrollContainer.scrollBy({ left: 200, behavior: 'smooth' });
-                      }}
-                      className="flex-shrink-0"
-                      aria-label="Next icon"
-                    >
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                    </button>
+                {/* Mobile / Tablet view - auto-scrolling marquee */}
+                <div className="lg:hidden overflow-hidden max-w-6xl mx-auto">
+                  <div className="flex w-max animate-marquee gap-3 sm:gap-4 md:gap-5">
+                    {[...healthCategories, ...healthCategories].map((cat, i) => {
+                      const isDuplicate = i >= healthCategories.length;
+                      return (
+                        <div
+                          key={`${cat.label}-${i}`}
+                          aria-hidden={isDuplicate ? true : undefined}
+                          className="flex-none bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform"
+                        >
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
+                            <Image
+                              src={cat.icon}
+                              alt={cat.label}
+                              fill
+                              className="object-contain brightness-0"
+                            />
+                          </div>
+                          <p className="text-[8px] sm:text-[11px] text-center text-charcoal leading-[0.9]">
+                            {cat.label}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -417,7 +293,7 @@ export default function Membership() {
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
             {/* Left Column - Membership */}
             <div className="w-full lg:flex-1">
-              <div className="mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl text-center" style={{ color: '#353535' }}>
+              <div className="mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl text-center font-heading" style={{ color: '#353535' }}>
                 Membership
               </div>
 

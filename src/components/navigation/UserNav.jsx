@@ -11,34 +11,34 @@ export default function UserNav({ currentPath }) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white bg-opacity-90 backdrop-blur-sm shadow-sm">
+    <header className="sticky top-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-sm border-b border-[#E7E2D9] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between h-16">
-        <div className="text-2xl font-bold text-green-600">Ambe</div>
+        <div className="text-2xl font-bold text-[#1A1A1A]">Ambe</div>
         <nav className="flex space-x-6">
           {tabs.map(({ label, href, Icon }) => {
-            const isActive = currentPath === href;
+            const isActive = currentPath === href || currentPath.startsWith(`${href}/`);
             return (
               <Link
                 key={href}
                 href={href}
                 className={`group relative flex items-center space-x-1 px-2 py-1 rounded-md transition ${
                   isActive
-                    ? 'text-green-600'
-                    : 'text-gray-600 hover:text-green-500'
+                    ? 'text-[#1A1A1A] font-semibold'
+                    : 'text-[#6B6862] hover:text-[#1A1A1A]'
                 }`}
               >
                 <Icon
                   className={`h-5 w-5 transition-colors ${
                     isActive
-                      ? 'text-green-600'
-                      : 'text-gray-400 group-hover:text-green-500'
+                      ? 'text-[#1A1A1A]'
+                      : 'text-[#8C827A] group-hover:text-[#1A1A1A]'
                   }`}
                 />
                 <span className="text-sm font-medium">
                   {label}
                 </span>
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 mx-auto h-0.5 w-6 bg-green-600" />
+                  <span className="absolute bottom-0 left-0 right-0 mx-auto h-0.5 w-6 bg-[#C8996A]" />
                 )}
               </Link>
             );

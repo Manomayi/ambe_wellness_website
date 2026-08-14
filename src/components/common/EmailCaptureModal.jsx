@@ -72,7 +72,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Get your free Ambé guides"
+        aria-label="Get your complimentary Ambé guides"
         className="relative w-full max-w-[520px] rounded-2xl sm:rounded-3xl px-6 py-8 sm:px-10 sm:py-10 text-center shadow-2xl"
         style={{ backgroundColor: "#FFFFFF", color: "#353535" }}
         onClick={(e) => e.stopPropagation()}
@@ -123,7 +123,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
               >
                 <span style={{ color: "#C8996A" }}>8</span> Expert Guides.{" "}
                 <em className="italic" style={{ color: "#C8996A" }}>
-                  Yours Free.
+                  Complimentary.
                 </em>
               </h2>
             )}
@@ -161,7 +161,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
                   ? "Sending…"
                   : guideTitle
                     ? "Send My Guide"
-                    : "Send My Free Guides"}
+                    : "Send My Complimentary Guides"}
               </button>
             </form>
 

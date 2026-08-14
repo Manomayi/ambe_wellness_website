@@ -66,24 +66,24 @@ export default function MessageDoctorClient() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
       </div>
     );
   }
 
   if (!profile?.doctor) {
     return (
-      <div className="max-w-4xl mx-auto p-6 text-center h-screen flex items-center justify-center">
+      <div className="max-w-4xl mx-auto p-6 text-center h-64 flex items-center justify-center">
         <div>
-          <ChatBubbleLeftRightIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">No Healthcare Provider Assigned</h2>
-          <p className="text-gray-600 mb-6">
+          <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#8C827A] mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">No Healthcare Provider Assigned</h2>
+          <p className="text-sm text-[#6B6862] mb-6">
             You need to be matched with a healthcare provider before you can send messages.
           </p>
           <button
             onClick={() => router.push('/user/get-matched')}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
           >
             Get Matched Now
           </button>

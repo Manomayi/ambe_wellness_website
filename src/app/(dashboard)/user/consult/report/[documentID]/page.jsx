@@ -29,13 +29,13 @@ export default function ConsultationReportPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-green-600 border-t-transparent rounded-full"/>
+        <div className="animate-spin h-10 w-10 border-2 border-[#C8996A] border-t-transparent rounded-full"/>
       </div>
     );
   }
 
   if (!data) {
-    return <p className="text-center py-12">No report found.</p>;
+    return <p className="text-center py-12 text-sm text-[#6B6862]">No report found.</p>;
   }
 
   const { recommendations, store_recommendations, notes, time } = data;
@@ -44,7 +44,7 @@ export default function ConsultationReportPage() {
     : null;
 
   const Card = ({ children }) => (
-    <div className="bg-white border-l-4 border-green-600 shadow rounded-lg p-4 mb-4">
+    <div className="bg-white border border-[#E7E2D9] border-l-4 border-l-[#C8996A] shadow-sm rounded-xl p-5 mb-4">
       {children}
     </div>
   );

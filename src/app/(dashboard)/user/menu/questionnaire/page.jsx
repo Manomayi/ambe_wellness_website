@@ -195,19 +195,19 @@ export default function QuestionnairePage() {
         <h1 className="text-2xl font-bold">Questionnaire</h1>
       </div>
 
-      <div className="border bg-white rounded-lg p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-center">
+      <div className="border border-[#E7E2D9] bg-white rounded-xl p-6 space-y-4 shadow-sm">
+        <h2 className="text-xl font-semibold text-center text-[#1A1A1A]">
           {questions[currentPage]}
         </h2>
         <div className="space-y-2">
           {options[currentPage].map((opt,i) => (
-            <label key={i} className="flex items-center space-x-2">
+            <label key={i} className="flex items-center space-x-2 text-sm text-[#1A1A1A] cursor-pointer">
               <input
                 type="radio"
                 name={`q${currentPage}`}
                 checked={selected[currentPage]===i}
                 onChange={()=>choose(i)}
-                className="form-radio text-green-600"
+                className="accent-[#C8996A]"
               />
               <span>{opt}</span>
             </label>
@@ -217,14 +217,14 @@ export default function QuestionnairePage() {
 
       <div className="flex justify-between">
         {currentPage>0 
-          ? <button onClick={back} className="px-4 py-2 bg-gray-200 rounded">Back</button>
+          ? <button onClick={back} className="px-4 py-2 bg-[#FAF8F5] border border-[#E7E2D9] hover:bg-[#F4F1EA] rounded-lg text-sm text-[#1A1A1A]">Back</button>
           : <div/>
         }
         {currentPage === questions.length-1
           ? <button 
               onClick={submit} 
               disabled={loading} 
-              className="px-6 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+              className="px-6 py-2 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-lg text-sm font-medium transition disabled:opacity-50 shadow-sm"
             >
               {loading?'Saving…':'Complete'}
             </button>

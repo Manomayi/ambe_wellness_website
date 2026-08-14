@@ -19,12 +19,12 @@
   object-fit: cover;
 }
 
-/* Light dark tint — video stays visible */
+/* Rich dark tint — video stays visible while text has high contrast */
 .ent-video-section .ent-video-overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: rgba(26, 26, 26, 0.48);
+  background: rgba(14, 14, 14, 0.78);
   pointer-events: none;
 }
 

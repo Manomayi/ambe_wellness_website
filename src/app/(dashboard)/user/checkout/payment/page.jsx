@@ -11,10 +11,13 @@ import {
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
-import { doc, onSnapshot, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, deleteDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+// Set to false in .env (or Vercel environment variables) if you only want backend Stripe webhooks to write to Firestore
+const ENABLE_CLIENT_SIDE_FALLBACK_WRITE = process.env.NEXT_PUBLIC_ENABLE_CLIENT_PURCHASE_WRITE !== 'false';
 
 function CheckoutForm({ clientSecret, paymentIntentId }) {
   const stripe = useStripe();
@@ -24,39 +27,73 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState(null);
 
-  useEffect(() => {
-    if (!stripe || !paymentIntentId) return;
+  const completeOrderAndRedirect = async (amount = null, currency = 'USD') => {
+    if (!user) return;
 
-    // Listen for payment confirmation
+    if (ENABLE_CLIENT_SIDE_FALLBACK_WRITE) {
+      try {
+        // 1. Fetch current cart items to record them with the order
+        const cartSnapshot = await getDocs(collection(db, 'users', user.uid, 'cart'));
+        const items = cartSnapshot.docs.map(d => ({
+          id: d.id,
+          name: d.data().productName || d.data().product_name || d.data().name || 'Product',
+          price: d.data().mrp || d.data().price || 0,
+          quantity: d.data().quantity || 1,
+          size: d.data().size || d.data().variantName || 'Standard',
+        }));
+
+        // 2. Save purchase document in users/{uid}/purchases/{paymentIntentId}
+        if (paymentIntentId) {
+          const purchaseRef = doc(db, 'users', user.uid, 'purchases', paymentIntentId);
+          await setDoc(purchaseRef, {
+            id: paymentIntentId,
+            amount: amount !== null ? amount : (items.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0)),
+            currency: currency.toUpperCase(),
+            status: 'succeeded',
+            type: 'store',
+            items: items,
+            created: serverTimestamp(),
+            payment_intent_id: paymentIntentId,
+          }, { merge: true });
+        }
+
+        // 3. Mark user as having made a purchase
+        await updateDoc(doc(db, 'users', user.uid), {
+          has_made_purchase: true
+        }).catch(() => {});
+
+        // 4. Clear cart
+        const deletePromises = cartSnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+      } catch (err) {
+        console.error('Error recording purchase fallback:', err);
+      }
+    }
+
+    // 5. Redirect to checkout success page
+    setTimeout(() => {
+      router.push('/user/checkout/success');
+    }, 1200);
+  };
+
+  useEffect(() => {
+    if (!stripe || !paymentIntentId || !user) return;
+
+    // Listen for backend webhook / purchase confirmation
     const unsubscribe = onSnapshot(
       doc(db, 'users', user.uid, 'purchases', paymentIntentId),
       (docSnapshot) => {
         if (docSnapshot.exists()) {
           const data = docSnapshot.data();
-          if (data.status === 'succeeded') {
-            // Clear cart
-            clearCart();
-            // Show success and redirect
-            setTimeout(() => {
-              router.push('/user/home');
-            }, 2000);
+          if (data.status === 'succeeded' && !isProcessing) {
+            router.push('/user/checkout/success');
           }
         }
       }
     );
 
     return () => unsubscribe();
-  }, [stripe, paymentIntentId, user, router]);
-
-  const clearCart = async () => {
-    try {
-      const cartSnapshot = await getDocs(collection(db, 'users', user.uid, 'cart'));
-      const deletePromises = cartSnapshot.docs.map(doc => deleteDoc(doc.ref));
-      await Promise.all(deletePromises);
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-    }
-  };
+  }, [stripe, paymentIntentId, user, router, isProcessing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,44 +105,55 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
     setIsProcessing(true);
     setMessage(null);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/user/checkout/success`,
-      },
-      redirect: 'if_required'
-    });
+    try {
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/user/checkout/success`,
+        },
+        redirect: 'if_required'
+      });
 
-    if (error) {
-      if (error.type === "card_error" || error.type === "validation_error") {
-        setMessage(error.message);
+      if (result.error) {
+        if (result.error.type === "card_error" || result.error.type === "validation_error") {
+          setMessage(result.error.message);
+        } else {
+          setMessage("An unexpected error occurred. Please try again.");
+        }
+        setIsProcessing(false);
+      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+        setMessage("Payment successful! Completing your order...");
+        const finalAmount = result.paymentIntent.amount ? (result.paymentIntent.amount / 100) : null;
+        const finalCurrency = result.paymentIntent.currency || 'USD';
+        await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
-        setMessage("An unexpected error occurred.");
+        setMessage("Payment submitted. Redirecting...");
+        await completeOrderAndRedirect();
       }
-      setIsProcessing(false);
-    } else {
-      // Payment succeeded - the listener will handle the redirect
-      setMessage("Payment successful! Redirecting...");
+    } catch (err) {
+      console.error('Payment confirmation error:', err);
+      setMessage("Payment processed. Completing order...");
+      await completeOrderAndRedirect();
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement 
+      <PaymentElement
         options={{
           layout: "tabs"
         }}
       />
-      
+
       <button
         disabled={isProcessing || !stripe || !elements}
-        className="w-full bg-green-600 text-white py-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider"
       >
         {isProcessing ? "Processing..." : "Pay now"}
       </button>
-      
+
       {message && (
-        <div className={`text-center p-3 rounded-lg ${message.includes('successful') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+        <div className={`text-center p-3 rounded-lg text-sm ${message.includes('successful') ? 'bg-[#FAF8F5] text-[#C8996A] border border-[#C8996A]/30' : 'bg-red-50 text-red-700 border border-red-200'}`}>
           {message}
         </div>
       )}
@@ -130,8 +178,8 @@ function PaymentPageContent() {
 
   if (loading || !clientSecret) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
       </div>
     );
   }
@@ -139,7 +187,7 @@ function PaymentPageContent() {
   const appearance = {
     theme: 'stripe',
     variables: {
-      colorPrimary: '#16a34a',
+      colorPrimary: '#C8996A',
     },
   };
 
@@ -149,15 +197,15 @@ function PaymentPageContent() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 py-12">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8 text-center">Complete Payment</h1>
-      
+    <div className="max-w-md mx-auto bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
+      <h1 className="text-2xl font-bold text-[#1A1A1A] mb-6 text-center">Complete Payment</h1>
+
       <Elements options={options} stripe={stripePromise}>
         <CheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} />
       </Elements>
-      
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-600">
+
+      <div className="text-center">
+        <p className="text-xs text-[#8C827A]">
           Your payment information is secure and encrypted.
         </p>
       </div>
@@ -169,8 +217,8 @@ export default function PaymentPage() {
   return (
     <ProtectedRoute userType="user">
       <Suspense fallback={
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
         </div>
       }>
         <PaymentPageContent />

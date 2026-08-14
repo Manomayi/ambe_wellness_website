@@ -231,7 +231,7 @@ export default function QuestionnaireResultsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
@@ -241,10 +241,10 @@ export default function QuestionnaireResultsPage() {
   if (!doshaData) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-gray-800">Please complete the questionnaire</p>
+        <p className="text-base text-[#1A1A1A]">Please complete the questionnaire</p>
         <button
           onClick={() => router.push('/user/menu/questionnaire')}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow"
+          className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium shadow-sm transition"
         >
           Complete Questionnaire
         </button>

@@ -17,7 +17,7 @@ export default function BiomarkersAccordion({ items, image, imageAlt }) {
         {/* Accordion */}
         <div className="w-full lg:flex-1">
           <div
-            className="text-xs font-semibold tracking-widest uppercase mb-4"
+            className="text-lg sm:text-xl font-bold tracking-widest uppercase mb-4"
             style={{ color: "#FFD3AC" }}
           >
             Q&amp;A
@@ -26,10 +26,15 @@ export default function BiomarkersAccordion({ items, image, imageAlt }) {
           {items.map((item, index) => {
             const isOpen = openIndex === index;
             return (
-              <div key={item.title} style={{ borderTop: index === 0 ? "none" : "1px solid #F4F1EA" }}>
+              <div
+                key={item.title}
+                style={{ borderTop: index === 0 ? "none" : "1px solid #F4F1EA" }}
+                onMouseEnter={() => setOpenIndex(index)}
+              >
                 <button
                   type="button"
                   onClick={() => toggle(index)}
+                  onFocus={() => setOpenIndex(index)}
                   aria-expanded={isOpen}
                   className="w-full flex items-center justify-between gap-4 text-left py-4 cursor-pointer"
                 >
@@ -40,7 +45,7 @@ export default function BiomarkersAccordion({ items, image, imageAlt }) {
                     {item.title}
                   </span>
                   <span
-                    className="text-2xl font-light flex-shrink-0 leading-none"
+                    className="text-3xl sm:text-4xl font-light flex-shrink-0 leading-none"
                     style={{ color: "#FFD3AC" }}
                   >
                     {isOpen ? "−" : "+"}

@@ -32,6 +32,54 @@ const healthCategories = [
   { icon: "/images/icons/wellness_guides.png", label: "Wellness Guides" },
 ];
 
+const areasOfCare = [
+  {
+    icon: "/images/icons/hormone_health.png",
+    title: "Hormone Health",
+    text: "Balance, not band-aids with adverse long-term effects or dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.",
+  },
+  {
+    icon: "/images/icons/womens_health.png",
+    title: "Women's Health",
+    text: "Whole-woman care, redefined. From menstruation to menopause, fertility to fibroids—we offer precise, culturally competent, deeply supportive care that treats the whole woman, not just her symptoms.",
+  },
+  {
+    icon: "/images/icons/mens_health.png",
+    title: "Men's Health",
+    text: "More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional Ayurvedic and modern medical science to build long-term performance and resilience.",
+  },
+  {
+    icon: "/images/icons/musculoskeletal.png",
+    title: "Musculoskeletal",
+    text: "Move freely. Live fully. Whether it’s pain, posture, inflammation, or injury recovery—we integrate Ayurveda, biomechanics, and physical optimization protocols personalized to your structure.",
+  },
+  {
+    icon: "/images/icons/emotional_behavorial.png",
+    title: "Emotional, Mental & Behavioral",
+    text: "Your mind-body reboot. Anxiety, burnout, depression, addiction patterns—no surface fixes. We offer deep emotional recalibration through neuro-supportive herbs, behavior rewiring, and somatic therapies that stick.",
+  },
+  {
+    icon: "/images/icons/oncology.png",
+    title: "Oncology Support",
+    text: "Rooted care during hard seasons. For those undergoing or recovering from cancer, we provide complementary pathways that nourish, restore, and support immunity—with compassion and precision.",
+  },
+  {
+    icon: "/images/icons/tailor-made.png",
+    title: "Tailor Made Medicine Programs",
+    text: "Built for you. Not the algorithm. We don’t do fads. We do personalized, long-game protocols aligned with your body type, labs, lifestyle, and history. This is medicine made human again.",
+  },
+  {
+    icon: "/images/icons/whole_body.png",
+    title: "Home & Environment Detox",
+    text: "Your environment heals with you. We give you step-by-step plans for detoxing your space, body care routines, and healing rhythms to keep your inner and outer worlds in sync.",
+  },
+  {
+    icon: "/images/icons/whole_kitchen.png",
+    title: "Healing Kitchen Guide",
+    text: "What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a healing center, with Ayurvedic and vet-approved tips for feeding those you love.",
+  },
+];
+
 // Carousel component for The Ambé Difference section
 function AmbeDifferenceCarousel() {
   const [currentItem, setCurrentItem] = React.useState(0);
@@ -224,7 +272,7 @@ export default function Home() {
             <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
               <div className="max-w-xl lg:max-w-2xl">
                 <p className="text-xs sm:text-sm text-ambe-cream/80 mb-4 font-light tracking-wide">
-                  Accredited Ayurvedic degrees and allopathic training.
+                  Vetted practitioners with accredited Ayurveda degrees and allopathic training.
                 </p>
 
                 <div className="inline-flex items-center gap-2 border border-ambe-cream/30 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
@@ -234,7 +282,7 @@ export default function Home() {
                   </span>
                 </div>
 
-                <h1 className="font-heading !text-[1.75rem] sm:!text-4xl md:!text-5xl lg:!text-[3.5rem] !text-ambe-cream font-normal leading-[1.12] mb-4 sm:mb-5 not-italic">
+                <h1 className="font-heading !text-2xl sm:!text-3xl md:!text-4xl lg:!text-[2.75rem] !text-ambe-cream font-normal leading-[1.15] mb-4 sm:mb-5 not-italic">
                   Holistic-Doctor{" "}
                   <em className="italic !text-ambe-cream font-normal">led care.</em>
                   <br />
@@ -307,7 +355,7 @@ export default function Home() {
                               src={cat.icon}
                               alt={cat.label}
                               fill
-                              className="object-contain"
+                              className="object-contain brightness-0"
                             />
                           </div>
                           <p className="text-[8px] sm:text-[11px] text-center text-charcoal leading-[0.9]">
@@ -1219,302 +1267,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Wellness Benefits Section — Areas of Care */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* <div className="text-center mb-8 sm:mb-10">
-            <div
-              className={sectionTitleClasses + " text-2xl sm:text-3xl md:text-4xl"}
-              style={{ color: "#353535" }}
-            >
-              Areas of Care
-            </div>
-          </div> */}
-          <div className="flex items-center justify-center">
-            <div className="relative w-full" style={{ overflow: "hidden" }}>
-              {/* Scrollable Container - fixed width to show exactly 3 items */}
-              <div 
-                id="wellness-scroll"
-                className="flex gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide" 
-                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
-                onScroll={(e) => {
-                  const scrollPosition = e.target.scrollLeft;
-                  const containerWidth = e.target.scrollWidth / 3; // Total width divided by 3 groups
-                  
-                  // Update desktop dots (groups of 3)
-                  const currentPage = Math.round(scrollPosition / containerWidth);
-                  const dots = document.querySelectorAll('.wellness-dot');
-                  dots.forEach((dot, index) => {
-                    if (index === currentPage) {
-                      dot.style.backgroundColor = '#FFD3AC';
-                      dot.style.borderColor = '#FFD3AC';
-                    } else {
-                      dot.style.backgroundColor = 'transparent';
-                      dot.style.borderColor = '#353535';
-                    }
-                  });
-                  
-                  // Update mobile dots (individual items)
-                  const itemWidth = 380 + 32; // 380px circle width + 32px gap
-                  const currentItem = Math.round(scrollPosition / itemWidth);
-                  const mobileDots = document.querySelectorAll('.wellness-dot-mobile');
-                  mobileDots.forEach((dot, index) => {
-                    if (index === currentItem) {
-                      dot.style.backgroundColor = '#353535';
-                    } else {
-                      dot.style.backgroundColor = '#D0D0D0';
-                    }
-                  });
-                  
-                  // Show/hide arrows based on scroll position
-                  const rightArrow = document.getElementById('wellness-arrow');
-                  const leftArrow = document.getElementById('wellness-arrow-left');
-                  if (rightArrow) {
-                    const maxScroll = e.target.scrollWidth - e.target.clientWidth;
-                    if (scrollPosition >= maxScroll - 10) {
-                      rightArrow.style.opacity = '0';
-                      rightArrow.style.pointerEvents = 'none';
-                    } else {
-                      rightArrow.style.opacity = '1';
-                      rightArrow.style.pointerEvents = 'auto';
-                    }
-                  }
-                  if (leftArrow) {
-                    if (scrollPosition > 10) {
-                      leftArrow.style.opacity = '1';
-                      leftArrow.style.pointerEvents = 'auto';
-                    } else {
-                      leftArrow.style.opacity = '0';
-                      leftArrow.style.pointerEvents = 'none';
-                    }
-                  }
-                }}
-              >
-              {/* Hormone Health */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/hormone_health.png"
-                      alt="Hormone Health"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Hormone Health
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Balance, not band-aids with adverse long-term effects or dependency. From cycle irregularities to adrenal burnout to testosterone fluctuations, we decode your hormonal profile using advanced labs and Ayurvedic principles—then tailor a plan that actually works for you.
-                  </p>
-                </div>
-              </div>
-
-              {/* Women's Health */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/womens_health.png"
-                      alt="Women's Health"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Women&apos;s Health
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Whole-woman care, redefined. From menstruation to menopause, fertility to fibroids—we offer precise, culturally competent, deeply supportive care that treats the whole woman, not just her symptoms.                  </p>
-                </div>
-              </div>
-
-              {/* Men's Health */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/mens_health.png"
-                      alt="Men's Health"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Men&apos;s Health
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-More than testosterone. We address the full spectrum—from vitality and libido to stress, sleep, and prostate support—blending traditional Ayurvedic and modern medical science to build long-term performance and resilience.                  </p>
-                </div>
-              </div>
-
-              {/* Musculoskeletal */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/musculoskeletal.png"
-                      alt="Musculoskeletal"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Musculoskeletal
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Move freely. Live fully. Whether it’s pain, posture, inflammation, or injury recovery—we integrate Ayurveda, biomechanics, and physical optimization protocols personalized to your structure.                  </p>
-                </div>
-              </div>
-
-              {/* Emotional, Mental & Behavioral */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/emotional_behavorial.png"
-                      alt="Emotional, Mental & Behavioral"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Emotional, Mental & Behavioral
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Your mind-body reboot. Anxiety, burnout, depression, addiction patterns—no surface fixes. We offer deep emotional recalibration through neuro-supportive herbs, behavior rewiring, and somatic therapies that stick.                  </p>
-                </div>
-              </div>
-
-              {/* Oncology Support */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/oncology.png"
-                      alt="Oncology Support"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Oncology Support
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Rooted care during hard seasons. For those undergoing or recovering from cancer, we provide complementary pathways that nourish, restore, and support immunity—with compassion and precision.                  </p>
-                </div>
-              </div>
-
-              {/* Tailor Made Medicine Program */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/tailor-made.png"
-                      alt="Tailor Made Medicine Program"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Tailor Made Medicine Programs
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Built for you. Not the algorithm. We don’t do fads. We do personalized, long-game protocols aligned with your body type, labs, lifestyle, and history. This is medicine made human again.                  </p>
-                </div>
-              </div>
-
-              {/* Whole Body & Mind Health Scans */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/whole_body.png"
-                      alt="Whole Body & Mind Health Scans"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Home & Environment Detox
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-Your environment heals with you. We give you step-by-step plans for detoxing your space, body care routines, and healing rhythms to keep your inner and outer worlds in sync.                  </p>
-                </div>
-              </div>
-
-              {/* Healing Kitchen Guide */}
-              <div className="flex-none snap-start" style={{ width: "380px" }}>
-                <div className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start" style={{ backgroundColor: "#FFD3AC", width: "380px", height: "380px" }}>
-                  <div className="w-16 h-16 mb-4">
-                    <Image
-                      src="/images/icons/whole_kitchen.png"
-                      alt="Healing Kitchen Guide"
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#353535" }}>
-                    Healing Kitchen Guide
-                  </div>
-                  <p className="text-base" style={{ color: "#353535" }}>
-What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a healing center, with Ayurvedic and vet-approved tips for feeding those you love.                  </p>
-                </div>
-              </div>
-            </div>
-            </div>
-          </div>
-          {/* Pagination Dots */}
-          <div className="flex justify-center gap-2 mt-8">
-              {/* Desktop dots - 3 for groups of 3 */}
-              <div className="hidden sm:flex gap-3">
-                <div 
-                  className="wellness-dot w-3 h-3 rounded-full cursor-pointer transition-all border"
-                  style={{ backgroundColor: "#FFD3AC", borderColor: "#FFD3AC" }}
-                  onClick={() => {
-                    document.getElementById('wellness-scroll').scrollTo({ left: 0, behavior: 'smooth' });
-                  }}
-                />
-                <div 
-                  className="wellness-dot w-3 h-3 rounded-full cursor-pointer transition-all border"
-                  style={{ backgroundColor: "transparent", borderColor: "#353535" }}
-                  onClick={() => {
-                    const itemWidth = 380 + 32; // circle width + gap
-                    document.getElementById('wellness-scroll').scrollTo({ left: itemWidth * 3, behavior: 'smooth' });
-                  }}
-                />
-                <div 
-                  className="wellness-dot w-3 h-3 rounded-full cursor-pointer transition-all border"
-                  style={{ backgroundColor: "transparent", borderColor: "#353535" }}
-                  onClick={() => {
-                    const itemWidth = 380 + 32; // circle width + gap
-                    document.getElementById('wellness-scroll').scrollTo({ left: itemWidth * 6, behavior: 'smooth' });
-                  }}
-                />
-              </div>
-              {/* Mobile dots - 9 for individual items */}
-              <div className="flex sm:hidden gap-2">
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
-                  <div 
-                    key={index}
-                    className="wellness-dot-mobile w-2 h-2 rounded-full cursor-pointer transition-colors"
-                    style={{ backgroundColor: index === 0 ? "#353535" : "#D0D0D0" }}
-                    onClick={() => {
-                      document.getElementById('wellness-scroll').scrollTo({ left: index * 344, behavior: 'smooth' });
+      {/* Wellness Benefits Section — Areas of Care (Auto-revolving marquee) */}
+      <section className="py-12 sm:py-16 md:py-20 overflow-hidden" style={{ backgroundColor: "#F4F1EA" }}>
+        <div className="w-full">
+          <div className="flex w-max animate-marquee gap-6 sm:gap-8" style={{ animationDuration: "50s" }}>
+            {[...areasOfCare, ...areasOfCare].map((item, i) => {
+              const isDuplicate = i >= areasOfCare.length;
+              return (
+                <div
+                  key={`${item.title}-${i}`}
+                  aria-hidden={isDuplicate ? true : undefined}
+                  tabIndex={isDuplicate ? -1 : undefined}
+                  className="flex-none"
+                  style={{ width: "380px", height: "380px" }}
+                >
+                  <div
+                    className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start transition-transform hover:scale-[1.02] shadow-sm"
+                    style={{
+                      backgroundColor: "#FFD3AC",
+                      width: "380px",
+                      height: "380px",
                     }}
-                  />
-                ))}
-              </div>
-            </div>
+                  >
+                    <div className="w-16 h-16 mb-4 flex-shrink-0">
+                      <Image
+                        src={item.icon}
+                        alt={item.title}
+                        width={64}
+                        height={64}
+                        className="object-contain w-full h-full"
+                      />
+                    </div>
+                    <div className="text-lg font-semibold mb-2 flex-shrink-0" style={{ color: "#353535" }}>
+                      {item.title}
+                    </div>
+                    <p className="text-base leading-relaxed" style={{ color: "#353535" }}>
+                      {item.text}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -1590,26 +1384,18 @@ What you eat—and feed your pets—matters. Simple, practical guidance to tran
 
                     {/* Main Quote */}
                     <div
-                      className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-5xl font-light leading-snug mb-2 sm:mb-4"
+                      className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-5xl font-light leading-snug mb-6 sm:mb-8"
                       style={{ color: "#353535" }}
                     >
                       With loving support, we can blossom into
                       <br className="hidden sm:block" />
                       our full potential.
                     </div>
-
-                    {/* Attribution */}
-                    <p
-                      className="text-right text-sm sm:text-base md:text-lg mt-2 mb-4"
-                      style={{ color: "#353535" }}
-                    >
-                      — Founder
-                    </p>
                     
                     {/* Ten trees text */}
                     <p
-                      className="text-sm sm:text-base leading-relaxed text-center"
-                      style={{ color: "#353535" }}
+                      className="text-sm sm:text-base leading-relaxed text-center font-semibold"
+                      style={{ color: "#C2691C" }}
                     >
                       Ten trees planted per member, per month = 120 trees per year
                       per member. Our health depends on the health of Mother Nature — trees are proven to be the #1

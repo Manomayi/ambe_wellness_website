@@ -2,11 +2,12 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import InquiryForm from "@/components/health-tech/InquiryForm";
+import Navigation from "@/components/navigation/Navigation";
 
 export const metadata = {
   title: "Health Technology — Ambé Wellness",
   description:
-    "Ambé integrates five clinically validated health technologies into a single, doctor-guided wellness protocol — making ancient wisdom measurable.",
+    "Ambé integrates clinically validated health technologies into a single, doctor-guided wellness protocol — making ancient wisdom measurable.",
 };
 
 const ACCENT = "#C8996A";
@@ -58,17 +59,17 @@ const MODALITIES = [
     body: "Addresses the intersection of nervous system regulation and cognitive performance — supporting the body's ability to recover from chronic stress load, optimize sleep architecture, and maintain neurological function under sustained pressure. Documented applications in burnout recovery, anxiety regulation, and cognitive aging support.",
     calloutLead: "Application domains:",
     calloutBody:
-      "Studied in occupational health, neurological rehabilitation, and stress-related cognitive decline across clinical and research settings.",
+      "Used in executive performance, clinical neuropsychology, and high-stress professional environments.",
   },
   {
     number: "05",
-    tagline: ["Clear what no", "longer serves you."],
-    title: "Systemic Detoxification & Lymphatic Flow",
-    label: "Systemic Detoxification",
-    body: "Supports the body's own detoxification pathways — the lymphatic system, hepatic clearance, and cellular waste removal — through non-invasive stimulation protocols. This addresses a frequently overlooked dimension of systemic health: the efficiency with which the body removes what it no longer needs, directly impacting energy, immunity, and inflammatory load.",
-    calloutLead: "Integrative role:",
+    tagline: ["Immunity,", "systemically reinforced."],
+    title: "Immune Coherence & Lymphatic Flow",
+    label: "Immune Support",
+    body: "Stimulates deep lymphatic drainage and supports humoral immune activity through subtle-energy field dynamics that encourage proper fluid balance, cellular waste elimination, and immune cell mobilization across mucosal barriers.",
+    calloutLead: "Integration role:",
     calloutBody:
-      "Functions as the systemic foundation for all other modalities — detoxification efficiency directly affects how well the body responds to cellular and cardiovascular protocols.",
+      "Acts as the systemic amplifier across all four other modalities — ensuring metabolic clearance keeps pace with cellular regeneration.",
   },
 ];
 
@@ -95,7 +96,7 @@ const SUMMARY = [
   },
 ];
 
-function Kicker({ children, center }) {
+function Kicker({ children, center = false }) {
   return (
     <div
       className={`text-xs sm:text-sm font-medium tracking-[0.25em] uppercase mb-4 ${center ? "text-center" : ""}`}
@@ -109,24 +110,8 @@ function Kicker({ children, center }) {
 export default function HealthTechnologyPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header — logo + back link */}
-      <header className="w-full bg-white border-b" style={{ borderColor: "#ECE7DE" }}>
-        <div className="max-w-5xl mx-auto px-6 sm:px-8 py-5 flex items-center justify-between">
-          <Link href="/">
-            <Image
-              src="/images/logos/ambe_logo.png"
-              alt="AMBE"
-              width={110}
-              height={36}
-              className="w-[90px] sm:w-[110px] h-auto"
-              priority
-            />
-          </Link>
-          <Link href="/" className="text-sm flex items-center gap-2" style={{ color: "#6B6B6B" }}>
-            <span aria-hidden>←</span> Back to Ambé Wellness
-          </Link>
-        </div>
-      </header>
+      {/* Navigation */}
+      <Navigation light={true} sticky={true} />
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-6 sm:px-8 pt-16 sm:pt-24 pb-12">
@@ -138,7 +123,7 @@ export default function HealthTechnologyPage() {
           The science of feeling well has advanced.
         </h1>
         <p className="text-base sm:text-lg max-w-2xl mb-10 leading-relaxed" style={{ color: "#6B6B6B" }}>
-          Ambé integrates five clinically validated health technologies into a
+          Ambé integrates clinically validated health technologies into a
           single, doctor-guided wellness protocol — extending what Ayurvedic
           medicine has always known into the language of modern science.
         </p>
@@ -195,9 +180,8 @@ export default function HealthTechnologyPage() {
         <div className="border-t" style={{ borderColor: "#ECE7DE" }} />
       </div>
 
-      {/* Five modalities */}
+      {/* Modalities */}
       <section className="max-w-5xl mx-auto px-6 sm:px-8 pt-16 sm:pt-20 pb-8">
-        <Kicker center>Five Modalities</Kicker>
         <h2
           className="text-3xl sm:text-4xl md:text-5xl text-center mb-4"
           style={{ fontFamily: SERIF, color: "#353535", fontWeight: 500 }}

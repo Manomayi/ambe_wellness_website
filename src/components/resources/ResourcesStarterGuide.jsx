@@ -48,7 +48,7 @@ export default function ResourcesStarterGuide() {
 
           <div className="bg-ambe-dark px-8 sm:px-10 py-10 sm:py-12">
             <p className="text-xs tracking-[0.25em] uppercase text-ambe-gold mb-4 font-medium">
-              Free Resource
+              Complimentary Resource
             </p>
 
             <h2 className="font-heading !text-2xl sm:!text-3xl md:!text-4xl !text-ambe-cream mb-4 leading-tight">
@@ -58,7 +58,7 @@ export default function ResourcesStarterGuide() {
             <p className="text-ambe-cream/80 text-sm sm:text-base leading-relaxed mb-8">
               Everything you need to begin your holistic health journey—food, body
               care, herbs, and daily routines, all in one beautifully designed
-              guide. Free, always.
+              guide. Complimentary, always.
             </p>
 
             {success ? (
@@ -84,7 +84,7 @@ export default function ResourcesStarterGuide() {
                   disabled={submitting}
                   className="px-6 py-3 rounded-sm text-xs sm:text-sm font-semibold tracking-[0.15em] uppercase bg-ambe-peach text-charcoal hover:bg-ambe-gold transition-colors disabled:opacity-60 whitespace-nowrap"
                 >
-                  {submitting ? "Sending…" : "Download Free"}
+                  {submitting ? "Sending…" : "Complimentary Download"}
                 </button>
               </form>
             )}

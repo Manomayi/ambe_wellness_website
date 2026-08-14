@@ -180,8 +180,8 @@ export default function UserCartPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#C8996A] border-t-transparent"></div>
         </div>
       </ProtectedRoute>
     );
@@ -189,57 +189,57 @@ export default function UserCartPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">
             {totalQuantity === 0 ? 'No Items' : `${totalQuantity} Item${totalQuantity > 1 ? 's' : ''}`}
           </h1>
         </div>
 
         {/* Cart Items or Empty Message */}
         {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-900 font-medium">Your cart is empty</p>
+          <div className="text-center py-12 bg-white border border-[#E7E2D9] rounded-xl">
+            <p className="text-xl text-[#1A1A1A] font-medium">Your cart is empty</p>
           </div>
         ) : (
           <div className="space-y-4">
             {cartItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-gray-100 border border-green-300 rounded-xl p-4"
+                className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-lg text-gray-900">{item.productName || item.product_name}</h3>
+                  <h3 className="font-bold text-lg text-[#1A1A1A]">{item.productName || item.product_name}</h3>
                   {item.doctor_recommended && (
-                    <span className="text-green-600 text-xs font-bold">RECOMMENDED</span>
+                    <span className="text-[#C8996A] text-xs font-bold uppercase tracking-wider">RECOMMENDED</span>
                   )}
                 </div>
-                <p className="text-gray-900 font-medium mb-3">
+                <p className="text-[#1A1A1A] font-medium text-sm mb-3">
                   Size: {item.size || item.variantName || 'Standard'} - MRP: ${item.mrp || item.price || 0}
                 </p>
                 <div className="flex items-center justify-between">
-                  <div className="bg-green-500 rounded-full flex items-center">
+                  <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-full flex items-center">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       disabled={item.quantity <= 1}
-                      className="p-2 text-white disabled:opacity-50"
+                      className="p-2 text-[#1A1A1A] disabled:opacity-40"
                     >
-                      <MinusIcon className="h-5 w-5" />
+                      <MinusIcon className="h-4 w-4" />
                     </button>
-                    <span className="px-4 text-white font-medium">{item.quantity}</span>
+                    <span className="px-3 text-[#1A1A1A] font-medium text-sm">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-2 text-white"
+                      className="p-2 text-[#1A1A1A]"
                     >
-                      <PlusIcon className="h-5 w-5" />
+                      <PlusIcon className="h-4 w-4" />
                     </button>
                   </div>
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="text-red-500 hover:text-red-600"
+                    className="text-[#8C827A] hover:text-red-600 transition"
                   >
-                    <TrashIcon className="h-6 w-6" />
+                    <TrashIcon className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export default function UserCartPage() {
           <div className="text-center py-4">
             <button
               onClick={() => setShowRecommendationsModal(true)}
-              className="text-green-500 font-medium hover:underline"
+              className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider"
             >
               ADD DOCTOR RECOMMENDATIONS
             </button>
@@ -262,50 +262,50 @@ export default function UserCartPage() {
         {/* Order Summary */}
         {cartItems.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-lg font-bold mb-4 text-gray-900">Estimated Order Summary</h2>
-            <div className="bg-gray-100 border border-green-300 rounded-xl p-4">
+            <h2 className="text-lg font-bold mb-4 text-[#1A1A1A]">Estimated Order Summary</h2>
+            <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-900 font-medium">Subtotal</span>
-                  <span className="text-gray-900 font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-[#6B6862] font-medium text-sm">Subtotal</span>
+                  <span className="text-[#1A1A1A] font-medium text-sm">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-900 font-medium">Tax</span>
-                  <span className="text-gray-900 font-medium">${tax.toFixed(2)}</span>
+                  <span className="text-[#6B6862] font-medium text-sm">Tax</span>
+                  <span className="text-[#1A1A1A] font-medium text-sm">${tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-900 font-medium">Shipping</span>
-                  <span className="text-gray-900 font-medium">${shipping.toFixed(2)}</span>
+                  <span className="text-[#6B6862] font-medium text-sm">Shipping</span>
+                  <span className="text-[#1A1A1A] font-medium text-sm">${shipping.toFixed(2)}</span>
                 </div>
                 {subscriptionDiscount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-green-700 font-medium">Subscription Discount</span>
-                    <span className="text-green-700 font-medium">-${subscriptionDiscount.toFixed(2)}</span>
+                    <span className="text-[#C8996A] font-medium text-sm">Subscription Discount</span>
+                    <span className="text-[#C8996A] font-medium text-sm">-${subscriptionDiscount.toFixed(2)}</span>
                   </div>
                 )}
                 {referralDiscount > 0 && (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-green-700 font-medium">
+                      <span className="text-[#C8996A] font-medium text-sm">
                         {referralInfo.isFirstTimeReferred 
                           ? "Referral Discount (25%)" 
                           : "Referral Credit (25%)"}
                       </span>
-                      <span className="text-green-700 font-medium">-${referralDiscount.toFixed(2)}</span>
+                      <span className="text-[#C8996A] font-medium text-sm">-${referralDiscount.toFixed(2)}</span>
                     </div>
                     {referralInfo.credits > 0 && !referralInfo.isFirstTimeReferred && (
                       <div className="text-center">
-                        <span className="text-xs text-gray-700 font-medium">
+                        <span className="text-xs text-[#8C827A] font-medium">
                           ({referralInfo.credits} credit{referralInfo.credits > 1 ? 's' : ''} available)
                         </span>
                       </div>
                     )}
                   </>
                 )}
-                <div className="border-t border-gray-300 pt-2 mt-2">
+                <div className="border-t border-[#E7E2D9] pt-2 mt-2">
                   <div className="flex justify-between font-bold">
-                    <span className="text-gray-900">Total</span>
-                    <span className="text-gray-900">${total.toFixed(2)}</span>
+                    <span className="text-[#1A1A1A] text-base">Total</span>
+                    <span className="text-[#1A1A1A] text-lg">${total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function UserCartPage() {
           <div className="mt-6">
             <button
               onClick={handleCheckout}
-              className="w-full bg-green-600 text-white py-4 rounded-lg font-medium hover:bg-green-700 transition"
+              className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-lg font-medium text-base transition uppercase tracking-wider shadow-sm"
             >
               CHECKOUT
             </button>
@@ -328,13 +328,13 @@ export default function UserCartPage() {
         {/* Doctor Recommendations Modal */}
         {showRecommendationsModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4 text-center text-gray-900">Doctor Recommendations</h3>
+            <div className="bg-white rounded-xl p-6 max-w-md w-full border border-[#E7E2D9]">
+              <h3 className="text-xl font-bold mb-4 text-center text-[#1A1A1A]">Doctor Recommendations</h3>
               <div className="space-y-3 mb-6">
                 {doctorRecommendations.map((rec, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="font-medium text-gray-900">{rec.product_name}</p>
-                    <p className="text-sm text-gray-700 font-medium">
+                  <div key={index} className="p-3 bg-[#FAF8F5] border border-[#E7E2D9] rounded-lg">
+                    <p className="font-medium text-[#1A1A1A] text-sm">{rec.product_name}</p>
+                    <p className="text-sm text-[#6B6862]">
                       Size: {rec.size}, Quantity: {rec.quantity}
                     </p>
                   </div>
@@ -343,13 +343,13 @@ export default function UserCartPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowRecommendationsModal(false)}
-                  className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="flex-1 py-3 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] text-sm font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={addDoctorRecommendations}
-                  className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-lg text-sm font-medium transition"
                 >
                   CONFIRM
                 </button>

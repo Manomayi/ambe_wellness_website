@@ -51,7 +51,7 @@ export default function Resources() {
         <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
           <div className="max-w-3xl">
             <p className="text-xs sm:text-sm tracking-[0.25em] uppercase text-ambe-gold mb-5 font-medium">
-              Free Resources
+              Complimentary Resources
             </p>
 
             <h1 className="font-heading !text-4xl sm:!text-5xl lg:!text-[3.5rem] !text-ambe-cream leading-[1.1] mb-6">
@@ -61,7 +61,7 @@ export default function Resources() {
 
             <p className="text-ambe-cream/90 text-base sm:text-lg md:text-xl font-light leading-relaxed mb-5 max-w-2xl">
               Real food. Clean essentials. Time-tested guidance — from kitchen to
-              cabinet, everything you need to live well, free and yours to keep.
+              cabinet, everything you need to live well.
             </p>
 
             <p className="font-heading italic !text-ambe-gold text-lg sm:text-xl">
