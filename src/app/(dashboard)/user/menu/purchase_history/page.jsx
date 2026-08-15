@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, query } from 'firebase/firestore';
+import BackButton from '@/components/common/BackButton';
 
 export default function PurchaseHistoryPage() {
   const router = useRouter();
@@ -77,6 +78,7 @@ export default function PurchaseHistoryPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <BackButton />
       <h1 className="text-2xl font-bold text-[#1A1A1A]">Purchase History</h1>
 
       {purchases.length === 0 ? (

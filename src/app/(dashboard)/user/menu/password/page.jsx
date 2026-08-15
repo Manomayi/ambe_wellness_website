@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase/config';
 import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import BackButton from '@/components/common/BackButton';
 
 export default function EditPasswordPage() {
   const router = useRouter();
@@ -74,8 +75,10 @@ export default function EditPasswordPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
-      <h1 className="text-2xl font-bold text-[#1A1A1A]">Change Password</h1>
+    <div className="max-w-lg mx-auto space-y-4">
+      <BackButton />
+      <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Change Password</h1>
       <p className="text-sm text-[#6B6862]">
         Password must be at least 8 characters, include a letter, and a special character.
       </p>
@@ -143,6 +146,7 @@ export default function EditPasswordPage() {
           {submitting ? 'Updating…' : 'Update'}
         </button>
       </form>
+      </div>
     </div>
   );
 }

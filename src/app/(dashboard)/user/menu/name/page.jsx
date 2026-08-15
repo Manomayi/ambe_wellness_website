@@ -6,6 +6,8 @@ import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
+import BackButton from '@/components/common/BackButton';
+
 export default function EditNamePage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
@@ -81,8 +83,10 @@ export default function EditNamePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
-      <h1 className="text-2xl font-bold text-[#1A1A1A]">Edit Name</h1>
+    <div className="max-w-lg mx-auto space-y-4">
+      <BackButton />
+      <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Edit Name</h1>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -111,6 +115,7 @@ export default function EditNamePage() {
           {updating ? 'Updating…' : 'Update'}
         </button>
       </form>
+      </div>
     </div>
   );
 }

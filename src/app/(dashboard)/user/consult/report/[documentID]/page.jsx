@@ -6,6 +6,7 @@ import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
+import BackButton from '@/components/common/BackButton';
 
 export default function ConsultationReportPage() {
   const router = useRouter();
@@ -35,7 +36,12 @@ export default function ConsultationReportPage() {
   }
 
   if (!data) {
-    return <p className="text-center py-12 text-sm text-[#6B6862]">No report found.</p>;
+    return (
+      <div className="max-w-4xl mx-auto space-y-4">
+        <BackButton label="Back to History" href="/user/consult/history" />
+        <p className="text-center py-12 text-sm text-[#6B6862]">No report found.</p>
+      </div>
+    );
   }
 
   const { recommendations, store_recommendations, notes, time } = data;
@@ -50,7 +56,9 @@ export default function ConsultationReportPage() {
   );
 
   return (
-    <div className="space-y-12">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <BackButton label="Back to History" href="/user/consult/history" />
+      <h1 className="text-2xl font-bold text-[#1A1A1A]">Consultation Report</h1>
 
       {/* Doctor */}
       <p className="text-sm uppercase font-semibold text-gray-600 mb-4">Doctor</p>

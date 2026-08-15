@@ -11,6 +11,7 @@ import {
   updateDoc,
   serverTimestamp
 } from 'firebase/firestore'
+import BackButton from '@/components/common/BackButton'
 
 const questions = [
   "Body size?",
@@ -190,9 +191,13 @@ export default function QuestionnairePage() {
   if (!user) return null
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-6">
+    <div className="max-w-xl mx-auto space-y-4">
+      <BackButton />
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Questionnaire</h1>
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Dosha Questionnaire</h1>
+        <span className="text-xs font-semibold text-[#8C827A] bg-white border border-[#E7E2D9] px-2.5 py-1 rounded-full">
+          Question {currentPage + 1} of {questions.length}
+        </span>
       </div>
 
       <div className="border border-[#E7E2D9] bg-white rounded-xl p-6 space-y-4 shadow-sm">

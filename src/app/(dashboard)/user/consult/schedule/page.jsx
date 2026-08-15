@@ -9,6 +9,7 @@ import { collection, query, where, getDocs, doc, getDoc, Timestamp } from 'fireb
 import { functions, db } from '@/lib/firebase/config';
 import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import moment from 'moment-timezone';
+import BackButton from '@/components/common/BackButton';
 
 // Health field mapping
 const HEALTH_FIELD_LABELS = {
@@ -316,8 +317,9 @@ export default function ScheduleConsultationPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Schedule Your Consultation</h1>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <BackButton label="Back to Consult" href="/user/consult" />
+        <h1 className="text-3xl font-bold text-[#1A1A1A]">Schedule Your Consultation</h1>
 
         {/* Doctor Info */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">

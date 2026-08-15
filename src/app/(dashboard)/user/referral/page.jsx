@@ -16,6 +16,7 @@ import {
   ShareIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 export default function ReferFriendPage() {
   const router = useRouter();
@@ -101,6 +102,7 @@ export default function ReferFriendPage() {
   return (
     <ProtectedRoute userType="user">
       <div className="max-w-4xl mx-auto space-y-6">
+        <BackButton />
         <h1 className="text-3xl font-bold text-[#1A1A1A]">Refer a Friend</h1>
 
         {/* Main Offer Card */}

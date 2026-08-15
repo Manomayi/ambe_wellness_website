@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '@/lib/firebase/config';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 const HEALTH_FIELDS = [
   { value: 'general_health', label: 'General Health', icon: '🏥' },
@@ -74,7 +75,8 @@ export default function GetMatched() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <BackButton />
       {!matched ? (
         <>
           <div className="text-center mb-8">

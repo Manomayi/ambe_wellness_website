@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import BackButton from '@/components/common/BackButton';
 
 // ---- Food & Lifestyle Data ----
 const vataKaphaFood = {
@@ -240,14 +241,17 @@ export default function QuestionnaireResultsPage() {
   }
   if (!doshaData) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-base text-[#1A1A1A]">Please complete the questionnaire</p>
-        <button
-          onClick={() => router.push('/user/menu/questionnaire')}
-          className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium shadow-sm transition"
-        >
-          Complete Questionnaire
-        </button>
+      <div className="max-w-3xl mx-auto space-y-4">
+        <BackButton />
+        <div className="flex flex-col items-center justify-center h-64 space-y-4 bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm">
+          <p className="text-base text-[#1A1A1A]">Please complete the questionnaire</p>
+          <button
+            onClick={() => router.push('/user/menu/questionnaire')}
+            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium shadow-sm transition"
+          >
+            Complete Questionnaire
+          </button>
+        </div>
       </div>
     );
   }
@@ -257,12 +261,20 @@ export default function QuestionnaireResultsPage() {
   const combo = mappings[`${primary}_${secondary}`] || mappings['vata_kapha'];
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-8">
-      <h1 className="text-2xl font-bold text-center text-gray-800">
-        Your Unique Constitution
-      </h1>
-      <RecommendationsSection title="Food Recommendations" data={combo.food} />
-      <RecommendationsSection title="Lifestyle Suggestions" data={combo.lifestyle} />
+    <div className="max-w-3xl mx-auto space-y-6">
+      <BackButton />
+      <div className="space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-[#1A1A1A]">
+            Your Unique Constitution
+          </h1>
+          <p className="text-sm text-[#6B6862] mt-1 capitalize">
+            Primary: <span className="font-semibold text-[#C8996A]">{primary}</span> • Secondary: <span className="font-semibold text-[#C8996A]">{secondary}</span>
+          </p>
+        </div>
+        <RecommendationsSection title="Food Recommendations" data={combo.food} />
+        <RecommendationsSection title="Lifestyle Suggestions" data={combo.lifestyle} />
+      </div>
     </div>
   );
 }

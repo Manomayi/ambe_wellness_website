@@ -7,7 +7,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import Link from 'next/link'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
-
+import BackButton from '@/components/common/BackButton'
 
 export default function ConsultationHistoryPage() {
   const router = useRouter();
@@ -53,12 +53,15 @@ export default function ConsultationHistoryPage() {
   }
 
   return (
-    <div className="space-y-12">
-      <h1 className="text-2xl font-semibold text-gray-800">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <BackButton />
+      <h1 className="text-2xl font-bold text-[#1A1A1A]">
         Consultation History
       </h1>
       {history.length === 0 ? (
-        <p className="text-gray-600">No appointment history found.</p>
+        <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 text-center shadow-sm">
+          <p className="text-sm text-[#6B6862]">No appointment history found.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {history.map((appt) => (

@@ -6,7 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { BellIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -37,16 +38,9 @@ export default function NotificationsPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="flex items-center mb-6">
-          <button
-            onClick={() => router.back()}
-            className="mr-4 p-2 rounded-full hover:bg-gray-100 transition"
-          >
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
-          </button>
-          <h1 className="text-2xl font-bold text-gray-800">Notifications</h1>
-        </div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <BackButton />
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Notifications</h1>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">

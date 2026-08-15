@@ -149,7 +149,7 @@ export default function UserMenuPage() {
         {
           label: 'Request a New Doctor',
           icon: UserPlusIcon,
-          route: '/user/get-matched',
+          route: '/user/request-doctor',
         },
         {
           label: 'Refer a Friend',

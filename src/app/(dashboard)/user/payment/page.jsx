@@ -13,6 +13,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import BackButton from "@/components/common/BackButton";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -182,29 +183,32 @@ export default function UserPaymentPage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-md mx-auto bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
-      <h1 className="text-2xl text-[#1A1A1A] font-bold">Payment</h1>
-      <p className="text-sm text-[#6B6862] leading-relaxed">
-        To secure your spot, a fully refundable $50 deposit is required that
-        will go towards your custom remedies after your consultation.
-      </p>
+    <div className="max-w-md mx-auto space-y-4">
+      <BackButton />
+      <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
+        <h1 className="text-2xl text-[#1A1A1A] font-bold">Payment</h1>
+        <p className="text-sm text-[#6B6862] leading-relaxed">
+          To secure your spot, a fully refundable $50 deposit is required that
+          will go towards your custom remedies after your consultation.
+        </p>
 
-      {!clientSecret ? (
-        <button
-          onClick={handleProceed}
-          disabled={loading}
-          className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 rounded-xl font-medium text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
-        >
-          {loading ? "Loading…" : "Proceed to Payment"}
-        </button>
-      ) : (
-        <Elements
-          stripe={stripePromise}
-          options={{ clientSecret, appearance: { theme: "stripe" } }}
-        >
-          <CheckoutForm user={user} paymentIntentId={paymentIntentId} />
-        </Elements>
-      )}
+        {!clientSecret ? (
+          <button
+            onClick={handleProceed}
+            disabled={loading}
+            className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 rounded-xl font-medium text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
+          >
+            {loading ? "Loading…" : "Proceed to Payment"}
+          </button>
+        ) : (
+          <Elements
+            stripe={stripePromise}
+            options={{ clientSecret, appearance: { theme: "stripe" } }}
+          >
+            <CheckoutForm user={user} paymentIntentId={paymentIntentId} />
+          </Elements>
+        )}
+      </div>
     </div>
   );
 }
