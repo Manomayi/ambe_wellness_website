@@ -101,26 +101,26 @@ export default function DoctorDashboard() {
       <div className="space-y-8">
         {/* Welcome Section */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-bold text-[#1A1A1A]">
             Welcome back, Dr. {profile?.last_name}
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-[#6B6862] mt-1">
             Here's an overview of your practice today
           </p>
         </div>
 
         {/* Verification Warning */}
         {!isVerifiedDoctor && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start">
-            <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 mr-3 mt-0.5" />
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start">
+            <ExclamationCircleIcon className="h-5 w-5 text-amber-600 mr-3 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-yellow-800">Verification Pending</h3>
-              <p className="text-yellow-700 text-sm mt-1">
+              <h3 className="font-semibold text-amber-800">Verification Pending</h3>
+              <p className="text-amber-700 text-sm mt-1">
                 Your account is under review. You'll be able to see users once verified.
               </p>
               <button 
                 onClick={() => router.push('/doctor/menu/verification')}
-                className="text-yellow-800 underline text-sm mt-2"
+                className="text-amber-800 underline text-sm mt-2"
               >
                 Check verification status
               </button>
@@ -133,41 +133,41 @@ export default function DoctorDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Total Users</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">
+                <p className="text-[#6B6862] text-sm">Total Users</p>
+                <p className="text-2xl font-bold text-[#1A1A1A] mt-1">
                   {stats.totalUsers}
                 </p>
               </div>
-              <UserGroupIcon className="h-10 w-10 text-blue-500" />
+              <UserGroupIcon className="h-10 w-10 text-[#C8996A]" />
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Upcoming Consultations</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">
+                <p className="text-[#6B6862] text-sm">Upcoming Consultations</p>
+                <p className="text-2xl font-bold text-[#1A1A1A] mt-1">
                   {stats.upcomingConsultations}
                 </p>
               </div>
-              <CalendarIcon className="h-10 w-10 text-green-500" />
+              <CalendarIcon className="h-10 w-10 text-[#C8996A]" />
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Pending Reports</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">
+                <p className="text-[#6B6862] text-sm">Pending Reports</p>
+                <p className="text-2xl font-bold text-[#1A1A1A] mt-1">
                   {stats.pendingReports}
                 </p>
               </div>
-              <DocumentTextIcon className="h-10 w-10 text-yellow-500" />
+              <DocumentTextIcon className="h-10 w-10 text-[#C8996A]" />
             </div>
             {stats.pendingReports > 0 && (
               <button 
                 onClick={() => router.push('/doctor/consultations')}
-                className="text-sm text-blue-600 mt-2 hover:underline"
+                className="text-sm text-[#C8996A] mt-2 hover:underline"
               >
                 Complete reports →
               </button>
@@ -177,49 +177,49 @@ export default function DoctorDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Completed Consultations</p>
-                <p className="text-2xl font-bold text-gray-800 mt-1">
+                <p className="text-[#6B6862] text-sm">Completed Consultations</p>
+                <p className="text-2xl font-bold text-[#1A1A1A] mt-1">
                   {stats.completedConsultations}
                 </p>
               </div>
-              <CheckCircleIcon className="h-10 w-10 text-purple-500" />
+              <CheckCircleIcon className="h-10 w-10 text-[#C8996A]" />
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
               onClick={() => router.push('/doctor/consultations')}
-              className="bg-white border border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors text-left"
+              className="bg-white border border-[#E7E2D9] rounded-lg p-4 hover:border-[#C8996A] transition-colors text-left"
             >
-              <CalendarIcon className="h-6 w-6 text-green-600 mb-2" />
-              <h3 className="font-semibold text-gray-800">View Consultations</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <CalendarIcon className="h-6 w-6 text-[#C8996A] mb-2" />
+              <h3 className="font-semibold text-[#1A1A1A]">View Consultations</h3>
+              <p className="text-sm text-[#6B6862] mt-1">
                 Manage upcoming and past consultations
               </p>
             </button>
 
             <button
               onClick={() => router.push('/doctor/messages')}
-              className="bg-white border border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors text-left"
+              className="bg-white border border-[#E7E2D9] rounded-lg p-4 hover:border-[#C8996A] transition-colors text-left"
             >
-              <ClockIcon className="h-6 w-6 text-blue-600 mb-2" />
-              <h3 className="font-semibold text-gray-800">Messages</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <ClockIcon className="h-6 w-6 text-[#C8996A] mb-2" />
+              <h3 className="font-semibold text-[#1A1A1A]">Messages</h3>
+              <p className="text-sm text-[#6B6862] mt-1">
                 Chat with your users
               </p>
             </button>
 
             <button
               onClick={() => router.push('/doctor/users')}
-              className="bg-white border border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors text-left"
+              className="bg-white border border-[#E7E2D9] rounded-lg p-4 hover:border-[#C8996A] transition-colors text-left"
             >
-              <UserGroupIcon className="h-6 w-6 text-purple-600 mb-2" />
-              <h3 className="font-semibold text-gray-800">My Users</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <UserGroupIcon className="h-6 w-6 text-[#C8996A] mb-2" />
+              <h3 className="font-semibold text-[#1A1A1A]">My Users</h3>
+              <p className="text-sm text-[#6B6862] mt-1">
                 View all your users
               </p>
             </button>
@@ -229,27 +229,27 @@ export default function DoctorDashboard() {
         {/* Upcoming Appointments */}
         {upcomingAppointments.length > 0 && (
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">
               Upcoming Appointments
             </h2>
             <div className="bg-white rounded-lg shadow overflow-hidden">
               {upcomingAppointments.map((appointment, index) => (
                 <div 
                   key={appointment.id}
-                  className={`p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
+                  className={`p-4 flex items-center justify-between hover:bg-[#FAF8F5] cursor-pointer ${
                     index !== upcomingAppointments.length - 1 ? 'border-b' : ''
                   }`}
                   onClick={() => router.push(`/doctor/consultations`)}
                 >
                   <div>
-                    <p className="font-semibold text-gray-800">
+                    <p className="font-semibold text-[#1A1A1A]">
                       {appointment.user_name}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-[#6B6862]">
                       {formatAppointmentTime(appointment.time)}
                     </p>
                   </div>
-                  <ClockIcon className="h-5 w-5 text-gray-400" />
+                  <ClockIcon className="h-5 w-5 text-[#8C827A]" />
                 </div>
               ))}
             </div>
@@ -258,14 +258,14 @@ export default function DoctorDashboard() {
 
         {/* Schedule Setup Reminder */}
         {!profile?.is_schedule_set && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-800">Set Your Availability</h3>
-            <p className="text-blue-700 text-sm mt-1">
+          <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4">
+            <h3 className="font-semibold text-[#1A1A1A]">Set Your Availability</h3>
+            <p className="text-[#6B6862] text-sm mt-1">
               Set up your weekly schedule to allow users to book consultations.
             </p>
             <button 
               onClick={() => router.push('/doctor/schedule')}
-              className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="mt-3 bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg hover:bg-[#1A1A1A] transition"
             >
               Set Schedule
             </button>

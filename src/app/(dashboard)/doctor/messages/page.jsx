@@ -96,7 +96,7 @@ export default function DoctorMessagesPage() {
     return (
       <ProtectedRoute userType="doctor">
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -105,13 +105,13 @@ export default function DoctorMessagesPage() {
   return (
     <ProtectedRoute userType="doctor">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Messages</h1>
+        <h1 className="text-3xl font-bold text-[#1A1A1A] mb-8">Messages</h1>
 
         {chats.length === 0 ? (
-          <div className="bg-gray-50 rounded-lg p-12 text-center">
-            <ChatBubbleLeftRightIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-700 mb-2">No Messages Yet</h3>
-            <p className="text-gray-600">
+          <div className="bg-[#FAF8F5] rounded-lg p-12 text-center">
+            <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#8C827A] mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-[#353535] mb-2">No Messages Yet</h3>
+            <p className="text-[#6B6862]">
               Messages from your users will appear here.
             </p>
           </div>
@@ -121,32 +121,32 @@ export default function DoctorMessagesPage() {
               <div
                 key={chat.id}
                 onClick={() => handleChatClick(chat)}
-                className="p-4 hover:bg-gray-50 cursor-pointer transition"
+                className="p-4 hover:bg-[#FAF8F5] cursor-pointer transition"
               >
                 <div className="flex items-start">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#F4F1EA] rounded-full flex items-center justify-center">
                     <span className="text-xl">👤</span>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-gray-800">
+                        <h3 className="font-semibold text-[#1A1A1A]">
                           {chat.user_name}
                         </h3>
                         {chat.last_message && (
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-1">
+                          <p className="text-sm text-[#6B6862] mt-1 line-clamp-1">
                             {chat.last_message}
                           </p>
                         )}
                       </div>
                       <div className="text-right ml-4">
                         {chat.last_message_time && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-[#8C827A]">
                             {formatTime(chat.last_message_time)}
                           </p>
                         )}
                         {chat.unread_count > 0 && (
-                          <span className="inline-flex items-center justify-center w-6 h-6 bg-green-600 text-white text-xs rounded-full mt-1">
+                          <span className="inline-flex items-center justify-center w-6 h-6 bg-[#FFD3AC] text-[#1A1A1A] text-xs rounded-full mt-1">
                             {chat.unread_count}
                           </span>
                         )}
@@ -155,10 +155,10 @@ export default function DoctorMessagesPage() {
                     
                     {/* User info */}
                     {chat.user_profile && (
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-[#8C827A]">
                         {chat.user_profile.is_first_consultation_completed ? (
                           <span className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                            <span className="w-2 h-2 bg-[#FFD3AC] rounded-full mr-1"></span>
                             Active User
                           </span>
                         ) : (

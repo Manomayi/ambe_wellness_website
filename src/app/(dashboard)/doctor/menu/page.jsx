@@ -80,7 +80,7 @@ export default function DoctorMenuPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
@@ -161,7 +161,7 @@ export default function DoctorMenuPage() {
         />
         <button
           onClick={handlePhotoClick}
-          className="inline-flex items-center space-x-2 text-green-600 hover:underline"
+          className="inline-flex items-center space-x-2 text-[#C8996A] hover:underline"
         >
           <PencilIcon className="h-5 w-5" />
           <span>Change Photo</span>
@@ -178,7 +178,7 @@ export default function DoctorMenuPage() {
       {/* Menu Sections */}
       {menuSections.map((section, idx) => (
         <div key={idx}>
-          <h3 className="text-sm uppercase font-semibold text-gray-600 mb-4">
+          <h3 className="text-sm uppercase font-semibold text-[#6B6862] mb-4">
             {section.title}
           </h3>
           <div className="space-y-4">
@@ -200,26 +200,26 @@ export default function DoctorMenuPage() {
                     items-center
                     justify-between
                     border-l-4
-                    border-green-600
+                    border-[#C8996A]
                     hover:shadow-lg
                     transition
                   "
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="bg-green-600 p-3 rounded-full flex-shrink-0">
-                      <Icon className="h-6 w-6 text-white" />
+                    <div className="bg-[#FFD3AC] p-3 rounded-full flex-shrink-0">
+                      <Icon className="h-6 w-6 text-[#1A1A1A]" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-800 text-left">
+                      <p className="font-bold text-[#1A1A1A] text-left">
                         {item.label}
                       </p>
                       {item.value && (
-                        <p className="text-gray-600 text-sm">{item.value}</p>
+                        <p className="text-[#6B6862] text-sm">{item.value}</p>
                       )}
                     </div>
                   </div>
-                  <div className="bg-green-600 p-2 rounded-full flex-shrink-0">
-                    <ArrowRightIcon className="h-4 w-4 text-white" />
+                  <div className="bg-[#FFD3AC] p-2 rounded-full flex-shrink-0">
+                    <ArrowRightIcon className="h-4 w-4 text-[#1A1A1A]" />
                   </div>
                 </button>
               );

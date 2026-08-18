@@ -147,21 +147,21 @@ export default function DoctorSchedulePage() {
     <ProtectedRoute userType="doctor">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Set Your Availability</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-[#1A1A1A]">Set Your Availability</h1>
+          <p className="text-[#6B6862] mt-2">
             Configure your weekly schedule for user consultations
           </p>
         </div>
 
         {/* Timezone Selection */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[#353535] mb-2">
             Your Timezone
           </label>
           <select
             value={timezone}
             onChange={handleTimezoneChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#C8996A] focus:border-transparent"
           >
             <option value="America/New_York">Eastern Time (ET)</option>
             <option value="America/Chicago">Central Time (CT)</option>
@@ -176,14 +176,14 @@ export default function DoctorSchedulePage() {
             <option value="Asia/Singapore">Singapore Time</option>
             <option value="Australia/Sydney">Sydney Time</option>
           </select>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-[#8C827A] mt-2">
             All appointment times will be shown in this timezone
           </p>
         </div>
 
         {/* Weekly Schedule */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">Weekly Schedule</h2>
+          <h2 className="text-xl font-semibold text-[#1A1A1A] mb-6">Weekly Schedule</h2>
           
           <div className="space-y-4">
             {DAYS_OF_WEEK.map(day => (
@@ -195,9 +195,9 @@ export default function DoctorSchedulePage() {
                       id={day}
                       checked={schedule[day]?.isAvailable || false}
                       onChange={() => handleDayToggle(day)}
-                      className="h-5 w-5 text-green-600 rounded focus:ring-green-500"
+                      className="h-5 w-5 text-[#C8996A] rounded focus:ring-[#C8996A]"
                     />
-                    <label htmlFor={day} className="ml-3 font-medium text-gray-700 capitalize">
+                    <label htmlFor={day} className="ml-3 font-medium text-[#353535] capitalize">
                       {day}
                     </label>
                   </div>
@@ -205,11 +205,11 @@ export default function DoctorSchedulePage() {
                   {schedule[day]?.isAvailable && (
                     <div className="flex items-center space-x-4">
                       <div>
-                        <label className="text-sm text-gray-500 mr-2">From:</label>
+                        <label className="text-sm text-[#8C827A] mr-2">From:</label>
                         <select
                           value={schedule[day].startTime}
                           onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
-                          className="p-2 border rounded focus:ring-2 focus:ring-green-500"
+                          className="p-2 border rounded focus:ring-2 focus:ring-[#C8996A]"
                         >
                           {TIME_SLOTS.map(time => (
                             <option key={time} value={time}>
@@ -220,11 +220,11 @@ export default function DoctorSchedulePage() {
                       </div>
                       
                       <div>
-                        <label className="text-sm text-gray-500 mr-2">To:</label>
+                        <label className="text-sm text-[#8C827A] mr-2">To:</label>
                         <select
                           value={schedule[day].endTime}
                           onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
-                          className="p-2 border rounded focus:ring-2 focus:ring-green-500"
+                          className="p-2 border rounded focus:ring-2 focus:ring-[#C8996A]"
                         >
                           {TIME_SLOTS.map(time => (
                             <option key={time} value={time}>
@@ -245,7 +245,7 @@ export default function DoctorSchedulePage() {
         <div className="mt-6 flex items-center justify-between">
           <button
             onClick={() => router.push('/doctor/dashboard')}
-            className="text-gray-600 hover:text-gray-800"
+            className="text-[#6B6862] hover:text-[#1A1A1A]"
           >
             Cancel
           </button>
@@ -253,7 +253,7 @@ export default function DoctorSchedulePage() {
           <button
             onClick={handleSave}
             disabled={loading}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 flex items-center"
+            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg hover:bg-[#1A1A1A] transition disabled:opacity-50 flex items-center"
           >
             {loading ? (
               <>
@@ -275,9 +275,9 @@ export default function DoctorSchedulePage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-800 mb-2">Important Notes:</h3>
-          <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+        <div className="mt-8 bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4">
+          <h3 className="font-semibold text-[#1A1A1A] mb-2">Important Notes:</h3>
+          <ul className="text-sm text-[#6B6862] space-y-1 list-disc list-inside">
             <li>Users can book 30-minute consultation slots within your available hours</li>
             <li>You can update your schedule at any time</li>
             <li>Existing appointments won't be affected by schedule changes</li>

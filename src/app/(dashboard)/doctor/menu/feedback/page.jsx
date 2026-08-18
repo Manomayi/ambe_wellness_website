@@ -35,7 +35,7 @@ export default function DoctorFeedbackPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
@@ -45,11 +45,11 @@ export default function DoctorFeedbackPage() {
       {/* Header */}
       <div className="flex items-center space-x-2">
        
-        <h1 className="text-2xl font-semibold text-gray-800">Feedback</h1>
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Feedback</h1>
       </div>
 
       {feedbacks.length === 0 ? (
-        <p className="text-gray-600">No feedback yet.</p>
+        <p className="text-[#6B6862]">No feedback yet.</p>
       ) : (
         <div className="space-y-4">
           {feedbacks.map((f, i) => (
@@ -60,11 +60,11 @@ export default function DoctorFeedbackPage() {
                 bg-white
                 shadow
                 rounded-lg
-                border-l-4 border-green-600
+                border-l-4 border-[#C8996A]
                 p-4
                 flex items-center
                 justify-between
-                hover:bg-gray-50
+                hover:bg-[#FAF8F5]
                 transition
               "
             >
@@ -75,11 +75,11 @@ export default function DoctorFeedbackPage() {
                   className="h-12 w-12 rounded-full object-cover"
                 />
                 <div>
-                  <p className="text-gray-800 text-left font-semibold">{f.user_name}</p>
-                  <p className="text-gray-600 text-left">{f.feedback}</p>
+                  <p className="text-[#1A1A1A] text-left font-semibold">{f.user_name}</p>
+                  <p className="text-[#6B6862] text-left">{f.feedback}</p>
                 </div>
               </div>
-              <span className="text-2xl font-bold text-gray-800">
+              <span className="text-2xl font-bold text-[#1A1A1A]">
                 {f.rating}
               </span>
             </button>

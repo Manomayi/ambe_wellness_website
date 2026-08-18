@@ -92,17 +92,17 @@ export default function MessageUserClient() {
   if (!chatId) return null
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-[#FAF8F5]">
       {/* Header */}
       <div className="flex items-center p-4 bg-white shadow">
-        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100">
-          <ArrowLeftIcon className="h-6 w-6 text-gray-600" />
+        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-[#F4F1EA]">
+          <ArrowLeftIcon className="h-6 w-6 text-[#6B6862]" />
         </button>
         {userPhotoUrl && (
           <img src={userPhotoUrl} alt={userName||''}
                className="h-10 w-10 rounded-full mx-3 object-cover" />
         )}
-        <h1 className="text-lg font-medium text-gray-800">{userName}</h1>
+        <h1 className="text-lg font-medium text-[#1A1A1A]">{userName}</h1>
       </div>
 
       {/* Messages */}
@@ -111,7 +111,7 @@ export default function MessageUserClient() {
            onScroll={onScroll}>
         {loadingMore && (
           <div className="flex justify-center mb-2">
-            <svg className="animate-spin h-6 w-6 text-gray-500" viewBox="0 0 24 24">
+            <svg className="animate-spin h-6 w-6 text-[#8C827A]" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
               <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
             </svg>
@@ -123,10 +123,10 @@ export default function MessageUserClient() {
           return (
             <div key={msg.id} className={`mb-2 flex ${isUser?'justify-end':'justify-start'}`}>
               <div className={`max-w-xs p-3 rounded-lg ${
-                isUser?'bg-green-600 text-white':'bg-gray-300 text-gray-800'
+                isUser?'bg-[#FFD3AC] text-[#1A1A1A]':'bg-[#E7E2D9] text-[#1A1A1A]'
               }`}>
                 <p className="break-words">{msg.text}</p>
-                <p className="text-xs mt-1 text-gray-200 text-right">{time}</p>
+                <p className="text-xs mt-1 text-[#E7E2D9] text-right">{time}</p>
               </div>
             </div>
           )
@@ -139,11 +139,11 @@ export default function MessageUserClient() {
         <textarea rows={1}
                   value={text}
                   onChange={e => setText(e.target.value)}
-                  className="flex-1 resize-none p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-600"
+                  className="flex-1 resize-none p-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:border-[#C8996A]"
                   placeholder="Type a message…"/>
         <button onClick={handleSend} disabled={sending}
-                className={`ml-3 p-3 rounded-full text-white shadow ${
-                  sending?'bg-gray-400':'bg-green-600 hover:bg-green-700'
+                className={`ml-3 p-3 rounded-full shadow ${
+                  sending?'bg-[#8C827A] text-white':'bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'
                 }`}>
           <PaperAirplaneIcon className="h-5 w-5 transform rotate-90"/>
         </button>

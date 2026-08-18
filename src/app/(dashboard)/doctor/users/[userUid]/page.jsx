@@ -66,7 +66,7 @@ export default function UserCompleteProfilePage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin h-12 w-12 rounded-full 
-                        border-4 border-t-4 border-green-600 
+                        border-4 border-t-4 border-[#C8996A] 
                         border-t-transparent" />
       </div>
     );
@@ -76,7 +76,7 @@ export default function UserCompleteProfilePage() {
     <div className="space-y-8 p-4">
       {/* Header */}
       <div className="flex items-center space-x-2">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           {userName}
         </h1>
       </div>
@@ -85,14 +85,14 @@ export default function UserCompleteProfilePage() {
           extended questionnaire asks, so it's needed to read the answers
           correctly. "Not provided" means every question was shown. */}
       <div className="space-y-2">
-        <p className="text-sm uppercase font-semibold text-gray-600">
+        <p className="text-sm uppercase font-semibold text-[#6B6862]">
           Patient Details
         </p>
         <div className="bg-white shadow rounded-lg p-4">
-          <p className="text-xs uppercase tracking-wide text-gray-500">
+          <p className="text-xs uppercase tracking-wide text-[#8C827A]">
             Sex at Birth
           </p>
-          <p className="font-medium text-gray-800">
+          <p className="font-medium text-[#1A1A1A]">
             {profile?.genderAtBirth?.trim() || 'Not provided'}
           </p>
         </div>
@@ -100,7 +100,7 @@ export default function UserCompleteProfilePage() {
 
       {/* Questionnaire Section */}
       <div className="space-y-2">
-        <p className="text-sm uppercase font-semibold text-gray-600">
+        <p className="text-sm uppercase font-semibold text-[#6B6862]">
           Questionnaire
         </p>
         <button
@@ -109,27 +109,27 @@ export default function UserCompleteProfilePage() {
               `/doctor/users/${userUid}/questionnaire?name=${encodeURIComponent(userName)}`
             )
           }
-          className="w-full bg-white border-l-4 border-green-600 
+          className="w-full bg-white border-l-4 border-[#C8996A] 
                      shadow rounded-lg p-4 flex justify-between items-center 
                      hover:shadow-md transition"
         >
           <span className="flex items-center space-x-2">
-            <DocumentTextIcon className="h-5 w-5 text-green-600" />
-            <span className="font-medium text-gray-800">
+            <DocumentTextIcon className="h-5 w-5 text-[#C8996A]" />
+            <span className="font-medium text-[#1A1A1A]">
               View Questionnaire
             </span>
           </span>
-          <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+          <ChevronRightIcon className="h-5 w-5 text-[#8C827A]" />
         </button>
       </div>
 
       {/* Consultation History */}
       <div className="space-y-2">
-        <p className="text-sm uppercase font-semibold text-gray-600">
+        <p className="text-sm uppercase font-semibold text-[#6B6862]">
           Consultation History
         </p>
         {appointments.length === 0 ? (
-          <p className="text-gray-600">No appointment history found.</p>
+          <p className="text-[#6B6862]">No appointment history found.</p>
         ) : (
           <div className="space-y-4">
             {appointments.map(app => (
@@ -143,19 +143,19 @@ export default function UserCompleteProfilePage() {
                     `&doctorName=${encodeURIComponent(app.doctor_name)}`
                   )
                 }
-                className="w-full bg-white border-l-4 border-green-600 
+                className="w-full bg-white border-l-4 border-[#C8996A] 
                            shadow rounded-lg p-4 flex justify-between items-center 
-                           hover:bg-gray-50 transition"
+                           hover:bg-[#FAF8F5] transition"
               >
                 <div>
-                  <p className="font-medium text-gray-800">
+                  <p className="font-medium text-[#1A1A1A]">
                     Dr. {app.doctor_name}
                   </p>
-                  <p className="text-gray-600 text-sm mt-1">
+                  <p className="text-[#6B6862] text-sm mt-1">
                     {fmt(app.time)}
                   </p>
                 </div>
-                <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+                <ChevronRightIcon className="h-5 w-5 text-[#8C827A]" />
               </button>
             ))}
           </div>

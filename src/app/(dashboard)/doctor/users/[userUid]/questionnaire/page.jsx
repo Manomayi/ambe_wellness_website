@@ -54,7 +54,7 @@ export default function UserQuestionnairePage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin h-12 w-12 rounded-full 
-                        border-4 border-t-4 border-green-600 
+                        border-4 border-t-4 border-[#C8996A] 
                         border-t-transparent" />
       </div>
     );
@@ -62,7 +62,7 @@ export default function UserQuestionnairePage() {
 
   if (!doshaScores || !results) {
     return (
-      <p className="text-center text-gray-600">
+      <p className="text-center text-[#6B6862]">
         No questionnaire found.
       </p>
     );
@@ -75,19 +75,19 @@ export default function UserQuestionnairePage() {
     <div className="space-y-8 p-4">
       {/* Back + Title */}
       <div className="flex items-center space-x-2">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           {userName.split(' ')[0]}'s Questionnaire
         </h1>
       </div>
 
       {/* Dosha Scores */}
       <div className="space-y-2">
-        <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+        <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
           Dosha Scores
         </p>
-        <div className="bg-white border-l-4 border-green-600 
+        <div className="bg-white border-l-4 border-[#C8996A] 
                         shadow rounded-lg p-4">
-          <p className="font-bold text-gray-800">
+          <p className="font-bold text-[#1A1A1A]">
             {primary} / {secondary}
           </p>
         </div>
@@ -95,15 +95,15 @@ export default function UserQuestionnairePage() {
 
       {/* Results */}
       <div className="space-y-2">
-        <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+        <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
           Results
         </p>
-        <div className="bg-white border-l-4 border-green-600 
+        <div className="bg-white border-l-4 border-[#C8996A] 
                         shadow rounded-lg p-4 space-y-4">
           {Object.entries(results).map(([question, answer]) => (
             <div key={question}>
-              <p className="font-medium text-gray-800">{question}</p>
-              <p className="mt-1 text-gray-600">{answer}</p>
+              <p className="font-medium text-[#1A1A1A]">{question}</p>
+              <p className="mt-1 text-[#6B6862]">{answer}</p>
             </div>
           ))}
         </div>

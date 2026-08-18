@@ -56,7 +56,7 @@ export default function DoctorChatPage() {
     return (
       <ProtectedRoute userType="doctor">
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -66,10 +66,10 @@ export default function DoctorChatPage() {
     return (
       <ProtectedRoute userType="doctor">
         <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Chat Not Found</h2>
+          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Chat Not Found</h2>
           <button
             onClick={() => router.push('/doctor/messages')}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg hover:bg-[#1A1A1A] transition"
           >
             Back to Messages
           </button>
@@ -88,7 +88,7 @@ export default function DoctorChatPage() {
         <div className="bg-white border-b px-6 py-4 flex items-center">
           <button
             onClick={() => router.push('/doctor/messages')}
-            className="mr-4 text-gray-600 hover:text-gray-800"
+            className="mr-4 text-[#6B6862] hover:text-[#1A1A1A]"
           >
             ← Back
           </button>
@@ -97,7 +97,7 @@ export default function DoctorChatPage() {
               {chatData.userName || userName}
             </h1>
             {chatData.userProfile && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#8C827A]">
                 {chatData.userProfile.is_first_consultation_completed 
                   ? 'Active User' 
                   : 'Pending First Consultation'}

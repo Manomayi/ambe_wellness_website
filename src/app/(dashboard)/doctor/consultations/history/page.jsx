@@ -52,17 +52,17 @@ export default function DoctorConsultationHistoryPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
 
   return (
     <div className="space-y-12">
-      <h1 className="text-2xl font-semibold text-gray-800">History</h1>
+      <h1 className="text-2xl font-semibold text-[#1A1A1A]">History</h1>
 
       {history.length === 0 ? (
-        <p className="text-gray-600">No history yet.</p>
+        <p className="text-[#6B6862]">No history yet.</p>
       ) : (
         <div className="space-y-4">
           {history.map((appt) => (
@@ -80,17 +80,17 @@ export default function DoctorConsultationHistoryPage() {
                   `/doctor/consultations/report/${appt.id}?${params}`
                 );
               }}
-              className="w-full bg-white shadow rounded-lg border-l-4 border-green-600 p-4 flex justify-between items-center hover:bg-gray-50 transition"
+              className="w-full bg-white shadow rounded-lg border-l-4 border-[#C8996A] p-4 flex justify-between items-center hover:bg-[#FAF8F5] transition"
             >
               <div>
-                <p className="text-gray-800 font-semibold text-left">
+                <p className="text-[#1A1A1A] font-semibold text-left">
                   {appt.user_name}
                 </p>
-                <p className="text-gray-600 text-sm mt-1">
+                <p className="text-[#6B6862] text-sm mt-1">
                   {formatTime(appt.time)}
                 </p>
               </div>
-              <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+              <ChevronRightIcon className="h-5 w-5 text-[#8C827A]" />
             </button>
           ))}
         </div>

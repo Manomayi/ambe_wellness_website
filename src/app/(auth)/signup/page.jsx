@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { signUp } = useAuth();
+  const { signIn } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,12 +24,33 @@ export default function SignUpPage() {
     password: '',
     confirmPassword: '',
     phone: '',
+    // Date of birth is optional, captured as three parts like the mobile app's
+    // sign-up flow and sent to createUser as a 'YYYY-MM-DD' string (or null).
+    dobDay: '',
+    dobMonth: '',
+    dobYear: '',
     // Sex assigned at birth. Only 'Male' narrows the extended questionnaire;
     // every other value — including blank — leaves all questions in place.
     genderAtBirth: '',
     specialization: '',
     customSpecialization: '',
   });
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+  const years = Array.from({ length: 100 }, (_, i) => String(new Date().getFullYear() - i));
+
+  // 'YYYY-MM-DD' once all three parts are chosen, otherwise null. Never
+  // undefined: Firestore rejects undefined values, which fails createUser.
+  const getDateOfBirth = () => {
+    const { dobDay, dobMonth, dobYear } = formData;
+    if (!dobDay || !dobMonth || !dobYear) return null;
+    const month = String(months.indexOf(dobMonth) + 1).padStart(2, '0');
+    return `${dobYear}-${month}-${dobDay}`;
+  };
 
   // Validation errors
   const [errors, setErrors] = useState({});
@@ -56,7 +77,9 @@ export default function SignUpPage() {
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    // The three date-of-birth selects share a single `dateOfBirth` error.
+    const errorKey = field.startsWith('dob') ? 'dateOfBirth' : field;
+    setErrors(prev => ({ ...prev, [errorKey]: '' }));
   };
 
   const validateStep = () => {
@@ -88,6 +111,23 @@ export default function SignUpPage() {
         }
         if (formData.password !== formData.confirmPassword) {
           newErrors.confirmPassword = 'Passwords do not match';
+        }
+        // Date of birth is optional, but a partial or impossible date (e.g.
+        // February 31) must not reach createUser.
+        {
+          const parts = [formData.dobDay, formData.dobMonth, formData.dobYear];
+          const filled = parts.filter(Boolean).length;
+          if (filled > 0 && filled < 3) {
+            newErrors.dateOfBirth = 'Please select month, day and year';
+          } else if (filled === 3) {
+            const monthIndex = months.indexOf(formData.dobMonth);
+            const date = new Date(Number(formData.dobYear), monthIndex, Number(formData.dobDay));
+            if (date.getDate() !== Number(formData.dobDay) || date.getMonth() !== monthIndex) {
+              newErrors.dateOfBirth = 'Please select a valid date';
+            } else if (date > new Date()) {
+              newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+            }
+          }
         }
         break;
 
@@ -148,38 +188,48 @@ export default function SignUpPage() {
     setError('');
 
     try {
-      // Create user with Firebase Auth
-      const user = await signUp(formData.email, formData.password, formData.userType);
-
-      // Call cloud function to create user profile
+      // The Auth account is created by the cloud function, not here — same
+      // order as the mobile sign-up flow. Creating it client-side first left an
+      // orphaned Auth user whenever the profile write failed, and every retry
+      // then died on auth/email-already-in-use before reaching the function.
       const createUser = httpsCallable(functions, 'createUser');
       // createUser requires `password` and `role`; without them it rejects with
-      // "Name and role are required" and no Firestore profile is ever written,
-      // leaving an orphaned Auth account. `user_type` is kept for backwards
-      // compatibility with anything still reading it.
+      // "Name and role are required" and no Firestore profile is ever written.
+      // `user_type` is kept for backwards compatibility with anything still
+      // reading it.
       const result = await createUser({
-        uid: user.uid,
-        email: formData.email,
+        // Trimmed to match signIn below, which trims before authenticating.
+        email: formData.email.trim(),
         password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-        gender_at_birth: formData.genderAtBirth,
+        // The doctor branch of createUser reads `phone_number`; `phone` alone
+        // would be dropped.
+        phone_number: formData.phone,
+        date_of_birth: getDateOfBirth(),
+        gender_at_birth: formData.genderAtBirth || null,
         role: formData.userType,
         user_type: formData.userType,
         specialization: formData.specialization,
         customSpecialization: formData.customSpecialization,
       });
 
-      if (result.data.success) {
+      // createUser resolves with { uid } — there is no `success` flag.
+      if (result.data?.uid) {
         // If doctor, upload documents
         if (formData.userType === 'doctor' && documents.license) {
           // Upload documents logic would go here
           // For now, we'll skip actual file upload
         }
 
-        // Navigate to appropriate onboarding
-        router.push(formData.userType === 'doctor' ? '/doctor/onboarding' : '/user/onboarding');
+        // Sign in with the credentials the function just registered, so the
+        // onboarding pages load with an authenticated user.
+        await signIn(formData.email, formData.password);
+
+        // Land on the same home the login flow uses — there is no onboarding
+        // route on the web.
+        router.push(formData.userType === 'doctor' ? '/doctor/home' : '/user/home');
       }
     } catch (err) {
       console.error('Signup error:', err);
@@ -199,26 +249,23 @@ export default function SignUpPage() {
         return (
           <div>
             <h2
-              className="text-2xl sm:text-3xl font-medium mb-2 text-center select-none"
+              className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
             >
-              Join Ambé
+              Join as a User or Doctor
             </h2>
-            <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-              Select how you would like to participate in our care community.
-            </p>
 
             <div className="space-y-4">
               {[
                 {
                   type: "user",
-                  title: "I am a Member / Patient",
-                  desc: "Book holistic doctor consultations, shop custom remedies, and start your healing journey.",
+                  title: "I am a User",
+                  desc: "Book consultations and manage your wellness journey",
                 },
                 {
                   type: "doctor",
                   title: "I am a Healthcare Provider",
-                  desc: "Provide accredited Ayurvedic & integrative consultations and manage your clinical practice.",
+                  desc: "Provide consultations and manage your practice",
                 },
               ].map(({ type, title, desc }) => {
                 const isSelected = formData.userType === type;
@@ -264,14 +311,11 @@ export default function SignUpPage() {
         return (
           <div>
             <h2
-              className="text-2xl sm:text-3xl font-medium mb-2 text-center select-none"
+              className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
             >
               Create Your Account
             </h2>
-            <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-              Enter your name and login credentials.
-            </p>
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -287,7 +331,7 @@ export default function SignUpPage() {
                     onChange={(e) => updateFormData("firstName", e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
                     style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="First name"
+                    placeholder="John"
                   />
                   {errors.firstName && (
                     <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
@@ -307,7 +351,7 @@ export default function SignUpPage() {
                     onChange={(e) => updateFormData("lastName", e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
                     style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="Last name"
+                    placeholder="Doe"
                   />
                   {errors.lastName && (
                     <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
@@ -320,6 +364,54 @@ export default function SignUpPage() {
               {formData.userType !== "doctor" && (
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                    Date of Birth <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(optional)</span>
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    <select
+                      value={formData.dobMonth}
+                      onChange={(e) => updateFormData("dobMonth", e.target.value)}
+                      className="w-full px-3 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                      style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                    >
+                      <option value="">Month</option>
+                      {months.map((month) => (
+                        <option key={month} value={month}>{month}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={formData.dobDay}
+                      onChange={(e) => updateFormData("dobDay", e.target.value)}
+                      className="w-full px-3 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                      style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                    >
+                      <option value="">Day</option>
+                      {days.map((day) => (
+                        <option key={day} value={day}>{day}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={formData.dobYear}
+                      onChange={(e) => updateFormData("dobYear", e.target.value)}
+                      className="w-full px-3 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                      style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                    >
+                      <option value="">Year</option>
+                      {years.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.dateOfBirth && (
+                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                      {errors.dateOfBirth}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {formData.userType !== "doctor" && (
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
                     Sex at Birth <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(optional)</span>
                   </label>
                   <select
@@ -328,7 +420,7 @@ export default function SignUpPage() {
                     className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
                     style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
                   >
-                    <option value="">Select (Optional)</option>
+                    <option value="">Select</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
@@ -341,7 +433,7 @@ export default function SignUpPage() {
 
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Email Address
+                  Email
                 </label>
                 <input
                   type="email"
@@ -351,7 +443,7 @@ export default function SignUpPage() {
                   onChange={(e) => updateFormData("email", e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
                   style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="your@email.com"
+                  placeholder="john@example.com"
                 />
                 {errors.email && (
                   <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
@@ -393,7 +485,7 @@ export default function SignUpPage() {
                   onChange={(e) => updateFormData("confirmPassword", e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
                   style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="Re-enter password"
+                  placeholder="Confirm your password"
                 />
                 {errors.confirmPassword && (
                   <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
@@ -415,7 +507,7 @@ export default function SignUpPage() {
               Add Your Phone Number
             </h2>
             <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-              We&apos;ll use this to send appointment reminders and care updates.
+              We&apos;ll use this to send appointment reminders and important updates.
             </p>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
@@ -440,9 +532,6 @@ export default function SignUpPage() {
                   {errors.phone}
                 </p>
               )}
-              <p className="text-xs mt-3 leading-relaxed" style={{ color: "#9A948B" }}>
-                Your contact info is private and used strictly for doctor appointment notifications.
-              </p>
             </div>
           </div>
         );
@@ -452,14 +541,11 @@ export default function SignUpPage() {
           return (
             <div>
               <h2
-                className="text-2xl sm:text-3xl font-medium mb-2 text-center select-none"
+                className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
                 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
               >
                 Select Your Specialization
               </h2>
-              <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-                Choose the primary focus of your clinical practice.
-              </p>
               <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
                 {specializations.map((spec) => (
                   <button
@@ -514,10 +600,10 @@ export default function SignUpPage() {
                 className="text-2xl sm:text-3xl font-medium mb-2 text-center select-none"
                 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
               >
-                Verification Documents
+                Upload Required Documents
               </h2>
               <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-                Upload your credential documents for practitioner verification.
+                Please upload the following documents for verification. All documents will be securely stored.
               </p>
 
               <div className="space-y-4">
@@ -599,10 +685,10 @@ export default function SignUpPage() {
             className="inline-block text-3xl sm:text-4xl font-normal tracking-wide transition-opacity hover:opacity-80 select-none"
             style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
           >
-            AMBÉ
+            AMBE®
           </Link>
           <p className="text-xs uppercase tracking-[0.2em] mt-1.5 font-medium" style={{ color: "#C2691C" }}>
-            Integrative Ayurveda
+            Join our wellness community
           </p>
         </div>
 
@@ -656,7 +742,7 @@ export default function SignUpPage() {
                 onClick={handleNext}
                 className="flex items-center px-7 py-3 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-sm cursor-pointer"
               >
-                Continue
+                Next
                 <ArrowRightIcon className="h-4 w-4 ml-1.5" />
               </button>
             ) : (
@@ -666,7 +752,7 @@ export default function SignUpPage() {
                 disabled={loading}
                 className="px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-sm disabled:opacity-50 cursor-pointer"
               >
-                {loading ? "Creating Account…" : "Complete Sign Up"}
+                {loading ? "Creating Account..." : "Create Account"}
               </button>
             )}
           </div>

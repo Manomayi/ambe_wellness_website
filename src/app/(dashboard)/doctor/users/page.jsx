@@ -36,17 +36,17 @@ export default function DoctorUserProfilesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
 
   return (
     <div className="space-y-12">
-      <h1 className="text-2xl font-semibold text-gray-800">User Profiles</h1>
+      <h1 className="text-2xl font-semibold text-[#1A1A1A]">User Profiles</h1>
 
       {users.length === 0 ? (
-        <p className="text-gray-600">No profiles yet.</p>
+        <p className="text-[#6B6862]">No profiles yet.</p>
       ) : (
         <div className="space-y-4">
           {users.map((m) => (
@@ -55,7 +55,7 @@ export default function DoctorUserProfilesPage() {
               onClick={() =>
                 router.push(`/doctor/users/${m.uid}?name=${encodeURIComponent(m.name)}`)
               }
-              className="w-full bg-white shadow rounded-lg flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition"
+              className="w-full bg-white shadow rounded-lg flex items-center justify-between px-6 py-4 hover:bg-[#FAF8F5] transition"
             >
               <div className="flex items-center space-x-4">
                 <img
@@ -63,9 +63,9 @@ export default function DoctorUserProfilesPage() {
                   alt={m.name}
                   className="h-12 w-12 rounded-full object-cover"
                 />
-                <span className="font-medium text-gray-800">{m.name}</span>
+                <span className="font-medium text-[#1A1A1A]">{m.name}</span>
               </div>
-              <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+              <ChevronRightIcon className="h-5 w-5 text-[#8C827A]" />
             </button>
           ))}
         </div>

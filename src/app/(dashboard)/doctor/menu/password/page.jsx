@@ -68,68 +68,68 @@ export default function EditPasswordPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-green-600 border-t-transparent rounded-full" />
+        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-[#C8996A] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
     <div className="max-w-lg mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-800">Change Password</h1>
-      <p className="text-sm text-gray-600">
+      <h1 className="text-2xl font-semibold text-[#1A1A1A]">Change Password</h1>
+      <p className="text-sm text-[#6B6862]">
         Password must be at least 8 characters, include a letter, and a special character.
       </p>
       {error && <p className="text-red-600 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+          <label className="block text-sm font-medium text-[#353535] mb-1">Current Password</label>
           <div className="relative">
             <input
               type={showCurrent ? 'text' : 'password'}
               value={currentPwd}
               onChange={e => setCurrentPwd(e.target.value)}
-              className="w-full p-2 border text-black border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2 border text-black border-[#E7E2D9] bg-white rounded-lg focus:outline-none focus:border-[#C8996A]"
             />
             <button
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A]"
             >
               {showCurrent ? 'Hide' : 'Show'}
             </button>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+          <label className="block text-sm font-medium text-[#353535] mb-1">New Password</label>
           <div className="relative">
             <input
               type={showNew ? 'text' : 'password'}
               value={newPwd}
               onChange={e => setNewPwd(e.target.value)}
-              className="w-full p-2 border text-black border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2 border text-black border-[#E7E2D9] bg-white rounded-lg focus:outline-none focus:border-[#C8996A]"
             />
             <button
               type="button"
               onClick={() => setShowNew(!showNew)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A]"
             >
               {showNew ? 'Hide' : 'Show'}
             </button>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+          <label className="block text-sm font-medium text-[#353535] mb-1">Confirm New Password</label>
           <div className="relative">
             <input
               type={showConfirm ? 'text' : 'password'}
               value={confirmPwd}
               onChange={e => setConfirmPwd(e.target.value)}
-              className="w-full p-2 border text-black border-gray-300 bg-white rounded-lg focus:outline-none focus:border-green-600"
+              className="w-full p-2 border text-black border-[#E7E2D9] bg-white rounded-lg focus:outline-none focus:border-[#C8996A]"
             />
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A]"
             >
               {showConfirm ? 'Hide' : 'Show'}
             </button>
@@ -138,7 +138,7 @@ export default function EditPasswordPage() {
         <button
           type="submit"
           disabled={submitting}
-          className={`w-full py-3 rounded-lg text-white font-semibold shadow transition ${submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+          className={`w-full py-3 rounded-lg font-semibold shadow transition ${submitting ? 'bg-[#8C827A] text-white cursor-not-allowed' : 'bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'}`}
         >
           {submitting ? 'Updating…' : 'Update'}
         </button>

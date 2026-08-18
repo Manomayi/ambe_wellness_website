@@ -60,14 +60,14 @@ export default function ConsultationReportPage() {
       <div className="flex items-center justify-center h-64">
         <div
           className="animate-spin h-12 w-12 rounded-full 
-                        border-4 border-t-4 border-green-600 
+                        border-4 border-t-4 border-[#C8996A] 
                         border-t-transparent"
         />
       </div>
     );
   }
   if (!report) {
-    return <p className="text-center text-gray-600">No data found.</p>;
+    return <p className="text-center text-[#6B6862]">No data found.</p>;
   }
 
   const { recommendations, store_recommendations, notes, time } = report;
@@ -77,7 +77,7 @@ export default function ConsultationReportPage() {
       {/* Title */}
       <div className="flex items-center space-x-2">
        
-        <h1 className="text-xl font-semibold text-gray-800">
+        <h1 className="text-xl font-semibold text-[#1A1A1A]">
           {userName?.split(" ")[0]}'s Report
         </h1>
       </div>
@@ -85,10 +85,10 @@ export default function ConsultationReportPage() {
       {/* Doctor */}
       {doctorName && (
         <>
-          <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+          <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
             Doctor
           </p>
-          <div className="bg-white text-gray-800 p-4 rounded-lg shadow">
+          <div className="bg-white text-[#1A1A1A] p-4 rounded-lg shadow">
             Dr. {doctorName}
           </div>
         </>
@@ -97,10 +97,10 @@ export default function ConsultationReportPage() {
       {/* Date */}
       {time && (
         <>
-          <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+          <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
             Date
           </p>
-          <div className="bg-white text-gray-800 p-4 rounded-lg shadow">
+          <div className="bg-white text-[#1A1A1A] p-4 rounded-lg shadow">
             {formatTime(time)}
           </div>
         </>
@@ -109,7 +109,7 @@ export default function ConsultationReportPage() {
       {/* Recommendations */}
       {recommendations && (
         <>
-          <p className="text-sm uppercase font-semibold text-gray-600 mb-4">
+          <p className="text-sm uppercase font-semibold text-[#6B6862] mb-4">
             Recommendations
           </p>
           {["lifestyle", "meditation", "exercise", "diet"].map((cat) => {
@@ -121,14 +121,14 @@ export default function ConsultationReportPage() {
                 key={cat}
                 className="bg-white text-white p-4 rounded-lg shadow mb-4"
               >
-                <h3 className="font-bold text-gray-900">{Title}</h3>
+                <h3 className="font-bold text-[#1A1A1A]">{Title}</h3>
                 {rec.selectedOption && (
-                  <p className="mt-2 text-gray-900">
+                  <p className="mt-2 text-[#1A1A1A]">
                     <strong>Selected:</strong> {rec.selectedOption}
                   </p>
                 )}
                 {rec.notes && (
-                  <p className="mt-2 text-gray-900">
+                  <p className="mt-2 text-[#1A1A1A]">
                     <strong>Notes:</strong> {rec.notes}
                   </p>
                 )}
@@ -141,7 +141,7 @@ export default function ConsultationReportPage() {
       {Array.isArray(store_recommendations) &&
         store_recommendations.length > 0 && (
           <>
-            <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+            <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
               Products
             </p>
             {store_recommendations.map((item, i) => (
@@ -150,16 +150,16 @@ export default function ConsultationReportPage() {
                 className="bg-white text-white p-4 rounded-lg shadow mb-4 flex justify-between"
               >
                 <div>
-                  <h3 className="font-bold text-gray-900">
+                  <h3 className="font-bold text-[#1A1A1A]">
                     {item.productName}
                   </h3>
                   {item.size && (
-                    <p className="text-gray-900">Size: {item.size}</p>
+                    <p className="text-[#1A1A1A]">Size: {item.size}</p>
                   )}
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">Qty</p>
-                  <p className="text-gray-900">{item.quantity}</p>
+                  <p className="font-semibold text-[#1A1A1A]">Qty</p>
+                  <p className="text-[#1A1A1A]">{item.quantity}</p>
                 </div>
               </div>
             ))}
@@ -169,10 +169,10 @@ export default function ConsultationReportPage() {
       {/* Notes */}
       {notes && (
         <>
-          <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+          <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
             Notes
           </p>
-          <div className="bg-white text-gray-800 p-4 rounded-lg shadow">
+          <div className="bg-white text-[#1A1A1A] p-4 rounded-lg shadow">
             {notes}
           </div>
         </>

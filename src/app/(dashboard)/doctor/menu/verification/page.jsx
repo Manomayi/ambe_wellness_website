@@ -40,18 +40,18 @@ export default function DoctorVerificationPage() {
   const getBgColor = (status) => {
     switch (status) {
       case 'Approved':
-        return 'bg-green-300';
+        return 'bg-emerald-600';
       case 'Rejected':
         return 'bg-red-400';
       default:
-        return 'bg-gray-500';
+        return 'bg-[#8C827A]';
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-green-600 border-t-transparent" />
+        <div className="animate-spin h-12 w-12 rounded-full border-4 border-t-4 border-[#C8996A] border-t-transparent" />
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function DoctorVerificationPage() {
       {/* Header */}
       <div className="flex items-center space-x-2">
        
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           Verification Status
         </h1>
       </div>
@@ -69,7 +69,7 @@ export default function DoctorVerificationPage() {
       {/* Overall Status */}
       {overallStatus && (
         <>
-          <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+          <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
             Overall Status
           </p>
           <div className={`${getBgColor(overallStatus)} text-white p-4 rounded-lg shadow`}>
@@ -80,7 +80,7 @@ export default function DoctorVerificationPage() {
 
       {/* Documents */}
       <div>
-        <p className="text-sm uppercase font-semibold text-gray-600 mb-2">
+        <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
           Documents
         </p>
         {documentStatuses.length ? (
@@ -112,7 +112,7 @@ export default function DoctorVerificationPage() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">No documents uploaded.</p>
+          <p className="text-[#6B6862]">No documents uploaded.</p>
         )}
       </div>
     </div>
