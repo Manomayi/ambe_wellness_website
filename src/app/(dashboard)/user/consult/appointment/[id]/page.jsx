@@ -12,7 +12,7 @@ import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 export default function UserAppointmentPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inCall, setInCall] = useState(false);
@@ -67,12 +67,26 @@ export default function UserAppointmentPage() {
     } catch (error) {
       console.error('Error updating appointment:', error);
     }
-    // Same next-step as the app: patient lands directly on the feedback
-    // form for this doctor, not just back on the consult list.
-    const query = new URLSearchParams({
-      doctorUid: appointment?.doctor_id || '',
-      doctorName: appointment?.doctor_name || '',
-    });
+
+    // Resolve doctor UID from appointment or user profile
+    const doctorUid = 
+      appointment?.doctor_id || 
+      appointment?.doctor_uid || 
+      profile?.doctor?.uid || 
+      (typeof profile?.doctor === 'string' ? profile.doctor : '') || 
+      profile?.doctor_uid || 
+      '';
+    const doctorName = 
+      appointment?.doctor_name || 
+      profile?.doctor_name || 
+      (profile?.doctor?.first_name ? `${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() : '') || 
+      '';
+
+    const query = new URLSearchParams();
+    if (doctorUid) query.set('doctorUid', doctorUid);
+    if (doctorName) query.set('doctorName', doctorName);
+    if (params.id) query.set('appointmentId', params.id);
+
     router.push(`/user/consult/feedback?${query.toString()}`);
   };
 

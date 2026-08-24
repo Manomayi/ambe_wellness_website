@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, serverTimestamp, deleteField } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import {
   MicrophoneIcon,
@@ -10,10 +10,6 @@ import {
   PhoneXMarkIcon,
 } from '@heroicons/react/24/solid';
 import {
-  // There's no dedicated "microphone off" icon in this set — MicrophoneIcon
-  // is reused below with a SlashIcon overlaid on top to indicate muted,
-  // rather than aliasing it to a misleadingly-named "off" icon that looked
-  // identical to the "on" state.
   MicrophoneIcon as MicrophoneOutlineIcon,
   SlashIcon,
   VideoCameraSlashIcon,
@@ -40,15 +36,18 @@ export default function VideoCall({
   isDoctor,
   onCallEnd
 }) {
-  // The Agora client is created fresh inside the effect below (not here)
-  // so React's dev-only Strict Mode mount->cleanup->remount cycle gets an
-  // independent client per effect run, rather than reusing one shared
-  // instance across both — reusing one instance meant the second run's
-  // join() collided with the first (throwaway) run's still-connecting
-  // client, throwing "Client already in connecting/connected state".
-  // clientRef always points at whichever instance the active effect run
-  // created, for use by button handlers (toggleMute/endCall) outside it.
   const clientRef = useRef(null);
+  const onCallEndRef = useRef(onCallEnd);
+  const hadRemoteJoinedRef = useRef(false);
+  const callEndedRef = useRef(false);
+
+  const localAudioTrackRef = useRef(null);
+  const localVideoTrackRef = useRef(null);
+
+  useEffect(() => {
+    onCallEndRef.current = onCallEnd;
+  }, [onCallEnd]);
+
   const [localAudioTrack, setLocalAudioTrack] = useState(null);
   const [localVideoTrack, setLocalVideoTrack] = useState(null);
   const [remoteUsers, setRemoteUsers] = useState([]);
@@ -60,24 +59,103 @@ export default function VideoCall({
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  // Same channel/uid must be used both when requesting the token and when
-  // actually joining, or Agora rejects the join (the token is signed for a
-  // specific channel + uid pair). "consult_" prefix matches what the
-  // backend requires and what the mobile app already uses for this same
-  // appointment's channel.
   const channelName = `consult_${appointmentId}`;
   const numericUid = stableAgoraUid(userId);
 
+  // Helper to completely stop and close a track, including the underlying browser hardware MediaStreamTrack
+  const stopAndCloseTrack = (track) => {
+    if (!track) return;
+    try {
+      track.stop();
+    } catch (e) {
+      console.warn('Track stop error:', e);
+    }
+    try {
+      track.close();
+    } catch (e) {
+      console.warn('Track close error:', e);
+    }
+    try {
+      if (typeof track.getMediaStreamTrack === 'function') {
+        const rawMediaStreamTrack = track.getMediaStreamTrack();
+        if (rawMediaStreamTrack && typeof rawMediaStreamTrack.stop === 'function') {
+          rawMediaStreamTrack.stop();
+        }
+      }
+    } catch (e) {
+      console.warn('Raw MediaStreamTrack stop error:', e);
+    }
+  };
+
+  // Releases local Agora resources and turns off camera/mic hardware
+  const releaseLocalResources = async () => {
+    try {
+      const audio = localAudioTrackRef.current;
+      const video = localVideoTrackRef.current;
+
+      localAudioTrackRef.current = null;
+      localVideoTrackRef.current = null;
+
+      stopAndCloseTrack(audio);
+      stopAndCloseTrack(video);
+
+      if (clientRef.current) {
+        await clientRef.current.leave().catch(() => {});
+      }
+
+      setLocalAudioTrack(null);
+      setLocalVideoTrack(null);
+      setIsJoined(false);
+    } catch (error) {
+      console.error('Error leaving call:', error);
+    }
+  };
+
+  // Called when remote user ends the call or leaves the channel
+  const handleRemoteCallEnd = async () => {
+    if (callEndedRef.current) return;
+    callEndedRef.current = true;
+    console.log('[VideoCall] Terminating session and navigating away');
+    await releaseLocalResources();
+    onCallEndRef.current?.();
+  };
+
+  // Called when local user clicks the hangup button
+  const endCall = async () => {
+    if (callEndedRef.current) return;
+    callEndedRef.current = true;
+
+    try {
+      await setDoc(
+        doc(db, 'consultations', appointmentId),
+        {
+          call_status: 'ended',
+          call_ended_by: isDoctor ? 'doctor' : 'user',
+          call_ended_at: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error('[VideoCall] Error writing call_status=ended:', e);
+    }
+
+    await releaseLocalResources();
+    onCallEndRef.current?.();
+  };
+
   useEffect(() => {
     let cancelled = false;
+    const sessionStartTime = Date.now();
     const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
     clientRef.current = client;
 
     const handleUserJoined = (user) => {
-      console.log('User joined:', user.uid);
+      console.log('[VideoCall] User joined:', user.uid);
+      hadRemoteJoinedRef.current = true;
     };
 
     const handleUserPublished = async (user, mediaType) => {
+      hadRemoteJoinedRef.current = true;
       await client.subscribe(user, mediaType);
 
       if (mediaType === 'video' && remoteVideoRef.current) {
@@ -104,22 +182,37 @@ export default function VideoCall({
     };
 
     const handleUserLeft = (user) => {
+      console.log('[VideoCall] Remote user left channel:', user.uid);
       setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
+      // If remote user had previously joined and now left, end the call
+      if (hadRemoteJoinedRef.current && !callEndedRef.current) {
+        handleRemoteCallEnd();
+      }
     };
+
+    // Listen to shared consultation doc for remote call end signal
+    const unsubConsultation = onSnapshot(
+      doc(db, 'consultations', appointmentId),
+      (snap) => {
+        if (cancelled || callEndedRef.current) return;
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.call_status === 'ended') {
+            const endedAt = data.call_ended_at?.toMillis ? data.call_ended_at.toMillis() : Date.now();
+            if (endedAt >= sessionStartTime - 10000) {
+              console.log('[VideoCall] Detected call_status=ended from Firestore:', data);
+              handleRemoteCallEnd();
+            }
+          }
+        }
+      },
+      (err) => {
+        console.error('[VideoCall] Consultation doc listener error:', err);
+      }
+    );
 
     const initializeAgora = async () => {
       try {
-        // Deliberately calling the plain-HTTP generateAgoraTokenPublic
-        // endpoint rather than the httpsCallable generateAgoraToken
-        // function (same one the mobile app already uses successfully) —
-        // the callable version's Cloud Run service is missing its
-        // public-invoker IAM binding despite declaring `invoker: "public"`
-        // in its own source, so every caller gets rejected with a
-        // platform-level 403 before the function code ever runs. Fixing
-        // that IAM policy directly isn't possible with the access
-        // available when this was written; this endpoint is a
-        // proven-working equivalent with an identical request/response
-        // shape.
         const response = await fetch(
           'https://us-central1-ambe-wellness.cloudfunctions.net/generateAgoraTokenPublic',
           {
@@ -148,46 +241,47 @@ export default function VideoCall({
           return;
         }
 
-        // Signal this join on the same shared `consultations/{appointmentId}`
-        // document the mobile app writes to (see video_chat_page.dart) — a
-        // Cloud Functions trigger already deployed and watching this
-        // collection pushes a "your doctor/patient joined" notification to
-        // whichever platform the other participant is on. Without this
-        // write, a doctor or patient joining from the website never
-        // notifies the other side, even though the reverse (app -> web)
-        // works today because only the app was writing here before.
+        // Signal join on shared consultations doc
         try {
           await setDoc(
             doc(db, 'consultations', appointmentId),
-            isDoctor
-              ? {
-                  doctor_joined: true,
-                  doctor_joined_at: serverTimestamp(),
-                  doctor_id: userId,
-                  ...(otherPartyUid ? { user_id: otherPartyUid } : {}),
-                }
-              : {
-                  user_joined: true,
-                  user_joined_at: serverTimestamp(),
-                  user_id: userId,
-                  ...(otherPartyUid ? { doctor_id: otherPartyUid } : {}),
-                },
+            {
+              ...(isDoctor
+                ? {
+                    doctor_joined: true,
+                    doctor_joined_at: serverTimestamp(),
+                    doctor_id: userId,
+                  }
+                : {
+                    user_joined: true,
+                    user_joined_at: serverTimestamp(),
+                    user_id: userId,
+                  }),
+              ...(otherPartyUid
+                ? (isDoctor ? { user_id: otherPartyUid } : { doctor_id: otherPartyUid })
+                : {}),
+              // Clear previous call_status if joining anew
+              call_status: deleteField(),
+              call_ended_by: deleteField(),
+              call_ended_at: deleteField(),
+            },
             { merge: true }
           );
         } catch (signalError) {
-          // Non-fatal — the call itself should proceed even if the
-          // notification signal fails to write.
-          console.error('Error writing join signal:', signalError);
+          console.error('[VideoCall] Error writing join signal:', signalError);
         }
 
         // Create and publish local tracks
         const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
         if (cancelled) {
-          audioTrack.close();
-          videoTrack.close();
+          stopAndCloseTrack(audioTrack);
+          stopAndCloseTrack(videoTrack);
           await client.leave().catch(() => {});
           return;
         }
+
+        localAudioTrackRef.current = audioTrack;
+        localVideoTrackRef.current = videoTrack;
         setLocalAudioTrack(audioTrack);
         setLocalVideoTrack(videoTrack);
 
@@ -210,61 +304,38 @@ export default function VideoCall({
 
     initializeAgora();
 
-    // Tears down THIS effect run's own client/tracks — doesn't touch
-    // component state, so a throwaway Strict Mode cleanup can't clobber a
-    // later real run's state updates. Deliberately does NOT call
-    // onCallEnd here; that belongs only to the hang-up button's own
-    // handler (endCall below), so an incidental unmount can never
-    // silently navigate the user away mid-call.
     return () => {
       cancelled = true;
-      client.leave().catch(() => {});
+      unsubConsultation();
+      // Ensure camera/mic hardware is always closed on unmount
+      if (localAudioTrackRef.current) {
+        stopAndCloseTrack(localAudioTrackRef.current);
+        localAudioTrackRef.current = null;
+      }
+      if (localVideoTrackRef.current) {
+        stopAndCloseTrack(localVideoTrackRef.current);
+        localVideoTrackRef.current = null;
+      }
+      if (clientRef.current) {
+        clientRef.current.leave().catch(() => {});
+      }
     };
   }, []);
 
   const toggleMute = async () => {
-    if (localAudioTrack) {
-      await localAudioTrack.setEnabled(isMuted);
+    const track = localAudioTrackRef.current || localAudioTrack;
+    if (track) {
+      await track.setEnabled(isMuted);
       setIsMuted(!isMuted);
     }
   };
 
   const toggleVideo = async () => {
-    if (localVideoTrack) {
-      await localVideoTrack.setEnabled(isVideoOff);
+    const track = localVideoTrackRef.current || localVideoTrack;
+    if (track) {
+      await track.setEnabled(isVideoOff);
       setIsVideoOff(!isVideoOff);
     }
-  };
-
-  // Releases local Agora resources for the hang-up button's own use (see
-  // endCall below). The effect above handles its own teardown separately
-  // on unmount, so this only ever runs from a deliberate user action.
-  const releaseLocalResources = async () => {
-    try {
-      // Stop and close local tracks
-      localAudioTrack?.stop();
-      localAudioTrack?.close();
-      localVideoTrack?.stop();
-      localVideoTrack?.close();
-
-      // Leave the channel
-      await clientRef.current?.leave();
-
-      setLocalAudioTrack(null);
-      setLocalVideoTrack(null);
-      setIsJoined(false);
-    } catch (error) {
-      console.error('Error leaving call:', error);
-    }
-  };
-
-  // The hang-up button's actual handler — releases resources, then
-  // navigates away via onCallEnd. Unlike releaseLocalResources, this must
-  // only run from a deliberate user action, never from an incidental
-  // unmount.
-  const endCall = async () => {
-    await releaseLocalResources();
-    onCallEnd?.();
   };
 
   return (

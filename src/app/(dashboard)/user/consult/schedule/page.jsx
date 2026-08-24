@@ -32,7 +32,11 @@ export default function ScheduleConsultationPage() {
   const { user, profile } = useAuth();
   const [doctorSchedule, setDoctorSchedule] = useState(null);
   const [doctorInfo, setDoctorInfo] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  });
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [bookedSlots, setBookedSlots] = useState([]);
@@ -68,7 +72,8 @@ export default function ScheduleConsultationPage() {
         const doctorData = doctorDoc.data();
         setDoctorInfo(doctorData);
         setDoctorSchedule(doctorData.schedule || {});
-        setDoctorTimezone(doctorData.timezone || 'America/New_York');
+        const docTz = doctorData.timezone || 'America/New_York';
+        setDoctorTimezone(docTz);
         
         // Check if schedule is set
         if (!doctorData.schedule || !doctorData.is_schedule_set) {
@@ -76,10 +81,9 @@ export default function ScheduleConsultationPage() {
           console.log('Doctor has not set their schedule');
         }
         
-        // Load booked appointments if we have a selected date
-        if (selectedDate) {
-          await loadBookedAppointments(selectedDate);
-        }
+        // Always load booked appointments for selectedDate (today by default)
+        const dateToLoad = selectedDate || new Date();
+        await loadBookedAppointments(dateToLoad);
       }
       setLoading(false);
     } catch (error) {

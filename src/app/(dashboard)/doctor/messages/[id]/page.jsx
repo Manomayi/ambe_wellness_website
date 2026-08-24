@@ -114,6 +114,7 @@ export default function DoctorChatPage() {
             recipientId={chatData.userId}
             canSendMessage={canSendMessage}
             isDoctor={true}
+            hideHeader={true}
           />
         </div>
       </div>

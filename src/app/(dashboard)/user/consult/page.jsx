@@ -6,22 +6,25 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import {
   collection,
-  query,
-  where,
-  orderBy,
   onSnapshot,
-  Timestamp,
   doc,
-  getDoc
+  getDoc,
+  deleteDoc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+  writeBatch
 } from "firebase/firestore";
-import { db } from "@/lib/firebase/config";
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from "@/lib/firebase/config";
 import {
   VideoCameraIcon,
   ChatBubbleLeftRightIcon,
   CalendarIcon,
   ClockIcon,
   DocumentTextIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
 
 // Health field mapping
@@ -37,11 +40,11 @@ const HEALTH_FIELD_LABELS = {
   oncology: "Oncology",
   disabilities: "Disabilities",
   behavorial: "Behavorial",
-  unknown: "General Health" // unknown maps to General Health
+  unknown: "General Health"
 };
 
 const getHealthFieldLabel = (key) => {
-  return HEALTH_FIELD_LABELS[key] || key; // fallback to key if not found
+  return HEALTH_FIELD_LABELS[key] || key;
 };
 
 const getHealthFieldLabels = (keys) => {
@@ -56,38 +59,50 @@ export default function UserConsultPage() {
   const [pastAppointments, setPastAppointments] = useState([]);
   const [doctorInfo, setDoctorInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState(null);
+
+  // Resolve doctor UID from profile
+  const resolvedDoctorUid = 
+    profile?.doctor?.uid || 
+    (typeof profile?.doctor === 'string' ? profile.doctor : null) || 
+    profile?.doctor_uid || 
+    profile?.matched_doctor || 
+    profile?.doctor_id || 
+    null;
 
   useEffect(() => {
     if (!user) return;
 
-    const now = Timestamp.now();
-
-    // Listen to upcoming appointments
-    const upcomingQuery = query(
-      collection(db, 'users', user.uid, 'appointments_upcoming'),
-      where('time', '>=', now),
-      orderBy('time', 'asc')
-    );
+    // Listen to upcoming appointments without restrictive where filter
+    // (matching Flutter app so active & in-progress appointments show immediately)
+    const upcomingQuery = collection(db, 'users', user.uid, 'appointments_upcoming');
 
     const unsubscribeUpcoming = onSnapshot(upcomingQuery, (snapshot) => {
       const appointments = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      appointments.sort((a, b) => {
+        const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
+        const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
+        return timeA - timeB;
+      });
       setUpcomingAppointments(appointments);
     });
 
     // Listen to past appointments
-    const pastQuery = query(
-      collection(db, 'users', user.uid, 'appointments_history'),
-      orderBy('time', 'desc')
-    );
+    const pastQuery = collection(db, 'users', user.uid, 'appointments_history');
 
     const unsubscribePast = onSnapshot(pastQuery, (snapshot) => {
       const appointments = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      appointments.sort((a, b) => {
+        const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
+        const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
+        return timeB - timeA;
+      });
       setPastAppointments(appointments);
       setLoading(false);
     });
@@ -99,15 +114,14 @@ export default function UserConsultPage() {
   }, [user]);
 
   useEffect(() => {
-    // Fetch doctor information if assigned
-    if (profile?.doctor?.uid) {
-      fetchDoctorInfo();
+    if (resolvedDoctorUid) {
+      fetchDoctorInfo(resolvedDoctorUid);
     }
-  }, [profile]);
+  }, [resolvedDoctorUid]);
 
-  const fetchDoctorInfo = async () => {
+  const fetchDoctorInfo = async (doctorUid) => {
     try {
-      const doctorDoc = await getDoc(doc(db, 'doctors', profile.doctor.uid));
+      const doctorDoc = await getDoc(doc(db, 'doctors', doctorUid));
       if (doctorDoc.exists()) {
         setDoctorInfo(doctorDoc.data());
       }
@@ -118,7 +132,7 @@ export default function UserConsultPage() {
 
   const formatAppointmentTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {
       weekday: 'short',
       month: 'short',
@@ -130,14 +144,75 @@ export default function UserConsultPage() {
   };
 
   const isAppointmentNow = (appointment) => {
-    if (!appointment.time) return false;
+    if (!appointment.time) return true;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
-    return diffMinutes >= -60 && diffMinutes <= 15; // 15 min before to 1 hr after
+    return diffMinutes >= -240 && diffMinutes <= 30; // 30 min before to 4 hr after (while in upcoming)
   };
 
-  const canMessage = profile?.is_first_consultation_completed || profile?.doctor;
+  const isAppointmentPast = (appointment) => {
+    if (!appointment.time) return false;
+    const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
+    return new Date() > appointmentTime && !isAppointmentNow(appointment);
+  };
+
+  const handleCancelAppointment = async (appointment) => {
+    const confirmCancel = window.confirm(
+      'Are you sure you want to cancel this appointment?'
+    );
+    if (!confirmCancel) return;
+
+    setCancellingId(appointment.id);
+    try {
+      // Try Cloud Function first
+      try {
+        const cancelFn = httpsCallable(functions, 'cancelAppointmentByUser');
+        await cancelFn({ appointmentId: appointment.id });
+      } catch (fnErr) {
+        console.warn('Cloud function cancel failed, using Firestore fallback:', fnErr);
+        // Fallback: batch update
+        const batch = writeBatch(db);
+        const userUpcomingRef = doc(db, 'users', user.uid, 'appointments_upcoming', appointment.id);
+        const userHistoryRef = doc(db, 'users', user.uid, 'appointments_history', appointment.id);
+        const userRef = doc(db, 'users', user.uid);
+
+        batch.delete(userUpcomingRef);
+        batch.set(userHistoryRef, {
+          ...appointment,
+          status: 'cancelled_by_user',
+          cancelled_at: serverTimestamp()
+        }, { merge: true });
+        batch.update(userRef, { is_consultation_set: false });
+
+        const docId = appointment.doctor_id || appointment.doctor_uid || resolvedDoctorUid;
+        if (docId) {
+          const doctorUpcomingRef = doc(db, 'doctors', docId, 'appointments_upcoming', appointment.id);
+          batch.delete(doctorUpcomingRef);
+        }
+        await batch.commit();
+      }
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      alert('Failed to cancel appointment. Please try again.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const hasDoctor = Boolean(resolvedDoctorUid || profile?.doctor);
+  const canMessage = profile?.is_first_consultation_completed || hasDoctor;
+
+  const doctorDisplayName = 
+    (doctorInfo?.first_name || doctorInfo?.last_name)
+      ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim()
+      : (doctorInfo?.name 
+          ? (doctorInfo.name.startsWith('Dr.') ? doctorInfo.name : `Dr. ${doctorInfo.name}`)
+          : (profile?.doctor_name 
+              ? (profile.doctor_name.startsWith('Dr.') ? profile.doctor_name : `Dr. ${profile.doctor_name}`)
+              : (profile?.doctor?.first_name 
+                  ? `Dr. ${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() 
+                  : 'Dr. Assigned Doctor')));
 
   return (
     <ProtectedRoute userType="user">
@@ -145,7 +220,7 @@ export default function UserConsultPage() {
         <h1 className="text-3xl font-bold text-[#1A1A1A] mb-8">Consultations</h1>
 
         {/* No Doctor Assigned */}
-        {!profile?.doctor && (
+        {!hasDoctor && (
           <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 mb-8 shadow-sm">
             <div className="flex items-start">
               <ExclamationCircleIcon className="h-6 w-6 text-[#C8996A] mr-3 mt-0.5" />
@@ -156,7 +231,7 @@ export default function UserConsultPage() {
                 </p>
                 <button 
                   onClick={() => router.push('/user/get-matched')}
-                  className="mt-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                  className="mt-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
                 >
                   Get Matched Now
                 </button>
@@ -166,44 +241,44 @@ export default function UserConsultPage() {
         )}
 
         {/* Doctor Info Card */}
-        {profile?.doctor && (
+        {hasDoctor && (
           <>
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">MY DOCTOR</h2>
             <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-6 mb-8">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center">
-                  <div className="w-16 h-16 bg-[#FAF8F5] border border-[#E7E2D9] rounded-full overflow-hidden">
+                  <div className="w-16 h-16 bg-[#FAF8F5] border border-[#E7E2D9] rounded-full overflow-hidden flex-shrink-0">
                     {doctorInfo?.profile_picture ? (
                       <img 
                         src={doctorInfo.profile_picture} 
-                        alt={`Dr. ${doctorInfo.first_name} ${doctorInfo.last_name}`}
+                        alt={doctorDisplayName}
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-2xl">👨‍⚕️</span>
+                      <div className="w-full h-full flex items-center justify-center text-[#1A1A1A] font-bold text-xl bg-[#FFD3AC]/40">
+                        {doctorDisplayName.replace('Dr. ', '').charAt(0) || '👨‍⚕️'}
                       </div>
                     )}
                   </div>
                   <div className="ml-4">
                     <h3 className="font-semibold text-lg text-[#1A1A1A]">
-                      Dr. {doctorInfo?.first_name || profile.doctor.first_name} {doctorInfo?.last_name || profile.doctor.last_name}
+                      {doctorDisplayName}
                     </h3>
                     {doctorInfo?.title && (
                       <p className="text-sm text-[#C8996A] font-medium">{doctorInfo.title}</p>
                     )}
                     {doctorInfo?.field && doctorInfo.field.length > 0 && (
-                      <p className="text-sm text-[#6B6862] mt-1">
+                      <p className="text-sm text-[#6B6862] mt-1 line-clamp-2">
                         {getHealthFieldLabels(doctorInfo.field).join(', ')}
                       </p>
                     )}
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-3 w-full sm:w-auto">
                   <button
                     onClick={() => router.push('/user/consult/message_doctor')}
                     disabled={!canMessage}
-                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium transition cursor-pointer ${
                       canMessage 
                         ? 'bg-[#1A1A1A] text-white hover:bg-[#353535]' 
                         : 'bg-[#FAF8F5] text-[#8C827A] cursor-not-allowed border border-[#E7E2D9]'
@@ -214,7 +289,7 @@ export default function UserConsultPage() {
                   </button>
                   <button
                     onClick={() => router.push('/user/consult/schedule')}
-                    className="flex items-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                    className="flex-1 sm:flex-initial flex items-center justify-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2.5 rounded-lg text-sm font-medium transition cursor-pointer shadow-sm"
                   >
                     <CalendarIcon className="h-5 w-5 mr-2" />
                     Schedule
@@ -222,61 +297,85 @@ export default function UserConsultPage() {
                 </div>
               </div>
               {!canMessage && (
-                <p className="text-sm text-[#8C827A] mt-3">
-                  Complete your first consultation to enable messaging
+                <p className="text-xs text-[#8C827A] mt-3">
+                  Complete your first consultation to enable direct messaging
                 </p>
               )}
             </div>
           </>
         )}
 
-        {/* Upcoming Appointments */}
+        {/* Upcoming / Current Appointments */}
         {upcomingAppointments.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">UPCOMING APPOINTMENTS</h2>
+            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">
+              {upcomingAppointments.some(a => isAppointmentNow(a)) 
+                ? 'HAPPENING NOW' 
+                : 'UPCOMING APPOINTMENTS'}
+            </h2>
             <div className="space-y-4">
               {upcomingAppointments.map((appointment) => {
                 const isNow = isAppointmentNow(appointment);
+                const isPast = isAppointmentPast(appointment);
+                const apptDocName = appointment.doctor_name 
+                  ? (appointment.doctor_name.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name}`)
+                  : doctorDisplayName;
+
                 return (
                   <div key={appointment.id}>
-                    {isNow && (
-                      <h3 className="text-lg font-semibold text-[#1A1A1A] mb-2">HAPPENING NOW</h3>
-                    )}
                     <div className={`bg-white border rounded-xl shadow-sm p-6 ${
                       isNow ? 'border-[#C8996A] ring-2 ring-[#FFD3AC]' : 'border-[#E7E2D9]'
                     }`}>
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                          <h3 className="font-semibold text-lg text-[#1A1A1A]">
-                            Dr. {appointment.doctor_name}
-                          </h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            {isNow && (
+                              <span className="bg-[#2E7D32] text-white text-xs font-semibold px-2.5 py-0.5 rounded-full animate-pulse">
+                                Live
+                              </span>
+                            )}
+                            <h3 className="font-semibold text-lg text-[#1A1A1A]">
+                              {apptDocName}
+                            </h3>
+                          </div>
                           <p className="text-sm text-[#6B6862] flex items-center mt-1">
-                            <ClockIcon className="h-4 w-4 mr-1 text-[#C8996A]" />
+                            <ClockIcon className="h-4 w-4 mr-1.5 text-[#C8996A]" />
                             {formatAppointmentTime(appointment.time)}
                           </p>
+                          {isPast && (
+                            <p className="text-xs text-[#8C827A] mt-1">
+                              Consultation in progress or pending completion report
+                            </p>
+                          )}
                         </div>
-                        <div className="flex gap-3">
-                          {isNow ? (
-                            <button
-                              onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
-                              className="flex items-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
-                            >
-                              <VideoCameraIcon className="h-5 w-5 mr-2" />
-                              Join Call
-                            </button>
-                          ) : (
+
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
+                            className={`flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer shadow-sm ${
+                              isNow
+                                ? 'bg-[#1A1A1A] hover:bg-[#353535] text-[#FFD3AC]'
+                                : 'bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white'
+                            }`}
+                          >
+                            <VideoCameraIcon className="h-5 w-5 mr-2" />
+                            {isNow ? 'Join Call' : 'View / Join Call'}
+                          </button>
+                          
+                          {!isNow && (
                             <>
                               <button
                                 onClick={() => router.push('/user/consult/schedule')}
-                                className="px-4 py-2 border border-[#E7E2D9] rounded-lg text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF8F5] transition"
+                                className="px-4 py-2.5 border border-[#E7E2D9] rounded-lg text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF8F5] transition cursor-pointer"
                               >
                                 Reschedule
                               </button>
                               <button
-                                onClick={() => alert('Cancel functionality coming soon')}
-                                className="px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition"
+                                onClick={() => handleCancelAppointment(appointment)}
+                                disabled={cancellingId === appointment.id}
+                                className="px-4 py-2.5 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition cursor-pointer disabled:opacity-50"
                               >
-                                Cancel
+                                {cancellingId === appointment.id ? 'Cancelling...' : 'Cancel'}
                               </button>
                             </>
                           )}
@@ -291,7 +390,7 @@ export default function UserConsultPage() {
         )}
 
         {/* No Upcoming Appointments */}
-        {profile?.doctor && upcomingAppointments.length === 0 && !loading && (
+        {hasDoctor && upcomingAppointments.length === 0 && !loading && (
           <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 text-center mb-8 shadow-sm">
             <CalendarIcon className="h-12 w-12 text-[#C8996A] mx-auto mb-4" />
             <h3 className="text-lg font-medium text-[#1A1A1A] mb-2">
@@ -302,7 +401,7 @@ export default function UserConsultPage() {
             </p>
             <button
               onClick={() => router.push('/user/consult/schedule')}
-              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-2 rounded-lg text-sm font-medium transition shadow-sm"
+              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm cursor-pointer"
             >
               Schedule Consultation
             </button>
@@ -323,7 +422,7 @@ export default function UserConsultPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium text-base text-[#1A1A1A]">
-                        Dr. {appointment.doctor_name}
+                        {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name || 'Assigned Doctor'}`}
                       </h4>
                       <p className="text-sm text-[#6B6862]">
                         {formatAppointmentTime(appointment.time)}

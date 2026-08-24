@@ -20,8 +20,22 @@ function ConsultationFeedbackPageContent() {
   const searchParams = useSearchParams();
   const { user, profile } = useAuth();
 
-  const doctorUid = searchParams.get('doctorUid');
-  const doctorName = searchParams.get('doctorName');
+  const queryDoctorUid = searchParams.get('doctorUid');
+  const queryDoctorName = searchParams.get('doctorName');
+
+  const effectiveDoctorUid = 
+    queryDoctorUid || 
+    profile?.doctor?.uid || 
+    (typeof profile?.doctor === 'string' ? profile.doctor : '') || 
+    profile?.doctor_uid || 
+    profile?.matched_doctor || 
+    '';
+
+  const effectiveDoctorName = 
+    queryDoctorName || 
+    profile?.doctor_name || 
+    (profile?.doctor?.first_name ? `${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() : '') || 
+    '';
 
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -31,7 +45,7 @@ function ConsultationFeedbackPageContent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!doctorUid) {
+    if (!effectiveDoctorUid) {
       setError('Missing doctor information — please return to Consult and try again.');
       return;
     }
@@ -50,7 +64,7 @@ function ConsultationFeedbackPageContent() {
     try {
       await addDoc(collection(db, 'reviews'), {
         targetType: 'doctor',
-        targetId: doctorUid,
+        targetId: effectiveDoctorUid,
         userId: user.uid,
         userName: user.displayName || 'Anonymous',
         userPhoto: profile?.profile_picture || user.photoURL || null,
@@ -76,8 +90,10 @@ function ConsultationFeedbackPageContent() {
           <h1 className="text-2xl font-bold text-[#1A1A1A]">
             How was your consultation experience?
           </h1>
-          {doctorName && (
-            <p className="text-[#6B6862] mt-1">with Dr. {doctorName}</p>
+          {effectiveDoctorName && (
+            <p className="text-[#6B6862] mt-1">
+              with {effectiveDoctorName.startsWith('Dr.') ? effectiveDoctorName : `Dr. ${effectiveDoctorName}`}
+            </p>
           )}
           <p className="text-[#6B6862] text-sm mt-2">
             Your feedback helps us improve our service

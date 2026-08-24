@@ -24,7 +24,8 @@ export default function ChatWindow({
   recipientName, 
   recipientId,
   canSendMessage,
-  isDoctor 
+  isDoctor,
+  hideHeader = false 
 }) {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -80,7 +81,10 @@ export default function ChatWindow({
       // Reset unread count in chat metadata for doctor
       if (hasUnreadMessages && isDoctor) {
         const chatRef = doc(db, 'doctors', user.uid, 'chats', chatId);
-        batch.update(chatRef, { unread_count: 0 });
+        batch.update(chatRef, { 
+          unread_count: 0,
+          last_message_read_by_doctor: true 
+        });
       }
       
       if (hasUnreadMessages) {
@@ -113,14 +117,18 @@ export default function ChatWindow({
       await updateDoc(chatRef, {
         last_message: messageText,
         last_message_time: serverTimestamp(),
+        last_message_sender_uid: user.uid,
       });
       
       // Update doctor's chat metadata if user is sending
-      if (!isDoctor) {
+      if (!isDoctor && recipientId) {
         const doctorChatRef = doc(db, 'doctors', recipientId, 'chats', chatId);
         await updateDoc(doctorChatRef, {
           last_message: messageText,
+          last_message_sender_uid: user.uid,
+          last_message_timestamp: serverTimestamp(),
           last_message_time: serverTimestamp(),
+          last_message_read_by_doctor: false,
           unread_count: increment(1),
         });
       }
@@ -135,7 +143,7 @@ export default function ChatWindow({
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
@@ -145,7 +153,7 @@ export default function ChatWindow({
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -174,43 +182,58 @@ export default function ChatWindow({
   }, {});
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="p-4 border-b bg-white">
-        <h3 className="font-semibold">{recipientName}</h3>
-        {!canSendMessage && !isDoctor && (
-          <p className="text-sm text-gray-500">
-            You can message after your first consultation
-          </p>
-        )}
-      </div>
+    <div className="flex flex-col h-full bg-[#FAF8F5]">
+      {/* Optional Inner Header */}
+      {!hideHeader && (
+        <div className="p-4 border-b border-[#E7E2D9] bg-white">
+          <h3 className="font-semibold text-sm text-[#1A1A1A]">{recipientName}</h3>
+          {!canSendMessage && !isDoctor && (
+            <p className="text-xs text-[#8C827A] mt-0.5">
+              Messaging is enabled after completing your first consultation
+            </p>
+          )}
+        </div>
+      )}
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        {Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <div key={date}>
-            <div className="text-center mb-4">
-              <span className="text-sm text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
-                {date}
-              </span>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#FAF8F5]">
+        {Object.keys(groupedMessages).length === 0 ? (
+          <div className="flex items-center justify-center h-full text-center p-6">
+            <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 max-w-sm">
+              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">Direct Message Channel</p>
+              <p className="text-xs text-[#6B6862]">
+                {canSendMessage
+                  ? 'Send a message to begin your conversation with your doctor.'
+                  : 'Complete your first video consultation to unlock direct messaging with your doctor.'}
+              </p>
             </div>
-            {dateMessages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                isOwn={message.sender_uid === user?.uid}
-                time={formatTime(message.timestamp)}
-              />
-            ))}
           </div>
-        ))}
+        ) : (
+          Object.entries(groupedMessages).map(([date, dateMessages]) => (
+            <div key={date}>
+              <div className="text-center my-3">
+                <span className="text-[11px] font-medium text-[#6B6862] bg-white border border-[#E7E2D9] px-3 py-1 rounded-full shadow-2xs">
+                  {date}
+                </span>
+              </div>
+              {dateMessages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  isOwn={message.sender_uid === user?.uid}
+                  time={formatTime(message.timestamp)}
+                />
+              ))}
+            </div>
+          ))
+        )}
         <div ref={messagesEndRef} />
       </div>
       
       {/* Input */}
       {canSendMessage ? (
-        <form onSubmit={sendMessage} className="p-4 border-t bg-white">
-          <div className="flex gap-2">
+        <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-[#E7E2D9] bg-white">
+          <div className="flex items-center gap-2 max-w-5xl mx-auto">
             <textarea
               ref={inputRef}
               value={newMessage}
@@ -221,41 +244,52 @@ export default function ChatWindow({
                   sendMessage(e);
                 }
               }}
-              placeholder="Type a message..."
-              className="flex-1 p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Type your message..."
+              className="flex-1 p-3 text-sm bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#C8996A] text-[#1A1A1A] placeholder-[#8C827A]"
               rows={1}
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || sending}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="p-3.5 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition shadow-xs flex items-center justify-center flex-shrink-0 cursor-pointer"
+              aria-label="Send message"
             >
               <PaperAirplaneIcon className="w-5 h-5" />
             </button>
           </div>
         </form>
       ) : (
-        <div className="p-4 border-t bg-gray-50 text-center text-gray-500">
-          {isDoctor ? 'This conversation is locked' : 'Complete your first consultation to start messaging'}
+        <div className="p-4 border-t border-[#E7E2D9] bg-white text-center">
+          <p className="text-xs text-[#6B6862] font-medium">
+            {isDoctor 
+              ? 'This conversation is currently locked' 
+              : 'Complete your first consultation to start messaging with your doctor.'}
+          </p>
         </div>
       )}
     </div>
   );
 }
 
-// Message Bubble Component
+// Message Bubble Component with Ambé Theme
 function MessageBubble({ message, isOwn, time }) {
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2`}>
+    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2.5`}>
       <div
-        className={`max-w-[70%] px-4 py-2 rounded-2xl ${
+        className={`max-w-[78%] sm:max-w-[65%] px-4 py-2.5 shadow-2xs ${
           isOwn
-            ? 'bg-green-600 text-white rounded-br-sm'
-            : 'bg-gray-200 text-gray-800 rounded-bl-sm'
+            ? 'bg-[#FFD3AC] text-[#1A1A1A] rounded-2xl rounded-br-xs'
+            : 'bg-white text-[#1A1A1A] border border-[#E7E2D9] rounded-2xl rounded-bl-xs'
         }`}
       >
-        <p className="whitespace-pre-wrap break-words">{message.text}</p>
-        <p className={`text-xs mt-1 ${isOwn ? 'text-green-100' : 'text-gray-500'}`}>
+        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
+          {message.text}
+        </p>
+        <p
+          className={`text-[10px] mt-1 font-medium ${
+            isOwn ? 'text-[#8C827A] text-right' : 'text-[#8C827A]'
+          }`}
+        >
           {time}
         </p>
       </div>

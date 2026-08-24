@@ -13,7 +13,8 @@ import {
   limit,
   Timestamp,
   doc,
-  getDoc
+  getDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import {
@@ -31,6 +32,20 @@ export default function UserHomePage() {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [thingsToDoTasks, setThingsToDoTasks] = useState([]);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = onSnapshot(
+      collection(db, 'users', user.uid, 'notifications'),
+      (snapshot) => {
+        const unread = snapshot.docs.filter((d) => !d.data().is_read).length;
+        setUnreadNotifCount(unread);
+      },
+      (err) => console.error('Error fetching unread notifications count:', err)
+    );
+    return () => unsub();
+  }, [user]);
 
   useEffect(() => {
     if (user && profile) {
@@ -146,13 +161,28 @@ export default function UserHomePage() {
     <ProtectedRoute userType="user">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-[#1A1A1A] mb-2">Ambe</h1>
+            <h1 className="text-2xl font-bold text-[#1A1A1A] mb-1">Ambe</h1>
             <h2 className="text-3xl font-normal text-[#1A1A1A]">
               Hello {firstName},
             </h2>
           </div>
+
+          {/* Notification Button (matching Mobile App) */}
+          <button
+            type="button"
+            onClick={() => router.push('/user/notifications')}
+            className="relative p-3 rounded-full bg-white border border-[#E7E2D9] hover:border-[#C8996A] text-[#1A1A1A] hover:bg-[#FAF8F5] transition shadow-sm cursor-pointer"
+            aria-label="Notifications"
+          >
+            <BellIcon className="h-6 w-6 text-[#1A1A1A]" />
+            {unreadNotifCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#C8996A] px-1 text-[11px] font-bold text-white shadow-sm">
+                {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Things To Do Section */}
