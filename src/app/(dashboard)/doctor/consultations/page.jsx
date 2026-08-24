@@ -34,52 +34,85 @@ export default function DoctorConsultationsPage() {
   useEffect(() => {
     if (!user) return;
 
-    const now = Timestamp.now();
-    
-    // Listen to upcoming appointments
-    const upcomingQuery = query(
-      collection(db, 'doctors', user.uid, 'appointments_upcoming'),
-      where('time', '>=', now),
-      orderBy('time', 'asc')
+    // Listen to upcoming appointments without restrictive where query
+    const upcomingCol = collection(db, 'doctors', user.uid, 'appointments_upcoming');
+
+    const unsubscribeUpcoming = onSnapshot(
+      upcomingCol,
+      (snapshot) => {
+        const appointments = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        appointments.sort((a, b) => {
+          const timeA = a.time?.toDate
+            ? a.time.toDate().getTime()
+            : a.time
+            ? new Date(a.time).getTime()
+            : 0;
+          const timeB = b.time?.toDate
+            ? b.time.toDate().getTime()
+            : b.time
+            ? new Date(b.time).getTime()
+            : 0;
+          return timeA - timeB;
+        });
+
+        const nowDate = new Date();
+        let current = null;
+        const upcoming = [];
+
+        appointments.forEach((apt) => {
+          const aptDate = apt.time?.toDate
+            ? apt.time.toDate()
+            : apt.time
+            ? new Date(apt.time)
+            : null;
+          if (!aptDate) {
+            upcoming.push(apt);
+            return;
+          }
+          const diffMinutes = (aptDate - nowDate) / (1000 * 60);
+
+          if (diffMinutes >= -60 && diffMinutes <= 15 && !current) {
+            current = apt;
+          } else {
+            upcoming.push(apt);
+          }
+        });
+
+        setCurrentAppointment(current);
+        setUpcomingAppointments(upcoming);
+      },
+      (error) => {
+        console.error('Error listening to upcoming appointments:', error);
+      }
     );
 
-    const unsubscribeUpcoming = onSnapshot(upcomingQuery, (snapshot) => {
-      const appointments = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      // Check for current appointment (happening now)
-      const nowDate = new Date();
-      let current = null;
-      const upcoming = [];
-      
-      appointments.forEach(apt => {
-        const aptTime = apt.time.toDate();
-        const diffMinutes = (aptTime - nowDate) / (1000 * 60);
-        
-        if (diffMinutes >= -30 && diffMinutes <= 5) {
-          current = apt;
-        } else if (diffMinutes > 5) {
-          upcoming.push(apt);
-        }
-      });
-      
-      setCurrentAppointment(current);
-      setUpcomingAppointments(upcoming);
-    });
-
     // Listen to reports to finish
-    const reportsQuery = collection(db, 'doctors', user.uid, 'appointments_reports_to_finish');
-    
-    const unsubscribeReports = onSnapshot(reportsQuery, (snapshot) => {
-      const reports = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setReportsToFinish(reports);
-      setLoading(false);
-    });
+    const reportsCol = collection(
+      db,
+      'doctors',
+      user.uid,
+      'appointments_reports_to_finish'
+    );
+
+    const unsubscribeReports = onSnapshot(
+      reportsCol,
+      (snapshot) => {
+        const reports = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setReportsToFinish(reports);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error listening to reports to finish:', error);
+        setLoading(false);
+      }
+    );
 
     return () => {
       unsubscribeUpcoming();
@@ -89,14 +122,15 @@ export default function DoctorConsultationsPage() {
 
   const formatAppointmentTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();
+    const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     }).format(date);
   };
 
@@ -119,7 +153,7 @@ export default function DoctorConsultationsPage() {
           <h1 className="text-3xl font-bold text-[#1A1A1A]">Consultations</h1>
           <button
             onClick={() => router.push('/doctor/consultations/history')}
-            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg hover:bg-[#1A1A1A] transition"
+            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg hover:bg-[#1A1A1A] transition cursor-pointer"
           >
             View History
           </button>
@@ -136,25 +170,36 @@ export default function DoctorConsultationsPage() {
                   You have {reportsToFinish.length} consultation report{reportsToFinish.length > 1 ? 's' : ''} to complete.
                 </p>
                 <div className="mt-4 space-y-2">
-                  {reportsToFinish.map((report) => (
-                    <div 
-                      key={report.id}
-                      className="flex items-center justify-between bg-white p-3 rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{report.user_name}</p>
-                        <p className="text-sm text-[#6B6862]">
-                          {formatAppointmentTime(report.time)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => router.push(`/doctor/consultations/report/${report.id}`)}
-                        className="text-red-600 hover:text-red-700 font-medium text-sm"
+                  {reportsToFinish.map((report) => {
+                    const userUid = report.user_id || report.user_uid || report.userId || '';
+                    const userName = report.user_name || report.userName || '';
+                    const timeMillis = report.time?.toMillis ? report.time.toMillis() : (report.time ? new Date(report.time).getTime() : Date.now());
+                    const params = new URLSearchParams({
+                      userUid,
+                      userName,
+                      time: String(timeMillis),
+                    }).toString();
+
+                    return (
+                      <div
+                        key={report.id}
+                        className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm"
                       >
-                        Complete Report →
-                      </button>
-                    </div>
-                  ))}
+                        <div>
+                          <p className="font-medium text-[#1A1A1A]">{userName || 'Patient'}</p>
+                          <p className="text-sm text-[#6B6862]">
+                            {formatAppointmentTime(report.time)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => router.push(`/doctor/consultations/complete-report/${report.id}?${params}`)}
+                          className="text-red-600 hover:text-red-700 font-medium text-sm cursor-pointer"
+                        >
+                          Complete Report →
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -193,24 +238,33 @@ export default function DoctorConsultationsPage() {
             <div className="space-y-4">
               {upcomingAppointments.map((appointment) => (
                 <div key={appointment.id} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-lg">{appointment.user_name}</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                    >
+                      <h3 className="font-semibold text-lg hover:text-[#C8996A] transition">{appointment.user_name}</h3>
                       <p className="text-[#6B6862] flex items-center mt-1">
                         <ClockIcon className="h-4 w-4 mr-1" />
                         {formatAppointmentTime(appointment.time)}
                       </p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                        className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                      >
+                        View Details
+                      </button>
                       <button
                         onClick={() => handleReschedule(appointment)}
-                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition"
+                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
                       >
                         Reschedule
                       </button>
                       <button
                         onClick={() => handleCancel(appointment.id)}
-                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"
+                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
                       >
                         Cancel
                       </button>

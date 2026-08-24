@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase/config';
 import { onAuthStateChanged, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import BackButton from '@/components/common/BackButton';
 
 export default function EditEmailPage() {
   const router = useRouter();
@@ -69,6 +70,7 @@ export default function EditEmailPage() {
 
   return (
     <div className="max-w-lg mx-auto p-6 space-y-6">
+      <BackButton href="/doctor/menu" label="Back to Menu" />
       <h1 className="text-2xl font-semibold text-[#1A1A1A]">Edit Email</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-[#6B6862] text-sm">

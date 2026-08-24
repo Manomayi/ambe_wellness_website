@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase/config';
+import { doc, updateDoc } from 'firebase/firestore';
+import { functions, db } from '@/lib/firebase/config';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -48,10 +49,12 @@ export default function GetMatched() {
     setError('');
 
     try {
-      const matchWithDoctor = httpsCallable(functions, 'matchWithDoctor');
-      const result = await matchWithDoctor({
-        healthFields: selectedFields,
+      await updateDoc(doc(db, 'users', user.uid), {
+        preferred_health: selectedFields[0],
       });
+
+      const matchWithDoctor = httpsCallable(functions, 'matchWithDoctor');
+      const result = await matchWithDoctor();
 
       if (result.data.success) {
         setMatched(true);

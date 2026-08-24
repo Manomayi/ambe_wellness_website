@@ -8,6 +8,7 @@ import VideoCall from '@/components/video/VideoCall';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 export default function DoctorAppointmentPage() {
   const router = useRouter();
@@ -57,9 +58,7 @@ export default function DoctorAppointmentPage() {
 
   const handleCallEnd = async () => {
     setInCall(false);
-    // Move appointment to reports_to_finish
     try {
-      // You might want to call a cloud function here to properly move the appointment
       await updateDoc(
         doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
         {
@@ -70,7 +69,16 @@ export default function DoctorAppointmentPage() {
     } catch (error) {
       console.error('Error updating appointment:', error);
     }
-    router.push('/doctor/consultations');
+    // Same next-step as the app: doctor lands directly on the
+    // recommendations/report form for this consultation, not just back on
+    // the list.
+    const timeMillis = appointment?.time?.toMillis ? appointment.time.toMillis() : Date.now();
+    const query = new URLSearchParams({
+      userUid: appointment?.user_id || '',
+      userName: appointment?.user_name || '',
+      time: String(timeMillis),
+    });
+    router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
   };
 
   const formatAppointmentTime = (timestamp) => {
@@ -121,6 +129,7 @@ export default function DoctorAppointmentPage() {
       <VideoCall
         appointmentId={params.id}
         userId={user.uid}
+        otherPartyUid={appointment.user_id}
         isDoctor={true}
         onCallEnd={handleCallEnd}
       />
@@ -129,23 +138,18 @@ export default function DoctorAppointmentPage() {
 
   const isAppointmentNow = () => {
     if (!appointment.time) return false;
-    const appointmentTime = appointment.time.toDate();
+    const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
-    return diffMinutes >= -30 && diffMinutes <= 5;
+    return diffMinutes >= -60 && diffMinutes <= 15;
   };
 
   const canJoinCall = isAppointmentNow() && !appointment.needsReport;
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-4xl mx-auto p-6">
-        <button
-          onClick={() => router.push('/doctor/consultations')}
-          className="mb-6 text-[#6B6862] hover:text-[#1A1A1A] flex items-center"
-        >
-          ← Back to Consultations
-        </button>
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <BackButton href="/doctor/consultations" label="Back to Consultations" />
 
         <div className="bg-white rounded-lg shadow-lg p-8">
           <h1 className="text-3xl font-bold text-[#1A1A1A] mb-6">
@@ -186,7 +190,15 @@ export default function DoctorAppointmentPage() {
                 This appointment has been completed. Please complete the consultation report.
               </p>
               <button
-                onClick={() => router.push(`/doctor/consultations/report/${params.id}`)}
+                onClick={() => {
+                  const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : Date.now();
+                  const query = new URLSearchParams({
+                    userUid: appointment.user_id || '',
+                    userName: appointment.user_name || '',
+                    time: String(timeMillis),
+                  });
+                  router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
+                }}
                 className="mt-3 bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition"
               >
                 Complete Report
@@ -198,7 +210,7 @@ export default function DoctorAppointmentPage() {
             <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
               <p className="text-[#1A1A1A]">
                 Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.
-                You can join the call 5 minutes before the scheduled time.
+                You can join the call 15 minutes before the scheduled time.
               </p>
             </div>
           )}

@@ -10,10 +10,10 @@ export function middleware(request) {
 
   const isAuthRoute = 
     pathname.startsWith('/login') || 
-    pathname.startsWith('/signup');
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/verify-email');
 
-  // For now, we'll rely on client-side auth checking
-  // In production, you'd verify the auth token here
+  // Client-side and route guard handles authentication & email verification
   
   return NextResponse.next();
 }

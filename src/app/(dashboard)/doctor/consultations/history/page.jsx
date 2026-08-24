@@ -7,6 +7,7 @@ import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import BackButton from '@/components/common/BackButton';
 
 export default function DoctorConsultationHistoryPage() {
   const router = useRouter();
@@ -58,7 +59,8 @@ export default function DoctorConsultationHistoryPage() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <BackButton href="/doctor/consultations" label="Back to Consultations" />
       <h1 className="text-2xl font-semibold text-[#1A1A1A]">History</h1>
 
       {history.length === 0 ? (

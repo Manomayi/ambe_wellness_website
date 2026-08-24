@@ -6,11 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { 
   collection, 
-  query, 
-  where, 
   getDocs, 
-  orderBy,
-  limit,
+  onSnapshot,
   Timestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
@@ -36,63 +33,98 @@ export default function DoctorDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && profile) {
-      fetchDashboardData();
-    }
-  }, [user, profile]);
+    if (!user) return;
 
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch total users
-      const usersQuery = collection(db, `doctors/${user.uid}/users`);
-      const usersSnapshot = await getDocs(usersQuery);
-      const totalUsers = usersSnapshot.size;
+    // Listen to upcoming appointments
+    const upcomingCol = collection(db, 'doctors', user.uid, 'appointments_upcoming');
+    const unsubscribeUpcoming = onSnapshot(
+      upcomingCol,
+      (snapshot) => {
+        const upcomingList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        upcomingList.sort((a, b) => {
+          const timeA = a.time?.toDate
+            ? a.time.toDate().getTime()
+            : a.time
+            ? new Date(a.time).getTime()
+            : 0;
+          const timeB = b.time?.toDate
+            ? b.time.toDate().getTime()
+            : b.time
+            ? new Date(b.time).getTime()
+            : 0;
+          return timeA - timeB;
+        });
+        setUpcomingAppointments(upcomingList.slice(0, 5));
+        setStats((prev) => ({
+          ...prev,
+          upcomingConsultations: upcomingList.length,
+        }));
+      },
+      (error) => {
+        console.error('Error listening to upcoming appointments:', error);
+      }
+    );
 
-      // Fetch upcoming consultations
-      const now = Timestamp.now();
-      const upcomingQuery = query(
-        collection(db, `doctors/${user.uid}/appointments_upcoming`),
-        where('time', '>=', now),
-        orderBy('time', 'asc'),
-        limit(5)
-      );
-      const upcomingSnapshot = await getDocs(upcomingQuery);
-      const upcomingList = upcomingSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+    // Listen to reports to finish
+    const reportsCol = collection(
+      db,
+      'doctors',
+      user.uid,
+      'appointments_reports_to_finish'
+    );
+    const unsubscribeReports = onSnapshot(
+      reportsCol,
+      (snapshot) => {
+        setStats((prev) => ({
+          ...prev,
+          pendingReports: snapshot.size,
+        }));
+      },
+      (error) => {
+        console.error('Error listening to reports to finish:', error);
+      }
+    );
 
-      // Fetch completed consultations
-      const completedQuery = collection(db, `doctors/${user.uid}/appointments_completed`);
-      const completedSnapshot = await getDocs(completedQuery);
-      const completedCount = completedSnapshot.size;
+    // Fetch total users and completed consultations
+    const fetchCounts = async () => {
+      try {
+        const [usersSnapshot, completedSnapshot] = await Promise.all([
+          getDocs(collection(db, 'doctors', user.uid, 'users')),
+          getDocs(collection(db, 'doctors', user.uid, 'appointments_history')),
+        ]);
+        setStats((prev) => ({
+          ...prev,
+          totalUsers: usersSnapshot.size,
+          completedConsultations: completedSnapshot.size,
+        }));
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard counts:', error);
+        setLoading(false);
+      }
+    };
 
-      // Get pending reports count from profile
-      const pendingReports = profile?.pending?.finish_report || 0;
+    fetchCounts();
 
-      setStats({
-        totalUsers,
-        upcomingConsultations: upcomingList.length,
-        pendingReports,
-        completedConsultations: completedCount,
-      });
-      setUpcomingAppointments(upcomingList);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      setLoading(false);
-    }
-  };
+    return () => {
+      unsubscribeUpcoming();
+      unsubscribeReports();
+    };
+  }, [user]);
 
   const formatAppointmentTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();
+    const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     }).format(date);
   };
 

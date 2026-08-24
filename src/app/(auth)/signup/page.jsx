@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '@/lib/firebase/config';
+import { auth, functions } from '@/lib/firebase/config';
+import { sendEmailVerification } from 'firebase/auth';
 import { ArrowRightIcon, ArrowLeftIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -32,8 +33,13 @@ export default function SignUpPage() {
     // Sex assigned at birth. Only 'Male' narrows the extended questionnaire;
     // every other value — including blank — leaves all questions in place.
     genderAtBirth: '',
-    specialization: '',
+    specializations: [],
     customSpecialization: '',
+    // Career information (doctor only) — mirrors the mobile app's
+    // step_doctor_career_info.dart fields.
+    practiceStartYear: '',
+    medicalSchool: '',
+    professionalTitles: [],
   });
 
   const months = [
@@ -75,11 +81,36 @@ export default function SignUpPage() {
     { value: 'general_health', label: 'Other (Please Specify)' },
   ];
 
+  const PROFESSIONAL_TITLES = ['MD', 'DO', 'NPR', 'BAMS'];
+  const currentYear = new Date().getFullYear();
+
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // The three date-of-birth selects share a single `dateOfBirth` error.
     const errorKey = field.startsWith('dob') ? 'dateOfBirth' : field;
     setErrors(prev => ({ ...prev, [errorKey]: '' }));
+  };
+
+  // Same toggle pattern as GetMatched.jsx's toggleField: add if absent,
+  // remove if present.
+  const toggleSpecialization = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      specializations: prev.specializations.includes(value)
+        ? prev.specializations.filter(v => v !== value)
+        : [...prev.specializations, value],
+    }));
+    setErrors(prev => ({ ...prev, specialization: '' }));
+  };
+
+  const toggleProfessionalTitle = (title) => {
+    setFormData(prev => ({
+      ...prev,
+      professionalTitles: prev.professionalTitles.includes(title)
+        ? prev.professionalTitles.filter(t => t !== title)
+        : [...prev.professionalTitles, title],
+    }));
+    setErrors(prev => ({ ...prev, professionalTitles: '' }));
   };
 
   const validateStep = () => {
@@ -139,18 +170,40 @@ export default function SignUpPage() {
         }
         break;
 
-      case 4: // Doctor specialization
+      case 4: // Doctor specialization (multi-select)
         if (formData.userType === 'doctor') {
-          if (!formData.specialization) {
-            newErrors.specialization = 'Please select a specialization';
+          if (formData.specializations.length === 0) {
+            newErrors.specialization = 'Please select at least one specialization';
           }
-          if (formData.specialization === 'general_health' && !formData.customSpecialization.trim()) {
+          if (formData.specializations.includes('general_health') && !formData.customSpecialization.trim()) {
             newErrors.customSpecialization = 'Please specify your specialization';
           }
         }
         break;
 
-      case 5: // Doctor documents
+      case 5: // Doctor career information
+        if (formData.userType === 'doctor') {
+          const yearText = formData.practiceStartYear.trim();
+          if (!yearText) {
+            newErrors.practiceStartYear = 'Please enter a year';
+          } else if (!/^\d+$/.test(yearText)) {
+            newErrors.practiceStartYear = 'Please enter a valid year';
+          } else {
+            const year = Number(yearText);
+            if (year < 1950 || year > currentYear) {
+              newErrors.practiceStartYear = `Please enter a year between 1950 and ${currentYear}`;
+            }
+          }
+          if (!formData.medicalSchool.trim()) {
+            newErrors.medicalSchool = 'Please enter your medical school';
+          }
+          if (formData.professionalTitles.length === 0) {
+            newErrors.professionalTitles = 'Please select at least one professional title';
+          }
+        }
+        break;
+
+      case 6: // Doctor documents
         if (formData.userType === 'doctor') {
           if (!documents.license) {
             newErrors.license = 'Medical license is required';
@@ -181,6 +234,42 @@ export default function SignUpPage() {
     setErrors(prev => ({ ...prev, [type]: '' }));
   };
 
+  // Reads a File as base64 (stripping the `data:*/*;base64,` prefix) so it
+  // can be sent inline in the createUser payload, matching the shape the
+  // mobile app builds in step_confirmation.dart.
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result || '';
+        const base64 = String(result).split(',')[1] || '';
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const buildDocumentsPayload = async () => {
+    const entries = [
+      [documents.license, 'license'],
+      [documents.id, 'government_id'],
+      [documents.certifications, 'certification'],
+    ];
+
+    const docs = [];
+    for (const [file, type] of entries) {
+      if (!file) continue;
+      const contentBase64 = await fileToBase64(file);
+      docs.push({
+        name: file.name,
+        contentBase64,
+        contentType: file.type || 'application/octet-stream',
+        type,
+      });
+    }
+    return docs;
+  };
+
   const handleSubmit = async () => {
     if (!validateStep()) return;
 
@@ -188,6 +277,13 @@ export default function SignUpPage() {
     setError('');
 
     try {
+      const isDoctor = formData.userType === 'doctor';
+
+      // Documents must be part of the single createUser payload — the
+      // backend (and the mobile app's step_confirmation.dart) uploads them
+      // as part of account creation, not as a separate post-creation step.
+      const documentsPayload = isDoctor ? await buildDocumentsPayload() : [];
+
       // The Auth account is created by the cloud function, not here — same
       // order as the mobile sign-up flow. Creating it client-side first left an
       // orphaned Auth user whenever the profile write failed, and every retry
@@ -211,25 +307,43 @@ export default function SignUpPage() {
         gender_at_birth: formData.genderAtBirth || null,
         role: formData.userType,
         user_type: formData.userType,
-        specialization: formData.specialization,
         customSpecialization: formData.customSpecialization,
+        // Doctor-only fields. Backend expects `doctor_fields` as an array —
+        // the old scalar `specialization` field has been fully replaced.
+        // `practice_start_year`, `medical_school`, and `professional_title`
+        // match the shape the mobile app's step_confirmation.dart sends and
+        // functions/index.js reads (professional_title is a single joined
+        // string, not an array).
+        ...(isDoctor
+          ? {
+              doctor_fields: formData.specializations,
+              practice_start_year: formData.practiceStartYear
+                ? Number(formData.practiceStartYear)
+                : null,
+              medical_school: formData.medicalSchool,
+              professional_title: formData.professionalTitles.join(', '),
+              documents: documentsPayload,
+            }
+          : {}),
       });
 
       // createUser resolves with { uid } — there is no `success` flag.
       if (result.data?.uid) {
-        // If doctor, upload documents
-        if (formData.userType === 'doctor' && documents.license) {
-          // Upload documents logic would go here
-          // For now, we'll skip actual file upload
+        // Sign in with the credentials the function just registered, so the
+        // user is authenticated.
+        const userType = await signIn(formData.email, formData.password);
+
+        // Send email verification
+        try {
+          if (auth.currentUser) {
+            await sendEmailVerification(auth.currentUser);
+          }
+        } catch (verifyErr) {
+          console.warn("Initial email verification error (may be rate-limited):", verifyErr);
         }
 
-        // Sign in with the credentials the function just registered, so the
-        // onboarding pages load with an authenticated user.
-        await signIn(formData.email, formData.password);
-
-        // Land on the same home the login flow uses — there is no onboarding
-        // route on the web.
-        router.push(formData.userType === 'doctor' ? '/doctor/home' : '/user/home');
+        // Navigate to email verification step
+        router.push(`/verify-email?email=${encodeURIComponent(formData.email.trim())}&role=${userType || formData.userType}`);
       }
     } catch (err) {
       console.error('Signup error:', err);
@@ -240,7 +354,7 @@ export default function SignUpPage() {
   };
 
   const getStepCount = () => {
-    return formData.userType === 'doctor' ? 5 : 3;
+    return formData.userType === 'doctor' ? 6 : 3;
   };
 
   const renderStep = () => {
@@ -546,13 +660,16 @@ export default function SignUpPage() {
               >
                 Select Your Specialization
               </h2>
+              <p className="text-sm text-center mb-4" style={{ color: "#6B6862" }}>
+                Select all fields of practice that apply.
+              </p>
               <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
                 {specializations.map((spec) => (
                   <button
                     key={spec.value}
                     type="button"
-                    onClick={() => updateFormData("specialization", spec.value)}
-                    className={`w-full p-3.5 text-left rounded-xl border transition-all text-sm ${formData.specialization === spec.value
+                    onClick={() => toggleSpecialization(spec.value)}
+                    className={`w-full p-3.5 text-left rounded-xl border transition-all text-sm ${formData.specializations.includes(spec.value)
                         ? "border-[#C2691C] bg-[#FFF8F2] font-semibold text-[#1A1A1A]"
                         : "border-[#E7E2D9] hover:border-[#C8996A] bg-white text-[#353535]"
                       }`}
@@ -567,7 +684,7 @@ export default function SignUpPage() {
                 </p>
               )}
 
-              {formData.specialization === "general_health" && (
+              {formData.specializations.includes("general_health") && (
                 <div className="mt-4">
                   <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
                     Please specify your specialization
@@ -593,6 +710,98 @@ export default function SignUpPage() {
         break;
 
       case 5:
+        if (formData.userType === "doctor") {
+          return (
+            <div>
+              <h2
+                className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
+                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
+              >
+                Career Information
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                    Year Practice Started
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    value={formData.practiceStartYear}
+                    onChange={(e) => updateFormData("practiceStartYear", e.target.value.replace(/\D/g, ""))}
+                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                    placeholder="Enter year (e.g., 2010)"
+                  />
+                  {errors.practiceStartYear && (
+                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                      {errors.practiceStartYear}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                    Medical School
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.medicalSchool}
+                    onChange={(e) => updateFormData("medicalSchool", e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                    placeholder="Enter your medical school"
+                  />
+                  {errors.medicalSchool && (
+                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                      {errors.medicalSchool}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#1A1A1A" }}>
+                    Professional Titles <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(select all that apply)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {PROFESSIONAL_TITLES.map((title) => {
+                      const isSelected = formData.professionalTitles.includes(title);
+                      return (
+                        <button
+                          key={title}
+                          type="button"
+                          onClick={() => toggleProfessionalTitle(title)}
+                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${isSelected
+                              ? "border-[#C2691C] bg-[#FFD3AC] text-[#1A1A1A]"
+                              : "border-[#E7E2D9] hover:border-[#C8996A] bg-white text-[#353535]"
+                            }`}
+                        >
+                          {title}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.professionalTitles && (
+                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                      {errors.professionalTitles}
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-xl border border-[#E7E2D9] bg-[#FAF8F5]">
+                  <p className="text-xs leading-relaxed" style={{ color: "#6B6862" }}>
+                    This information helps us verify your credentials and match you with appropriate patients.
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        break;
+
+      case 6:
         if (formData.userType === "doctor") {
           return (
             <div>

@@ -6,7 +6,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 export default function UserQuestionnairePage() {
   const router = useRouter();
@@ -72,9 +72,13 @@ export default function UserQuestionnairePage() {
   const secondary = toTitleCase(doshaScores.secondary || 'N/A');
 
   return (
-    <div className="space-y-8 p-4">
-      {/* Back + Title */}
-      <div className="flex items-center space-x-2">
+    <div className="space-y-6 p-4 max-w-4xl mx-auto">
+      <BackButton
+        href={`/doctor/users/${userUid}?name=${encodeURIComponent(userName)}`}
+        label="Back to Patient"
+      />
+      {/* Title */}
+      <div>
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           {userName.split(' ')[0]}'s Questionnaire
         </h1>

@@ -14,6 +14,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { ChevronRightIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 export default function UserCompleteProfilePage() {
   const router = useRouter();
@@ -73,9 +74,10 @@ export default function UserCompleteProfilePage() {
   }
 
   return (
-    <div className="space-y-8 p-4">
+    <div className="space-y-6 p-4 max-w-4xl mx-auto">
+      <BackButton href="/doctor/users" label="Back to Users" />
       {/* Header */}
-      <div className="flex items-center space-x-2">
+      <div>
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           {userName}
         </h1>

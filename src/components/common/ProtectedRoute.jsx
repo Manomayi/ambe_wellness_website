@@ -12,6 +12,8 @@ export default function ProtectedRoute({ children, userType = null }) {
     if (!loading) {
       if (!user) {
         router.push('/login');
+      } else if (!user.emailVerified) {
+        router.push(`/verify-email?email=${encodeURIComponent(user.email || '')}&role=${authUserType || ''}`);
       } else if (userType && authUserType !== userType) {
         // Redirect to appropriate home if wrong user type
         router.push(authUserType === 'doctor' ? '/doctor/home' : '/user/home');
@@ -21,13 +23,13 @@ export default function ProtectedRoute({ children, userType = null }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F1EA]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C2691C]"></div>
       </div>
     );
   }
 
-  if (!user || (userType && authUserType !== userType)) {
+  if (!user || !user.emailVerified || (userType && authUserType !== userType)) {
     return null;
   }
 

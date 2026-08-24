@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import BackButton from '@/components/common/BackButton';
 
 export default function DoctorVerificationPage() {
   const router = useRouter();
@@ -57,10 +57,10 @@ export default function DoctorVerificationPage() {
   }
 
   return (
-    <div className="space-y-8 p-4">
+    <div className="space-y-6 p-4 max-w-2xl mx-auto">
+      <BackButton href="/doctor/menu" label="Back to Menu" />
       {/* Header */}
-      <div className="flex items-center space-x-2">
-       
+      <div>
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">
           Verification Status
         </h1>

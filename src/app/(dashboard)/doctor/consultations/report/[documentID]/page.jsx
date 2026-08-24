@@ -6,7 +6,7 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import BackButton from "@/components/common/BackButton";
 
 export default function ConsultationReportPage() {
   const router = useRouter();
@@ -14,7 +14,6 @@ export default function ConsultationReportPage() {
   const searchParams = useSearchParams();
   const userUid = searchParams.get("userUid");
   const userName = searchParams.get("userName");
-  const doctorName = searchParams.get("doctorName");
 
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null);
@@ -25,15 +24,41 @@ export default function ConsultationReportPage() {
         router.push("/login");
         return;
       }
-      if (!userUid || !documentID) {
+      if (!documentID) {
         setLoading(false);
         return;
       }
       try {
-        const snap = await getDoc(
-          doc(db, "users", userUid, "profile", documentID)
-        );
-        if (snap.exists()) setReport(snap.data());
+        let foundReport = null;
+
+        if (userUid) {
+          const snap = await getDoc(
+            doc(db, "users", userUid, "profile", documentID)
+          );
+          if (snap.exists()) {
+            foundReport = snap.data();
+          }
+        }
+
+        if (!foundReport) {
+          const snapFinish = await getDoc(
+            doc(db, "doctors", user.uid, "appointments_reports_to_finish", documentID)
+          );
+          if (snapFinish.exists()) {
+            foundReport = snapFinish.data();
+          }
+        }
+
+        if (!foundReport) {
+          const snapHist = await getDoc(
+            doc(db, "doctors", user.uid, "appointments_history", documentID)
+          );
+          if (snapHist.exists()) {
+            foundReport = snapHist.data();
+          }
+        }
+
+        setReport(foundReport);
       } catch (e) {
         console.error("Error loading report:", e);
       } finally {
@@ -73,26 +98,14 @@ export default function ConsultationReportPage() {
   const { recommendations, store_recommendations, notes, time } = report;
 
   return (
-    <div className="space-y-8 p-4">
+    <div className="space-y-6 p-4 max-w-4xl mx-auto">
+      <BackButton href="/doctor/consultations/history" label="Back to History" />
       {/* Title */}
-      <div className="flex items-center space-x-2">
-       
+      <div>
         <h1 className="text-xl font-semibold text-[#1A1A1A]">
           {userName?.split(" ")[0]}'s Report
         </h1>
       </div>
-
-      {/* Doctor */}
-      {doctorName && (
-        <>
-          <p className="text-sm uppercase font-semibold text-[#6B6862] mb-2">
-            Doctor
-          </p>
-          <div className="bg-white text-[#1A1A1A] p-4 rounded-lg shadow">
-            Dr. {doctorName}
-          </div>
-        </>
-      )}
 
       {/* Date */}
       {time && (
@@ -151,7 +164,7 @@ export default function ConsultationReportPage() {
               >
                 <div>
                   <h3 className="font-bold text-[#1A1A1A]">
-                    {item.productName}
+                    {item.product_name}
                   </h3>
                   {item.size && (
                     <p className="text-[#1A1A1A]">Size: {item.size}</p>

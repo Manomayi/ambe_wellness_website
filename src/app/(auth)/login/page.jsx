@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/lib/firebase/config';
+import { sendEmailVerification } from 'firebase/auth';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -20,6 +22,17 @@ export default function LoginPage() {
     try {
       const userType = await signIn(email, password);
       console.log("userType", userType);
+
+      if (auth.currentUser && !auth.currentUser.emailVerified) {
+        try {
+          await sendEmailVerification(auth.currentUser);
+        } catch (verifyErr) {
+          console.warn("Verification email send error (may be throttled):", verifyErr);
+        }
+        router.push(`/verify-email?email=${encodeURIComponent(email.trim())}&role=${userType}`);
+        return;
+      }
+
       router.push(userType === 'doctor' ? '/doctor/home' : '/user/home');
     } catch (err) {
       console.error(err);

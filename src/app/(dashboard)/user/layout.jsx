@@ -1,27 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import UserNav from '@/components/navigation/UserNav';
-import UserOnboarding from '@/components/auth/UserOnboarding';
+import { usePathname } from "next/navigation";
+import UserNav from "@/components/navigation/UserNav";
+import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserLayout({ children }) {
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { user, profile, loading } = useAuth();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (localStorage.getItem('isNewAccount') === 'true') {
-      setShowOnboarding(true);
-    }
-  }, []);
+  // If user is loaded and questionnaire is not completed yet:
+  const needsQuestionnaire = !loading && user && profile && profile.is_free_questionnaire_completed !== true;
 
-  const finishOnboarding = () => {
-    localStorage.removeItem('isNewAccount');
-    setShowOnboarding(false);
-  };
-
-  if (showOnboarding) {
-    return <UserOnboarding onFinish={finishOnboarding} />;
+  if (needsQuestionnaire) {
+    return <UserQuestionnaireModal />;
   }
 
   return (

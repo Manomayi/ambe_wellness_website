@@ -37,7 +37,7 @@ export default function UserAppointmentPage() {
       } else {
         // Check in completed appointments
         const completedDoc = await getDoc(
-          doc(db, 'users', user.uid, 'appointments_completed', params.id)
+          doc(db, 'users', user.uid, 'appointments_history', params.id)
         );
         
         if (completedDoc.exists()) {
@@ -57,7 +57,6 @@ export default function UserAppointmentPage() {
 
   const handleCallEnd = async () => {
     setInCall(false);
-    // Optionally update appointment status
     try {
       await updateDoc(
         doc(db, 'users', user.uid, 'appointments_upcoming', params.id),
@@ -68,7 +67,13 @@ export default function UserAppointmentPage() {
     } catch (error) {
       console.error('Error updating appointment:', error);
     }
-    router.push('/user/consult');
+    // Same next-step as the app: patient lands directly on the feedback
+    // form for this doctor, not just back on the consult list.
+    const query = new URLSearchParams({
+      doctorUid: appointment?.doctor_id || '',
+      doctorName: appointment?.doctor_name || '',
+    });
+    router.push(`/user/consult/feedback?${query.toString()}`);
   };
 
   const formatAppointmentTime = (timestamp) => {
@@ -119,6 +124,7 @@ export default function UserAppointmentPage() {
       <VideoCall
         appointmentId={params.id}
         userId={user.uid}
+        otherPartyUid={appointment.doctor_id}
         isDoctor={false}
         onCallEnd={handleCallEnd}
       />
@@ -127,10 +133,10 @@ export default function UserAppointmentPage() {
 
   const isAppointmentNow = () => {
     if (!appointment.time) return false;
-    const appointmentTime = appointment.time.toDate();
+    const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
-    return diffMinutes >= -30 && diffMinutes <= 5;
+    return diffMinutes >= -60 && diffMinutes <= 15;
   };
 
   const canJoinCall = isAppointmentNow() && !appointment.completed;
@@ -191,7 +197,7 @@ export default function UserAppointmentPage() {
             <div className="bg-[#FAF8F5] border border-[#C8996A]/30 rounded-xl p-4 mb-6">
               <p className="text-sm text-[#353535]">
                 Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.
-                You can join the call 5 minutes before the scheduled time.
+                You can join the call 15 minutes before the scheduled time.
               </p>
             </div>
           )}

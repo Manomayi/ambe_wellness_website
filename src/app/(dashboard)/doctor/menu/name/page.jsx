@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import BackButton from '@/components/common/BackButton';
 
 export default function EditNamePage() {
   const router = useRouter();
@@ -82,6 +83,7 @@ export default function EditNamePage() {
 
   return (
     <div className="max-w-lg mx-auto p-6 space-y-6">
+      <BackButton href="/doctor/menu" label="Back to Menu" />
       <h1 className="text-2xl font-semibold text-[#1A1A1A]">Edit Name</h1>
       {error && <p className="text-red-600">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">

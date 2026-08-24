@@ -121,7 +121,7 @@ export default function UserHomePage() {
     try {
       const snapshot = await getDocs(
         query(
-          collection(db, 'users', user.uid, 'appointments_completed'),
+          collection(db, 'users', user.uid, 'appointments_history'),
           orderBy('time', 'desc'),
           limit(1)
         )

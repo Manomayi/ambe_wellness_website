@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { ClockIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckIcon, BoltIcon } from '@heroicons/react/24/outline';
+import { BoltIcon as BoltIconSolid } from '@heroicons/react/24/solid';
 
 const DAYS_OF_WEEK = [
   'monday',
@@ -34,12 +35,42 @@ export default function DoctorSchedulePage() {
   const [timezone, setTimezone] = useState('');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  
+  // Instant Consult Availability State
+  const [isAvailableNow, setIsAvailableNow] = useState(false);
+  const [togglingInstant, setTogglingInstant] = useState(false);
+  const [instantMessage, setInstantMessage] = useState('');
+
+  // "Use same hours for all days" state
+  const [useSameHours, setUseSameHours] = useState(true);
+  const [commonStartTime, setCommonStartTime] = useState('09:00');
+  const [commonEndTime, setCommonEndTime] = useState('17:00');
 
   useEffect(() => {
     if (profile) {
+      // Load existing instant consult status
+      setIsAvailableNow(Boolean(profile.is_available_now));
+
       // Load existing schedule
       if (profile.schedule) {
         setSchedule(profile.schedule);
+
+        // Check if all available days use the same hours
+        const activeDays = DAYS_OF_WEEK.filter(day => profile.schedule[day]?.isAvailable);
+        if (activeDays.length > 0) {
+          const firstDay = activeDays[0];
+          const firstStart = profile.schedule[firstDay]?.startTime || '09:00';
+          const firstEnd = profile.schedule[firstDay]?.endTime || '17:00';
+          
+          setCommonStartTime(firstStart);
+          setCommonEndTime(firstEnd);
+
+          const allSame = activeDays.every(day => 
+            profile.schedule[day]?.startTime === firstStart && 
+            profile.schedule[day]?.endTime === firstEnd
+          );
+          setUseSameHours(allSame);
+        }
       } else {
         // Initialize empty schedule
         const emptySchedule = {};
@@ -58,14 +89,104 @@ export default function DoctorSchedulePage() {
     }
   }, [profile]);
 
-  const handleDayToggle = (day) => {
-    setSchedule(prev => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        isAvailable: !prev[day].isAvailable
+  const handleToggleInstantAvailability = async () => {
+    if (!user || togglingInstant) return;
+    
+    const nextValue = !isAvailableNow;
+    setTogglingInstant(true);
+    
+    try {
+      await updateDoc(doc(db, 'doctors', user.uid), {
+        is_available_now: nextValue,
+        last_availability_update: serverTimestamp(),
+      });
+      
+      setIsAvailableNow(nextValue);
+      setInstantMessage(
+        nextValue 
+          ? 'You are now available for instant consults!' 
+          : 'Instant availability turned off.'
+      );
+      setTimeout(() => setInstantMessage(''), 4000);
+    } catch (error) {
+      console.error('Error toggling instant availability:', error);
+      try {
+        await setDoc(doc(db, 'doctors', user.uid), {
+          is_available_now: nextValue,
+          last_availability_update: serverTimestamp(),
+        }, { merge: true });
+        
+        setIsAvailableNow(nextValue);
+        setInstantMessage(
+          nextValue 
+            ? 'You are now available for instant consults!' 
+            : 'Instant availability turned off.'
+        );
+        setTimeout(() => setInstantMessage(''), 4000);
+      } catch (fallbackError) {
+        console.error('Fallback update error:', fallbackError);
+        alert('Could not update your instant availability. Please try again.');
       }
-    }));
+    } finally {
+      setTogglingInstant(false);
+    }
+  };
+
+  const handleToggleSameHours = () => {
+    const nextValue = !useSameHours;
+    setUseSameHours(nextValue);
+    setSaved(false);
+
+    if (nextValue) {
+      // When turning ON, sync all days to common start/end times
+      setSchedule(prev => {
+        const updated = { ...prev };
+        DAYS_OF_WEEK.forEach(day => {
+          if (updated[day]) {
+            updated[day] = {
+              ...updated[day],
+              startTime: commonStartTime,
+              endTime: commonEndTime,
+            };
+          }
+        });
+        return updated;
+      });
+    }
+  };
+
+  const handleCommonTimeChange = (field, value) => {
+    if (field === 'startTime') setCommonStartTime(value);
+    if (field === 'endTime') setCommonEndTime(value);
+    setSaved(false);
+
+    setSchedule(prev => {
+      const updated = { ...prev };
+      DAYS_OF_WEEK.forEach(day => {
+        if (updated[day]) {
+          updated[day] = {
+            ...updated[day],
+            [field]: value
+          };
+        }
+      });
+      return updated;
+    });
+  };
+
+  const handleDayToggle = (day) => {
+    setSchedule(prev => {
+      const isCurrentlyAvailable = prev[day]?.isAvailable || false;
+      return {
+        ...prev,
+        [day]: {
+          ...prev[day],
+          isAvailable: !isCurrentlyAvailable,
+          startTime: useSameHours ? commonStartTime : (prev[day]?.startTime || commonStartTime),
+          endTime: useSameHours ? commonEndTime : (prev[day]?.endTime || commonEndTime),
+        }
+      };
+    });
     setSaved(false);
   };
 
@@ -87,24 +208,24 @@ export default function DoctorSchedulePage() {
 
   const validateSchedule = () => {
     for (const day of DAYS_OF_WEEK) {
-      if (schedule[day].isAvailable) {
+      if (schedule[day]?.isAvailable) {
         const start = schedule[day].startTime;
         const end = schedule[day].endTime;
         
         if (!start || !end) {
-          alert(`Please set both start and end times for ${day}`);
+          alert('Please set both start and end times for ' + day);
           return false;
         }
         
         if (start >= end) {
-          alert(`End time must be after start time for ${day}`);
+          alert('End time must be after start time for ' + day);
           return false;
         }
       }
     }
     
     // Check if at least one day is available
-    const hasAvailableDay = DAYS_OF_WEEK.some(day => schedule[day].isAvailable);
+    const hasAvailableDay = DAYS_OF_WEEK.some(day => schedule[day]?.isAvailable);
     if (!hasAvailableDay) {
       alert('Please set availability for at least one day');
       return false;
@@ -140,21 +261,107 @@ export default function DoctorSchedulePage() {
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
+    return displayHour + ':' + minutes + ' ' + ampm;
   };
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
           <h1 className="text-3xl font-bold text-[#1A1A1A]">Set Your Availability</h1>
           <p className="text-[#6B6862] mt-2">
-            Configure your weekly schedule for user consultations
+            Configure your instant availability and weekly schedule for user consultations
           </p>
         </div>
 
+        {/* Instant Availability Toggle Card */}
+        <div 
+          className={`rounded-xl border p-5 transition-all shadow-sm ${
+            isAvailableNow 
+              ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-200' 
+              : 'bg-white border-[#E7E2D9]'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div 
+                className={`p-2.5 rounded-xl transition-colors shrink-0 ${
+                  isAvailableNow 
+                    ? 'bg-emerald-500 text-white' 
+                    : 'bg-[#F4F1EA] text-[#8C827A]'
+                }`}
+              >
+                {isAvailableNow ? (
+                  <BoltIconSolid className="h-6 w-6" />
+                ) : (
+                  <BoltIcon className="h-6 w-6" />
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-lg text-[#1A1A1A]">
+                    Available for Instant Consult
+                  </h3>
+                  {isAvailableNow ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                      <span className="w-1.5 h-1.5 mr-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                      Active Now
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      Offline
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-[#6B6862] mt-0.5">
+                  {isAvailableNow 
+                    ? 'Users will see you as available right now for immediate bookings' 
+                    : 'Toggle to become active for immediate bookings'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              {togglingInstant ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#C8996A] border-t-transparent" />
+              ) : (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isAvailableNow}
+                  onClick={handleToggleInstantAvailability}
+                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#C8996A] focus:ring-offset-2 ${
+                    isAvailableNow ? 'bg-emerald-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className="sr-only">Toggle instant consult availability</span>
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      isAvailableNow ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {instantMessage && (
+            <div 
+              className={`mt-3 pt-3 border-t text-sm font-medium transition-all flex items-center gap-1.5 ${
+                isAvailableNow 
+                  ? 'border-emerald-200 text-emerald-700' 
+                  : 'border-gray-200 text-gray-600'
+              }`}
+            >
+              <CheckIcon className="h-4 w-4 shrink-0" />
+              {instantMessage}
+            </div>
+          )}
+        </div>
+
         {/* Timezone Selection */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-white rounded-lg shadow p-6">
           <label className="block text-sm font-medium text-[#353535] mb-2">
             Your Timezone
           </label>
@@ -183,33 +390,125 @@ export default function DoctorSchedulePage() {
 
         {/* Weekly Schedule */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-[#1A1A1A] mb-6">Weekly Schedule</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-[#1A1A1A]">Weekly Schedule</h2>
+              <p className="text-sm text-[#6B6862] mt-0.5">
+                Select your active consultation days and times
+              </p>
+            </div>
+          </div>
+
+          {/* Use Same Hours Toggle */}
+          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-[#1A1A1A]">
+                Use same hours for all days
+              </h3>
+              <p className="text-xs sm:text-sm text-[#6B6862] mt-0.5">
+                Set standard start and end times once for all active workdays
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={useSameHours}
+              onClick={handleToggleSameHours}
+              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#C8996A] ${
+                useSameHours ? 'bg-[#C8996A]' : 'bg-gray-300'
+              }`}
+            >
+              <span className="sr-only">Use same hours for all days</span>
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  useSameHours ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Shared Time Slot Editor (when Same Hours is active) */}
+          {useSameHours && (
+            <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="font-medium text-[#1A1A1A] flex items-center gap-2">
+                  <ClockIcon className="h-5 w-5 text-[#C8996A] shrink-0" />
+                  <span className="text-sm sm:text-base">Working Hours for All Selected Days:</span>
+                </div>
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="flex items-center">
+                    <label className="text-sm text-[#8C827A] mr-2">From:</label>
+                    <select
+                      value={commonStartTime}
+                      onChange={(e) => handleCommonTimeChange('startTime', e.target.value)}
+                      className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
+                    >
+                      {TIME_SLOTS.map(time => (
+                        <option key={time} value={time}>
+                          {formatTime(time)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <label className="text-sm text-[#8C827A] mr-2">To:</label>
+                    <select
+                      value={commonEndTime}
+                      onChange={(e) => handleCommonTimeChange('endTime', e.target.value)}
+                      className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
+                    >
+                      {TIME_SLOTS.map(time => (
+                        <option key={time} value={time}>
+                          {formatTime(time)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
-          <div className="space-y-4">
+          {/* Days List */}
+          <div className="space-y-3">
             {DAYS_OF_WEEK.map(day => (
-              <div key={day} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
+              <div 
+                key={day} 
+                className={`border rounded-xl p-4 transition-all ${
+                  schedule[day]?.isAvailable 
+                    ? 'border-[#C8996A]/60 bg-white shadow-xs' 
+                    : 'border-[#E7E2D9] bg-[#FAF8F5]/50'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center">
                     <input
                       type="checkbox"
                       id={day}
                       checked={schedule[day]?.isAvailable || false}
                       onChange={() => handleDayToggle(day)}
-                      className="h-5 w-5 text-[#C8996A] rounded focus:ring-[#C8996A]"
+                      className="h-5 w-5 text-[#C8996A] rounded focus:ring-[#C8996A] cursor-pointer"
                     />
-                    <label htmlFor={day} className="ml-3 font-medium text-[#353535] capitalize">
+                    <label htmlFor={day} className="ml-3 font-semibold text-[#353535] capitalize cursor-pointer">
                       {day}
                     </label>
+                    {schedule[day]?.isAvailable && useSameHours && (
+                      <span className="ml-3 text-xs font-medium text-[#8C827A] bg-[#F4F1EA] px-2.5 py-1 rounded-md">
+                        {formatTime(commonStartTime)} – {formatTime(commonEndTime)}
+                      </span>
+                    )}
                   </div>
                   
-                  {schedule[day]?.isAvailable && (
-                    <div className="flex items-center space-x-4">
-                      <div>
+                  {schedule[day]?.isAvailable && !useSameHours && (
+                    <div className="flex items-center space-x-3 sm:space-x-4 pl-8 sm:pl-0">
+                      <div className="flex items-center">
                         <label className="text-sm text-[#8C827A] mr-2">From:</label>
                         <select
-                          value={schedule[day].startTime}
+                          value={schedule[day]?.startTime || '09:00'}
                           onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
-                          className="p-2 border rounded focus:ring-2 focus:ring-[#C8996A]"
+                          className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
                         >
                           {TIME_SLOTS.map(time => (
                             <option key={time} value={time}>
@@ -219,12 +518,12 @@ export default function DoctorSchedulePage() {
                         </select>
                       </div>
                       
-                      <div>
+                      <div className="flex items-center">
                         <label className="text-sm text-[#8C827A] mr-2">To:</label>
                         <select
-                          value={schedule[day].endTime}
+                          value={schedule[day]?.endTime || '17:00'}
                           onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
-                          className="p-2 border rounded focus:ring-2 focus:ring-[#C8996A]"
+                          className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
                         >
                           {TIME_SLOTS.map(time => (
                             <option key={time} value={time}>
@@ -279,9 +578,10 @@ export default function DoctorSchedulePage() {
           <h3 className="font-semibold text-[#1A1A1A] mb-2">Important Notes:</h3>
           <ul className="text-sm text-[#6B6862] space-y-1 list-disc list-inside">
             <li>Users can book 30-minute consultation slots within your available hours</li>
-            <li>You can update your schedule at any time</li>
+            <li>Instant availability allows patients searching for immediate care to connect with you right now</li>
+            <li>Use the "same hours" toggle to quickly set identical hours across all selected days</li>
+            <li>You can update your instant availability and schedule at any time</li>
             <li>Existing appointments won't be affected by schedule changes</li>
-            <li>Consider adding buffer time between consultations</li>
           </ul>
         </div>
       </div>

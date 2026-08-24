@@ -79,7 +79,7 @@ export default function UserConsultPage() {
 
     // Listen to past appointments
     const pastQuery = query(
-      collection(db, 'users', user.uid, 'appointments_completed'),
+      collection(db, 'users', user.uid, 'appointments_history'),
       orderBy('time', 'desc')
     );
 
@@ -131,10 +131,10 @@ export default function UserConsultPage() {
 
   const isAppointmentNow = (appointment) => {
     if (!appointment.time) return false;
-    const appointmentTime = appointment.time.toDate();
+    const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
-    return diffMinutes >= -30 && diffMinutes <= 5; // 30 min window
+    return diffMinutes >= -60 && diffMinutes <= 15; // 15 min before to 1 hr after
   };
 
   const canMessage = profile?.is_first_consultation_completed || profile?.doctor;
