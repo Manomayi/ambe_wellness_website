@@ -271,10 +271,6 @@ export default function Home() {
           <div className="pt-24 sm:pt-32 lg:pt-36 pb-8 lg:pb-12">
             <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
               <div className="max-w-xl lg:max-w-2xl">
-                <p className="text-xs sm:text-sm text-ambe-cream/80 mb-4 font-light tracking-wide">
-                  Vetted practitioners with accredited Ayurveda degrees and allopathic training.
-                </p>
-
                 <div className="inline-flex items-center gap-2 border border-ambe-cream/30 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
                   <span className="w-1.5 h-1.5 rounded-full bg-ambe-gold shrink-0" />
                   <span className="text-[10px] sm:text-xs tracking-[0.2em] text-ambe-gold uppercase font-medium">
@@ -306,7 +302,7 @@ export default function Home() {
                   {[
                     "Ancient wisdom. Modern science.",
                     "Doctor-led. Deeply personal.",
-                    "Vetted practitioners with accredited Ayurvedic degrees.",
+                    "Vetted practitioners with accredited Ayurveda degrees and allopathic training.",
                     "No one-size-fits-all. No guesswork.",
                     "Available anywhere, anytime.",
                   ].map((item) => (

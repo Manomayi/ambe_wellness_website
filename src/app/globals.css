@@ -53,56 +53,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Cormorant Garamond — headings, logo, italic accents */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.h1,
-.h2,
-.h3 {
-  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
-  color: var(--ambe-charcoal);
-  font-weight: 400;
-}
-
-.font-heading {
-  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
-  font-weight: 400;
-}
-
-h1.font-heading,
-h2.font-heading,
-h3.font-heading {
-  font-size: inherit;
-  font-weight: 400;
-  color: inherit;
-}
-
-h1,
-.h1 {
-  font-size: 35px;
-}
-
-h2,
-.h2 {
-  font-size: 19px;
-  font-weight: 500;
-}
-
-em,
-i {
-  font-family: var(--font-cormorant), "Cormorant Garamond", serif;
-}
-
 /* Jost — body, nav, buttons, labels, footer */
-button,
-nav,
-nav a,
-label,
-footer,
 input,
 textarea,
 select {
@@ -195,6 +146,51 @@ a:hover {
   ::selection {
     background-color: var(--ambe-peach);
     color: var(--ambe-charcoal);
+  }
+
+  /* Cormorant Garamond — headings, logo, italic accents */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .h1,
+  .h2,
+  .h3 {
+    font-family: var(--font-cormorant), "Cormorant Garamond", serif;
+    color: var(--ambe-charcoal);
+    font-weight: 400;
+  }
+
+  .font-heading {
+    font-family: var(--font-cormorant), "Cormorant Garamond", serif;
+    font-weight: 400;
+  }
+
+  h1,
+  .h1 {
+    font-size: 35px;
+  }
+
+  h2,
+  .h2 {
+    font-size: 19px;
+    font-weight: 500;
+  }
+
+  em,
+  i {
+    font-family: var(--font-cormorant), "Cormorant Garamond", serif;
+  }
+
+  /* Jost — body, nav, buttons, labels, footer */
+  button,
+  nav,
+  nav a,
+  label,
+  footer {
+    font-family: var(--font-jost), "Jost", sans-serif;
   }
 }
 

@@ -2,37 +2,29 @@
 import React from "react";
 import Image from "next/image";
 
-// One definition per badge, rendered at every breakpoint. Previously the three
-// cards were written twice — once for the desktop grid, once for a mobile
-// carousel — so copy edits had to be made in both places or they drifted.
 const CERTIFICATIONS = [
   {
     heading: "Backed By Expertise",
     src: "/images/certifications/iso.png",
     alt: "ISO 22000",
-    width: 144,
-    height: 144,
-    imageWrapClass: "w-32 h-32 sm:w-28 md:w-32 lg:w-36",
+    width: 196,
+    height: 190,
     lines: ["ISO 22000 & EU", "Pharmacopoeia", "herbal standards"],
   },
   {
     heading: "Certified For Safety",
     src: "/images/certifications/gdpr.png",
     alt: "GDPR",
-    width: 144,
-    height: 144,
-    imageWrapClass: "w-32 h-32 sm:w-28 md:w-32 lg:w-36",
+    width: 197,
+    height: 196,
     lines: ["GDPR-compliant", "data privacy"],
   },
   {
     heading: "Trusted By Design",
     src: "/images/certifications/europharm.png",
     alt: "European Pharmacopoeia",
-    width: 112,
-    height: 112,
-    imageWrapClass: "w-20 h-20 sm:w-20 md:w-24 lg:w-28",
-    // At the 2-column breakpoint the odd third card spans both columns.
-    wrapperClass: "sm:col-span-2 lg:col-span-1",
+    width: 128,
+    height: 188,
     lines: ["Every supplement", "screened for drug", "interactions"],
   },
 ];
@@ -43,31 +35,31 @@ function CertificationCard({
   alt,
   width,
   height,
-  imageWrapClass,
-  wrapperClass = "",
   lines,
 }) {
   return (
-    <div className={`mx-auto w-full max-w-[300px] sm:max-w-none ${wrapperClass}`}>
-      <div className="text-center mb-4">
-        <div
-          className="text-2xl sm:text-3xl font-medium font-heading"
+    <div className="flex flex-col h-full w-full">
+      <div className="text-center mb-2 sm:mb-6">
+        <h3
+          className="!text-xs sm:!text-lg md:!text-xl lg:!text-2xl xl:!text-[1.75rem] font-medium font-heading leading-tight min-h-[1.75rem] sm:min-h-[2.75rem] md:min-h-[3.25rem] flex items-center justify-center"
           style={{ color: "#353535" }}
         >
           {heading}
-        </div>
+        </h3>
       </div>
-      <div className="bg-white p-6 sm:p-8 flex flex-col items-center justify-center text-center aspect-square">
-        <div className={`${imageWrapClass} mb-4 flex items-center justify-center`}>
-          <Image
-            src={src}
-            alt={alt}
-            width={width}
-            height={height}
-            className="object-contain w-full h-full"
-          />
+      <div className="bg-white sm:bg-transparent p-3 sm:p-0 flex flex-1 flex-col items-center justify-start text-center aspect-square sm:aspect-auto shadow-sm sm:shadow-none rounded-lg sm:rounded-none">
+        <div className="w-full h-12 sm:h-28 md:h-32 lg:h-36 mb-2 sm:mb-6 flex items-center justify-center shrink-0">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Image
+              src={src}
+              alt={alt}
+              width={width}
+              height={height}
+              className="max-h-full max-w-full w-auto h-auto object-contain"
+            />
+          </div>
         </div>
-        <p className="text-sm sm:text-base" style={{ color: "#353535" }}>
+        <p className="text-[10px] sm:text-sm md:text-base leading-tight sm:leading-relaxed" style={{ color: "#353535" }}>
           {lines.map((line, index) => (
             <React.Fragment key={line}>
               {index > 0 && <br />}
@@ -83,13 +75,12 @@ function CertificationCard({
 export default function CertificationsSection() {
   return (
     <section
-      className="pt-32 pb-20 sm:pt-36 sm:pb-24 md:pt-40 md:pb-32"
+      className="py-16 sm:py-24 md:py-32"
       style={{ backgroundColor: "#F4F1EA" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Every badge is visible at every width — stacked on mobile, grid on
-            larger screens. No carousel, no swipe. */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        {/* Horizontal 3-column layout on all screen sizes (mobile & desktop) */}
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8 max-w-5xl mx-auto items-stretch">
           {CERTIFICATIONS.map((certification) => (
             <CertificationCard key={certification.heading} {...certification} />
           ))}

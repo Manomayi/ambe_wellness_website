@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase/config';
@@ -8,7 +8,7 @@ import { sendEmailVerification } from 'firebase/auth';
 import { EnvelopeIcon, ArrowPathIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, userType, signOut } = useAuth();
@@ -252,7 +252,7 @@ export default function VerifyEmailPage() {
           </div>
         </div>
 
-        {/* Change account link */}
+          {/* Change account link */}
         <div className="text-center mt-6">
           <button
             type="button"
@@ -267,3 +267,16 @@ export default function VerifyEmailPage() {
     </div>
   );
 }
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F4F1EA] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#C2691C] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
+

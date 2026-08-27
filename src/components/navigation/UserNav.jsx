@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import ambeLogo from '../../../public/images/logos/ambe_logo.png';
 import {
   HomeIcon,
   ChatBubbleLeftEllipsisIcon,
@@ -47,11 +48,9 @@ export default function UserNav({ currentPath }) {
           {/* Logo */}
           <Link href="/user/home" className="flex items-center">
             <Image
-              src="/images/logos/ambe_logo.png"
+              src={ambeLogo}
               alt="AMBÉ"
-              width={95}
-              height={30}
-              className="cursor-pointer w-[80px] sm:w-[95px] h-auto object-contain"
+              className="cursor-pointer w-[100px] sm:w-[130px] md:w-[150px] h-auto object-contain"
               priority
             />
           </Link>
@@ -131,10 +130,8 @@ export default function UserNav({ currentPath }) {
           <div className="flex justify-between items-center px-6 py-4 border-b border-[#E7E2D9]/70 bg-white">
             <Link href="/user/home" onClick={() => setMobileMenuOpen(false)}>
               <Image
-                src="/images/logos/ambe_logo.png"
+                src={ambeLogo}
                 alt="AMBÉ"
-                width={85}
-                height={28}
                 className="cursor-pointer w-[80px] h-auto object-contain"
               />
             </Link>

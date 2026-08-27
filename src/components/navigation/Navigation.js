@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { NAV_LINKS } from '@/lib/nav-links';
+import ambeLogo from '../../../public/images/logos/ambe_logo.png';
 
 export default function Navigation({ light = false, sticky = false, className = '' }) {
   const pathname = usePathname();
@@ -28,11 +29,9 @@ export default function Navigation({ light = false, sticky = false, className = 
             {/* Logo */}
             <Link href="/">
               <Image
-                src="/images/logos/ambe_logo.png"
+                src={ambeLogo}
                 alt="AMBE"
-                width={100}
-                height={33}
-                className="cursor-pointer w-[80px] sm:w-[100px] md:w-[120px]"
+                className="cursor-pointer w-[110px] sm:w-[140px] md:w-[170px] lg:w-[205px] xl:w-[220px] h-auto"
                 priority
               />
             </Link>
@@ -102,11 +101,9 @@ export default function Navigation({ light = false, sticky = false, className = 
           <div className="flex justify-between items-center px-6 py-4 border-b" style={{ borderColor: '#F4F1EA' }}>
             <Link href="/" onClick={() => setMobileMenuOpen(false)}>
               <Image
-                src="/images/logos/ambe_logo.png"
+                src={ambeLogo}
                 alt="AMBE"
-                width={80}
-                height={27}
-                className="cursor-pointer"
+                className="cursor-pointer h-auto w-[110px] sm:w-[130px]"
               />
             </Link>
             <button 

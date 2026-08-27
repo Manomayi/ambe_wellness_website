@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CONTACT_EMAIL } from "@/lib/site-config";
+import ambeLogo from "../../../public/images/logos/ambe_logo.png";
 
 const NAVIGATE_LINKS = [
   { href: "/enterprise", label: "Enterprise" },
@@ -56,11 +57,9 @@ export default function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block mb-4">
               <Image
-                src="/images/logos/ambe_logo.png"
+                src={ambeLogo}
                 alt="Ambé Wellness"
-                width={120}
-                height={40}
-                className="w-[120px] h-auto"
+                className="w-[140px] sm:w-[170px] lg:w-[190px] h-auto"
               />
             </Link>
             <p className="text-sm text-ambe-cream/70 leading-relaxed max-w-xs">
