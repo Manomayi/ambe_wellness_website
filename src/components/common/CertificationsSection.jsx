@@ -74,10 +74,7 @@ function CertificationCard({
 
 export default function CertificationsSection() {
   return (
-    <section
-      className="py-16 sm:py-24 md:py-32"
-      style={{ backgroundColor: "#F4F1EA" }}
-    >
+    <div className="py-16 sm:py-24 md:py-32">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Horizontal 3-column layout on all screen sizes (mobile & desktop) */}
         <div className="grid grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8 max-w-5xl mx-auto items-stretch">
@@ -86,6 +83,6 @@ export default function CertificationsSection() {
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

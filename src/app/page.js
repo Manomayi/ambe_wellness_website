@@ -843,495 +843,393 @@ export default function Home() {
         </div>
       </section>
 
-      <CertificationsSection />
+      {/* Unified Middle Content Block with Single Continuous Video Background */}
+      <section className="relative overflow-hidden">
+        <VideoBackground />
+        <div className="absolute inset-0 bg-[#F4F1EA]/80 backdrop-blur-[1px] z-[1]"></div>
 
-      {/* The Ambé Difference Section */}
-      {/* <section className="py-20" style={{ backgroundColor: '#F4F1EA' }}>
-        <div className="max-w-7xl mx-auto px-8">
-          <div className={sectionTitleClasses + " mb-16"}>
-            The Ambé Difference
-          </div>
+        <div className="relative z-10">
+          <CertificationsSection />
 
-          {/* Three Feature Cards */}
-      {/* <div className="grid md:grid-cols-3 gap-8 mb-32">
-            {/* Precision You Can Trust */}
-      {/* <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
-              <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L2 7V12C2 17.5 5.25 22.5 12 24C18.75 22.5 22 17.5 22 12V7L12 2Z" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9 12L11 14L15 10" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <div className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
-                  Precision You Can<br />Trust
-                </div>
-                <p className="text-sm" style={{ color: '#353535' }}>
-                  Doctors cross- trained in time tested and modern science
-                </p>
-              </div>
-            </div> */}
-
-      {/* Care You Can Feel */}
-      {/* <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
-              <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 10V7C7 6.46957 7.21071 5.96086 7.58579 5.58579C7.96086 5.21071 8.46957 5 9 5H15C15.5304 5 16.0391 5.21071 16.4142 5.58579C16.7893 5.96086 17 6.46957 17 7V10" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M5 11C5 10.4696 5.21071 9.96086 5.58579 9.58579C5.96086 9.21071 6.46957 9 7 9H17C17.5304 9 18.0391 9.21071 18.4142 9.58579C18.7893 9.96086 19 10.4696 19 11V13C19 17.4183 15.4183 21 11 21H9" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 5V9" stroke="#353535" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <div className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
-                  Care You Can<br />Feel
-                </div>
-                <p className="text-sm" style={{ color: '#353535' }}>
-                  Plans crafted around your whole self & labs
-                </p>
-              </div>
-            </div> */}
-
-      {/* Ethics You Can Stand Behind */}
-      {/* <div className="p-6 flex items-center gap-4" style={{ backgroundColor: '#FFD3AC', borderRadius: '0 100px 0 100px', height: '140px' }}>
-              <div className="w-20 h-20 bg-white rounded-full flex-shrink-0 flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="8" y="2" width="8" height="4" rx="1" stroke="#353535" strokeWidth="2"/>
-                  <path d="M16 6V10C16 10.7956 15.6839 11.5587 15.1213 12.1213C14.5587 12.6839 13.7956 13 13 13H11C10.2044 13 9.44129 12.6839 8.87868 12.1213C8.31607 11.5587 8 10.7956 8 10V6" stroke="#353535" strokeWidth="2"/>
-                  <path d="M4 7H20" stroke="#353535" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M8 7V19C8 20.1046 8.89543 21 10 21H14C15.1046 21 16 20.1046 16 19V7" stroke="#353535" strokeWidth="2"/>
-                </svg>
-              </div>
-              <div className="flex-1">
-                <div className="text-lg font-semibold mb-1" style={{ color: '#353535' }}>
-                  Ethics You Can Stand<br />Behind
-                </div>
-                <p className="text-sm" style={{ color: '#353535' }}>
-                  Fair-trade sourcing, real transparency
-                </p>
-              </div>
-            </div>
-          </div> */}
-
-      {/* Circular Diagram Section */}
-      {/* <div className="relative">
-            <div className="flex items-center">
-              {/* White circle with text content - all the way to the left */}
-      {/* <div className="bg-white rounded-full p-14 flex flex-col justify-center text-center shadow-lg w-[500px] h-[500px] flex-shrink-0">
-                <div className="text-2xl font-semibold mb-6" style={{ color: '#353535' }}>
-                  1. Clinical Precision
-                </div>
-                
-                <div className="mb-6">
-                  <div className="font-semibold mb-2" style={{ color: '#353535' }}>What We Do</div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                    Doctors trained in traditional and ayurvedic medicine and modern integrative science. Recognize interactions between herbal and pharmaceutical protocols.
-                  </p>
-                </div>
-
-                <div>
-                  <div className="font-semibold mb-2" style={{ color: '#353535' }}>Why It Matters</div>
-                  <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                    Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric).
-                  </p>
-                </div>
-              </div> */}
-
-      {/* Arc segments image - bigger and close to the right of circle */}
-      {/* <Image 
-                src="/images/home/arc_segments.png" 
-                alt="Arc Segments" 
-                width={800}
-                height={800}
-                className="object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </section> */}
-
-      {/* Steps Section - no title */}
-      <section
-        className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#F4F1EA" }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Responsive Steps Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-10 sm:gap-y-12 md:gap-y-16">
-              {/* Step 1 - Book */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
-                <Image
-                  src="/images/home/step1.png"
-                  alt="Step 1"
-                  width={160}
-                  height={128}
-                  className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                />
-                <div className="flex-1">
-                  <div
-                    className="text-xl sm:text-2xl font-semibold mb-2"
-                    style={{ color: "#353535" }}
-                  >
-                    Book
-                  </div>
-                  <p
-                    className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#353535" }}
-                  >
-                    Book now, and fill out your secured details to be matched
-                    with a doctor specific to your unique needs.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 2 - Video Call */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
-                <Image
-                  src="/images/home/step2.png"
-                  alt="Step 2"
-                  width={160}
-                  height={128}
-                  className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                />
-                <div className="flex-1">
-                  <div
-                    className="text-xl sm:text-2xl font-semibold mb-2"
-                    style={{ color: "#353535" }}
-                  >
-                    Video Call
-                  </div>
-                  <p
-                    className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#353535" }}
-                  >
-                    Video chat with your specialist.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 3 - Get Care + Unlimited Text */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
-                <Image
-                  src="/images/home/step3.png"
-                  alt="Step 3"
-                  width={160}
-                  height={128}
-                  className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                />
-                <div className="flex-1">
-                  <div
-                    className="text-xl sm:text-2xl font-semibold mb-2"
-                    style={{ color: "#353535" }}
-                  >
-                    Get Care + Unlimited Text
-                  </div>
-                  <p
-                    className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#353535" }}
-                  >
-                    Get customized diet, cleanse, lifestyle, exercise, yoga, and
-                    meditation plans by your specialist — plus unlimited
-                    texting.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 4 - Monthly Video Follow Up */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
-                <Image
-                  src="/images/home/step4.png"
-                  alt="Step 4"
-                  width={160}
-                  height={128}
-                  className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                />
-                <div className="flex-1">
-                  <div
-                    className="text-xl sm:text-2xl font-semibold mb-2"
-                    style={{ color: "#353535" }}
-                  >
-                    Monthly Video Follow Up
-                  </div>
-                  <p
-                    className="text-sm sm:text-base leading-relaxed"
-                    style={{ color: "#353535" }}
-                  >
-                    Monthly video call — essential care takes persistence.
-                  </p>
-                </div>
-              </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Meet the Experts Section */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: "#F4F1EA" }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div
-            className={
-              sectionTitleClasses +
-              " text-center mb-4 text-2xl sm:text-3xl md:text-4xl"
-            }
-          >
-            Meet the Experts
-          </div>
-          <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
-            Guided by science. Every Ambé practitioner is
-            trained in traditional medicine and modern clinical
-            frameworks — bringing deep expertise to every personalized plan.
-          </p>
-
-          {/* Desktop Doctors Grid */}
-          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {doctorList.map((d) => (
-              <div
-                key={d.name}
-                onClick={() => setSelectedDoctor(d)}
-                className="bg-white p-6 sm:p-8 text-center cursor-pointer hover:shadow-lg transition"
-              >
-                <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
-                  <Image src={d.image} alt={d.name} fill className="object-cover" />
-                </div>
-                <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
-                  {d.name}
-                </div>
-                <p className="text-sm mb-1 text-body">MBBS</p>
-                <p className="text-sm mb-2 text-body">BAMS</p>
-                <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
-                <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-                <p className="text-sm font-medium text-charcoal">{d.specialty}</p>
-                {d.isMedicalDirector && (
-                  <div className="mt-3">
-                    <MedicalDirectorBadge />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setSelectedDoctor(d)}
-                  className="mt-4 px-6 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
-                >
-                  View Profile
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Mobile Doctors Carousel */}
-          <div className="sm:hidden">
-            <div className="flex items-center gap-1">
-              {/* Left Arrow */}
-              <button
-                onClick={() => {
-                  const currentIndex = parseInt(document.querySelector('.experts-dot-active')?.dataset?.index || '0');
-                  const newIndex = Math.max(0, currentIndex - 1);
-                  const offset = -newIndex * 100; // 100% width for each expert
-
-                  // Update carousel
-                  const carousel = document.getElementById('experts-carousel');
-                  carousel.style.transform = `translateX(${offset}%)`;
-
-                  // Update dot colors
-                  const dots = document.querySelectorAll('.experts-dot');
-                  dots.forEach((dot, i) => {
-                    dot.classList.remove('experts-dot-active');
-                    if (i === newIndex) {
-                      dot.classList.add('experts-dot-active');
-                      dot.dataset.index = newIndex;
-                    }
-                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
-                  });
-                }}
-                className="flex-shrink-0 -ml-1"
-                aria-label="Previous expert"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-
-              {/* Carousel Content */}
-              <div className="flex-1 overflow-hidden">
-                <div
-                  id="experts-carousel"
-                  className="flex transition-transform duration-300"
-                  style={{ transform: 'translateX(0px)' }}
-                >
-                  {doctorList.map((d) => (
-                    <div key={d.name} className="flex-none w-full px-2">
+          {/* Steps Section - no title */}
+          <div className="py-12 sm:py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {/* Responsive Steps Grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-10 sm:gap-y-12 md:gap-y-16">
+                  {/* Step 1 - Book */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                    <Image
+                      src="/images/home/step1.png"
+                      alt="Step 1"
+                      width={160}
+                      height={128}
+                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
+                    />
+                    <div className="flex-1">
                       <div
-                        onClick={() => setSelectedDoctor(d)}
-                        className="bg-white p-6 text-center cursor-pointer hover:shadow-lg transition"
+                        className="text-xl sm:text-2xl font-semibold mb-2"
+                        style={{ color: "#353535" }}
                       >
-                        <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
-                          <Image src={d.image} alt={d.name} fill className="object-cover" />
-                        </div>
-                        <div className="text-lg font-semibold mb-1 text-charcoal">
-                          {d.name}
-                        </div>
-                        <p className="text-sm mb-1 text-body">MBBS</p>
-                        <p className="text-sm mb-2 text-body">BAMS</p>
-                        <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
-                        <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
-                        <p className="text-sm font-medium text-charcoal">{d.specialty}</p>
-                        {d.isMedicalDirector && (
-                          <div className="mt-3">
-                            <MedicalDirectorBadge />
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedDoctor(d);
-                          }}
-                          className="mt-4 px-6 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
-                        >
-                          View Profile
-                        </button>
+                        Book
                       </div>
+                      <p
+                        className="text-sm sm:text-base leading-relaxed"
+                        style={{ color: "#353535" }}
+                      >
+                        Book now, and fill out your secured details to be matched
+                        with a doctor specific to your unique needs.
+                      </p>
                     </div>
+                  </div>
+
+                  {/* Step 2 - Video Call */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                    <Image
+                      src="/images/home/step2.png"
+                      alt="Step 2"
+                      width={160}
+                      height={128}
+                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
+                    />
+                    <div className="flex-1">
+                      <div
+                        className="text-xl sm:text-2xl font-semibold mb-2"
+                        style={{ color: "#353535" }}
+                      >
+                        Video Call
+                      </div>
+                      <p
+                        className="text-sm sm:text-base leading-relaxed"
+                        style={{ color: "#353535" }}
+                      >
+                        Video chat with your specialist.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 3 - Get Care + Unlimited Text */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                    <Image
+                      src="/images/home/step3.png"
+                      alt="Step 3"
+                      width={160}
+                      height={128}
+                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
+                    />
+                    <div className="flex-1">
+                      <div
+                        className="text-xl sm:text-2xl font-semibold mb-2"
+                        style={{ color: "#353535" }}
+                      >
+                        Get Care + Unlimited Text
+                      </div>
+                      <p
+                        className="text-sm sm:text-base leading-relaxed"
+                        style={{ color: "#353535" }}
+                      >
+                        Get customized diet, cleanse, lifestyle, exercise, yoga, and
+                        meditation plans by your specialist — plus unlimited
+                        texting.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 4 - Monthly Video Follow Up */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                    <Image
+                      src="/images/home/step4.png"
+                      alt="Step 4"
+                      width={160}
+                      height={128}
+                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
+                    />
+                    <div className="flex-1">
+                      <div
+                        className="text-xl sm:text-2xl font-semibold mb-2"
+                        style={{ color: "#353535" }}
+                      >
+                        Monthly Video Follow Up
+                      </div>
+                      <p
+                        className="text-sm sm:text-base leading-relaxed"
+                        style={{ color: "#353535" }}
+                      >
+                        Monthly video call — essential care takes persistence.
+                      </p>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Meet the Experts Section */}
+          <div className="py-12 sm:py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div
+                className={
+                  sectionTitleClasses +
+                  " text-center mb-4 text-2xl sm:text-3xl md:text-4xl"
+                }
+              >
+                Meet the Experts
+              </div>
+              <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
+                Guided by science. Every Ambé practitioner is
+                trained in traditional medicine and modern clinical
+                frameworks — bringing deep expertise to every personalized plan.
+              </p>
+
+              {/* Desktop Doctors Grid */}
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {doctorList.map((d) => (
+                  <div
+                    key={d.name}
+                    onClick={() => setSelectedDoctor(d)}
+                    className="bg-white p-6 sm:p-8 text-center cursor-pointer hover:shadow-lg transition"
+                  >
+                    <div className="relative w-32 sm:w-40 md:w-48 h-32 sm:h-40 md:h-48 rounded-full mx-auto mb-4 overflow-hidden">
+                      <Image src={d.image} alt={d.name} fill className="object-cover" />
+                    </div>
+                    <div className="text-lg sm:text-xl font-semibold mb-1 text-charcoal">
+                      {d.name}
+                    </div>
+                    <p className="text-sm mb-1 text-body">MBBS</p>
+                    <p className="text-sm mb-2 text-body">BAMS</p>
+                    <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
+                    <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
+                    <p className="text-sm font-medium text-charcoal">{d.specialty}</p>
+                    {d.isMedicalDirector && (
+                      <div className="mt-3">
+                        <MedicalDirectorBadge />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDoctor(d)}
+                      className="mt-4 px-6 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
+                    >
+                      View Profile
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mobile Doctors Carousel */}
+              <div className="sm:hidden">
+                <div className="flex items-center gap-1">
+                  {/* Left Arrow */}
+                  <button
+                    onClick={() => {
+                      const currentIndex = parseInt(document.querySelector('.experts-dot-active')?.dataset?.index || '0');
+                      const newIndex = Math.max(0, currentIndex - 1);
+                      const offset = -newIndex * 100; // 100% width for each expert
+
+                      // Update carousel
+                      const carousel = document.getElementById('experts-carousel');
+                      carousel.style.transform = `translateX(${offset}%)`;
+
+                      // Update dot colors
+                      const dots = document.querySelectorAll('.experts-dot');
+                      dots.forEach((dot, i) => {
+                        dot.classList.remove('experts-dot-active');
+                        if (i === newIndex) {
+                          dot.classList.add('experts-dot-active');
+                          dot.dataset.index = newIndex;
+                        }
+                        dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                      });
+                    }}
+                    className="flex-shrink-0 -ml-1"
+                    aria-label="Previous expert"
+                  >
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+
+                  {/* Carousel Content */}
+                  <div className="flex-1 overflow-hidden">
+                    <div
+                      id="experts-carousel"
+                      className="flex transition-transform duration-300"
+                      style={{ transform: 'translateX(0px)' }}
+                    >
+                      {doctorList.map((d) => (
+                        <div key={d.name} className="flex-none w-full px-2">
+                          <div
+                            onClick={() => setSelectedDoctor(d)}
+                            className="bg-white p-6 text-center cursor-pointer hover:shadow-lg transition"
+                          >
+                            <div className="relative w-32 h-32 rounded-full mx-auto mb-4 overflow-hidden">
+                              <Image src={d.image} alt={d.name} fill className="object-cover" />
+                            </div>
+                            <div className="text-lg font-semibold mb-1 text-charcoal">
+                              {d.name}
+                            </div>
+                            <p className="text-sm mb-1 text-body">MBBS</p>
+                            <p className="text-sm mb-2 text-body">BAMS</p>
+                            <p className="text-sm mb-1 text-body">Doctor of Ayurvedic</p>
+                            <p className="text-sm mb-1 text-body">Medicine and Surgery</p>
+                            <p className="text-sm font-medium text-charcoal">{d.specialty}</p>
+                            {d.isMedicalDirector && (
+                              <div className="mt-3">
+                                <MedicalDirectorBadge />
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedDoctor(d);
+                              }}
+                              className="mt-4 px-6 py-2 rounded-full text-xs font-medium tracking-wider uppercase bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white transition-colors"
+                            >
+                              View Profile
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right Arrow */}
+                  <button
+                    onClick={() => {
+                      const currentIndex = parseInt(document.querySelector('.experts-dot-active')?.dataset?.index || '0');
+                      const newIndex = Math.min(3, currentIndex + 1); // Max 3 for 4 experts
+
+                      const offset = -newIndex * 100; // 100% width for each expert
+
+                      // Update carousel
+                      const carousel = document.getElementById('experts-carousel');
+                      carousel.style.transform = `translateX(${offset}%)`;
+
+                      // Update dot colors
+                      const dots = document.querySelectorAll('.experts-dot');
+                      dots.forEach((dot, i) => {
+                        dot.classList.remove('experts-dot-active');
+                        if (i === newIndex) {
+                          dot.classList.add('experts-dot-active');
+                          dot.dataset.index = newIndex;
+                        }
+                        dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
+                      });
+                    }}
+                    className="flex-shrink-0 -mr-1"
+                    aria-label="Next expert"
+                  >
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Dots Navigation */}
+                <div className="flex justify-center gap-2 mt-6">
+                  {[0, 1, 2, 3].map((index) => (
+                    <button
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-colors experts-dot ${index === 0 ? 'experts-dot-active' : ''}`}
+                      style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
+                      data-index={index}
+                      onClick={() => {
+                        const offset = -index * 100; // 100% width for each expert
+
+                        // Update carousel
+                        const carousel = document.getElementById('experts-carousel');
+                        carousel.style.transform = `translateX(${offset}%)`;
+
+                        // Update dot colors
+                        const dots = document.querySelectorAll('.experts-dot');
+                        dots.forEach((dot, i) => {
+                          dot.classList.remove('experts-dot-active');
+                          if (i === index) {
+                            dot.classList.add('experts-dot-active');
+                            dot.dataset.index = index;
+                          }
+                          dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
+                        });
+                      }}
+                    />
                   ))}
                 </div>
               </div>
 
-              {/* Right Arrow */}
-              <button
-                onClick={() => {
-                  const currentIndex = parseInt(document.querySelector('.experts-dot-active')?.dataset?.index || '0');
-                  const newIndex = Math.min(3, currentIndex + 1); // Max 3 for 4 experts
-
-                  const offset = -newIndex * 100; // 100% width for each expert
-
-                  // Update carousel
-                  const carousel = document.getElementById('experts-carousel');
-                  carousel.style.transform = `translateX(${offset}%)`;
-
-                  // Update dot colors
-                  const dots = document.querySelectorAll('.experts-dot');
-                  dots.forEach((dot, i) => {
-                    dot.classList.remove('experts-dot-active');
-                    if (i === newIndex) {
-                      dot.classList.add('experts-dot-active');
-                      dot.dataset.index = newIndex;
-                    }
-                    dot.style.backgroundColor = i === newIndex ? '#FFD3AC' : '#D1D5DB';
-                  });
-                }}
-                className="flex-shrink-0 -mr-1"
-                aria-label="Next expert"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Dots Navigation */}
-            <div className="flex justify-center gap-2 mt-6">
-              {[0, 1, 2, 3].map((index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors experts-dot ${index === 0 ? 'experts-dot-active' : ''}`}
-                  style={{ backgroundColor: index === 0 ? '#FFD3AC' : '#D1D5DB' }}
-                  data-index={index}
-                  onClick={() => {
-                    const offset = -index * 100; // 100% width for each expert
-
-                    // Update carousel
-                    const carousel = document.getElementById('experts-carousel');
-                    carousel.style.transform = `translateX(${offset}%)`;
-
-                    // Update dot colors
-                    const dots = document.querySelectorAll('.experts-dot');
-                    dots.forEach((dot, i) => {
-                      dot.classList.remove('experts-dot-active');
-                      if (i === index) {
-                        dot.classList.add('experts-dot-active');
-                        dot.dataset.index = index;
-                      }
-                      dot.style.backgroundColor = i === index ? '#FFD3AC' : '#D1D5DB';
-                    });
-                  }}
-                />
-              ))}
+              {/* Book Free Consult Button - Centered Below */}
+              <div className="flex justify-center mt-12">
+                <Button href={CONSULT_HREF} className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
+              </div>
             </div>
           </div>
 
-          {/* Book Free Consult Button - Centered Below */}
-          <div className="flex justify-center mt-12">
-            <Button href={CONSULT_HREF} className="font-bold">BOOK FREE<br/> CONSULT NOW</Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Wellness Benefits Section — Areas of Care (Auto-revolving marquee) */}
-      <section className="py-12 sm:py-16 md:py-20 overflow-hidden" style={{ backgroundColor: "#F4F1EA" }}>
-        <div className="w-full">
-          <div className="flex w-max animate-marquee gap-6 sm:gap-8" style={{ animationDuration: "50s" }}>
-            {[...areasOfCare, ...areasOfCare].map((item, i) => {
-              const isDuplicate = i >= areasOfCare.length;
-              return (
-                <div
-                  key={`${item.title}-${i}`}
-                  aria-hidden={isDuplicate ? true : undefined}
-                  tabIndex={isDuplicate ? -1 : undefined}
-                  className="flex-none"
-                  style={{ width: "380px", height: "380px" }}
-                >
-                  <div
-                    className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start transition-transform hover:scale-[1.02] shadow-sm"
-                    style={{
-                      backgroundColor: "#FFD3AC",
-                      width: "380px",
-                      height: "380px",
-                    }}
-                  >
-                    <div className="w-16 h-16 mb-4 flex-shrink-0">
-                      <Image
-                        src={item.icon}
-                        alt={item.title}
-                        width={64}
-                        height={64}
-                        className="object-contain w-full h-full"
-                      />
+          {/* Wellness Benefits Section — Areas of Care (Auto-revolving marquee) */}
+          <div className="py-12 sm:py-16 md:py-20 overflow-hidden">
+            <div className="w-full">
+              <div className="flex w-max animate-marquee gap-6 sm:gap-8" style={{ animationDuration: "50s" }}>
+                {[...areasOfCare, ...areasOfCare].map((item, i) => {
+                  const isDuplicate = i >= areasOfCare.length;
+                  return (
+                    <div
+                      key={`${item.title}-${i}`}
+                      aria-hidden={isDuplicate ? true : undefined}
+                      tabIndex={isDuplicate ? -1 : undefined}
+                      className="flex-none"
+                      style={{ width: "380px", height: "380px" }}
+                    >
+                      <div
+                        className="rounded-full p-10 pt-8 flex flex-col items-center text-center justify-start transition-transform hover:scale-[1.02] shadow-sm"
+                        style={{
+                          backgroundColor: "#FFD3AC",
+                          width: "380px",
+                          height: "380px",
+                        }}
+                      >
+                        <div className="w-16 h-16 mb-4 flex-shrink-0">
+                          <Image
+                            src={item.icon}
+                            alt={item.title}
+                            width={64}
+                            height={64}
+                            className="object-contain w-full h-full"
+                          />
+                        </div>
+                        <div className="text-lg font-semibold mb-2 flex-shrink-0" style={{ color: "#353535" }}>
+                          {item.title}
+                        </div>
+                        <p className="text-base leading-relaxed" style={{ color: "#353535" }}>
+                          {item.text}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-lg font-semibold mb-2 flex-shrink-0" style={{ color: "#353535" }}>
-                      {item.title}
-                    </div>
-                    <p className="text-base leading-relaxed" style={{ color: "#353535" }}>
-                      {item.text}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Nutritionist Comparison Table */}
-      <section className="py-12 sm:py-16 md:py-20" style={{ backgroundColor: '#F4F1EA' }}>
-        <div className="max-w-7xl mx-auto px-6 sm:px-8">
-          <NutritionistTable />
-        </div>
-      </section>
+          {/* Nutritionist Comparison Table */}
+          <div className="py-12 sm:py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-6 sm:px-8">
+              <NutritionistTable />
+            </div>
+          </div>
 
-      {/* Biomarkers Q&A Accordion */}
-      <section
-        className="py-12 sm:py-16 md:py-20"
-        style={{ backgroundColor: "#F4F1EA" }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <BiomarkersAccordion
-            image={tabContent['biomarkers'].image}
-            imageAlt="Holistic care"
-            items={[
-              { title: "Do You Need Labs for HRT?", body: tabContent['labs'].text },
-              { title: "Biomarkers and Holistic Integration", body: tabContent['biomarkers'].text },
-              { title: "How We Personalize Every Formula", body: tabContent['personalize'].text },
-              { title: "Prevent Contraindicated Therapies with Pharmaceuticals", body: tabContent['prevent'].text },
-              { title: "Mislabeled Therapies to Watch Out For", body: tabContent['mislabeled'].text },
-            ]}
-          />
+          {/* Biomarkers Q&A Accordion */}
+          <div className="py-12 sm:py-16 md:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <BiomarkersAccordion
+                image={tabContent['biomarkers'].image}
+                imageAlt="Holistic care"
+                items={[
+                  { title: "Do You Need Labs for HRT?", body: tabContent['labs'].text },
+                  { title: "Biomarkers and Holistic Integration", body: tabContent['biomarkers'].text },
+                  { title: "How We Personalize Every Formula", body: tabContent['personalize'].text },
+                  { title: "Prevent Contraindicated Therapies with Pharmaceuticals", body: tabContent['prevent'].text },
+                  { title: "Mislabeled Therapies to Watch Out For", body: tabContent['mislabeled'].text },
+                ]}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
