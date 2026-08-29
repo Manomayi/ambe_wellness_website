@@ -263,8 +263,8 @@ export default function Home() {
         {/* Video Background */}
         <VideoBackground />
 
-        {/* Semi-transparent black overlay */}
-        <div className="absolute inset-0 bg-ambe-dark/60 z-10"></div>
+        {/* Ultra-light transparent overlay to showcase the background video */}
+        <div className="absolute inset-0 bg-ambe-dark/15 z-10"></div>
 
         <div className="relative z-20">
           {/* Hero Banner Content */}
@@ -663,8 +663,8 @@ export default function Home() {
       {/* Ayurveda Meets Epigenetics Section */}
       <section className="relative py-16 sm:py-20 md:py-24">
         <VideoBackground />
-        {/* Semi-transparent black overlay keeps the white cards legible */}
-        <div className="absolute inset-0 bg-black/40 z-[1]"></div>
+        {/* Transparent overlay allowing background video to be fully visible */}
+        <div className="absolute inset-0 bg-black/10 z-[1]"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-12">
             {/* Left Box */}
@@ -846,7 +846,7 @@ export default function Home() {
       {/* Unified Middle Content Block with Single Continuous Video Background */}
       <section className="relative overflow-hidden">
         <VideoBackground />
-        <div className="absolute inset-0 bg-[#F4F1EA]/80 backdrop-blur-[1px] z-[1]"></div>
+        <div className="absolute inset-0 bg-[#F4F1EA]/15 z-[1]"></div>
 
         <div className="relative z-10">
           <CertificationsSection />
@@ -855,9 +855,9 @@ export default function Home() {
           <div className="py-12 sm:py-16 md:py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {/* Responsive Steps Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-8 lg:gap-x-16 xl:gap-x-32 gap-y-10 sm:gap-y-12 md:gap-y-16">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
                   {/* Step 1 - Book */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
                     <Image
                       src="/images/home/step1.png"
                       alt="Step 1"
@@ -883,7 +883,7 @@ export default function Home() {
                   </div>
 
                   {/* Step 2 - Video Call */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
                     <Image
                       src="/images/home/step2.png"
                       alt="Step 2"
@@ -908,7 +908,7 @@ export default function Home() {
                   </div>
 
                   {/* Step 3 - Get Care + Unlimited Text */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
                     <Image
                       src="/images/home/step3.png"
                       alt="Step 3"
@@ -935,7 +935,7 @@ export default function Home() {
                   </div>
 
                   {/* Step 4 - Monthly Video Follow Up */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
                     <Image
                       src="/images/home/step4.png"
                       alt="Step 4"
@@ -1240,8 +1240,8 @@ export default function Home() {
       {/* Quote Section and Footer - Combined with single video background */}
       <section className="relative">
         <VideoBackground />
-        {/* Semi-transparent black overlay */}
-        <div className="absolute inset-0 bg-black/40 z-[1]"></div>
+        {/* Transparent overlay allows background video to be clearly visible */}
+        <div className="absolute inset-0 bg-black/15 z-[1]"></div>
         <div className="relative z-10">
           {/* Quote Section */}
           <div className="py-12 sm:py-16 md:py-24">

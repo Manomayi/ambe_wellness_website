@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
-import { auth, functions } from '@/lib/firebase/config';
-import { sendEmailVerification } from 'firebase/auth';
-import { ArrowRightIcon, ArrowLeftIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { auth, functions, db } from '@/lib/firebase/config';
+import { sendEmailVerification, updateProfile } from 'firebase/auth';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, setDoc } from 'firebase/firestore';
+import { ArrowRightIcon, ArrowLeftIcon, PhoneIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 export default function SignUpPage() {
@@ -15,6 +17,8 @@ export default function SignUpPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -234,6 +238,23 @@ export default function SignUpPage() {
     setErrors(prev => ({ ...prev, [type]: '' }));
   };
 
+  const handleProfilePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePhoto(file);
+      const url = URL.createObjectURL(file);
+      setProfilePhotoPreview(url);
+    }
+  };
+
+  const handleRemoveProfilePhoto = () => {
+    setProfilePhoto(null);
+    if (profilePhotoPreview) {
+      URL.revokeObjectURL(profilePhotoPreview);
+    }
+    setProfilePhotoPreview(null);
+  };
+
   // Reads a File as base64 (stripping the `data:*/*;base64,` prefix) so it
   // can be sent inline in the createUser payload, matching the shape the
   // mobile app builds in step_confirmation.dart.
@@ -333,6 +354,29 @@ export default function SignUpPage() {
         // user is authenticated.
         const userType = await signIn(formData.email, formData.password);
 
+        // Upload profile picture if chosen
+        if (profilePhoto) {
+          try {
+            const storage = getStorage();
+            const picRef = storageRef(storage, `images/${result.data.uid}/profile_picture.png`);
+            await uploadBytes(picRef, profilePhoto);
+            const photoURL = await getDownloadURL(picRef);
+
+            if (auth.currentUser) {
+              await updateProfile(auth.currentUser, { photoURL });
+            }
+
+            const colName = isDoctor ? 'doctors' : 'users';
+            await setDoc(
+              doc(db, colName, result.data.uid),
+              { profile_picture: photoURL },
+              { merge: true }
+            );
+          } catch (photoErr) {
+            console.warn("Profile photo upload warning during signup:", photoErr);
+          }
+        }
+
         // Send email verification
         try {
           if (auth.currentUser) {
@@ -354,7 +398,7 @@ export default function SignUpPage() {
   };
 
   const getStepCount = () => {
-    return formData.userType === 'doctor' ? 6 : 3;
+    return formData.userType === 'doctor' ? 7 : 3;
   };
 
   const renderStep = () => {
@@ -876,6 +920,68 @@ export default function SignUpPage() {
                     </p>
                   )}
                 </div>
+              </div>
+            </div>
+          );
+        }
+        break;
+
+      case 7:
+        if (formData.userType === "doctor") {
+          return (
+            <div className="text-center">
+              <h2
+                className="text-2xl sm:text-3xl font-medium mb-2 select-none"
+                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
+              >
+                Upload Profile Picture
+              </h2>
+              <p className="text-sm mb-8" style={{ color: "#6B6862" }}>
+                Add a professional photo so patients can recognize you during consultations.
+              </p>
+
+              <div className="flex flex-col items-center justify-center space-y-5">
+                <div className="relative w-36 h-36 rounded-full border-2 border-dashed border-[#C8996A] bg-[#FAF8F5] flex items-center justify-center overflow-hidden shadow-sm">
+                  {profilePhotoPreview ? (
+                    <img
+                      src={profilePhotoPreview}
+                      alt="Profile Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-[#8C827A]">
+                      <CameraIcon className="w-12 h-12 text-[#C8996A] mb-1" />
+                      <span className="text-xs font-medium text-[#6B6862]">Add Photo</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <label className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white cursor-pointer transition shadow-sm">
+                    {profilePhotoPreview ? "Change Photo" : "Choose Photo"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePhotoChange}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {profilePhotoPreview && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveProfilePhoto}
+                      className="px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <TrashIcon className="w-3.5 h-3.5" />
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                <p className="text-xs text-[#9A948B]">
+                  Optional • JPG, PNG, or WEBP
+                </p>
               </div>
             </div>
           );

@@ -20,6 +20,9 @@ import {
   ArrowRightOnRectangleIcon,
   PencilIcon,
   ArrowRightIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  IdentificationIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DoctorMenuPage() {
@@ -117,12 +120,32 @@ export default function DoctorMenuPage() {
           route: '/doctor/menu/specialty',
         },
         {
+          label: 'Professional Profile',
+          icon: IdentificationIcon,
+          route: '/doctor/menu/professional-profile',
+        },
+        {
           label: 'Verification',
           icon: ArrowRightOnRectangleIcon,
           route: '/doctor/menu/verification',
         },
+      ],
+    },
+    {
+      title: 'My Activity',
+      items: [
         {
-          label: 'Feedback',
+          label: 'Schedule',
+          icon: CalendarDaysIcon,
+          route: '/doctor/schedule',
+        },
+        {
+          label: 'Consultation History',
+          icon: ClockIcon,
+          route: '/doctor/consultations/history',
+        },
+        {
+          label: 'Patient Reviews',
           icon: QuestionMarkCircleIcon,
           route: '/doctor/menu/feedback',
         },

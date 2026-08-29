@@ -73,13 +73,20 @@ export default function UserCompleteProfilePage() {
     );
   }
 
+  const resolvedName =
+    userName ||
+    profile?.name ||
+    profile?.display_name ||
+    (profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '') ||
+    'Patient Profile';
+
   return (
     <div className="space-y-6 p-4 max-w-4xl mx-auto">
-      <BackButton href="/doctor/users" label="Back to Users" />
+      <BackButton href="/doctor/users" label="Back to Patients" />
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-[#1A1A1A]">
-          {userName}
+          {resolvedName}
         </h1>
       </div>
 

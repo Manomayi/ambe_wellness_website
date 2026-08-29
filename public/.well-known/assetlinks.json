@@ -1,10 +1,17 @@
-[{
-  "relation": ["delegate_permission/common.get_login_creds"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.ambe.wellness",
-    "sha256_cert_fingerprints": [
-      "1A:2F:13:D7:01:19:B5:EB:F6:27:76:EB:5A:58:14:FB:61:1F:E9:CA:5B:3F:2E:9F:D2:E2:D5:8D:9A:F4:50:EE"
-    ]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ambe.wellnessapp",
+      "sha256_cert_fingerprints": [
+        "1A:2F:13:D7:01:19:B5:EB:F6:27:76:EB:5A:58:14:FB:61:1F:E9:CA:5B:3F:2E:9F:D2:E2:D5:8D:9A:F4:50:EE",
+        "DC:A1:35:3C:5D:B2:95:0B:BA:37:5F:56:EC:DA:39:FE:8D:28:F8:02:40:41:85:0B:87:1C:8F:E8:79:97:9B:E2",
+        "06:DC:37:3F:50:65:03:9C:62:19:A0:10:CA:88:EE:54:B7:9F:D9:86:8B:90:8A:07:90:5C:10:9D:3C:06:D8:86"
+      ]
+    }
   }
-}]
+]

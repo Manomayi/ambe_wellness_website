@@ -4,7 +4,10 @@
     "details": [
       {
         "appID": "KDD3P2N6N8.com.ambe.wellness",
-        "paths": ["*"]
+        "paths": [
+          "/auth/action",
+          "/auth/action/*"
+        ]
       }
     ]
   },

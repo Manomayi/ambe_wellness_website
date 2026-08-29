@@ -44,8 +44,9 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${jost.variable} ${cormorant.variable}`}
+      suppressHydrationWarning
     >
-      <body className={`${jost.className} antialiased`}>
+      <body className={`${jost.className} antialiased`} suppressHydrationWarning>
         <ClientAuthProvider>
           {children}
           <AyurvedaDisclaimerModal />

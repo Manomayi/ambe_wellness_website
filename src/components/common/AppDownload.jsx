@@ -1,9 +1,6 @@
 "use client";
 import React from "react";
-
-const APP_STORE_URL = "https://apps.apple.com/us/app/ambewellness/id6523417737";
-const PLAY_STORE_URL =
-  "https://play.google.com/store/apps/details?id=com.ambe.wellness";
+import { APP_STORE_URL, PLAY_STORE_URL } from "@/lib/site-config";
 
 function AppStoreBadge() {
   return (

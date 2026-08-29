@@ -148,7 +148,7 @@ export default function DoctorDashboard() {
             <div>
               <h3 className="font-semibold text-amber-800">Verification Pending</h3>
               <p className="text-amber-700 text-sm mt-1">
-                Your account is under review. You'll be able to see users once verified.
+                Your account is under review. You'll be able to see patients once verified.
               </p>
               <button 
                 onClick={() => router.push('/doctor/menu/verification')}
@@ -165,7 +165,7 @@ export default function DoctorDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[#6B6862] text-sm">Total Users</p>
+                <p className="text-[#6B6862] text-sm">Total Patients</p>
                 <p className="text-2xl font-bold text-[#1A1A1A] mt-1">
                   {stats.totalUsers}
                 </p>
@@ -241,7 +241,7 @@ export default function DoctorDashboard() {
               <ClockIcon className="h-6 w-6 text-[#C8996A] mb-2" />
               <h3 className="font-semibold text-[#1A1A1A]">Messages</h3>
               <p className="text-sm text-[#6B6862] mt-1">
-                Chat with your users
+                Chat with your patients
               </p>
             </button>
 
@@ -250,9 +250,9 @@ export default function DoctorDashboard() {
               className="bg-white border border-[#E7E2D9] rounded-lg p-4 hover:border-[#C8996A] transition-colors text-left"
             >
               <UserGroupIcon className="h-6 w-6 text-[#C8996A] mb-2" />
-              <h3 className="font-semibold text-[#1A1A1A]">My Users</h3>
+              <h3 className="font-semibold text-[#1A1A1A]">My Patient</h3>
               <p className="text-sm text-[#6B6862] mt-1">
-                View all your users
+                View all your patients
               </p>
             </button>
           </div>
@@ -293,7 +293,7 @@ export default function DoctorDashboard() {
           <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4">
             <h3 className="font-semibold text-[#1A1A1A]">Set Your Availability</h3>
             <p className="text-[#6B6862] text-sm mt-1">
-              Set up your weekly schedule to allow users to book consultations.
+              Set up your weekly schedule to allow patients to book consultations.
             </p>
             <button 
               onClick={() => router.push('/doctor/schedule')}

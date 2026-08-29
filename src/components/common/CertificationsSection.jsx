@@ -38,8 +38,8 @@ function CertificationCard({
   lines,
 }) {
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="text-center mb-2 sm:mb-6">
+    <div className="flex flex-col h-full w-full bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-transform hover:scale-[1.02]">
+      <div className="text-center mb-3 sm:mb-6">
         <h3
           className="!text-xs sm:!text-lg md:!text-xl lg:!text-2xl xl:!text-[1.75rem] font-medium font-heading leading-tight min-h-[1.75rem] sm:min-h-[2.75rem] md:min-h-[3.25rem] flex items-center justify-center"
           style={{ color: "#353535" }}
@@ -47,8 +47,8 @@ function CertificationCard({
           {heading}
         </h3>
       </div>
-      <div className="bg-white sm:bg-transparent p-3 sm:p-0 flex flex-1 flex-col items-center justify-start text-center aspect-square sm:aspect-auto shadow-sm sm:shadow-none rounded-lg sm:rounded-none">
-        <div className="w-full h-12 sm:h-28 md:h-32 lg:h-36 mb-2 sm:mb-6 flex items-center justify-center shrink-0">
+      <div className="flex flex-1 flex-col items-center justify-start text-center">
+        <div className="w-full h-14 sm:h-28 md:h-32 lg:h-36 mb-3 sm:mb-6 flex items-center justify-center shrink-0">
           <div className="relative w-full h-full flex items-center justify-center">
             <Image
               src={src}
@@ -59,7 +59,7 @@ function CertificationCard({
             />
           </div>
         </div>
-        <p className="text-[10px] sm:text-sm md:text-base leading-tight sm:leading-relaxed" style={{ color: "#353535" }}>
+        <p className="text-[11px] sm:text-sm md:text-base leading-tight sm:leading-relaxed font-medium sm:font-normal" style={{ color: "#353535" }}>
           {lines.map((line, index) => (
             <React.Fragment key={line}>
               {index > 0 && <br />}

@@ -27,9 +27,9 @@ export default function DoctorNav() {
 
   const tabs = [
     { label: 'Home',          href: '/doctor/home',          Icon: HomeIcon },
-    { label: 'Calendar',      href: '/doctor/consultations', Icon: CalendarDaysIcon },
+    { label: 'Consult',       href: '/doctor/consultations', Icon: CalendarDaysIcon },
     { label: 'Messages',      href: '/doctor/messages',      Icon: ChatBubbleLeftEllipsisIcon },
-    { label: 'Users',      href: '/doctor/users',      Icon: UsersIcon },
+    { label: 'Patients',      href: '/doctor/users',         Icon: UsersIcon },
     {
       label: 'Menu',
       href: '/doctor/menu',

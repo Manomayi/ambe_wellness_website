@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { ClockIcon, CheckIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { BoltIcon as BoltIconSolid } from '@heroicons/react/24/solid';
+import BackButton from '@/components/common/BackButton';
 
 const DAYS_OF_WEEK = [
   'monday',
@@ -28,6 +29,17 @@ const TIME_SLOTS = [
   '21:00', '21:30', '22:00'
 ];
 
+function parseTimeString(val, defaultTime = '09:00') {
+  if (!val) return defaultTime;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object' && val !== null) {
+    const h = String(val.hour ?? 9).padStart(2, '0');
+    const m = String(val.minute ?? 0).padStart(2, '0');
+    return `${h}:${m}`;
+  }
+  return defaultTime;
+}
+
 export default function DoctorSchedulePage() {
   const router = useRouter();
   const { user, profile } = useAuth();
@@ -47,47 +59,60 @@ export default function DoctorSchedulePage() {
   const [commonEndTime, setCommonEndTime] = useState('17:00');
 
   useEffect(() => {
-    if (profile) {
-      // Load existing instant consult status
-      setIsAvailableNow(Boolean(profile.is_available_now));
+    async function loadDoctorSchedule() {
+      if (!user) return;
+      try {
+        const snap = await getDoc(doc(db, 'doctors', user.uid));
+        const data = snap.exists() ? snap.data() : (profile || {});
+        
+        // Load instant consult availability
+        setIsAvailableNow(Boolean(data.is_available_now));
+        
+        // Set timezone
+        setTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
 
-      // Load existing schedule
-      if (profile.schedule) {
-        setSchedule(profile.schedule);
+        const scheduleRaw = data.schedule || {};
+        const parsedSchedule = {};
 
-        // Check if all available days use the same hours
-        const activeDays = DAYS_OF_WEEK.filter(day => profile.schedule[day]?.isAvailable);
+        DAYS_OF_WEEK.forEach(day => {
+          const rawDay = scheduleRaw[day] || scheduleRaw[day.toLowerCase()] || {};
+          const isAvail = Boolean(rawDay.isAvailable ?? rawDay.is_available ?? false);
+          const start = parseTimeString(rawDay.startTime || rawDay.start_time, '09:00');
+          const end = parseTimeString(rawDay.endTime || rawDay.end_time, '17:00');
+
+          parsedSchedule[day] = {
+            isAvailable: isAvail,
+            is_available: isAvail,
+            startTime: start,
+            endTime: end,
+          };
+        });
+
+        setSchedule(parsedSchedule);
+
+        // Check if active days share same hours
+        const activeDays = DAYS_OF_WEEK.filter(day => parsedSchedule[day]?.isAvailable);
         if (activeDays.length > 0) {
           const firstDay = activeDays[0];
-          const firstStart = profile.schedule[firstDay]?.startTime || '09:00';
-          const firstEnd = profile.schedule[firstDay]?.endTime || '17:00';
-          
+          const firstStart = parsedSchedule[firstDay].startTime;
+          const firstEnd = parsedSchedule[firstDay].endTime;
           setCommonStartTime(firstStart);
           setCommonEndTime(firstEnd);
 
-          const allSame = activeDays.every(day => 
-            profile.schedule[day]?.startTime === firstStart && 
-            profile.schedule[day]?.endTime === firstEnd
+          const allSame = activeDays.every(
+            day =>
+              parsedSchedule[day].startTime === firstStart &&
+              parsedSchedule[day].endTime === firstEnd
           );
           setUseSameHours(allSame);
         }
-      } else {
-        // Initialize empty schedule
-        const emptySchedule = {};
-        DAYS_OF_WEEK.forEach(day => {
-          emptySchedule[day] = {
-            isAvailable: false,
-            startTime: '09:00',
-            endTime: '17:00'
-          };
-        });
-        setSchedule(emptySchedule);
+      } catch (e) {
+        console.error('Error loading schedule from Firestore:', e);
       }
-      
-      // Set timezone
-      setTimezone(profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
-  }, [profile]);
+
+    loadDoctorSchedule();
+  }, [user, profile]);
 
   const handleToggleInstantAvailability = async () => {
     if (!user || togglingInstant) return;
@@ -96,10 +121,10 @@ export default function DoctorSchedulePage() {
     setTogglingInstant(true);
     
     try {
-      await updateDoc(doc(db, 'doctors', user.uid), {
+      await setDoc(doc(db, 'doctors', user.uid), {
         is_available_now: nextValue,
         last_availability_update: serverTimestamp(),
-      });
+      }, { merge: true });
       
       setIsAvailableNow(nextValue);
       setInstantMessage(
@@ -110,23 +135,7 @@ export default function DoctorSchedulePage() {
       setTimeout(() => setInstantMessage(''), 4000);
     } catch (error) {
       console.error('Error toggling instant availability:', error);
-      try {
-        await setDoc(doc(db, 'doctors', user.uid), {
-          is_available_now: nextValue,
-          last_availability_update: serverTimestamp(),
-        }, { merge: true });
-        
-        setIsAvailableNow(nextValue);
-        setInstantMessage(
-          nextValue 
-            ? 'You are now available for instant consults!' 
-            : 'Instant availability turned off.'
-        );
-        setTimeout(() => setInstantMessage(''), 4000);
-      } catch (fallbackError) {
-        console.error('Fallback update error:', fallbackError);
-        alert('Could not update your instant availability. Please try again.');
-      }
+      alert('Could not update your instant availability. Please try again.');
     } finally {
       setTogglingInstant(false);
     }
@@ -182,6 +191,7 @@ export default function DoctorSchedulePage() {
         [day]: {
           ...prev[day],
           isAvailable: !isCurrentlyAvailable,
+          is_available: !isCurrentlyAvailable,
           startTime: useSameHours ? commonStartTime : (prev[day]?.startTime || commonStartTime),
           endTime: useSameHours ? commonEndTime : (prev[day]?.endTime || commonEndTime),
         }
@@ -239,11 +249,37 @@ export default function DoctorSchedulePage() {
     
     setLoading(true);
     try {
-      await updateDoc(doc(db, 'doctors', user.uid), {
-        schedule,
-        timezone,
-        is_schedule_set: true
+      const scheduleToSave = {};
+      DAYS_OF_WEEK.forEach((day) => {
+        const dayConfig = schedule[day] || {
+          isAvailable: false,
+          startTime: '09:00',
+          endTime: '17:00',
+        };
+        const isAvail = Boolean(dayConfig.isAvailable || dayConfig.is_available);
+        const [startH, startM] = (dayConfig.startTime || '09:00').split(':').map(Number);
+        const [endH, endM] = (dayConfig.endTime || '17:00').split(':').map(Number);
+
+        scheduleToSave[day.toLowerCase()] = {
+          is_available: isAvail,
+          isAvailable: isAvail,
+          startTime: dayConfig.startTime || '09:00',
+          endTime: dayConfig.endTime || '17:00',
+          start_time: { hour: isNaN(startH) ? 9 : startH, minute: isNaN(startM) ? 0 : startM },
+          end_time: { hour: isNaN(endH) ? 17 : endH, minute: isNaN(endM) ? 0 : endM },
+        };
       });
+
+      await setDoc(
+        doc(db, 'doctors', user.uid),
+        {
+          schedule: scheduleToSave,
+          timezone,
+          is_schedule_set: true,
+          schedule_updated_at: serverTimestamp(),
+        },
+        { merge: true }
+      );
       
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -267,10 +303,11 @@ export default function DoctorSchedulePage() {
   return (
     <ProtectedRoute userType="doctor">
       <div className="max-w-4xl mx-auto space-y-6">
+        <BackButton href="/doctor/menu" label="Back to Menu" />
         <div>
           <h1 className="text-3xl font-bold text-[#1A1A1A]">Set Your Availability</h1>
           <p className="text-[#6B6862] mt-2">
-            Configure your instant availability and weekly schedule for user consultations
+            Configure your instant availability and weekly schedule for patient consultations
           </p>
         </div>
 
