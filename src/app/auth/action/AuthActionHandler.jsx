@@ -152,9 +152,21 @@ export default function AuthActionHandler() {
         setStatus("error");
         setError("Unsupported link type.");
       } catch (err) {
-        if (isAlreadyUsedCode(err) && mode === MODE_VERIFY) {
-          // Most likely the native app consumed the code first.
-          setStatus("success");
+        if (mode === MODE_VERIFY && err?.code === "auth/invalid-action-code") {
+          // The code was already consumed — by the native app, by a second tap,
+          // or by a mail-security scanner prefetching the URL. Only claim
+          // success if a verified session is actually visible here; otherwise
+          // say what happened rather than asserting something we can't see.
+          try {
+            await auth.currentUser?.reload();
+          } catch {
+            /* no session on this device */
+          }
+          if (auth.currentUser?.emailVerified) {
+            setStatus("success");
+          } else {
+            setStatus("used");
+          }
           return;
         }
         setStatus("error");
@@ -222,6 +234,28 @@ export default function AuthActionHandler() {
           body={error}
         >
           <PrimaryLink href="/login">Back to Sign In</PrimaryLink>
+        </Centered>
+      )}
+
+      {status === "used" && (
+        <Centered
+          icon={<ExclamationTriangleIcon className="w-8 h-8 text-[#C2691C]" />}
+          title="Link Already Used"
+          body="This verification link has already been opened. If you have already verified, continue in the app — otherwise request a new link from the verification screen."
+        >
+          {isMobile && !forceWeb && (
+            <button
+              type="button"
+              onClick={openApp}
+              className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white cursor-pointer"
+            >
+              <DevicePhoneMobileIcon className="w-4 h-4" />
+              Open the Ambé App
+            </button>
+          )}
+          <PrimaryLink href="/login" muted={isMobile && !forceWeb}>
+            Back to Sign In
+          </PrimaryLink>
         </Centered>
       )}
 

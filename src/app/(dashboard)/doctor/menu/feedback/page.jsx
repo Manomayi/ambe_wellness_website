@@ -69,11 +69,17 @@ export default function DoctorFeedbackPage() {
               "
             >
               <div className="flex items-center space-x-4">
-                <img
-                  src={f.user_photo}
-                  alt={f.user_name}
-                  className="h-12 w-12 rounded-full object-cover"
-                />
+                {f.user_photo ? (
+                  <img
+                    src={f.user_photo}
+                    alt={f.user_name || 'Patient'}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center font-bold text-[#1A1A1A] bg-[#FFD3AC]/30 shrink-0">
+                    {f.user_name ? f.user_name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                )}
                 <div>
                   <p className="text-[#1A1A1A] text-left font-semibold">{f.user_name}</p>
                   <p className="text-[#6B6862] text-left">{f.feedback}</p>

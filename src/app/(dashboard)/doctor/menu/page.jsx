@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase/config';
+import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import {
   getStorage,
   ref as storageRef,
@@ -33,18 +34,34 @@ export default function DoctorMenuPage() {
   const [profile, setProfile] = useState({
     name: '',
     email: '',
-    photoURL: '',
+    photoURL: null,
   });
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, user => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push('/login');
       } else {
+        let photo = user.photoURL || null;
+        let name = user.displayName || '';
+        try {
+          const docRef = doc(db, 'doctors', user.uid);
+          const snap = await getDoc(docRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.profile_picture) photo = data.profile_picture;
+            if (data.first_name || data.last_name) {
+              name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
+            }
+          }
+        } catch (e) {
+          console.error('Error fetching doctor doc:', e);
+        }
+
         setProfile({
-          name: user.displayName || '',
+          name: name || user.displayName || '',
           email: user.email || '',
-          photoURL: user.photoURL || '',
+          photoURL: photo || null,
         });
         setLoading(false);
       }
@@ -53,7 +70,7 @@ export default function DoctorMenuPage() {
   }, [router]);
 
   const handlePhotoClick = () => fileInputRef.current?.click();
-  const handlePhotoChange = async e => {
+  const handlePhotoChange = async (e) => {
     const user = auth.currentUser;
     if (!user) return;
     const file = e.target.files?.[0];
@@ -68,7 +85,8 @@ export default function DoctorMenuPage() {
       await uploadBytes(picRef, file);
       const url = await getDownloadURL(picRef);
       await updateProfile(user, { photoURL: url });
-      setProfile(p => ({ ...p, photoURL: url }));
+      await setDoc(doc(db, 'doctors', user.uid), { profile_picture: url }, { merge: true });
+      setProfile((p) => ({ ...p, photoURL: url }));
     } catch (err) {
       console.error('Photo upload error:', err);
       alert('Failed to update photo');
@@ -177,16 +195,26 @@ export default function DoctorMenuPage() {
     <div className="space-y-12">
       {/* Profile */}
       <div className="flex flex-col items-center space-y-4">
-        <img
-          src={profile.photoURL}
-          alt={profile.name}
-          className="h-28 w-28 rounded-full object-cover"
-        />
+        <div className="relative">
+          <div className="h-28 w-28 rounded-full overflow-hidden border-2 border-[#C8996A]/30 bg-[#FAF8F5]">
+            {profile.photoURL ? (
+              <img
+                src={profile.photoURL}
+                alt={profile.name || 'Doctor profile'}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-3xl font-bold text-[#1A1A1A] bg-[#FFD3AC]/30">
+                {profile.name ? profile.name.charAt(0).toUpperCase() : 'D'}
+              </div>
+            )}
+          </div>
+        </div>
         <button
           onClick={handlePhotoClick}
-          className="inline-flex items-center space-x-2 text-[#C8996A] hover:underline"
+          className="inline-flex items-center space-x-2 text-sm font-medium text-[#C8996A] hover:underline cursor-pointer"
         >
-          <PencilIcon className="h-5 w-5" />
+          <PencilIcon className="h-4 w-4" />
           <span>Change Photo</span>
         </button>
         <input
