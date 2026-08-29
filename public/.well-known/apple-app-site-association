@@ -5,6 +5,8 @@
       {
         "appID": "KDD3P2N6N8.com.ambe.wellness",
         "paths": [
+          "/auth/continue",
+          "/auth/continue/*",
           "/auth/action",
           "/auth/action/*"
         ]
