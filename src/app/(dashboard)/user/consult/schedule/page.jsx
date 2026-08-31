@@ -1,15 +1,39 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { httpsCallable } from 'firebase/functions';
-import { collection, query, where, getDocs, doc, getDoc, Timestamp } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  doc, 
+  getDoc, 
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  writeBatch,
+  serverTimestamp, 
+  Timestamp 
+} from 'firebase/firestore';
 import { functions, db } from '@/lib/firebase/config';
-import { CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { matchUserWithDoctor } from '@/lib/doctorMatching';
+import UserQuestionnaireModal from '@/components/user/UserQuestionnaireModal';
+import { CalendarIcon, ClockIcon, BoltIcon, ShieldCheckIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import moment from 'moment-timezone';
 import BackButton from '@/components/common/BackButton';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements
+} from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 // Health field mapping
 const HEALTH_FIELD_LABELS = {
@@ -27,8 +51,83 @@ const HEALTH_FIELD_LABELS = {
   unknown: "General Health"
 };
 
-export default function ScheduleConsultationPage() {
+/**
+ * Stripe Payment Form Component for Consultation Deposit
+ */
+function ConsultationPaymentForm({ 
+  user, 
+  doctorInfo, 
+  selectedSlot, 
+  selectedDate, 
+  paymentIntentId, 
+  onSuccess 
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [processing, setProcessing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    setErrorMsg('');
+
+    try {
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,
+        },
+        redirect: 'if_required',
+      });
+
+      if (result.error) {
+        setErrorMsg(result.error.message || 'Payment confirmation failed.');
+        setProcessing(false);
+      } else if (
+        result.paymentIntent && 
+        (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')
+      ) {
+        const intentId = result.paymentIntent.id || paymentIntentId;
+        await onSuccess(intentId);
+      } else {
+        // Fallback success
+        await onSuccess(paymentIntentId);
+      }
+    } catch (err) {
+      console.error('Payment confirm error:', err);
+      setErrorMsg('Payment could not be confirmed. Please try again.');
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement options={{ layout: "tabs" }} />
+      
+      {errorMsg && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
+          {errorMsg}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={!stripe || processing}
+        className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-semibold text-sm transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer"
+      >
+        {processing ? "Processing Payment..." : "Pay $50 Deposit & Confirm Appointment"}
+      </button>
+    </form>
+  );
+}
+
+function ScheduleConsultationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isInstantParam = searchParams.get('instant') === 'true';
+
   const { user, profile } = useAuth();
   const [doctorSchedule, setDoctorSchedule] = useState(null);
   const [doctorInfo, setDoctorInfo] = useState(null);
@@ -46,44 +145,77 @@ export default function ScheduleConsultationPage() {
   const [doctorTimezone, setDoctorTimezone] = useState(null);
   const [userTimezone, setUserTimezone] = useState(null);
 
+  // Instant availability & matching states
+  const [isInstantAvailable, setIsInstantAvailable] = useState(false);
+  const [checkingInstant, setCheckingInstant] = useState(false);
+  const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
+
+  // Stripe Payment Sheet states
+  const [clientSecret, setClientSecret] = useState("");
+  const [paymentIntentId, setPaymentIntentId] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  // Safe doctor UID resolution
+  const resolvedDoctorUid = 
+    profile?.doctor?.uid || 
+    (typeof profile?.doctor === 'string' ? profile.doctor : null) || 
+    profile?.doctor_uid || 
+    profile?.matched_doctor || 
+    profile?.doctor_id || 
+    null;
+
   useEffect(() => {
-    // Detect user timezone
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setUserTimezone(timezone);
     
-    if (profile?.doctor?.uid) {
-      loadDoctorInfo();
+    if (resolvedDoctorUid) {
+      loadDoctorInfo(resolvedDoctorUid);
     } else {
       setLoading(false);
     }
-  }, [profile]);
+  }, [resolvedDoctorUid]);
 
   useEffect(() => {
     if (selectedDate && doctorSchedule && doctorTimezone && userTimezone) {
       generateTimeSlots();
     }
-  }, [selectedDate, doctorSchedule, bookedSlots, doctorTimezone, userTimezone]);
+  }, [selectedDate, doctorSchedule, bookedSlots, doctorTimezone, userTimezone, isInstantAvailable]);
 
-  const loadDoctorInfo = async () => {
+  // Load / create PaymentIntent whenever a slot is selected
+  useEffect(() => {
+    if (selectedSlot && user && !clientSecret) {
+      initializePaymentIntent();
+    }
+  }, [selectedSlot, user]);
+
+  const loadDoctorInfo = async (docUid) => {
     try {
-      // Get doctor's info and schedule
-      const doctorDoc = await getDoc(doc(db, 'doctors', profile.doctor.uid));
+      const doctorDoc = await getDoc(doc(db, 'doctors', docUid));
       if (doctorDoc.exists()) {
         const doctorData = doctorDoc.data();
         setDoctorInfo(doctorData);
         setDoctorSchedule(doctorData.schedule || {});
+        setIsInstantAvailable(Boolean(doctorData.is_available_now));
         const docTz = doctorData.timezone || 'America/New_York';
         setDoctorTimezone(docTz);
         
-        // Check if schedule is set
-        if (!doctorData.schedule || !doctorData.is_schedule_set) {
-          setHasScheduleError(true);
-          console.log('Doctor has not set their schedule');
-        }
-        
-        // Always load booked appointments for selectedDate (today by default)
         const dateToLoad = selectedDate || new Date();
-        await loadBookedAppointments(dateToLoad);
+        await loadBookedAppointments(docUid, dateToLoad);
+
+        // If arrived via instant or doctor is available now on today's date, auto-select instant slot
+        if (isInstantParam && doctorData.is_available_now) {
+          const now = new Date();
+          const instantSlot = {
+            isInstant: true,
+            time: now,
+            doctorTime: now,
+            display: "Available Now (Instant)",
+            userDisplay: "Available Now (Instant)",
+            doctorDisplay: "Available Now (Instant)"
+          };
+          setSelectedSlot(instantSlot);
+        }
       }
       setLoading(false);
     } catch (error) {
@@ -93,17 +225,14 @@ export default function ScheduleConsultationPage() {
     }
   };
 
-  const loadBookedAppointments = async (date) => {
-    const doctorUid = profile?.doctor?.uid;
+  const loadBookedAppointments = async (doctorUid, date) => {
     if (!doctorUid) return;
 
     try {
-      // Get start and end of selected day
       const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const endOfDay = new Date(startOfDay);
       endOfDay.setDate(endOfDay.getDate() + 1);
 
-      // Query upcoming appointments for this doctor on this day
       const appointmentsQuery = query(
         collection(db, 'doctors', doctorUid, 'appointments_upcoming'),
         where('time', '>=', Timestamp.fromDate(startOfDay)),
@@ -113,8 +242,6 @@ export default function ScheduleConsultationPage() {
       const snapshot = await getDocs(appointmentsQuery);
       const booked = snapshot.docs.map(doc => doc.data().time.toDate());
       setBookedSlots(booked);
-      
-      console.log('Loaded booked slots:', booked);
     } catch (error) {
       console.error('Error loading booked appointments:', error);
     }
@@ -128,29 +255,41 @@ export default function ScheduleConsultationPage() {
 
     const dayName = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const daySchedule = doctorSchedule[dayName];
-    
-    if (!daySchedule || !daySchedule.is_available) {
-      setAvailableSlots([]);
-      return;
-    }
+    const isToday = selectedDate.toDateString() === new Date().toDateString();
     
     const slots = [];
-    
-    // Get start and end times from doctor's schedule
-    const startTimeData = daySchedule.start_time;
-    const endTimeData = daySchedule.end_time;
-    
-    if (!startTimeData || !endTimeData) {
-      setAvailableSlots([]);
+
+    // If today and doctor is available now, prepend instant slot
+    if (isToday && isInstantAvailable) {
+      const now = new Date();
+      slots.push({
+        isInstant: true,
+        time: now,
+        doctorTime: now,
+        display: "Available Now",
+        userDisplay: "Available Now",
+        doctorDisplay: "Available Now"
+      });
+    }
+
+    if (!daySchedule || !daySchedule.is_available) {
+      setAvailableSlots(slots);
       return;
     }
     
-    const startHour = startTimeData.hour || 0;
-    const startMinute = startTimeData.minute || 0;
-    const endHour = endTimeData.hour || 0;
-    const endMinute = endTimeData.minute || 0;
+    const startTimeData = daySchedule.start_time || daySchedule.startTime;
+    const endTimeData = daySchedule.end_time || daySchedule.endTime;
     
-    // Create moment objects in doctor's timezone
+    if (!startTimeData || !endTimeData) {
+      setAvailableSlots(slots);
+      return;
+    }
+    
+    const startHour = typeof startTimeData === 'object' ? (startTimeData.hour || 0) : parseInt(String(startTimeData).split(':')[0], 10);
+    const startMinute = typeof startTimeData === 'object' ? (startTimeData.minute || 0) : parseInt(String(startTimeData).split(':')[1] || 0, 10);
+    const endHour = typeof endTimeData === 'object' ? (endTimeData.hour || 0) : parseInt(String(endTimeData).split(':')[0], 10);
+    const endMinute = typeof endTimeData === 'object' ? (endTimeData.minute || 0) : parseInt(String(endTimeData).split(':')[1] || 0, 10);
+    
     const selectedDateStr = moment(selectedDate).format('YYYY-MM-DD');
     const doctorStartTime = moment.tz(
       `${selectedDateStr} ${String(startHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`,
@@ -164,26 +303,21 @@ export default function ScheduleConsultationPage() {
       doctorTimezone
     );
     
-    // Get current time in user's timezone
     const nowUser = moment.tz(userTimezone);
-    
     const currentDoctorTime = doctorStartTime.clone();
     
     while (currentDoctorTime.isBefore(doctorEndTime)) {
-      // Convert doctor time to user timezone for display
       const slotInUserTz = currentDoctorTime.clone().tz(userTimezone);
-      
-      // Check if slot is in the past
       const isPast = slotInUserTz.isBefore(nowUser);
       
-      // Check if slot is already booked
       const slotTimestamp = slotInUserTz.toDate();
       const isBooked = bookedSlots.some(booked => 
-        Math.abs(booked.getTime() - slotTimestamp.getTime()) < 60000 // Within 1 minute
+        Math.abs(booked.getTime() - slotTimestamp.getTime()) < 60000
       );
       
       if (!isPast && !isBooked) {
         slots.push({
+          isInstant: false,
           time: slotTimestamp,
           doctorTime: currentDoctorTime.clone().toDate(),
           display: slotInUserTz.format('h:mm A'),
@@ -192,7 +326,6 @@ export default function ScheduleConsultationPage() {
         });
       }
       
-      // Add 60 minutes for next slot
       currentDoctorTime.add(60, 'minutes');
     }
     
@@ -202,59 +335,180 @@ export default function ScheduleConsultationPage() {
   const handleDateSelect = async (date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
+    setClientSecret("");
+    setPaymentIntentId("");
     
-    // Load booked slots for the selected date
-    if (profile?.doctor?.uid) {
-      await loadBookedAppointments(date);
+    if (resolvedDoctorUid) {
+      await loadBookedAppointments(resolvedDoctorUid, date);
     }
   };
 
-  const handleSchedule = async () => {
-    if (!selectedSlot) return;
-    
-    setScheduling(true);
+  const handleInstantSelect = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    setSelectedDate(today);
+    const instantSlot = {
+      isInstant: true,
+      time: new Date(),
+      doctorTime: new Date(),
+      display: "Available Now",
+      userDisplay: "Available Now",
+      doctorDisplay: "Available Now"
+    };
+    setSelectedSlot(instantSlot);
+  };
+
+  const initializePaymentIntent = async () => {
+    if (!user) return;
+    setPaymentLoading(true);
     try {
-      const scheduleAppointment = httpsCallable(functions, 'scheduleAppointment');
-      const result = await scheduleAppointment({
-        appointmentTime: selectedSlot.time.getTime(),
-        userTimezone: userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-        doctorTimezone: doctorTimezone,
+      const docName = doctorInfo ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() : "Healthcare Provider";
+      
+      const res = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: 5000, // $50.00
+          currency: "usd",
+          userId: user.uid,
+          doctorId: resolvedDoctorUid || "",
+          doctorName: docName,
+          appointmentTime: selectedSlot?.time ? selectedSlot.time.getTime() : Date.now(),
+          description: `Consultation Deposit - ${docName}`
+        })
       });
-      
-      if (result.data.success) {
-        router.push('/user/consult');
+
+      const data = await res.json();
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setPaymentIntentId(data.paymentIntentId || "");
       } else {
-        alert(result.data.message || 'Failed to schedule appointment. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error scheduling appointment:', error);
-      
-      let errorMessage = 'Failed to schedule appointment. Please try again.';
-
-      // Callable errors carry the code on error.code ("functions/already-exists"),
-      // not in the message — checking only the message silently fell through to
-      // the generic error for both of these cases.
-      const isAlreadyExists =
-        error.code?.includes('already-exists') ||
-        error.message?.includes('already-exists');
-
-      if (isAlreadyExists) {
-        if (error.message?.includes('time slot')) {
-          errorMessage = 'This time slot is already booked. Please select another time.';
-        } else if (error.message?.includes('upcoming appointment')) {
-          errorMessage =
-            'You already have an upcoming appointment scheduled. ' +
-            'Please edit or reschedule it from the Consult page.';
+        // Fallback: try Firebase Cloud Function createPaymentIntent
+        const fn = httpsCallable(functions, "createPaymentIntent");
+        const fbRes = await fn({ amount: 5000, currency: "usd", type: "consultation_deposit" });
+        if (fbRes.data?.clientSecret) {
+          setClientSecret(fbRes.data.clientSecret);
+          setPaymentIntentId(fbRes.data.paymentIntentId || "");
         }
       }
+    } catch (err) {
+      console.error("Error creating payment intent:", err);
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
-      alert(errorMessage);
+  const handlePaymentSuccessAndSchedule = async (intentId) => {
+    if (!selectedSlot || !user) return;
+    setScheduling(true);
+
+    try {
+      const appointmentTimeMillis = selectedSlot.time.getTime();
+      const docName = doctorInfo 
+        ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() 
+        : (profile?.doctor_name || "Healthcare Provider");
+      const userFullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient';
+
+      // 1. Schedule Appointment via Cloud Function
+      let scheduledSuccessfully = false;
+      try {
+        const scheduleAppointment = httpsCallable(functions, 'scheduleAppointment');
+        const result = await scheduleAppointment({
+          appointmentTime: appointmentTimeMillis,
+          userTimezone: userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+          doctorTimezone: doctorTimezone || 'America/New_York',
+        });
+        if (result.data?.success) {
+          scheduledSuccessfully = true;
+        }
+      } catch (fnErr) {
+        console.warn('Cloud function schedule error, executing Firestore fallback:', fnErr);
+      }
+
+      // 2. Fallback direct Firestore write if Cloud Function failed
+      const apptId = `appt_${Date.now()}_${user.uid.substring(0, 5)}`;
+      if (!scheduledSuccessfully) {
+        const batch = writeBatch(db);
+        const userApptRef = doc(db, 'users', user.uid, 'appointments_upcoming', apptId);
+        const apptData = {
+          appointment_id: apptId,
+          doctor_id: resolvedDoctorUid,
+          doctor_name: docName,
+          user_id: user.uid,
+          user_name: userFullName,
+          time: Timestamp.fromMillis(appointmentTimeMillis),
+          status: 'scheduled',
+          is_instant: Boolean(selectedSlot.isInstant),
+          deposit_paid: 50.00,
+          payment_intent_id: intentId || paymentIntentId || '',
+          created_at: serverTimestamp()
+        };
+
+        batch.set(userApptRef, apptData);
+
+        if (resolvedDoctorUid) {
+          const docApptRef = doc(db, 'doctors', resolvedDoctorUid, 'appointments_upcoming', apptId);
+          batch.set(docApptRef, apptData);
+        }
+
+        const userRef = doc(db, 'users', user.uid);
+        batch.update(userRef, { is_consultation_set: true });
+        await batch.commit();
+      }
+
+      // 3. Record $50 Purchase in users/{uid}/purchases/{intentId}
+      const finalIntentId = intentId || paymentIntentId || `deposit_${Date.now()}`;
+      try {
+        const purchaseRef = doc(db, 'users', user.uid, 'purchases', finalIntentId);
+        await setDoc(purchaseRef, {
+          id: finalIntentId,
+          amount: 50.00,
+          currency: 'USD',
+          status: 'succeeded',
+          type: 'consultation',
+          description: `Consultation Deposit - ${docName}`,
+          appointment_time: Timestamp.fromMillis(appointmentTimeMillis),
+          doctor_id: resolvedDoctorUid || '',
+          doctor_name: docName,
+          refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
+          created: serverTimestamp(),
+          payment_intent_id: finalIntentId,
+        }, { merge: true });
+      } catch (pErr) {
+        console.error('Error saving purchase record:', pErr);
+      }
+
+      setBookingSuccess(true);
+      setTimeout(() => {
+        router.push('/user/consult');
+      }, 1500);
+    } catch (error) {
+      console.error('Error completing booking:', error);
+      alert('Your payment was processed, but we encountered an issue finalizing your appointment. Please contact info@ambewellness.com with your receipt.');
     } finally {
       setScheduling(false);
     }
   };
 
-  // Generate next 30 days for calendar
+  const handleCheckInstantAvailability = async () => {
+    if (!user) return;
+    setCheckingInstant(true);
+    try {
+      const result = await matchUserWithDoctor(user.uid, profile?.preferred_health || 'general_health', true);
+      if (result.matched && result.doctor) {
+        window.location.href = '/user/consult/schedule?instant=true';
+      } else {
+        alert('No doctor is currently available for instant consult. Your doctor will be assigned shortly, or you can pick your health areas to match.');
+      }
+    } catch (err) {
+      console.error('Instant matching error:', err);
+      alert('Could not check instant availability. Please try again.');
+    } finally {
+      setCheckingInstant(false);
+    }
+  };
+
+  // 30 days for calendar
   const generateCalendarDays = () => {
     const days = [];
     const today = new Date();
@@ -281,75 +535,121 @@ export default function ScheduleConsultationPage() {
     );
   }
 
-  if (!profile?.doctor) {
+  // 1. If Questionnaire Not Completed -> Show Questionnaire
+  if (!profile?.is_free_questionnaire_completed) {
     return (
       <ProtectedRoute userType="user">
-        <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">No Doctor Assigned</h2>
-          <p className="text-sm text-[#6B6862] mb-6">
-            You need to be matched with a healthcare provider before scheduling consultations.
-          </p>
-          <button
-            onClick={() => router.push('/user/get-matched')}
-            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
-          >
-            Get Matched Now
-          </button>
+        <div className="max-w-2xl mx-auto space-y-6">
+          <BackButton href="/user/consult" label="Back" />
+          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 text-center shadow-sm space-y-4">
+            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl">
+              📋
+            </div>
+            <h2 className="text-2xl font-bold text-[#1A1A1A]">Intake Assessment Required</h2>
+            <p className="text-sm text-[#6B6862] max-w-md mx-auto">
+              Please complete your intake assessment first so we can match you with the best specialist before scheduling your consultation.
+            </p>
+            <button
+              onClick={() => setShowQuestionnaireModal(true)}
+              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition shadow-sm uppercase tracking-wider"
+            >
+              Start Intake Assessment
+            </button>
+          </div>
+
+          {showQuestionnaireModal && (
+            <UserQuestionnaireModal
+              onComplete={() => {
+                setShowQuestionnaireModal(false);
+                window.location.reload();
+              }}
+            />
+          )}
         </div>
       </ProtectedRoute>
     );
   }
 
-  if (hasScheduleError) {
+  // 2. If Doctor Not Assigned -> Show "Finding Your Perfect Match" (Matching Image 1)
+  if (!resolvedDoctorUid) {
     return (
       <ProtectedRoute userType="user">
-        <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Schedule Not Available</h2>
-          <p className="text-sm text-[#6B6862] mb-6">
-            Your doctor has not set their availability yet. Please try again later or contact support.
-          </p>
-          <button
-            onClick={() => router.push('/user/consult')}
-            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
-          >
-            Back to Consultations
-          </button>
+        <div className="max-w-md mx-auto space-y-6">
+          <BackButton href="/user/consult" label="Back to Consult" />
+          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 text-center shadow-sm space-y-6">
+            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
+              ⏳
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-[#1A1A1A]">Finding your perfect match</h2>
+              <p className="text-sm text-[#6B6862] leading-relaxed">
+                We are currently looking for the best doctor specializing in your selected topic for you.
+              </p>
+              <p className="text-xs text-[#8C827A] pt-1">
+                You will be notified as soon as a doctor is assigned.
+              </p>
+            </div>
+            <div className="space-y-3 pt-2">
+              <button
+                onClick={handleCheckInstantAvailability}
+                disabled={checkingInstant}
+                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {checkingInstant ? "Checking..." : "Check for Instant Availability"}
+              </button>
+              <button
+                onClick={() => router.push('/user/get-matched')}
+                className="text-xs text-[#8C827A] hover:text-[#1A1A1A] underline transition"
+              >
+                Select different health areas
+              </button>
+            </div>
+          </div>
         </div>
       </ProtectedRoute>
     );
   }
+
+  const doctorDisplayName = doctorInfo
+    ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim()
+    : (profile?.doctor_name || "Healthcare Provider");
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6 pb-12">
         <BackButton label="Back to Consult" href="/user/consult" />
-        <h1 className="text-3xl font-bold text-[#1A1A1A]">Schedule Your Consultation</h1>
+        <h1 className="text-3xl font-bold text-[#1A1A1A]">Schedule Consultation</h1>
 
-        {/* Doctor Info */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center">
-            <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
+        {/* Doctor Info Card */}
+        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-[#FAF8F5] border border-[#E7E2D9] rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
               {doctorInfo?.profile_picture ? (
                 <img 
                   src={doctorInfo.profile_picture} 
-                  alt={`Dr. ${doctorInfo.first_name} ${doctorInfo.last_name}`}
+                  alt={doctorDisplayName}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-green-100 flex items-center justify-center">
-                  <span className="text-2xl">👨‍⚕️</span>
+                <div className="text-2xl font-bold text-[#1A1A1A]">
+                  {doctorDisplayName.replace('Dr. ', '').charAt(0) || '👨‍⚕️'}
                 </div>
               )}
             </div>
-            <div className="ml-4">
-              <h3 className="font-semibold text-lg text-gray-900">
-                Dr. {doctorInfo?.first_name || profile.doctor.first_name} {doctorInfo?.last_name || profile.doctor.last_name}
-              </h3>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-xl text-[#1A1A1A]">{doctorDisplayName}</h3>
+                {isInstantAvailable && (
+                  <span className="inline-flex items-center gap-1 bg-[#2E7D32] text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                    <BoltIcon className="w-3 h-3" /> Available Now
+                  </span>
+                )}
+              </div>
               {doctorInfo?.title && (
-                <p className="text-gray-700">{doctorInfo.title}</p>
+                <p className="text-sm text-[#C8996A] font-medium">{doctorInfo.title}</p>
               )}
               {doctorInfo?.field && doctorInfo.field.length > 0 && (
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-[#6B6862] mt-1">
                   {doctorInfo.field.map(f => HEALTH_FIELD_LABELS[f] || f).join(', ')}
                 </p>
               )}
@@ -357,26 +657,58 @@ export default function ScheduleConsultationPage() {
           </div>
         </div>
 
+        {/* Instant Availability Card (Matching Image 2) */}
+        {isInstantAvailable && (
+          <div className="bg-[#FAF8F5] border border-[#C8996A]/40 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[#1A1A1A] font-bold text-base">
+                <BoltIcon className="w-5 h-5 text-[#C8996A]" />
+                Instant Consultation Available
+              </div>
+              <p className="text-xs text-[#6B6862] mt-1">
+                Your doctor is available right now for an immediate video consultation.
+              </p>
+            </div>
+            <button
+              onClick={handleInstantSelect}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm cursor-pointer ${
+                selectedSlot?.isInstant 
+                  ? 'bg-[#1A1A1A] text-[#FFD3AC]' 
+                  : 'bg-[#2E7D32] text-white hover:bg-[#1B5E20]'
+              }`}
+            >
+              <BoltIcon className="w-4 h-4" />
+              {selectedSlot?.isInstant ? "Selected: Available Now" : "Available Now"}
+            </button>
+          </div>
+        )}
+
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Calendar */}
+          {/* Calendar (Matching Image 2) */}
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <CalendarIcon className="h-6 w-6 mr-2" />
+            <h2 className="text-lg font-semibold text-[#1A1A1A] mb-3 flex items-center">
+              <CalendarIcon className="h-5 w-5 mr-2 text-[#C8996A]" />
               Select a Date
             </h2>
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="grid grid-cols-7 gap-2">
+            <div className="bg-white border border-[#E7E2D9] rounded-2xl p-5 shadow-sm">
+              <div className="text-center font-bold text-base text-[#1A1A1A] mb-4">
+                {selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-[#8C827A] mb-2">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="text-center text-sm font-medium text-gray-700 py-2">
-                    {day}
-                  </div>
+                  <div key={day} className="py-1">{day}</div>
                 ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
                 {calendarDays.map((date, index) => {
                   const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
                   const daySchedule = doctorSchedule?.[dayName];
-                  const isAvailable = daySchedule?.is_available === true;
-                  const isSelected = selectedDate?.toDateString() === date.toDateString();
+                  const isScheduledAvail = daySchedule?.is_available === true;
                   const isToday = date.toDateString() === new Date().toDateString();
+                  const isAvailable = isScheduledAvail || (isToday && isInstantAvailable);
+                  const isSelected = selectedDate?.toDateString() === date.toDateString();
                   const isPast = date < new Date(new Date().setHours(0,0,0,0));
                   
                   return (
@@ -384,130 +716,186 @@ export default function ScheduleConsultationPage() {
                       key={index}
                       onClick={() => isAvailable && !isPast && handleDateSelect(date)}
                       disabled={!isAvailable || isPast}
-                      className={`p-3 rounded-lg text-center transition-all ${
+                      className={`h-11 rounded-xl flex flex-col items-center justify-center transition-all text-xs relative ${
                         isSelected
-                          ? 'bg-[#1A1A1A] text-[#FFD3AC] font-semibold ring-2 ring-[#FFD3AC]'
+                          ? 'bg-[#1A1A1A] text-[#FFD3AC] font-bold ring-2 ring-[#FFD3AC]'
                           : isAvailable && !isPast
-                          ? 'bg-white text-[#1A1A1A] font-medium hover:bg-[#FAF8F5] hover:text-[#C8996A] cursor-pointer'
-                          : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                      } ${isToday && isAvailable && !isPast ? 'ring-2 ring-[#C8996A]' : ''}`}
+                          ? 'bg-white text-[#1A1A1A] font-medium hover:bg-[#FAF8F5] hover:text-[#C8996A] border border-[#E7E2D9]/60 cursor-pointer'
+                          : 'bg-gray-50 text-gray-300 cursor-not-allowed border border-transparent'
+                      }`}
                     >
-                      <div className="text-sm">{date.getDate()}</div>
-                      {isToday && <div className="text-xs">Today</div>}
+                      <span>{date.getDate()}</span>
+                      {isAvailable && !isPast && (
+                        <span className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-[#FFD3AC]' : 'bg-[#C8996A]'}`} />
+                      )}
                     </button>
                   );
                 })}
               </div>
-              
-              {/* Timezone info */}
-              {doctorTimezone && userTimezone && (
-                <div className="mt-4 p-3 bg-[#FAF8F5] border border-[#E7E2D9] rounded-lg">
-                  <p className="text-xs text-[#6B6862]">
-                    <span className="block">Your timezone: {userTimezone}</span>
-                    {doctorTimezone !== userTimezone && (
-                      <>
-                        <span className="block">Doctor's timezone: {doctorTimezone}</span>
-                        <span className="block mt-1 font-medium text-[#1A1A1A]">
-                          Time difference: {moment.tz(userTimezone).format('Z')} (You) vs {moment.tz(doctorTimezone).format('Z')} (Doctor)
-                        </span>
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}
+
+              {/* Timezone banner (Matching Image 2) */}
+              <div className="mt-4 p-3 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl flex items-center text-xs text-[#6B6862]">
+                <ClockIcon className="w-4 h-4 mr-2 text-[#C8996A] flex-shrink-0" />
+                <span>Displaying times in: <strong className="text-[#1A1A1A]">{userTimezone || "Local Time"}</strong></span>
+              </div>
             </div>
           </div>
 
           {/* Time Slots */}
           <div>
-            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4 flex items-center">
-              <ClockIcon className="h-6 w-6 mr-2 text-[#C8996A]" />
-              Available Time Slots
+            <h2 className="text-lg font-semibold text-[#1A1A1A] mb-3 flex items-center">
+              <ClockIcon className="h-5 w-5 mr-2 text-[#C8996A]" />
+              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
             </h2>
             
-            {selectedDate ? (
-              <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-4">
-                {availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-3">
-                    {availableSlots.map((slot, index) => (
+            <div className="bg-white border border-[#E7E2D9] rounded-2xl shadow-sm p-5">
+              {availableSlots.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {availableSlots.map((slot, index) => {
+                    const isSelected = selectedSlot?.time?.getTime() === slot.time?.getTime();
+                    return (
                       <button
                         key={index}
                         onClick={() => setSelectedSlot(slot)}
-                        className={`p-3 rounded-lg border-2 transition-all font-medium ${
-                          selectedSlot?.time === slot.time
+                        className={`p-3 rounded-xl border-2 transition-all font-medium text-center cursor-pointer ${
+                          isSelected
                             ? 'border-[#1A1A1A] bg-[#1A1A1A] text-[#FFD3AC]'
+                            : slot.isInstant
+                            ? 'border-[#2E7D32] bg-[#E8F5E9] text-[#2E7D32] hover:border-[#1B5E20]'
                             : 'border-[#E7E2D9] bg-white text-[#1A1A1A] hover:border-[#C8996A] hover:bg-[#FAF8F5]'
                         }`}
                       >
-                        <div>
-                          <div className="font-semibold text-sm">{slot.userDisplay}</div>
-                          {doctorTimezone !== userTimezone && (
-                            <div className={`text-xs mt-0.5 ${
-                              selectedSlot?.time === slot.time ? 'text-[#FFD3AC]/80' : 'text-[#8C827A]'
-                            }`}>
-                              ({slot.doctorDisplay} Dr's time)
-                            </div>
-                          )}
-                        </div>
+                        {slot.isInstant ? (
+                          <div className="flex items-center justify-center gap-1 font-bold text-xs">
+                            <BoltIcon className="w-3.5 h-3.5" /> Available Now
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="font-semibold text-xs">{slot.userDisplay}</div>
+                            {doctorTimezone !== userTimezone && (
+                              <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-[#FFD3AC]/80' : 'text-[#8C827A]'}`}>
+                                ({slot.doctorDisplay} Dr's time)
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-[#6B6862] text-center py-8">
-                    No available time slots for this date
-                  </p>
-                )}
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-[#6B6862] text-center py-8">
+                  No available time slots for this date. Please select another date from the calendar.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Booking & $50 Deposit Review with Stripe Test Mode Payment Sheet */}
+        {selectedSlot && (
+          <div className="mt-8 bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
+            <h3 className="font-bold text-xl text-[#1A1A1A]">
+              Confirm Consultation & Pay Deposit
+            </h3>
+
+            {/* Summary Details */}
+            <div className="grid sm:grid-cols-3 gap-4 p-4 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-xs text-[#1A1A1A]">
+              <div>
+                <span className="text-[#8C827A] block font-medium">Doctor</span>
+                <strong className="text-sm font-semibold">{doctorDisplayName}</strong>
               </div>
-            ) : (
-              <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-8 text-center text-sm text-[#6B6862]">
-                Please select a date to view available time slots
+              <div>
+                <span className="text-[#8C827A] block font-medium">Date & Time</span>
+                <strong className="text-sm font-semibold">
+                  {selectedSlot.isInstant 
+                    ? "Available Now (Immediate)" 
+                    : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
+                </strong>
+              </div>
+              <div>
+                <span className="text-[#8C827A] block font-medium">Deposit Fee</span>
+                <strong className="text-sm font-semibold text-[#1A1A1A]">$50.00 USD</strong>
+              </div>
+            </div>
+
+            {/* Deposit & Refund Policy Card */}
+            <div className="bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl p-5 space-y-2 text-xs text-[#1A1A1A]">
+              <div className="flex items-center gap-2 font-bold text-sm text-[#C2691C]">
+                <ShieldCheckIcon className="w-5 h-5" />
+                Deposit & Refund Policy
+              </div>
+              <p className="leading-relaxed text-[#353535]">
+                A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-[#353535] pt-1">
+                <li>
+                  <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
+                  <a 
+                    href="mailto:info@ambewellness.com" 
+                    className="font-semibold text-[#C2691C] underline hover:text-[#1A1A1A]"
+                  >
+                    info@ambewellness.com
+                  </a>{' '}
+                  within 30 days of the appointment date.
+                </li>
+                <li>
+                  <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
+                </li>
+              </ul>
+            </div>
+
+            {/* Stripe Test Mode Payment Sheet */}
+            <div className="pt-4 border-t border-[#E7E2D9]">
+              <h4 className="font-semibold text-sm text-[#1A1A1A] mb-3">Enter Payment Details</h4>
+              {paymentLoading || !clientSecret ? (
+                <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C8996A] border-t-transparent" />
+                  <p className="text-xs text-[#8C827A]">Loading secure payment sheet...</p>
+                </div>
+              ) : (
+                <Elements
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret,
+                    appearance: {
+                      theme: 'stripe',
+                      variables: { colorPrimary: '#C8996A' }
+                    }
+                  }}
+                >
+                  <ConsultationPaymentForm
+                    user={user}
+                    doctorInfo={doctorInfo}
+                    selectedSlot={selectedSlot}
+                    selectedDate={selectedDate}
+                    paymentIntentId={paymentIntentId}
+                    onSuccess={handlePaymentSuccessAndSchedule}
+                  />
+                </Elements>
+              )}
+            </div>
+
+            {bookingSuccess && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-emerald-800 text-sm font-semibold">
+                ✓ Consultation booked successfully! Redirecting to your dashboard...
               </div>
             )}
           </div>
-        </div>
-
-        {/* Confirmation */}
-        {selectedSlot && (
-          <div className="mt-8 bg-white border border-[#E7E2D9] rounded-xl p-6 shadow-sm">
-            <h3 className="font-semibold text-lg text-[#1A1A1A] mb-2">Confirm Your Appointment</h3>
-            <p className="text-sm text-[#6B6862] mb-4 space-y-1">
-              <strong className="text-[#1A1A1A]">Date:</strong> {selectedDate.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-              <br />
-              <strong className="text-[#1A1A1A]">Time:</strong> {selectedSlot.userDisplay} (Your time)
-              {doctorTimezone !== userTimezone && (
-                <>
-                  <br />
-                  <span className="text-xs text-[#8C827A]">
-                    {selectedSlot.doctorDisplay} (Doctor's time)
-                  </span>
-                </>
-              )}
-              <br />
-              <strong className="text-[#1A1A1A]">Duration:</strong> 60 minutes
-            </p>
-            <button
-              onClick={handleSchedule}
-              disabled={scheduling}
-              className="w-full md:w-auto bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-8 py-3 rounded-lg font-medium text-sm transition disabled:opacity-50 shadow-sm uppercase tracking-wider"
-            >
-              {scheduling ? 'Scheduling...' : 'Confirm Appointment'}
-            </button>
-          </div>
         )}
-
-        {/* Info */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> All appointment times are shown in your local timezone. 
-            You'll receive a confirmation email with details about how to join your video consultation.
-          </p>
-        </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function ScheduleConsultationPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#C8996A] border-t-transparent" />
+      </div>
+    }>
+      <ScheduleConsultationContent />
+    </Suspense>
   );
 }

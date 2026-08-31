@@ -112,12 +112,13 @@ export default function VideoCall({
   };
 
   // Called when remote user ends the call or leaves the channel
-  const handleRemoteCallEnd = async () => {
+  const handleRemoteCallEnd = async (remoteData = {}) => {
     if (callEndedRef.current) return;
     callEndedRef.current = true;
     console.log('[VideoCall] Terminating session and navigating away');
     await releaseLocalResources();
-    onCallEndRef.current?.();
+    const endedByDoctor = remoteData?.call_ended_by ? remoteData.call_ended_by === 'doctor' : !isDoctor;
+    onCallEndRef.current?.({ endedByDoctor });
   };
 
   // Called when local user clicks the hangup button
@@ -140,7 +141,7 @@ export default function VideoCall({
     }
 
     await releaseLocalResources();
-    onCallEndRef.current?.();
+    onCallEndRef.current?.({ endedByDoctor: isDoctor });
   };
 
   useEffect(() => {
@@ -186,7 +187,7 @@ export default function VideoCall({
       setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
       // If remote user had previously joined and now left, end the call
       if (hadRemoteJoinedRef.current && !callEndedRef.current) {
-        handleRemoteCallEnd();
+        handleRemoteCallEnd({ call_ended_by: isDoctor ? 'user' : 'doctor' });
       }
     };
 
@@ -201,7 +202,7 @@ export default function VideoCall({
             const endedAt = data.call_ended_at?.toMillis ? data.call_ended_at.toMillis() : Date.now();
             if (endedAt >= sessionStartTime - 10000) {
               console.log('[VideoCall] Detected call_status=ended from Firestore:', data);
-              handleRemoteCallEnd();
+              handleRemoteCallEnd(data);
             }
           }
         }

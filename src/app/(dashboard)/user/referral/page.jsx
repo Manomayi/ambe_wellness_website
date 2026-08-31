@@ -7,7 +7,12 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import {
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  increment
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import {
@@ -35,27 +40,75 @@ export default function ReferFriendPage() {
 
   async function generateReferralCode() {
     try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        let code = userData.referral_code;
-        
-        if (!code) {
-          // Generate new code if doesn't exist
-          code = user.uid.substring(0, 8).toUpperCase();
-          await updateDoc(doc(db, 'users', user.uid), {
-            referral_code: code
-          });
+      const userDocRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userDocRef);
+      if (!userSnap.exists()) return;
+      const userData = userSnap.data();
+
+      // 1. If this user registered with a referral code, ensure referred_by is linked
+      if (!userData.referred_by && userData.referral_code_used) {
+        const code = String(userData.referral_code_used).trim().toUpperCase();
+        const refQuery = query(collection(db, 'users'), where('referral_code', '==', code), limit(1));
+        const refSnap = await getDocs(refQuery);
+        if (!refSnap.empty && refSnap.docs[0].id !== user.uid) {
+          const referrerId = refSnap.docs[0].id;
+          await updateDoc(userDocRef, {
+            referred_by: referrerId,
+            has_made_purchase: userData.has_made_purchase || false
+          }).catch(() => {});
+          userData.referred_by = referrerId;
         }
-        
-        setReferralCode(code);
-        setReferralCount(userData.referral_count || 0);
-        setReferralCredits(userData.referral_credits || 0);
       }
+
+      // 2. Reconcile completed referrals
+      const q = query(collection(db, 'users'), where('referred_by', '==', user.uid));
+      const snap = await getDocs(q);
+      let validReferredFriendsCount = 0;
+      for (const friendDoc of snap.docs) {
+        const friendData = friendDoc.data();
+        let hasPurchased = friendData.has_made_purchase === true || friendData.referral_status === 'completed';
+        if (!hasPurchased) {
+          const purchasesSnap = await getDocs(collection(db, 'users', friendDoc.id, 'purchases'));
+          if (!purchasesSnap.empty) {
+            hasPurchased = true;
+            await updateDoc(doc(db, 'users', friendDoc.id), {
+              has_made_purchase: true,
+              referral_reward_granted: true,
+              referral_status: 'completed'
+            }).catch(() => {});
+          }
+        }
+        if (hasPurchased) {
+          validReferredFriendsCount++;
+        }
+      }
+
+      // 2. Calculate spent credits
+      const spentOrders = Array.isArray(userData.referral_credit_orders) ? userData.referral_credit_orders : [];
+      let spentCount = spentOrders.length;
+      const myPurchasesSnap = await getDocs(collection(db, 'users', user.uid, 'purchases'));
+      if (myPurchasesSnap.size > spentCount && !userData.referred_by) {
+        spentCount = Math.min(validReferredFriendsCount, myPurchasesSnap.size);
+      }
+
+      const exactCreditsAvailable = Math.max(0, validReferredFriendsCount - spentCount);
+
+      let code = userData.referral_code;
+      if (!code) {
+        code = user.uid.substring(0, 8).toUpperCase();
+      }
+
+      await updateDoc(userDocRef, {
+        referral_code: code,
+        referral_count: validReferredFriendsCount,
+        referral_credits: exactCreditsAvailable
+      }).catch(() => {});
+
+      setReferralCode(code);
+      setReferralCount(validReferredFriendsCount);
+      setReferralCredits(exactCreditsAvailable);
     } catch (error) {
       console.error('Error generating referral code:', error);
-      // Fallback code
       setReferralCode(user.uid.substring(0, 8).toUpperCase());
     } finally {
       setLoading(false);
@@ -69,7 +122,7 @@ export default function ReferFriendPage() {
   }
 
   function shareReferralCode() {
-    const message = `Join Ambe Wellness and get 25% off your first order! Use my referral code: ${referralCode}\n\nSign up and start your wellness journey today!`;
+    const message = `Join Ambe Wellness and get 20% off your first order! Use my referral code: ${referralCode}\n\nSign up and start your wellness journey today!`;
     
     if (navigator.share) {
       navigator.share({
@@ -110,14 +163,14 @@ export default function ReferFriendPage() {
           <GiftIcon className="h-16 w-16 mx-auto text-[#C8996A] mb-4" />
           <div className="mb-4">
             <h2 className="font-heading font-serif text-3xl sm:text-4xl text-[#1A1A1A] mb-1">
-              Get 25% OFF
+              Get 20% OFF
             </h2>
             <p className="text-2xl text-[#1A1A1A] font-normal">
               Your Next Order
             </p>
           </div>
           <p className="text-base text-[#6B6862] max-w-md mx-auto leading-relaxed">
-            Share your referral code with friends and both of you will receive 25% off your next order!
+            Share your referral code with friends and both of you will receive 20% off your next order!
           </p>
         </div>
 
@@ -170,7 +223,7 @@ export default function ReferFriendPage() {
           <div className="space-y-4">
             <StepWidget number="1" text="Share your unique referral code with friends" />
             <StepWidget number="2" text="Your friend signs up using your code" />
-            <StepWidget number="3" text="Both of you get 25% off your next order" />
+            <StepWidget number="3" text="Both of you get 20% off your next order" />
             <StepWidget number="4" text="No limit on referrals - share with everyone!" />
           </div>
         </div>

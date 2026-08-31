@@ -59,13 +59,13 @@ export default function UserHomePage() {
     try {
       const tasks = [];
       
-      // Become a user
+      // Become a member
       if (!profile?.subscription?.active) {
         tasks.push({
-          id: 'become-user',
-          title: 'Become a user',
-          subtitle: 'Become a user to save on products recommended by our doctors and enjoy exclusive benefits.',
-          onSelect: () => router.push('/user/payment')
+          id: 'become-member',
+          title: 'Become a member',
+          subtitle: 'Become a member to save on products recommended by our doctors and enjoy exclusive benefits.',
+          onSelect: () => router.push('/user/membership')
         });
       }
 
@@ -113,13 +113,8 @@ export default function UserHomePage() {
           id: 'schedule-consultation',
           title: 'Schedule your consultation',
           subtitle: 'Schedule your consultation with a doctor.',
-          onSelect: async () => {
-            // Check if user has active subscription
-            if (profile?.subscription?.active) {
-              router.push('/user/consult/schedule');
-            } else {
-              router.push('/user/payment');
-            }
+          onSelect: () => {
+            router.push('/user/consult');
           }
         });
       }

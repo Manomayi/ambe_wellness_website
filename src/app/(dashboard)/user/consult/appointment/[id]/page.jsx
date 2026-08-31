@@ -55,7 +55,7 @@ export default function UserAppointmentPage() {
     }
   };
 
-  const handleCallEnd = async () => {
+  const handleCallEnd = async ({ endedByDoctor } = {}) => {
     setInCall(false);
     try {
       await updateDoc(
@@ -68,26 +68,31 @@ export default function UserAppointmentPage() {
       console.error('Error updating appointment:', error);
     }
 
-    // Resolve doctor UID from appointment or user profile
-    const doctorUid = 
-      appointment?.doctor_id || 
-      appointment?.doctor_uid || 
-      profile?.doctor?.uid || 
-      (typeof profile?.doctor === 'string' ? profile.doctor : '') || 
-      profile?.doctor_uid || 
-      '';
-    const doctorName = 
-      appointment?.doctor_name || 
-      profile?.doctor_name || 
-      (profile?.doctor?.first_name ? `${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() : '') || 
-      '';
+    if (endedByDoctor) {
+      // Resolve doctor UID from appointment or user profile
+      const doctorUid = 
+        appointment?.doctor_id || 
+        appointment?.doctor_uid || 
+        profile?.doctor?.uid || 
+        (typeof profile?.doctor === 'string' ? profile.doctor : '') || 
+        profile?.doctor_uid || 
+        '';
+      const doctorName = 
+        appointment?.doctor_name || 
+        profile?.doctor_name || 
+        (profile?.doctor?.first_name ? `${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() : '') || 
+        '';
 
-    const query = new URLSearchParams();
-    if (doctorUid) query.set('doctorUid', doctorUid);
-    if (doctorName) query.set('doctorName', doctorName);
-    if (params.id) query.set('appointmentId', params.id);
+      const query = new URLSearchParams();
+      if (doctorUid) query.set('doctorUid', doctorUid);
+      if (doctorName) query.set('doctorName', doctorName);
+      if (params.id) query.set('appointmentId', params.id);
 
-    router.push(`/user/consult/feedback?${query.toString()}`);
+      router.push(`/user/consult/feedback?${query.toString()}`);
+    } else {
+      // User cut the call -> return back to consultations
+      router.push('/user/consult');
+    }
   };
 
   const formatAppointmentTime = (timestamp) => {
@@ -191,10 +196,12 @@ export default function UserAppointmentPage() {
               <CalendarIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
               <span>{formatAppointmentTime(appointment.time)}</span>
             </div>
-            <div className="flex items-center text-sm text-[#1A1A1A]">
-              <ClockIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
-              <span>Duration: 30 minutes</span>
-            </div>
+            {appointment.duration && (
+              <div className="flex items-center text-sm text-[#1A1A1A]">
+                <ClockIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
+                <span>Duration: {appointment.duration}</span>
+              </div>
+            )}
           </div>
 
           {/* Status Messages */}
@@ -241,13 +248,14 @@ export default function UserAppointmentPage() {
           )}
 
           {/* Instructions */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-900 mb-2">Before joining:</h4>
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+            <h4 className="font-semibold text-blue-900">Before joining:</h4>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Ensure you have a stable internet connection</li>
               <li>• Test your camera and microphone</li>
               <li>• Find a quiet, well-lit space</li>
               <li>• Have any relevant medical information ready</li>
+              <li>• <strong>Attendance & Refund Policy:</strong> Please join your call on time. If you do not attend the scheduled consultation, only 50% ($25) of the deposit is refunded. For refund inquiries within 30 days, contact <a href="mailto:info@ambewellness.com" className="underline font-semibold">info@ambewellness.com</a>.</li>
             </ul>
           </div>
         </div>

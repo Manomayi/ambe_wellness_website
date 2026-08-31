@@ -11,7 +11,7 @@ import {
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
-import { doc, onSnapshot, deleteDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, deleteDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -57,10 +57,37 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
           }, { merge: true });
         }
 
-        // 3. Mark user as having made a purchase
-        await updateDoc(doc(db, 'users', user.uid), {
-          has_made_purchase: true
-        }).catch(() => {});
+        // 3. Mark user as having made a purchase & update referral credits
+        const userDocRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userDocRef);
+        const userData = userSnap.exists() ? userSnap.data() : {};
+
+        // If user used a referral credit, deduct it and record the order
+        if ((userData.referral_credits || 0) > 0) {
+          await updateDoc(userDocRef, {
+            referral_credits: Math.max(0, (userData.referral_credits || 1) - 1),
+            referral_credit_orders: arrayUnion(paymentIntentId || String(Date.now())),
+            has_made_purchase: true
+          }).catch(() => {});
+        } else {
+          await updateDoc(userDocRef, {
+            has_made_purchase: true
+          }).catch(() => {});
+        }
+
+        // If this user was referred by someone and this is their first order, reward the referrer
+        if (userData.referred_by && !userData.referral_reward_granted) {
+          await updateDoc(userDocRef, {
+            referral_reward_granted: true,
+            referral_status: 'completed'
+          }).catch(() => {});
+
+          const referrerDocRef = doc(db, 'users', userData.referred_by);
+          await updateDoc(referrerDocRef, {
+            referral_credits: increment(1),
+            referral_count: increment(1)
+          }).catch(() => {});
+        }
 
         // 4. Clear cart
         const deletePromises = cartSnapshot.docs.map(doc => deleteDoc(doc.ref));

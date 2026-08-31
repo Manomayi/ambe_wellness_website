@@ -58,15 +58,17 @@ export default function UserStorePage() {
       if (productsSnap.empty) {
         // If no products found, try the 'store' collection structure from original code
         const storeSnap = await getDocs(collection(db, 'store'));
-        storeSnap.forEach(docSnap => {
+        storeSnap.forEach((docSnap, docIdx) => {
           const data = docSnap.data();
-          (data.products || []).forEach(prod => {
+          (data.products || []).forEach((prod, prodIdx) => {
+            const rawName = prod.product_name || `product_${prodIdx}`;
+            const uniqueId = `${docSnap.id}_${rawName}_${prodIdx}`;
             items.push({
-              id: `${docSnap.id}_${prod.product_name}`,
-              name: prod.product_name,
-              product_name: prod.product_name,
+              id: uniqueId,
+              name: rawName,
+              product_name: rawName,
               variants: (prod.packs || []).map((pack, idx) => ({
-                id: `pack_${idx}`,
+                id: `pack_${prodIdx}_${idx}_${pack.size || ''}`,
                 name: pack.size,
                 price: parseFloat(pack.mrp) || 0,
                 original_price: parseFloat(pack.mrp) || 0
@@ -79,12 +81,13 @@ export default function UserStorePage() {
         });
       } else {
         // Use products collection data
-        productsSnap.forEach(docSnap => {
+        productsSnap.forEach((docSnap, docIdx) => {
           const data = docSnap.data();
+          const rawName = data.name || data.product_name || `product_${docIdx}`;
           items.push({
-            id: docSnap.id,
+            id: docSnap.id || `product_${docIdx}`,
             ...data,
-            name: data.name || data.product_name,
+            name: rawName,
             imageUrl: data.image_url || data.imageUrl || null
           });
         });
@@ -182,8 +185,8 @@ export default function UserStorePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {filteredProducts.map((product, index) => (
+              <ProductCard key={`${product.id}-${index}`} product={product} />
             ))}
           </div>
         )}
@@ -303,8 +306,8 @@ function ProductCard({ product }) {
             className="w-full mb-3 p-2 border border-[#E7E2D9] bg-[#FAF8F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A] font-medium"
           >
             <option value="">Select Option</option>
-            {variants.map((variant) => (
-              <option key={variant.id} value={variant.id}>
+            {variants.map((variant, vIdx) => (
+              <option key={`${variant.id || 'variant'}-${vIdx}`} value={variant.id}>
                 {variant.name} - ${variant.price}
               </option>
             ))}

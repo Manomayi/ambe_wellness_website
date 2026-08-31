@@ -17,6 +17,8 @@ import {
 } from "firebase/firestore";
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from "@/lib/firebase/config";
+import { matchUserWithDoctor } from "@/lib/doctorMatching";
+import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 import {
   VideoCameraIcon,
   ChatBubbleLeftRightIcon,
@@ -60,6 +62,8 @@ export default function UserConsultPage() {
   const [doctorInfo, setDoctorInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
+  const [checkingInstant, setCheckingInstant] = useState(false);
+  const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
 
   // Resolve doctor UID from profile
   const resolvedDoctorUid = 
@@ -69,6 +73,24 @@ export default function UserConsultPage() {
     profile?.matched_doctor || 
     profile?.doctor_id || 
     null;
+
+  const handleCheckInstantAvailability = async () => {
+    if (!user) return;
+    setCheckingInstant(true);
+    try {
+      const result = await matchUserWithDoctor(user.uid, profile?.preferred_health || 'general_health', true);
+      if (result.matched && result.doctor) {
+        router.push('/user/consult/schedule?instant=true');
+      } else {
+        alert('No doctor is currently available for instant consult right now. Your doctor will be assigned shortly, or you can pick your health areas to match.');
+      }
+    } catch (err) {
+      console.error('Instant availability error:', err);
+      alert('Could not check instant availability. Please try again.');
+    } finally {
+      setCheckingInstant(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -159,7 +181,7 @@ export default function UserConsultPage() {
 
   const handleCancelAppointment = async (appointment) => {
     const confirmCancel = window.confirm(
-      'Are you sure you want to cancel this appointment?'
+      'Are you sure you want to cancel this appointment?\n\nRefund Policy:\n• You can request a full refund for your $50 deposit by emailing info@ambewellness.com within 30 days of the appointment.\n• If you do not join the scheduled consultation, only 50% ($25) of the deposit is refunded.'
     );
     if (!confirmCancel) return;
 
@@ -219,23 +241,63 @@ export default function UserConsultPage() {
       <div className="max-w-6xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-[#1A1A1A] mb-8">Consultations</h1>
 
-        {/* No Doctor Assigned */}
-        {!hasDoctor && (
-          <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 mb-8 shadow-sm">
-            <div className="flex items-start">
-              <ExclamationCircleIcon className="h-6 w-6 text-[#C8996A] mr-3 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-lg text-[#1A1A1A]">No Healthcare Provider Assigned</h3>
-                <p className="text-sm text-[#6B6862] mt-1">
-                  Complete your health assessment to get matched with a healthcare provider.
-                </p>
-                <button 
-                  onClick={() => router.push('/user/get-matched')}
-                  className="mt-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
-                >
-                  Get Matched Now
-                </button>
-              </div>
+        {/* Questionnaire Modal */}
+        {showQuestionnaireModal && (
+          <UserQuestionnaireModal
+            onComplete={() => {
+              setShowQuestionnaireModal(false);
+            }}
+          />
+        )}
+
+        {/* 1. If Questionnaire NOT Completed */}
+        {!profile?.is_free_questionnaire_completed && (
+          <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 mb-8 shadow-sm text-center max-w-xl mx-auto space-y-4">
+            <div className="w-14 h-14 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-2xl">
+              📋
+            </div>
+            <h3 className="font-semibold text-xl text-[#1A1A1A]">Complete Your Intake Assessment</h3>
+            <p className="text-sm text-[#6B6862]">
+              Complete your questionnaire so our system can analyze your unique constitution and match you with the right specialist.
+            </p>
+            <button 
+              onClick={() => setShowQuestionnaireModal(true)}
+              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm uppercase tracking-wider"
+            >
+              Start Intake Assessment
+            </button>
+          </div>
+        )}
+
+        {/* 2. If Questionnaire Completed but Doctor Not Yet Assigned -> Finding Your Perfect Match (Matching Image 1) */}
+        {!hasDoctor && profile?.is_free_questionnaire_completed && (
+          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 mb-8 shadow-sm max-w-md mx-auto text-center space-y-6">
+            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
+              ⏳
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-[#1A1A1A]">Finding your perfect match</h3>
+              <p className="text-sm text-[#6B6862] leading-relaxed">
+                We are currently looking for the best doctor specializing in your selected topic for you.
+              </p>
+              <p className="text-xs text-[#8C827A] pt-1">
+                You will be notified as soon as a doctor is assigned.
+              </p>
+            </div>
+            <div className="space-y-3 pt-2">
+              <button 
+                onClick={handleCheckInstantAvailability}
+                disabled={checkingInstant}
+                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {checkingInstant ? "Checking..." : "Check for Instant Availability"}
+              </button>
+              <button 
+                onClick={() => router.push('/user/get-matched')}
+                className="text-xs text-[#8C827A] hover:text-[#1A1A1A] underline transition"
+              >
+                Select different health areas
+              </button>
             </div>
           </div>
         )}

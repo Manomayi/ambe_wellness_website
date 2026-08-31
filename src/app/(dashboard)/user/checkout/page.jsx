@@ -115,10 +115,10 @@ export default function UserCheckoutPage() {
     let creditsToUse = 0;
     
     if (isFirstTimeReferred) {
-      refDiscount = sub * 0.25; // 25% off first purchase
+      refDiscount = sub * 0.20; // 20% off first purchase
       creditsToUse = 0;
     } else if (referralCredits > 0) {
-      refDiscount = sub * 0.25; // 25% off using one credit
+      refDiscount = sub * 0.20; // 20% off using one credit
       creditsToUse = 1;
     }
     
@@ -278,8 +278,8 @@ export default function UserCheckoutPage() {
                 <div className="flex justify-between">
                   <span className="text-[#6B6862]">
                     {userData?.referred_by && !userData?.has_made_purchase
-                      ? 'First Purchase Referral Discount (25%)'
-                      : `Referral Discount (25% - ${(userData?.referral_credits || 0) - 1} left)`}
+                      ? 'First Purchase Referral Discount (20%)'
+                      : `Referral Discount (20% - ${(userData?.referral_credits || 0) - 1} left)`}
                   </span>
                   <span className="text-[#C8996A] font-medium">-${referralDiscount.toFixed(2)}</span>
                 </div>

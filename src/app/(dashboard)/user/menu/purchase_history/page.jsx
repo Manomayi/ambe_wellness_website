@@ -67,9 +67,9 @@ export default function PurchaseHistoryPage() {
   const getTypeLabel = (type) => {
     switch (type) {
       case 'subscription':
-        return 'Subscription Deposit';
       case 'consultation':
-        return 'Consultation Appointment';
+      case 'consultation_deposit':
+        return 'Consultation Deposit';
       case 'store':
       default:
         return 'Product Order';

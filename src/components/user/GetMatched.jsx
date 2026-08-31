@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
 import { doc, updateDoc } from 'firebase/firestore';
 import { functions, db } from '@/lib/firebase/config';
+import { matchUserWithDoctor } from '@/lib/doctorMatching';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -53,16 +54,35 @@ export default function GetMatched() {
         preferred_health: selectedFields[0],
       });
 
-      const matchWithDoctor = httpsCallable(functions, 'matchWithDoctor');
-      const result = await matchWithDoctor();
+      // 1. Try matching with Cloud Function
+      let matchResult = null;
+      try {
+        const matchFn = httpsCallable(functions, 'matchWithDoctor');
+        const res = await matchFn();
+        if (res?.data?.success && res?.data?.matched !== false) {
+          matchResult = res.data;
+        }
+      } catch (fnErr) {
+        console.warn('Cloud function match failed, trying direct matching:', fnErr);
+      }
 
-      if (result.data.success) {
+      // 2. Fallback to direct Firestore specialty matching
+      if (!matchResult) {
+        const directMatch = await matchUserWithDoctor(user.uid, selectedFields[0]);
+        if (directMatch.matched) {
+          matchResult = directMatch;
+        }
+      }
+
+      if (matchResult) {
         setMatched(true);
         setTimeout(() => {
-          router.push('/user/home');
-        }, 2000);
+          router.push('/user/consult');
+        }, 1800);
       } else {
-        setError(result.data.message || 'Failed to match with a doctor');
+        // No doctor found yet - mark for admin assignment & redirect to consult
+        setMatched(false);
+        router.push('/user/consult');
       }
     } catch (err) {
       console.error('Matching error:', err);
@@ -72,8 +92,13 @@ export default function GetMatched() {
     }
   };
 
+  useEffect(() => {
+    if (profile?.doctor) {
+      router.push('/user/home');
+    }
+  }, [profile?.doctor, router]);
+
   if (profile?.doctor) {
-    router.push('/user/home');
     return null;
   }
 

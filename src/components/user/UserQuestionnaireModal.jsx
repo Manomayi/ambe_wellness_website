@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { doc, writeBatch, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/contexts/AuthContext";
+import { matchUserWithDoctor } from "@/lib/doctorMatching";
 import { 
   ArrowLeftIcon, 
   ArrowRightIcon, 
@@ -210,14 +211,17 @@ export const DOSHA_QUESTIONS = [
   {
     question: "Which area are you looking to improve",
     options: [
-      { label: "General health", key: "general" },
-      { label: "Women's health", key: "womens_health" },
-      { label: "Men's health", key: "mens_health" },
-      { label: "Muscular skeletal", key: "muscular_skeletal" },
-      { label: "Heart health", key: "heart_health" },
-      { label: "Skin & hair health", key: "skin_hair" },
-      { label: "Mental/Emotional health", key: "mental_emotional" },
-      { label: "Digestive & metabolic", key: "digestive_metabolic" }
+      { label: "General Health", key: "general_health" },
+      { label: "Women's Health", key: "womens_health" },
+      { label: "Men's Health", key: "mens_health" },
+      { label: "Muscular Skeletal", key: "muscular_skeletal" },
+      { label: "Heart Health", key: "heart_health" },
+      { label: "Skin & Hair Health", key: "skin_hair_health" },
+      { label: "Mental/Emotional Health", key: "mental_emotional_health" },
+      { label: "Digestive & Metabolic", key: "digestive_metabolic" },
+      { label: "Oncology", key: "oncology" },
+      { label: "Disabilities", key: "disabilities" },
+      { label: "Behavioral", key: "behavorial" }
     ]
   }
 ];
@@ -309,10 +313,10 @@ export default function UserQuestionnaireModal({ onComplete }) {
         results[q.question] = q.options[sel];
       }
 
-      const prefHealthKey = selectedHealthField || "general";
+      const prefHealthKey = selectedHealthField || "general_health";
       const q49 = DOSHA_QUESTIONS[48];
       const sel49 = selectedAnswers[48] ?? 0;
-      results[q49.question] = q49.options[sel49]?.label || q49.options[sel49] || "General health";
+      results[q49.question] = q49.options[sel49]?.label || q49.options[sel49] || "General Health";
 
       const batch = writeBatch(db);
       
@@ -344,6 +348,13 @@ export default function UserQuestionnaireModal({ onComplete }) {
       });
 
       await batch.commit();
+
+      // 3. Trigger doctor matching by specialty
+      try {
+        await matchUserWithDoctor(user.uid, prefHealthKey);
+      } catch (mErr) {
+        console.warn("Doctor matching during questionnaire complete:", mErr);
+      }
 
       if (onComplete) {
         onComplete();

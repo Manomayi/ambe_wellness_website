@@ -7,7 +7,7 @@ import { httpsCallable } from 'firebase/functions';
 import { auth, functions, db } from '@/lib/firebase/config';
 import { sendEmailVerification, updateProfile } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { ArrowRightIcon, ArrowLeftIcon, PhoneIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -44,6 +44,7 @@ export default function SignUpPage() {
     practiceStartYear: '',
     medicalSchool: '',
     professionalTitles: [],
+    referralCode: '',
   });
 
   const months = [
@@ -326,6 +327,7 @@ export default function SignUpPage() {
         phone_number: formData.phone,
         date_of_birth: getDateOfBirth(),
         gender_at_birth: formData.genderAtBirth || null,
+        referral_code: formData.referralCode ? formData.referralCode.trim().toUpperCase() : null,
         role: formData.userType,
         user_type: formData.userType,
         customSpecialization: formData.customSpecialization,
@@ -374,6 +376,35 @@ export default function SignUpPage() {
             );
           } catch (photoErr) {
             console.warn("Profile photo upload warning during signup:", photoErr);
+          }
+        }
+
+        // Setup referral relationship if a referral code was entered
+        if (!isDoctor && formData.referralCode && formData.referralCode.trim()) {
+          try {
+            const enteredCode = formData.referralCode.trim().toUpperCase();
+            const referrerQuery = query(
+              collection(db, 'users'),
+              where('referral_code', '==', enteredCode),
+              limit(1)
+            );
+            const referrerSnap = await getDocs(referrerQuery);
+            if (!referrerSnap.empty) {
+              const referrerDoc = referrerSnap.docs[0];
+              await setDoc(
+                doc(db, 'users', result.data.uid),
+                {
+                  referred_by: referrerDoc.id,
+                  referral_status: 'pending',
+                  has_made_purchase: false,
+                  referral_code_used: enteredCode,
+                  referral_credits: 0,
+                },
+                { merge: true }
+              );
+            }
+          } catch (refErr) {
+            console.warn("Referral setup warning during signup:", refErr);
           }
         }
 
@@ -585,6 +616,26 @@ export default function SignUpPage() {
                   </select>
                   <p className="text-[11px] mt-1" style={{ color: "#9A948B" }}>
                     Used only to skip health questions that do not apply to you.
+                  </p>
+                </div>
+              )}
+
+              {formData.userType !== "doctor" && (
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                    Referral Code <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.referralCode}
+                    onChange={(e) => updateFormData("referralCode", e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C] uppercase"
+                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                    placeholder="e.g. A1B2C3D4"
+                    maxLength={12}
+                  />
+                  <p className="text-[11px] mt-1" style={{ color: "#9A948B" }}>
+                    If a friend referred you, enter their referral code here.
                   </p>
                 </div>
               )}

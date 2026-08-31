@@ -7,6 +7,8 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import {
   collection,
   query,
+  where,
+  increment,
   onSnapshot,
   deleteDoc,
   updateDoc,
@@ -42,6 +44,77 @@ export default function UserCartPage() {
 
   useEffect(() => {
     if (!user) return;
+
+    // Reconcile completed referrals
+    const reconcileReferrals = async () => {
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userDocRef);
+        if (!userSnap.exists()) return;
+        const userData = userSnap.data();
+
+        // 1. If this user registered with a referral code, ensure referred_by is linked
+        if (!userData.referred_by && userData.referral_code_used) {
+          const code = String(userData.referral_code_used).trim().toUpperCase();
+          const refQuery = query(collection(db, 'users'), where('referral_code', '==', code), limit(1));
+          const refSnap = await getDocs(refQuery);
+          if (!refSnap.empty && refSnap.docs[0].id !== user.uid) {
+            const referrerId = refSnap.docs[0].id;
+            await updateDoc(userDocRef, {
+              referred_by: referrerId,
+              has_made_purchase: userData.has_made_purchase || false
+            }).catch(() => {});
+            userData.referred_by = referrerId;
+          }
+        }
+
+        // 2. Find all users that this user has referred
+        const q = query(collection(db, 'users'), where('referred_by', '==', user.uid));
+        const snap = await getDocs(q);
+
+        let validReferredFriendsCount = 0;
+        for (const friendDoc of snap.docs) {
+          const friendData = friendDoc.data();
+          let hasPurchased = friendData.has_made_purchase === true || friendData.referral_status === 'completed';
+          if (!hasPurchased) {
+            const purchasesSnap = await getDocs(collection(db, 'users', friendDoc.id, 'purchases'));
+            if (!purchasesSnap.empty) {
+              hasPurchased = true;
+              await updateDoc(doc(db, 'users', friendDoc.id), {
+                has_made_purchase: true,
+                referral_reward_granted: true,
+                referral_status: 'completed'
+              }).catch(() => {});
+            }
+          }
+          if (hasPurchased) {
+            validReferredFriendsCount++;
+          }
+        }
+
+        // 2. Determine credits spent by this user
+        const spentOrders = Array.isArray(userData.referral_credit_orders) ? userData.referral_credit_orders : [];
+        let spentCount = spentOrders.length;
+        
+        // Also check if user has placed purchases that used credits
+        const myPurchasesSnap = await getDocs(collection(db, 'users', user.uid, 'purchases'));
+        if (myPurchasesSnap.size > spentCount && !userData.referred_by) {
+          spentCount = Math.min(validReferredFriendsCount, myPurchasesSnap.size);
+        }
+
+        const exactCreditsAvailable = Math.max(0, validReferredFriendsCount - spentCount);
+
+        if (userData.referral_count !== validReferredFriendsCount || userData.referral_credits !== exactCreditsAvailable) {
+          await updateDoc(userDocRef, {
+            referral_count: validReferredFriendsCount,
+            referral_credits: exactCreditsAvailable
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.error('Error reconciling referrals:', err);
+      }
+    };
+    reconcileReferrals();
 
     // Listen to cart items
     const cartQuery = query(collection(db, 'users', user.uid, 'cart'));
@@ -118,7 +191,7 @@ export default function UserCartPage() {
 
   const getReferralDiscount = (subtotal) => {
     if (referralInfo.isFirstTimeReferred || referralInfo.credits > 0) {
-      return subtotal * 0.25; // 25% discount
+      return subtotal * 0.20; // 20% discount
     }
     return 0;
   };
@@ -288,8 +361,8 @@ export default function UserCartPage() {
                     <div className="flex justify-between">
                       <span className="text-[#C8996A] font-medium text-sm">
                         {referralInfo.isFirstTimeReferred 
-                          ? "Referral Discount (25%)" 
-                          : "Referral Credit (25%)"}
+                          ? "Referral Discount (20%)" 
+                          : "Referral Credit (20%)"}
                       </span>
                       <span className="text-[#C8996A] font-medium text-sm">-${referralDiscount.toFixed(2)}</span>
                     </div>

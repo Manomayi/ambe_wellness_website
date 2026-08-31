@@ -177,10 +177,12 @@ export default function DoctorAppointmentPage() {
               <CalendarIcon className="w-5 h-5 mr-3" />
               <span>{formatAppointmentTime(appointment.time)}</span>
             </div>
-            <div className="flex items-center text-[#353535]">
-              <ClockIcon className="w-5 h-5 mr-3" />
-              <span>Duration: 30 minutes</span>
-            </div>
+            {appointment.duration && (
+              <div className="flex items-center text-[#353535]">
+                <ClockIcon className="w-5 h-5 mr-3" />
+                <span>Duration: {appointment.duration}</span>
+              </div>
+            )}
           </div>
 
           {/* Status Messages */}
