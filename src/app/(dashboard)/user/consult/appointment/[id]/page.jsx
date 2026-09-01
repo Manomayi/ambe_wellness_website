@@ -151,11 +151,19 @@ export default function UserAppointmentPage() {
   }
 
   const isAppointmentNow = () => {
-    if (!appointment.time) return false;
+    if (!appointment?.time) return false;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
     return diffMinutes >= -60 && diffMinutes <= 15;
+  };
+
+  const isAppointmentPast = () => {
+    if (!appointment?.time) return false;
+    const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
+    const now = new Date();
+    const diffMinutes = (appointmentTime - now) / (1000 * 60);
+    return diffMinutes < -60;
   };
 
   const canJoinCall = isAppointmentNow() && !appointment.completed;
@@ -214,7 +222,15 @@ export default function UserAppointmentPage() {
             </div>
           )}
 
-          {!appointment.completed && !canJoinCall && (
+          {!appointment.completed && isAppointmentPast() && (
+            <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 mb-6">
+              <p className="text-sm text-[#6B6862]">
+                This consultation time has passed. The consultation report will appear in your history once submitted by your doctor.
+              </p>
+            </div>
+          )}
+
+          {!appointment.completed && !canJoinCall && !isAppointmentPast() && (
             <div className="bg-[#FAF8F5] border border-[#C8996A]/30 rounded-xl p-4 mb-6">
               <p className="text-sm text-[#353535]">
                 Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.

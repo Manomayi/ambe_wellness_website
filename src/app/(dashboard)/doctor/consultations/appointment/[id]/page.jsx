@@ -137,11 +137,19 @@ export default function DoctorAppointmentPage() {
   }
 
   const isAppointmentNow = () => {
-    if (!appointment.time) return false;
+    if (!appointment?.time) return false;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
     return diffMinutes >= -60 && diffMinutes <= 15;
+  };
+
+  const isAppointmentPast = () => {
+    if (!appointment?.time) return false;
+    const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
+    const now = new Date();
+    const diffMinutes = (appointmentTime - now) / (1000 * 60);
+    return diffMinutes < -60;
   };
 
   const canJoinCall = isAppointmentNow() && !appointment.needsReport;
@@ -208,7 +216,29 @@ export default function DoctorAppointmentPage() {
             </div>
           )}
 
-          {!appointment.needsReport && !canJoinCall && (
+          {!appointment.needsReport && isAppointmentPast() && (
+            <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
+              <p className="text-[#1A1A1A]">
+                This consultation time has passed. Please complete the consultation report.
+              </p>
+              <button
+                onClick={() => {
+                  const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : Date.now();
+                  const query = new URLSearchParams({
+                    userUid: appointment.user_id || '',
+                    userName: appointment.user_name || '',
+                    time: String(timeMillis),
+                  });
+                  router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
+                }}
+                className="mt-3 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg transition cursor-pointer font-medium text-sm"
+              >
+                Complete Report
+              </button>
+            </div>
+          )}
+
+          {!appointment.needsReport && !canJoinCall && !isAppointmentPast() && (
             <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
               <p className="text-[#1A1A1A]">
                 Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.

@@ -250,24 +250,64 @@ export default function DoctorConsultationsPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
-                        className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
-                      >
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleReschedule(appointment)}
-                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
-                      >
-                        Reschedule
-                      </button>
-                      <button
-                        onClick={() => handleCancel(appointment.id)}
-                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
-                      >
-                        Cancel
-                      </button>
+                      {(() => {
+                        const aptDate = appointment.time?.toDate
+                          ? appointment.time.toDate()
+                          : appointment.time
+                          ? new Date(appointment.time)
+                          : null;
+                        const diffMin = aptDate ? (aptDate - new Date()) / (1000 * 60) : 0;
+                        const isPast = diffMin < -60;
+
+                        if (isPast) {
+                          const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : (appointment.time ? new Date(appointment.time).getTime() : Date.now());
+                          const queryParams = new URLSearchParams({
+                            userUid: appointment.user_id || appointment.user_uid || appointment.userId || '',
+                            userName: appointment.user_name || appointment.userName || '',
+                            time: String(timeMillis),
+                          }).toString();
+
+                          return (
+                            <>
+                              <button
+                                onClick={() => router.push(`/doctor/consultations/complete-report/${appointment.id}?${queryParams}`)}
+                                className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                              >
+                                Complete Report
+                              </button>
+                              <button
+                                onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                                className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
+                              >
+                                View Details
+                              </button>
+                            </>
+                          );
+                        }
+
+                        return (
+                          <>
+                            <button
+                              onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                              className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                            >
+                              View Details
+                            </button>
+                            <button
+                              onClick={() => handleReschedule(appointment)}
+                              className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
+                            >
+                              Reschedule
+                            </button>
+                            <button
+                              onClick={() => handleCancel(appointment.id)}
+                              className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

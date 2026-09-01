@@ -28,6 +28,7 @@ import {
   UserGroupIcon,
   UserPlusIcon,
   ArrowPathRoundedSquareIcon,
+  ReceiptRefundIcon,
 } from '@heroicons/react/24/outline';
 
 export default function UserMenuPage() {
@@ -130,6 +131,11 @@ export default function UserMenuPage() {
           label: 'Purchase History',
           icon: CreditCardIcon,
           route: '/user/menu/purchase_history',
+        },
+        {
+          label: 'Refunds',
+          icon: ReceiptRefundIcon,
+          route: '/user/menu/refunds',
         },
         {
           label: 'Subscription',

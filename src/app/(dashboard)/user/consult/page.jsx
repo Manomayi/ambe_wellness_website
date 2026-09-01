@@ -166,17 +166,19 @@ export default function UserConsultPage() {
   };
 
   const isAppointmentNow = (appointment) => {
-    if (!appointment.time) return true;
+    if (!appointment?.time) return false;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);
-    return diffMinutes >= -240 && diffMinutes <= 30; // 30 min before to 4 hr after (while in upcoming)
+    return diffMinutes >= -60 && diffMinutes <= 15; // 15 min before to 1 hr after
   };
 
   const isAppointmentPast = (appointment) => {
-    if (!appointment.time) return false;
+    if (!appointment?.time) return false;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
-    return new Date() > appointmentTime && !isAppointmentNow(appointment);
+    const now = new Date();
+    const diffMinutes = (appointmentTime - now) / (1000 * 60);
+    return diffMinutes < -60;
   };
 
   const handleCancelAppointment = async (appointment) => {
@@ -412,19 +414,17 @@ export default function UserConsultPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
-                            className={`flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer shadow-sm ${
-                              isNow
-                                ? 'bg-[#1A1A1A] hover:bg-[#353535] text-[#FFD3AC]'
-                                : 'bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white'
-                            }`}
-                          >
-                            <VideoCameraIcon className="h-5 w-5 mr-2" />
-                            {isNow ? 'Join Call' : 'View / Join Call'}
-                          </button>
+                          {isNow && (
+                            <button
+                              onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
+                              className="flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer shadow-sm bg-[#1A1A1A] hover:bg-[#353535] text-[#FFD3AC]"
+                            >
+                              <VideoCameraIcon className="h-5 w-5 mr-2" />
+                              Join Call
+                            </button>
+                          )}
                           
-                          {!isNow && (
+                          {!isNow && !isPast && (
                             <>
                               <button
                                 onClick={() => router.push('/user/consult/schedule')}
