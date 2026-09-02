@@ -203,14 +203,15 @@ export default function UserRefundsPage() {
             }
           }
           matchedAppt = closestUpcoming || upcomingAppts[0];
-        } else if (!matchedAppt && historyAppts.length > 0 && !apptTime) {
+        } else if (!matchedAppt && historyAppts.length > 0) {
           // Closest history appointment
           let closestHistory = null;
           let minDiff = null;
+          const targetTime = apptTime || paymentDate;
           for (const a of historyAppts) {
             const t = a.time?.toDate ? a.time.toDate() : (a.time?.seconds ? new Date(a.time.seconds * 1000) : null);
             if (t) {
-              const diff = Math.abs(t.getTime() - paymentDate.getTime());
+              const diff = Math.abs(t.getTime() - targetTime.getTime());
               if (minDiff === null || diff < minDiff) {
                 minDiff = diff;
                 closestHistory = a;
