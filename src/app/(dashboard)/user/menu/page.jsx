@@ -140,7 +140,7 @@ export default function UserMenuPage() {
         {
           label: 'Subscription',
           icon: ArrowPathRoundedSquareIcon,
-          route: '/user/payment',
+          route: '/user/membership',
         },
       ],
     },

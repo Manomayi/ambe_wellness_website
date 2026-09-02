@@ -24,6 +24,7 @@ import {
   CalendarDaysIcon,
   ClockIcon,
   IdentificationIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DoctorMenuPage() {
@@ -166,6 +167,11 @@ export default function DoctorMenuPage() {
           label: 'Patient Reviews',
           icon: QuestionMarkCircleIcon,
           route: '/doctor/menu/feedback',
+        },
+        {
+          label: 'Earnings',
+          icon: BanknotesIcon,
+          route: '/doctor/earnings',
         },
       ],
     },

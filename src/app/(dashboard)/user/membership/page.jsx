@@ -14,7 +14,7 @@ export default function UserMembershipPage() {
   return (
     <ProtectedRoute userType="user">
       <div className="max-w-3xl mx-auto space-y-6 pb-12">
-        <BackButton label="Back to Home" href="/user/home" />
+        <BackButton label="Back" href="/user/menu" />
 
         <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 sm:p-10 shadow-sm space-y-8">
           {/* Coming Soon Pill */}

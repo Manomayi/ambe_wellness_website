@@ -388,15 +388,15 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Testimonials Grid - Desktop */}
-              <div className="hidden md:flex flex-row justify-center items-center gap-4 sm:gap-6 mb-12 sm:mb-16">
+              {/* Testimonials Grid - Desktop & Tablet */}
+              <div className="hidden md:flex flex-row justify-center items-center gap-3 lg:gap-6 mb-12 sm:mb-16">
                 {/* David Testimonial */}
                 <div className="flex justify-center">
                   <div
-                    className="rounded-full p-4 sm:p-5 md:p-6 flex flex-col items-center justify-center w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px]"
+                    className="rounded-full p-3.5 md:p-4 lg:p-6 flex flex-col items-center justify-center w-[220px] md:w-[225px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[225px] lg:h-[260px] xl:h-[280px]"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                    <div className="relative w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-full mb-1.5 md:mb-2 flex-shrink-0 overflow-hidden">
                       <Image
                         src="/images/testimonials/david.png"
                         alt="David"
@@ -405,19 +405,19 @@ export default function Home() {
                       />
                     </div>
                     <p
-                      className="text-sm text-center leading-relaxed mb-3 px-4"
+                      className="text-xs lg:text-sm text-center leading-snug lg:leading-relaxed mb-1.5 md:mb-2 px-2 md:px-3"
                       style={{ color: "#353535" }}
                     >
                       &quot;Sharper focus in just weeks. Ambé gave me energy I didn&apos;t know I was missing&quot;
                     </p>
                     <p
-                      className="text-sm text-center font-bold mb-1"
+                      className="text-xs md:text-sm text-center font-bold mb-0.5"
                       style={{ color: "#353535" }}
                     >
                       David
                     </p>
                     <p
-                      className="text-sm text-center"
+                      className="text-[11px] md:text-xs text-center leading-tight"
                       style={{ color: "#353535" }}
                     >
                       Chief Strategy Officer
@@ -428,10 +428,10 @@ export default function Home() {
                 {/* Joshua Testimonial */}
                 <div className="flex justify-center">
                   <div
-                    className="rounded-full p-4 sm:p-5 md:p-6 flex flex-col items-center justify-center w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px]"
+                    className="rounded-full p-3.5 md:p-4 lg:p-6 flex flex-col items-center justify-center w-[220px] md:w-[225px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[225px] lg:h-[260px] xl:h-[280px]"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                    <div className="relative w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-full mb-1.5 md:mb-2 flex-shrink-0 overflow-hidden">
                       <Image
                         src="/images/testimonials/joshua.png"
                         alt="Joshua"
@@ -440,19 +440,19 @@ export default function Home() {
                       />
                     </div>
                     <p
-                      className="text-sm text-center leading-relaxed mb-3 px-4"
+                      className="text-xs lg:text-sm text-center leading-snug lg:leading-relaxed mb-1.5 md:mb-2 px-2 md:px-3"
                       style={{ color: "#353535" }}
                     >
                       &quot;My stress, digestion, and moods leveled out. I finally feel in control.&quot;
                     </p>
                     <p
-                      className="text-sm text-center font-bold mb-1"
+                      className="text-xs md:text-sm text-center font-bold mb-0.5"
                       style={{ color: "#353535" }}
                     >
                       Joshua
                     </p>
                     <p
-                      className="text-sm text-center"
+                      className="text-[11px] md:text-xs text-center leading-tight"
                       style={{ color: "#353535" }}
                     >
                       Operations Supervisor
@@ -463,10 +463,10 @@ export default function Home() {
                 {/* Rosario Testimonial */}
                 <div className="flex justify-center">
                   <div
-                    className="rounded-full p-4 sm:p-5 md:p-6 flex flex-col items-center justify-center w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px]"
+                    className="rounded-full p-3.5 md:p-4 lg:p-6 flex flex-col items-center justify-center w-[220px] md:w-[225px] lg:w-[260px] xl:w-[280px] h-[220px] md:h-[225px] lg:h-[260px] xl:h-[280px]"
                     style={{ backgroundColor: "#FFD3AC" }}
                   >
-                    <div className="relative w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                    <div className="relative w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 xl:w-16 xl:h-16 rounded-full mb-1.5 md:mb-2 flex-shrink-0 overflow-hidden">
                       <Image
                         src="/images/testimonials/rosario.png"
                         alt="Rosario"
@@ -475,19 +475,19 @@ export default function Home() {
                       />
                     </div>
                     <p
-                      className="text-sm text-center leading-relaxed mb-3 px-4"
+                      className="text-xs lg:text-sm text-center leading-snug lg:leading-relaxed mb-1.5 md:mb-2 px-2 md:px-3"
                       style={{ color: "#353535" }}
                     >
                       &quot;Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human.&quot;
                     </p>
                     <p
-                      className="text-sm text-center font-bold mb-1"
+                      className="text-xs md:text-sm text-center font-bold mb-0.5"
                       style={{ color: "#353535" }}
                     >
                       Rosario
                     </p>
                     <p
-                      className="text-sm text-center"
+                      className="text-[11px] md:text-xs text-center leading-tight"
                       style={{ color: "#353535" }}
                     >
                       Warehouse Associate
@@ -498,33 +498,35 @@ export default function Home() {
 
               {/* Testimonials - Mobile with Arrows */}
               <div className="md:hidden mb-6 sm:mb-16">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-3">
                   {/* Left Arrow */}
                   <button
                     onClick={() => {
                       const scrollContainer = document.getElementById('testimonial-scroll');
-                      scrollContainer.scrollBy({ left: -296, behavior: 'smooth' });
+                      if (scrollContainer) {
+                        scrollContainer.scrollBy({ left: -(scrollContainer.clientWidth + 16), behavior: 'smooth' });
+                      }
                     }}
-                    className="flex-shrink-0 p-1"
+                    className="flex-shrink-0 p-1 hover:opacity-80 transition-opacity"
                     aria-label="Scroll left"
                   >
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                       <path d="M15 18l-6-6 6-6" />
                     </svg>
                   </button>
                   
                   <div 
                     id="testimonial-scroll"
-                    className="flex gap-4 overflow-x-hidden snap-x snap-mandatory scrollbar-hide"
-                    style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", width: "280px" }}
+                    className="flex gap-4 overflow-x-hidden snap-x snap-mandatory scrollbar-hide w-[230px] sm:w-[260px]"
+                    style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
                   >
                     {/* David Testimonial */}
                     <div className="flex-none snap-center">
                       <div
-                        className="rounded-full p-4 flex flex-col items-center justify-center w-[280px] h-[280px]"
+                        className="rounded-full p-3.5 sm:p-5 flex flex-col items-center justify-center w-[230px] sm:w-[260px] h-[230px] sm:h-[260px]"
                         style={{ backgroundColor: "#FFD3AC" }}
                       >
-                        <div className="relative w-16 h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                        <div className="relative w-12 sm:w-14 h-12 sm:h-14 rounded-full mb-2 flex-shrink-0 overflow-hidden">
                           <Image
                             src="/images/testimonials/david.png"
                             alt="David"
@@ -533,19 +535,19 @@ export default function Home() {
                           />
                         </div>
                         <p
-                          className="text-sm text-center leading-relaxed mb-3 px-4"
+                          className="text-xs sm:text-sm text-center leading-snug sm:leading-relaxed mb-2 px-2"
                           style={{ color: "#353535" }}
                         >
                           &quot;Sharper focus in just weeks. Ambé gave me energy I didn&apos;t know I was missing&quot;
                         </p>
                         <p
-                          className="text-sm text-center font-bold mb-1"
+                          className="text-xs sm:text-sm text-center font-bold mb-0.5"
                           style={{ color: "#353535" }}
                         >
                           David
                         </p>
                         <p
-                          className="text-xs text-center"
+                          className="text-[10px] sm:text-xs text-center"
                           style={{ color: "#353535" }}
                         >
                           Chief Strategy Officer
@@ -556,10 +558,10 @@ export default function Home() {
                     {/* Joshua Testimonial */}
                     <div className="flex-none snap-center">
                       <div
-                        className="rounded-full p-4 flex flex-col items-center justify-center w-[280px] h-[280px]"
+                        className="rounded-full p-3.5 sm:p-5 flex flex-col items-center justify-center w-[230px] sm:w-[260px] h-[230px] sm:h-[260px]"
                         style={{ backgroundColor: "#FFD3AC" }}
                       >
-                        <div className="relative w-16 h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                        <div className="relative w-12 sm:w-14 h-12 sm:h-14 rounded-full mb-2 flex-shrink-0 overflow-hidden">
                           <Image
                             src="/images/testimonials/joshua.png"
                             alt="Joshua"
@@ -568,19 +570,19 @@ export default function Home() {
                           />
                         </div>
                         <p
-                          className="text-sm text-center leading-relaxed mb-3 px-4"
+                          className="text-xs sm:text-sm text-center leading-snug sm:leading-relaxed mb-2 px-2"
                           style={{ color: "#353535" }}
                         >
                           &quot;My stress, digestion, and moods leveled out. I finally feel in control.&quot;
                         </p>
                         <p
-                          className="text-sm text-center font-bold mb-1"
+                          className="text-xs sm:text-sm text-center font-bold mb-0.5"
                           style={{ color: "#353535" }}
                         >
                           Joshua
                         </p>
                         <p
-                          className="text-xs text-center"
+                          className="text-[10px] sm:text-xs text-center"
                           style={{ color: "#353535" }}
                         >
                           Operations Supervisor
@@ -591,10 +593,10 @@ export default function Home() {
                     {/* Rosario Testimonial */}
                     <div className="flex-none snap-center">
                       <div
-                        className="rounded-full p-4 flex flex-col items-center justify-center w-[280px] h-[280px]"
+                        className="rounded-full p-3.5 sm:p-5 flex flex-col items-center justify-center w-[230px] sm:w-[260px] h-[230px] sm:h-[260px]"
                         style={{ backgroundColor: "#FFD3AC" }}
                       >
-                        <div className="relative w-16 h-16 rounded-full mb-3 flex-shrink-0 overflow-hidden mt-2">
+                        <div className="relative w-12 sm:w-14 h-12 sm:h-14 rounded-full mb-2 flex-shrink-0 overflow-hidden">
                           <Image
                             src="/images/testimonials/rosario.png"
                             alt="Rosario"
@@ -603,19 +605,19 @@ export default function Home() {
                           />
                         </div>
                         <p
-                          className="text-sm text-center leading-relaxed mb-3 px-4"
+                          className="text-xs sm:text-sm text-center leading-snug sm:leading-relaxed mb-2 px-2"
                           style={{ color: "#353535" }}
                         >
                           &quot;Pain stopped ruling me. Ambe helped me reclaim my health with care that feels human.&quot;
                         </p>
                         <p
-                          className="text-sm text-center font-bold mb-1"
+                          className="text-xs sm:text-sm text-center font-bold mb-0.5"
                           style={{ color: "#353535" }}
                         >
                           Rosario
                         </p>
                         <p
-                          className="text-xs text-center"
+                          className="text-[10px] sm:text-xs text-center"
                           style={{ color: "#353535" }}
                         >
                           Warehouse Associate
@@ -628,12 +630,14 @@ export default function Home() {
                   <button
                     onClick={() => {
                       const scrollContainer = document.getElementById('testimonial-scroll');
-                      scrollContainer.scrollBy({ left: 296, behavior: 'smooth' });
+                      if (scrollContainer) {
+                        scrollContainer.scrollBy({ left: scrollContainer.clientWidth + 16, behavior: 'smooth' });
+                      }
                     }}
-                    className="flex-shrink-0 p-1"
+                    className="flex-shrink-0 p-1 hover:opacity-80 transition-opacity"
                     aria-label="Scroll right"
                   >
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                       <path d="M9 18l6-6-6-6" />
                     </svg>
                   </button>

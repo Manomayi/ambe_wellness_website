@@ -247,8 +247,8 @@ export default function UserCheckoutPage() {
               </p>
               {!userData?.subscription?.active && (
                 <button
-                  onClick={() => router.push('/user/payment')}
-                  className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider"
+                  onClick={() => router.push('/user/membership')}
+                  className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider cursor-pointer"
                 >
                   SUBSCRIBE
                 </button>
