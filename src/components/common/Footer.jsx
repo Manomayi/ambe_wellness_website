@@ -24,6 +24,7 @@ const AREAS_OF_CARE = [
 const LEGAL_LINKS = [
   { href: "/terms", label: "Terms" },
   { href: "/privacy-policy", label: "Privacy Policy" },
+  { href: "/security", label: "Security & Trust" },
   { href: `mailto:${CONTACT_EMAIL}`, label: "Contact" },
 ];
 
@@ -103,6 +104,12 @@ export default function Footer() {
                 className="hover:text-ambe-gold transition-colors"
               >
                 Privacy Policy
+              </Link>
+              <Link
+                href="/security"
+                className="hover:text-ambe-gold transition-colors"
+              >
+                Security
               </Link>
             </div>
           </div>
