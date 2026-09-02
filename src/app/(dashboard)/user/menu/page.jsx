@@ -29,6 +29,7 @@ import {
   UserPlusIcon,
   ArrowPathRoundedSquareIcon,
   ReceiptRefundIcon,
+  BellIcon,
 } from '@heroicons/react/24/outline';
 
 export default function UserMenuPage() {
@@ -164,8 +165,13 @@ export default function UserMenuPage() {
         },
         {
           label: 'Notifications',
-          icon: Cog6ToothIcon,
+          icon: BellIcon,
           route: '/user/notifications',
+        },
+        {
+          label: 'Notification Settings',
+          icon: Cog6ToothIcon,
+          route: '/user/notifications-settings',
         },
       ],
     },
