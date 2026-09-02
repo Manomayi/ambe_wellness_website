@@ -3,10 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 
 export default function ProtectedRoute({ children, userType = null }) {
   const router = useRouter();
   const { user, loading, userType: authUserType } = useAuth();
+  
+  // HIPAA §164.312(a)(2)(iii) - Automatic Session Inactivity Timeout
+  useIdleTimeout();
 
   useEffect(() => {
     if (!loading) {

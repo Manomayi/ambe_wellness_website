@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { doc, setDoc, onSnapshot, serverTimestamp, deleteField } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db, auth } from '@/lib/firebase/config';
 import {
   MicrophoneIcon,
   VideoCameraIcon,
@@ -214,12 +214,20 @@ export default function VideoCall({
 
     const initializeAgora = async () => {
       try {
+        const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : '';
         const response = await fetch(
           'https://us-central1-ambe-wellness.cloudfunctions.net/generateAgoraTokenPublic',
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ channelName, uid: numericUid }),
+            headers: {
+              'Content-Type': 'application/json',
+              ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+            },
+            body: JSON.stringify({
+              channelName,
+              uid: numericUid,
+              idToken: idToken,
+            }),
           }
         );
         const data = await response.json();

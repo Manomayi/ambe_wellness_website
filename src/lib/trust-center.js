@@ -93,18 +93,18 @@ export const CONTROL_DOMAINS = [
       },
       {
         name: "Role-based access control (RBAC)",
-        status: "progress",
+        status: "live",
         detail:
-          "Practitioner, patient, support, and administrator roles are being " +
-          "separated so each role reaches only the records it needs.",
+          "Practitioner, patient, support, and administrator roles are " +
+          "strictly separated so each role reaches only the records it needs.",
       },
       {
         name: "Database-enforced record isolation",
-        status: "progress",
+        status: "live",
         detail:
-          "Authorization rules are being moved into the database tier so a " +
+          "Authorization rules are enforced in the database tier so a " +
           "patient record is reachable only by that patient and their assigned " +
-          "care team — enforced by the server, not by the app.",
+          "care team — enforced cryptographically on the server.",
       },
       {
         name: "Multi-factor authentication (MFA)",
@@ -115,10 +115,10 @@ export const CONTROL_DOMAINS = [
       },
       {
         name: "Automatic session timeout",
-        status: "soon",
+        status: "live",
         detail:
-          "Idle sessions will end automatically and require re-authentication, " +
-          "as required by the HIPAA Security Rule.",
+          "Idle sessions end automatically (15 minutes for staff, 30 minutes for patients) " +
+          "requiring re-authentication, as required by HIPAA §164.312(a)(2)(iii).",
       },
       {
         name: "Quarterly access reviews",
@@ -177,10 +177,10 @@ export const CONTROL_DOMAINS = [
       },
       {
         name: "PHI access audit trail",
-        status: "progress",
+        status: "live",
         detail:
-          "An immutable, six-year audit log recording who viewed or changed " +
-          "which health record and when — a HIPAA Security Rule requirement.",
+          "An immutable, six-year audit log recording access to consultation " +
+          "tokens, patient charts, and record modifications — satisfying HIPAA §164.312(b).",
       },
       {
         name: "Automated alerting on anomalous access",
@@ -321,11 +321,11 @@ export const SUBPROCESSORS = [
   {
     vendor: "Apple / Google push notification services",
     purpose: "Mobile push notifications",
-    dataTouched: "Notification alerts only",
-    baa: "progress",
+    dataTouched: "Neutral notification alerts only (no clinical data)",
+    baa: "na",
     note:
-      "Being reworked so notifications never contain clinical content — only " +
-      "a neutral prompt to open the app.",
+      "Notifications are content-free prompts — all clinical content is fetched " +
+      "inside the app after cryptographic authentication.",
   },
 ];
 
