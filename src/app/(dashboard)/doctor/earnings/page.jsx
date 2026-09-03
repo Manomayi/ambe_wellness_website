@@ -302,45 +302,47 @@ export default function DoctorEarningsPage() {
       {/* Ledger Section */}
       <div className="bg-white rounded-2xl border border-[#E7E2D9] shadow-sm overflow-hidden">
         {/* Header & Filter Tabs */}
-        <div className="p-6 border-b border-[#E7E2D9] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-4 sm:p-6 border-b border-[#E7E2D9] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-xl font-bold text-[#1A1A1A]">Earnings Ledger</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">Earnings Ledger</h2>
             <p className="text-xs text-[#8C827A] mt-0.5">
               Immutable ledger of all consultation credits, cancellation debits, and payouts.
             </p>
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center space-x-1.5 bg-[#FAF8F5] p-1.5 rounded-xl border border-[#E7E2D9]">
-            {LEDGER_FILTERS.map((f) => {
-              const active = f.key === activeFilter.key;
-              return (
-                <button
-                  key={f.key}
-                  onClick={() => handleFilterChange(f)}
-                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition ${
-                    active
-                      ? 'bg-[#C8996A] text-white shadow-sm'
-                      : 'text-[#6B6862] hover:text-[#1A1A1A] hover:bg-white/60'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              );
-            })}
+          <div className="w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <div className="inline-flex items-center space-x-1.5 bg-[#FAF8F5] p-1.5 rounded-xl border border-[#E7E2D9] min-w-max">
+              {LEDGER_FILTERS.map((f) => {
+                const active = f.key === activeFilter.key;
+                return (
+                  <button
+                    key={f.key}
+                    onClick={() => handleFilterChange(f)}
+                    className={`px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
+                      active
+                        ? 'bg-[#C8996A] text-white shadow-sm'
+                        : 'text-[#6B6862] hover:text-[#1A1A1A] hover:bg-white/60'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Ledger Table / List */}
         {ledgerError && (
-          <div className="p-6 text-center text-sm text-rose-600 bg-rose-50 border-b border-rose-100">
+          <div className="p-4 sm:p-6 text-center text-sm text-rose-600 bg-rose-50 border-b border-rose-100">
             {ledgerError}
           </div>
         )}
 
         {entries.length === 0 && !ledgerLoading ? (
-          <div className="p-16 text-center">
-            <DocumentTextIcon className="h-12 w-12 text-[#8C827A]/40 mx-auto mb-3" />
+          <div className="p-10 sm:p-16 text-center">
+            <DocumentTextIcon className="h-10 w-10 sm:h-12 sm:w-12 text-[#8C827A]/40 mx-auto mb-3" />
             <h3 className="text-base font-semibold text-[#1A1A1A]">No entries found</h3>
             <p className="text-xs text-[#8C827A] mt-1 max-w-sm mx-auto">
               No transactions match the selected filter. As you complete consultations, ledger entries will appear here.
@@ -358,41 +360,41 @@ export default function DoctorEarningsPage() {
                 <div
                   key={entry.id}
                   onClick={() => setSelectedEntry(entry)}
-                  className="p-5 flex items-center justify-between hover:bg-[#FAF8F5] transition cursor-pointer group"
+                  className="p-3.5 sm:p-5 flex items-start sm:items-center justify-between gap-3 sm:gap-4 hover:bg-[#FAF8F5] transition cursor-pointer group"
                 >
-                  <div className="flex items-start space-x-4">
+                  <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
                     <div
-                      className={`p-2.5 rounded-xl flex-shrink-0 mt-0.5 ${
+                      className={`p-2 sm:p-2.5 rounded-xl flex-shrink-0 mt-0.5 ${
                         isCredit
                           ? 'bg-emerald-50 text-emerald-600'
                           : 'bg-rose-50 text-rose-600'
                       }`}
                     >
                       {isCredit ? (
-                        <ArrowTrendingUpIcon className="h-5 w-5" />
+                        <ArrowTrendingUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <ArrowTrendingDownIcon className="h-5 w-5" />
+                        <ArrowTrendingDownIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <span className="font-semibold text-sm text-[#1A1A1A] group-hover:text-[#C8996A] transition">
                           {LEDGER_TYPE_LABELS[entry.type] || entry.type}
                         </span>
                         <span
-                          className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${badge.bg}`}
+                          className={`text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${badge.bg}`}
                         >
                           {badge.label}
                         </span>
                       </div>
 
                       {/* Subtitle / Details */}
-                      <p className="text-xs text-[#6B6862] mt-1">
+                      <p className="text-xs text-[#6B6862] mt-1 break-words">
                         {metadata.patient_name
                           ? `Patient: ${metadata.patient_name}`
                           : metadata.reason || entry.notes || 'Transaction record'}
                         {metadata.duration_seconds ? (
-                          <span className="ml-2 text-[#8C827A]">
+                          <span className="inline-block sm:inline ml-0 sm:ml-2 text-[#8C827A]">
                             • Duration: {formatWorkedSeconds(metadata.duration_seconds)}
                           </span>
                         ) : null}
@@ -410,16 +412,19 @@ export default function DoctorEarningsPage() {
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <div
-                      className={`text-base font-bold ${
+                      className={`text-sm sm:text-base font-bold whitespace-nowrap tabular-nums ${
                         isCredit ? 'text-emerald-600' : 'text-rose-600'
                       }`}
                     >
                       {isCredit ? '+' : '-'}{formatCents(entry.amount_cents)}
                     </div>
-                    <span className="text-[11px] text-[#8C827A] group-hover:underline">
+                    <span className="text-[11px] text-[#8C827A] group-hover:underline whitespace-nowrap hidden sm:inline-block">
                       View details →
+                    </span>
+                    <span className="text-[10px] text-[#8C827A] group-hover:underline whitespace-nowrap sm:hidden block mt-0.5">
+                      Details →
                     </span>
                   </div>
                 </div>
@@ -514,18 +519,18 @@ export default function DoctorEarningsPage() {
               ) : null}
 
               {selectedEntry.metadata?.consultation_id && (
-                <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                  <span className="text-[#6B6862]">Consultation ID</span>
-                  <span className="font-mono text-xs text-[#1A1A1A]">
+                <div className="flex justify-between items-center py-2 border-b border-[#E7E2D9]/60 gap-2">
+                  <span className="text-[#6B6862] shrink-0">Consultation ID</span>
+                  <span className="font-mono text-xs text-[#1A1A1A] break-all text-right">
                     {selectedEntry.metadata.consultation_id}
                   </span>
                 </div>
               )}
 
               {selectedEntry.metadata?.appointment_id && (
-                <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                  <span className="text-[#6B6862]">Appointment ID</span>
-                  <span className="font-mono text-xs text-[#1A1A1A]">
+                <div className="flex justify-between items-center py-2 border-b border-[#E7E2D9]/60 gap-2">
+                  <span className="text-[#6B6862] shrink-0">Appointment ID</span>
+                  <span className="font-mono text-xs text-[#1A1A1A] break-all text-right">
                     {selectedEntry.metadata.appointment_id}
                   </span>
                 </div>

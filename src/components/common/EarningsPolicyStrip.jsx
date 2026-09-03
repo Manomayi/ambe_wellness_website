@@ -59,31 +59,54 @@ export default function EarningsPolicyStrip() {
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E7E2D9] shadow-sm px-4 py-3">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-        <div className="flex items-center gap-2 text-[#6B6862] shrink-0">
-          <ScaleIcon className="h-4 w-4 text-[#C8996A]" />
-          <span className="text-xs font-semibold uppercase tracking-wider">
-            Consultation Rates
-          </span>
+    <div className="bg-white rounded-2xl border border-[#E7E2D9] shadow-sm p-3.5 sm:px-4 sm:py-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-x-5">
+        {/* Title & Mobile Details Toggle */}
+        <div className="flex items-center justify-between sm:justify-start gap-2 text-[#6B6862] shrink-0">
+          <div className="flex items-center gap-2">
+            <ScaleIcon className="h-4 w-4 text-[#C8996A]" />
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              Consultation Rates
+            </span>
+          </div>
+
+          {/* Details Toggle Button (Mobile) */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="sm:hidden flex items-center gap-1 text-xs font-medium text-[#6B6862] hover:text-[#1A1A1A] transition-colors shrink-0"
+          >
+            Details
+            <ChevronDownIcon
+              className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
+            />
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 flex-1 min-w-0">
+        {/* Rates Chips */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-x-5 sm:gap-y-1.5 flex-1 min-w-0">
           {items.map((item) => (
-            <div key={item.key} className="flex items-baseline gap-1.5">
-              <span className={`text-sm font-bold tabular-nums ${item.tone}`}>
+            <div
+              key={item.key}
+              className="flex items-baseline gap-1.5 bg-[#FAF8F5] sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-lg sm:rounded-none border border-[#E7E2D9]/60 sm:border-0"
+            >
+              <span className={`text-xs sm:text-sm font-bold tabular-nums ${item.tone}`}>
                 {item.amount}
               </span>
-              <span className="text-xs text-[#8C827A]">{item.label}</span>
+              <span className="text-[11px] sm:text-xs text-[#8C827A] whitespace-nowrap">
+                {item.label}
+              </span>
             </div>
           ))}
         </div>
 
+        {/* Details Toggle Button (Desktop) */}
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex items-center gap-1 text-xs font-medium text-[#6B6862] hover:text-[#1A1A1A] transition-colors shrink-0"
+          className="hidden sm:flex items-center gap-1 text-xs font-medium text-[#6B6862] hover:text-[#1A1A1A] transition-colors shrink-0"
         >
           Details
           <ChevronDownIcon
