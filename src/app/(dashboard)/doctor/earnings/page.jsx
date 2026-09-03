@@ -6,6 +6,7 @@ import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import BackButton from '@/components/common/BackButton';
+import EarningsPolicyStrip from '@/components/common/EarningsPolicyStrip';
 import {
   formatCents,
   formatWorkedSeconds,
@@ -246,6 +247,9 @@ export default function DoctorEarningsPage() {
           </div>
         </div>
       </div>
+
+      {/* Consultation rates — compact strip, details on demand */}
+      <EarningsPolicyStrip />
 
       {/* Activity Statistics Grid */}
       <div className="bg-white rounded-2xl border border-[#E7E2D9] p-6 shadow-sm">

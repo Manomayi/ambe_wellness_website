@@ -56,8 +56,27 @@ export default function DoctorAppointmentPage() {
     }
   };
 
-  const handleCallEnd = async () => {
+  const handleCallEnd = async ({ endedByDoctor } = {}) => {
     setInCall(false);
+
+    // When the user cuts the call from the app/web:
+    // Do NOT mark as completed and do NOT redirect to complete-report.
+    // Just pop the call page and return to consultations list.
+    if (!endedByDoctor) {
+      try {
+        await updateDoc(
+          doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
+          {
+            call_ended_at: new Date()
+          }
+        );
+      } catch (error) {
+        console.error('Error updating appointment call_ended_at:', error);
+      }
+      router.push('/doctor/consultations');
+      return;
+    }
+
     try {
       await updateDoc(
         doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
@@ -69,9 +88,7 @@ export default function DoctorAppointmentPage() {
     } catch (error) {
       console.error('Error updating appointment:', error);
     }
-    // Same next-step as the app: doctor lands directly on the
-    // recommendations/report form for this consultation, not just back on
-    // the list.
+
     const timeMillis = appointment?.time?.toMillis ? appointment.time.toMillis() : Date.now();
     const query = new URLSearchParams({
       userUid: appointment?.user_id || '',
@@ -218,23 +235,17 @@ export default function DoctorAppointmentPage() {
 
           {!appointment.needsReport && isAppointmentPast() && (
             <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
-              <p className="text-[#1A1A1A]">
-                This consultation time has passed. Please complete the consultation report.
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+                  Pending / Past Due
+                </span>
+                <p className="text-[#1A1A1A] font-semibold text-sm">
+                  This consultation time has passed
+                </p>
+              </div>
+              <p className="text-sm text-[#6B6862] mt-1">
+                If the appointment was missed, please contact the patient to reschedule or cancel.
               </p>
-              <button
-                onClick={() => {
-                  const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : Date.now();
-                  const query = new URLSearchParams({
-                    userUid: appointment.user_id || '',
-                    userName: appointment.user_name || '',
-                    time: String(timeMillis),
-                  });
-                  router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
-                }}
-                className="mt-3 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg transition cursor-pointer font-medium text-sm"
-              >
-                Complete Report
-              </button>
             </div>
           )}
 

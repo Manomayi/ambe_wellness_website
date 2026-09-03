@@ -61,6 +61,86 @@ export const EMPTY_SUMMARY = {
   worked_seconds: 0,
 };
 
+/**
+ * Business-rule defaults, in CENTS. These mirror `DEFAULT_EARNINGS_CONFIG` in
+ * `functions/doctor_earnings.js`, which is the code that actually credits the
+ * ledger — a different number here would promise money that is never paid.
+ */
+export const DEFAULT_EARNINGS_POLICY = {
+  consultationEarningCents: 1000,
+  noShowEarningCents: 500,
+  hourlyRateCents: 1000,
+  lateCancellationFinePercent: 50,
+  lateCancellationWindowHours: 24,
+  lateCancellationFineCents: 500,
+};
+
+/** Dollars as stored by the admin -> integer cents, without float drift. */
+function settingToCents(value, fallbackCents) {
+  const numeric = typeof value === 'number' ? value : parseFloat(value);
+  if (!Number.isFinite(numeric) || numeric < 0) return fallbackCents;
+  return Math.round(numeric * 100);
+}
+
+/** A non-negative finite number, or the fallback. */
+function settingToNumber(value, fallback) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
+}
+
+/**
+ * Resolves a raw `admin_settings/general` document into the rate card, using
+ * the same fallbacks and fine arithmetic as the server.
+ */
+export function normaliseEarningsPolicy(data) {
+  const stored = data && typeof data === 'object' ? data : {};
+
+  const hourlyRateCents = settingToCents(
+    stored.doctor_hourly_rate,
+    DEFAULT_EARNINGS_POLICY.hourlyRateCents,
+  );
+  // The server falls back to the hourly rate for the consultation earning.
+  const consultationEarningCents = settingToCents(
+    stored.doctor_consultation_earning,
+    hourlyRateCents,
+  );
+  const lateCancellationFinePercent = settingToNumber(
+    stored.doctor_late_cancellation_fine_percent,
+    DEFAULT_EARNINGS_POLICY.lateCancellationFinePercent,
+  );
+
+  return {
+    consultationEarningCents,
+    noShowEarningCents: settingToCents(
+      stored.doctor_no_show_earning,
+      DEFAULT_EARNINGS_POLICY.noShowEarningCents,
+    ),
+    hourlyRateCents,
+    lateCancellationFinePercent,
+    lateCancellationWindowHours: settingToNumber(
+      stored.doctor_late_cancellation_window_hours,
+      DEFAULT_EARNINGS_POLICY.lateCancellationWindowHours,
+    ),
+    lateCancellationFineCents: Math.round(
+      (hourlyRateCents * lateCancellationFinePercent) / 100,
+    ),
+  };
+}
+
+/**
+ * Reads the configured rates. Never throws — an unreadable settings document
+ * falls back to the server defaults so the rate strip still renders.
+ */
+export async function fetchEarningsPolicy() {
+  try {
+    const snap = await getDoc(doc(db, 'admin_settings', 'general'));
+    return normaliseEarningsPolicy(snap.exists() ? snap.data() : null);
+  } catch (error) {
+    console.error('fetchEarningsPolicy: falling back to defaults', error);
+    return { ...DEFAULT_EARNINGS_POLICY };
+  }
+}
+
 /** Formats integer cents as `$1,234.56` (a negative value reads `-$20.00`). */
 export function formatCents(cents) {
   const value = Number(cents) || 0;

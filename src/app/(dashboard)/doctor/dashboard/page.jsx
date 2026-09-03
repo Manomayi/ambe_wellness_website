@@ -57,10 +57,20 @@ export default function DoctorDashboard() {
             : 0;
           return timeA - timeB;
         });
-        setUpcomingAppointments(upcomingList.slice(0, 5));
+        const now = new Date();
+        const futureList = upcomingList.filter((apt) => {
+          const aptDate = apt.time?.toDate
+            ? apt.time.toDate()
+            : apt.time
+            ? new Date(apt.time)
+            : null;
+          if (!aptDate) return true;
+          return (aptDate - now) / (1000 * 60) >= -60;
+        });
+        setUpcomingAppointments(futureList.slice(0, 5));
         setStats((prev) => ({
           ...prev,
-          upcomingConsultations: upcomingList.length,
+          upcomingConsultations: futureList.length,
         }));
       },
       (error) => {

@@ -25,6 +25,7 @@ export default function DoctorConsultationsPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [pendingAppointments, setPendingAppointments] = useState([]);
   const [currentAppointment, setCurrentAppointment] = useState(null);
   const [reportsToFinish, setReportsToFinish] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,7 @@ export default function DoctorConsultationsPage() {
 
         const nowDate = new Date();
         let current = null;
+        const pending = [];
         const upcoming = [];
 
         appointments.forEach((apt) => {
@@ -77,12 +79,15 @@ export default function DoctorConsultationsPage() {
 
           if (diffMinutes >= -60 && diffMinutes <= 15 && !current) {
             current = apt;
+          } else if (diffMinutes < -60) {
+            pending.push(apt);
           } else {
             upcoming.push(apt);
           }
         });
 
         setCurrentAppointment(current);
+        setPendingAppointments(pending);
         setUpcomingAppointments(upcoming);
       },
       (error) => {
@@ -231,10 +236,67 @@ export default function DoctorConsultationsPage() {
           </div>
         )}
 
+        {/* Pending Appointments (Missed / Past Due) */}
+        {pendingAppointments.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-xl font-semibold text-[#1A1A1A]">Pending Appointments</h2>
+              <span className="bg-[#FFF3E8] text-[#C8996A] border border-[#FFD3AC] text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Pending
+              </span>
+            </div>
+            <div className="space-y-4">
+              {pendingAppointments.map((appointment) => (
+                <div key={appointment.id} className="bg-white rounded-lg shadow border border-[#E7E2D9] p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-lg hover:text-[#C8996A] transition text-[#1A1A1A]">
+                          {appointment.user_name || 'Patient'}
+                        </h3>
+                        <span className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-medium px-2 py-0.5 rounded">
+                          Past Due
+                        </span>
+                      </div>
+                      <p className="text-[#6B6862] flex items-center mt-1 text-sm">
+                        <ClockIcon className="h-4 w-4 mr-1 text-[#C8996A]" />
+                        {formatAppointmentTime(appointment.time)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                        className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => handleReschedule(appointment)}
+                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={() => handleCancel(appointment.id)}
+                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Upcoming Appointments */}
         {upcomingAppointments.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
+            <h2 className="text-xl font-semibold mb-4 text-[#1A1A1A]">Upcoming Appointments</h2>
             <div className="space-y-4">
               {upcomingAppointments.map((appointment) => (
                 <div key={appointment.id} className="bg-white rounded-lg shadow p-6">
@@ -243,71 +305,33 @@ export default function DoctorConsultationsPage() {
                       className="cursor-pointer"
                       onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
                     >
-                      <h3 className="font-semibold text-lg hover:text-[#C8996A] transition">{appointment.user_name}</h3>
-                      <p className="text-[#6B6862] flex items-center mt-1">
-                        <ClockIcon className="h-4 w-4 mr-1" />
+                      <h3 className="font-semibold text-lg hover:text-[#C8996A] transition text-[#1A1A1A]">
+                        {appointment.user_name || 'Patient'}
+                      </h3>
+                      <p className="text-[#6B6862] flex items-center mt-1 text-sm">
+                        <ClockIcon className="h-4 w-4 mr-1 text-[#C8996A]" />
                         {formatAppointmentTime(appointment.time)}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-3">
-                      {(() => {
-                        const aptDate = appointment.time?.toDate
-                          ? appointment.time.toDate()
-                          : appointment.time
-                          ? new Date(appointment.time)
-                          : null;
-                        const diffMin = aptDate ? (aptDate - new Date()) / (1000 * 60) : 0;
-                        const isPast = diffMin < -60;
-
-                        if (isPast) {
-                          const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : (appointment.time ? new Date(appointment.time).getTime() : Date.now());
-                          const queryParams = new URLSearchParams({
-                            userUid: appointment.user_id || appointment.user_uid || appointment.userId || '',
-                            userName: appointment.user_name || appointment.userName || '',
-                            time: String(timeMillis),
-                          }).toString();
-
-                          return (
-                            <>
-                              <button
-                                onClick={() => router.push(`/doctor/consultations/complete-report/${appointment.id}?${queryParams}`)}
-                                className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
-                              >
-                                Complete Report
-                              </button>
-                              <button
-                                onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
-                                className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
-                              >
-                                View Details
-                              </button>
-                            </>
-                          );
-                        }
-
-                        return (
-                          <>
-                            <button
-                              onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
-                              className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
-                            >
-                              View Details
-                            </button>
-                            <button
-                              onClick={() => handleReschedule(appointment)}
-                              className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
-                            >
-                              Reschedule
-                            </button>
-                            <button
-                              onClick={() => handleCancel(appointment.id)}
-                              className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        );
-                      })()}
+                      <button
+                        onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                        className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                      >
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => handleReschedule(appointment)}
+                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
+                      >
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={() => handleCancel(appointment.id)}
+                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -317,7 +341,7 @@ export default function DoctorConsultationsPage() {
         )}
 
         {/* Empty State */}
-        {!currentAppointment && upcomingAppointments.length === 0 && reportsToFinish.length === 0 && !loading && (
+        {!currentAppointment && upcomingAppointments.length === 0 && pendingAppointments.length === 0 && reportsToFinish.length === 0 && !loading && (
           <div className="bg-[#FAF8F5] rounded-lg p-12 text-center">
             <CalendarIcon className="h-16 w-16 text-[#8C827A] mx-auto mb-4" />
             <h3 className="text-xl font-medium text-[#353535] mb-2">No Consultations Scheduled</h3>
