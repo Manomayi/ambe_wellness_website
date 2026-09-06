@@ -13,7 +13,13 @@ export default function UserLayout({ children }) {
   const needsQuestionnaire = !loading && user && profile && profile.is_free_questionnaire_completed !== true;
 
   if (needsQuestionnaire) {
-    return <UserQuestionnaireModal />;
+    return (
+      <UserQuestionnaireModal
+        onComplete={() => {
+          window.location.reload();
+        }}
+      />
+    );
   }
 
   return (

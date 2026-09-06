@@ -12,7 +12,8 @@ import {
   query,
   where,
   getDocs,
-  increment
+  increment,
+  limit
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import {

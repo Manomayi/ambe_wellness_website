@@ -8,11 +8,14 @@ export default function BackButton({
   label = 'Back to Menu',
   href = '/user/menu',
   className = '',
+  forceHref = false,
 }) {
   const router = useRouter();
 
   const handleBack = () => {
-    if (typeof window !== 'undefined' && window.history.length > 2) {
+    if (forceHref && href) {
+      router.push(href);
+    } else if (typeof window !== 'undefined' && window.history.length > 2) {
       router.back();
     } else if (href) {
       router.push(href);

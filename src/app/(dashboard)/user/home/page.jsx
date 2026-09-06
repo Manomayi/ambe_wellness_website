@@ -107,6 +107,20 @@ export default function UserHomePage() {
         });
       }
 
+      // HEALTH ASSESSMENT (EXTENDED QUESTIONNAIRE)
+      if (
+        profile?.is_free_questionnaire_completed &&
+        !profile?.is_consultation_set &&
+        !profile?.is_extended_questionnaire_completed
+      ) {
+        tasks.push({
+          id: 'health-assessment',
+          title: 'Health Assessment',
+          subtitle: 'Complete your health assessment before booking your consultation.',
+          onSelect: () => router.push('/user/consult/extended-questionnaire')
+        });
+      }
+
       // SCHEDULE CONSULTATION
       if (!profile?.is_consultation_set && profile?.is_free_questionnaire_completed) {
         tasks.push({

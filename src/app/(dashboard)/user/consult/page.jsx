@@ -19,6 +19,7 @@ import { httpsCallable } from 'firebase/functions';
 import { db, functions } from "@/lib/firebase/config";
 import { matchUserWithDoctor } from "@/lib/doctorMatching";
 import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
+import ExtendedQuestionnaireModal from "@/components/user/ExtendedQuestionnaireModal";
 import {
   VideoCameraIcon,
   ChatBubbleLeftRightIcon,
@@ -26,7 +27,8 @@ import {
   ClockIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  XCircleIcon
 } from "@heroicons/react/24/outline";
 
 // Health field mapping
@@ -64,6 +66,13 @@ export default function UserConsultPage() {
   const [cancellingId, setCancellingId] = useState(null);
   const [checkingInstant, setCheckingInstant] = useState(false);
   const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
+  const [showExtendedQuestionnaireModal, setShowExtendedQuestionnaireModal] = useState(false);
+  const [showActiveAppointmentModal, setShowActiveAppointmentModal] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+
+  // Check if patient already has an active appointment
+  const activeAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
+  const hasActiveAppointment = Boolean(activeAppointment || profile?.is_consultation_set === true);
 
   // Resolve doctor UID from profile
   const resolvedDoctorUid = 
@@ -74,8 +83,37 @@ export default function UserConsultPage() {
     profile?.doctor_id || 
     null;
 
+  const handleScheduleClick = () => {
+    // If appointment is already booked, prevent 2nd booking and show Hold On dialog
+    if (hasActiveAppointment) {
+      setShowActiveAppointmentModal(true);
+      return;
+    }
+
+    if (!profile?.is_extended_questionnaire_completed) {
+      setShowExtendedQuestionnaireModal(true);
+    } else {
+      router.push('/user/consult/schedule');
+    }
+  };
+
+  const handleRescheduleClick = (appointment) => {
+    const apptId = appointment?.id || appointment?.appointment_id || '';
+    router.push(`/user/consult/schedule?reschedule=true&appointmentId=${apptId}`);
+  };
+
   const handleCheckInstantAvailability = async () => {
     if (!user) return;
+    // If appointment is already booked, prevent instant booking
+    if (hasActiveAppointment) {
+      setShowActiveAppointmentModal(true);
+      return;
+    }
+
+    if (!profile?.is_extended_questionnaire_completed) {
+      setShowExtendedQuestionnaireModal(true);
+      return;
+    }
     setCheckingInstant(true);
     try {
       const result = await matchUserWithDoctor(user.uid, profile?.preferred_health || 'general_health', true);
@@ -177,25 +215,44 @@ export default function UserConsultPage() {
     if (!appointment?.time) return false;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
-    const diffMinutes = (appointmentTime - now) / (1000 * 60);
-    return diffMinutes < -60;
+    return !isAppointmentNow(appointment) && now > appointmentTime;
   };
 
   const handleCancelAppointment = async (appointment) => {
-    const confirmCancel = window.confirm(
-      'Are you sure you want to cancel this appointment?\n\nRefund Policy:\n• You can request a full refund for your $50 deposit by emailing info@ambewellness.com within 30 days of the appointment.\n• If you do not join the scheduled consultation, only 50% ($25) of the deposit is refunded.'
-    );
-    if (!confirmCancel) return;
+    if (!appointment?.id || !user) return;
+
+    if (appointment.time) {
+      const apptDate = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
+      const diffHours = (apptDate.getTime() - Date.now()) / (1000 * 60 * 60);
+      if (diffHours >= 0 && diffHours < 2) {
+        alert('You cannot cancel within 2 hours of the scheduled appointment time.');
+        setAppointmentToCancel(null);
+        return;
+      }
+    }
 
     setCancellingId(appointment.id);
     try {
-      // Try Cloud Function first
+      // 1. Try Cloud Function first
+      let fnSuccess = false;
       try {
         const cancelFn = httpsCallable(functions, 'cancelAppointmentByUser');
-        await cancelFn({ appointmentId: appointment.id });
+        const res = await cancelFn({ appointmentId: appointment.id });
+        if (res?.data?.success) {
+          fnSuccess = true;
+        }
       } catch (fnErr) {
         console.warn('Cloud function cancel failed, using Firestore fallback:', fnErr);
-        // Fallback: batch update
+        if (fnErr?.message && fnErr.message.includes('within 2 hours')) {
+          alert('Cannot cancel within 2 hours of appointment.');
+          setCancellingId(null);
+          setAppointmentToCancel(null);
+          return;
+        }
+      }
+
+      // 2. Fallback: direct Firestore batch update
+      if (!fnSuccess) {
         const batch = writeBatch(db);
         const userUpcomingRef = doc(db, 'users', user.uid, 'appointments_upcoming', appointment.id);
         const userHistoryRef = doc(db, 'users', user.uid, 'appointments_history', appointment.id);
@@ -216,6 +273,8 @@ export default function UserConsultPage() {
         }
         await batch.commit();
       }
+
+      setAppointmentToCancel(null);
     } catch (err) {
       console.error('Error cancelling appointment:', err);
       alert('Failed to cancel appointment. Please try again.');
@@ -250,6 +309,172 @@ export default function UserConsultPage() {
               setShowQuestionnaireModal(false);
             }}
           />
+        )}
+
+        {/* Extended Questionnaire Modal */}
+        {showExtendedQuestionnaireModal && (
+          <ExtendedQuestionnaireModal
+            onComplete={() => {
+              setShowExtendedQuestionnaireModal(false);
+              router.push('/user/consult/schedule');
+            }}
+            onClose={() => setShowExtendedQuestionnaireModal(false)}
+          />
+        )}
+
+        {/* Active Consultation Modal (Hold On) */}
+        {showActiveAppointmentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative text-center">
+              <button
+                onClick={() => setShowActiveAppointmentModal(false)}
+                className="absolute top-4 right-4 p-2 text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] rounded-full transition cursor-pointer"
+                aria-label="Close"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+
+              <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm">
+                ⏳
+              </div>
+
+              <div className="space-y-2">
+                <h3 
+                  className="text-2xl font-bold text-[#1A1A1A]"
+                  style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+                >
+                  Hold On
+                </h3>
+                <p className="text-sm text-[#6B6862] leading-relaxed">
+                  You already have an active consultation scheduled. You cannot book a second appointment until your current consultation is completed.
+                </p>
+              </div>
+
+              {activeAppointment && (
+                <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-4 text-left space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#8C827A] uppercase tracking-wider font-medium">Doctor</span>
+                    <span className="font-semibold text-[#1A1A1A]">
+                      {activeAppointment.doctor_name || doctorDisplayName}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#8C827A] uppercase tracking-wider font-medium">Scheduled Time</span>
+                    <span className="font-semibold text-[#C2691C]">
+                      {formatAppointmentTime(activeAppointment.time)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 space-y-2.5">
+                {activeAppointment && !isAppointmentPast(activeAppointment) && (
+                  <button
+                    onClick={() => {
+                      setShowActiveAppointmentModal(false);
+                      handleRescheduleClick(activeAppointment);
+                    }}
+                    className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm tracking-wider uppercase"
+                  >
+                    Reschedule Appointment
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowActiveAppointmentModal(false);
+                    const el = document.getElementById('upcoming-appointments');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="w-full bg-[#FAF8F5] hover:bg-[#F4F1EA] text-[#1A1A1A] border border-[#E7E2D9] py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer"
+                >
+                  View Existing Appointment
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Appointment Confirmation Modal */}
+        {appointmentToCancel && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative text-center">
+              <button
+                onClick={() => setAppointmentToCancel(null)}
+                disabled={Boolean(cancellingId)}
+                className="absolute top-4 right-4 p-2 text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] rounded-full transition cursor-pointer disabled:opacity-50"
+                aria-label="Close"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+
+              <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto text-2xl text-red-600 shadow-sm">
+                <XCircleIcon className="w-8 h-8" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 
+                  className="text-2xl font-bold text-[#1A1A1A]"
+                  style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+                >
+                  Cancel Appointment?
+                </h3>
+                <p className="text-sm text-[#6B6862] leading-relaxed">
+                  Are you sure you want to cancel? You cannot cancel within 2 hours of the appointment.
+                </p>
+              </div>
+
+              <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-4 text-left space-y-2.5 text-xs text-[#1A1A1A]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Doctor</span>
+                  <span className="font-semibold">
+                    {appointmentToCancel.doctor_name?.startsWith('Dr.') 
+                      ? appointmentToCancel.doctor_name 
+                      : `Dr. ${appointmentToCancel.doctor_name || 'Assigned Doctor'}`}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Scheduled Time</span>
+                  <span className="font-semibold text-[#C2691C]">
+                    {formatAppointmentTime(appointmentToCancel.time)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl text-xs text-[#1A1A1A] text-left leading-relaxed">
+                <strong>Refund Policy:</strong> You can request a full refund for your $50 deposit by emailing{' '}
+                <a href="mailto:info@ambewellness.com" className="font-semibold text-[#C2691C] underline hover:text-[#1A1A1A]">
+                  info@ambewellness.com
+                </a>{' '}
+                within 30 days of the appointment. If missed without joining, only 50% ($25) of the deposit is refunded.
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setAppointmentToCancel(null)}
+                  disabled={Boolean(cancellingId)}
+                  className="w-full py-3.5 px-4 border border-[#E7E2D9] text-[#1A1A1A] rounded-xl font-medium text-sm hover:bg-[#FAF8F5] transition cursor-pointer disabled:opacity-50"
+                >
+                  No, Keep It
+                </button>
+                <button
+                  onClick={() => handleCancelAppointment(appointmentToCancel)}
+                  disabled={Boolean(cancellingId)}
+                  className="w-full py-3.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                >
+                  {cancellingId === appointmentToCancel.id ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    'Yes, Cancel'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* 1. If Questionnaire NOT Completed */}
@@ -307,6 +532,26 @@ export default function UserConsultPage() {
         {/* Doctor Info Card */}
         {hasDoctor && (
           <>
+            {/* Extended Questionnaire Prompt Banner (matching mobile app ExtendedQuestionnairePromptView) */}
+            {!profile?.is_extended_questionnaire_completed && (
+              <div className="bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl p-6 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div className="space-y-1 text-center sm:text-left">
+                  <h4 className="font-bold text-base text-[#1A1A1A]">
+                    Please complete the detailed health profile to continue
+                  </h4>
+                  <p className="text-sm text-[#6B6862]">
+                    Our doctors review your detailed health history to deliver personalized care during your consultation.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowExtendedQuestionnaireModal(true)}
+                  className="w-full sm:w-auto px-6 py-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer flex-shrink-0 shadow-sm"
+                >
+                  COMPLETE PROFILE
+                </button>
+              </div>
+            )}
+
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">MY DOCTOR</h2>
             <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-6 mb-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -352,7 +597,7 @@ export default function UserConsultPage() {
                     Message
                   </button>
                   <button
-                    onClick={() => router.push('/user/consult/schedule')}
+                    onClick={handleScheduleClick}
                     className="flex-1 sm:flex-initial flex items-center justify-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2.5 rounded-lg text-sm font-medium transition cursor-pointer shadow-sm"
                   >
                     <CalendarIcon className="h-5 w-5 mr-2" />
@@ -371,10 +616,12 @@ export default function UserConsultPage() {
 
         {/* Upcoming / Current Appointments */}
         {upcomingAppointments.length > 0 && (
-          <div className="mb-8">
+          <div id="upcoming-appointments" className="mb-8">
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">
               {upcomingAppointments.some(a => isAppointmentNow(a)) 
                 ? 'HAPPENING NOW' 
+                : upcomingAppointments.every(a => isAppointmentPast(a))
+                ? 'PENDING APPOINTMENT'
                 : 'UPCOMING APPOINTMENTS'}
             </h2>
             <div className="space-y-4">
@@ -424,22 +671,23 @@ export default function UserConsultPage() {
                             </button>
                           )}
                           
-                          {!isNow && !isPast && (
-                            <>
+                          {!isNow && (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
                               <button
-                                onClick={() => router.push('/user/consult/schedule')}
-                                className="px-4 py-2.5 border border-[#E7E2D9] rounded-lg text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF8F5] transition cursor-pointer"
+                                onClick={() => handleRescheduleClick(appointment)}
+                                className="px-4 py-2 border border-[#E7E2D9] rounded-lg text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF8F5] transition cursor-pointer shadow-sm text-center"
                               >
                                 Reschedule
                               </button>
                               <button
-                                onClick={() => handleCancelAppointment(appointment)}
+                                onClick={() => setAppointmentToCancel(appointment)}
                                 disabled={cancellingId === appointment.id}
-                                className="px-4 py-2.5 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition cursor-pointer disabled:opacity-50"
+                                className="px-3.5 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
                               >
-                                {cancellingId === appointment.id ? 'Cancelling...' : 'Cancel'}
+                                <XCircleIcon className="h-4 w-4" />
+                                Cancel Appointment
                               </button>
-                            </>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -462,7 +710,7 @@ export default function UserConsultPage() {
               Schedule a consultation with your healthcare provider
             </p>
             <button
-              onClick={() => router.push('/user/consult/schedule')}
+              onClick={handleScheduleClick}
               className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm cursor-pointer"
             >
               Schedule Consultation

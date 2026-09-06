@@ -17,11 +17,13 @@ import {
   deleteDoc,
   writeBatch,
   serverTimestamp, 
-  Timestamp 
+  Timestamp,
+  onSnapshot
 } from 'firebase/firestore';
 import { functions, db } from '@/lib/firebase/config';
 import { matchUserWithDoctor } from '@/lib/doctorMatching';
 import UserQuestionnaireModal from '@/components/user/UserQuestionnaireModal';
+import ExtendedQuestionnaireModal from '@/components/user/ExtendedQuestionnaireModal';
 import { CalendarIcon, ClockIcon, BoltIcon, ShieldCheckIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import moment from 'moment-timezone';
 import BackButton from '@/components/common/BackButton';
@@ -127,8 +129,11 @@ function ScheduleConsultationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isInstantParam = searchParams.get('instant') === 'true';
+  const isRescheduleParam = searchParams.get('reschedule') === 'true';
+  const rescheduleAppointmentId = searchParams.get('appointmentId');
 
   const { user, profile } = useAuth();
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [doctorSchedule, setDoctorSchedule] = useState(null);
   const [doctorInfo, setDoctorInfo] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -149,12 +154,17 @@ function ScheduleConsultationContent() {
   const [isInstantAvailable, setIsInstantAvailable] = useState(false);
   const [checkingInstant, setCheckingInstant] = useState(false);
   const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
+  const [showExtendedQuestionnaireModal, setShowExtendedQuestionnaireModal] = useState(false);
 
   // Stripe Payment Sheet states
   const [clientSecret, setClientSecret] = useState("");
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  // Active appointment detection
+  const activeAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
+  const hasActiveAppointment = Boolean(activeAppointment || profile?.is_consultation_set === true);
 
   // Safe doctor UID resolution
   const resolvedDoctorUid = 
@@ -164,6 +174,38 @@ function ScheduleConsultationContent() {
     profile?.matched_doctor || 
     profile?.doctor_id || 
     null;
+
+  const formatAppointmentTime = (timestamp) => {
+    if (!timestamp) return 'Time not set';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }).format(date);
+  };
+
+  // Listen to user's upcoming appointments
+  useEffect(() => {
+    if (!user) return;
+    const upcomingQuery = collection(db, 'users', user.uid, 'appointments_upcoming');
+    const unsubscribe = onSnapshot(upcomingQuery, (snapshot) => {
+      const appointments = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      appointments.sort((a, b) => {
+        const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
+        const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
+        return timeA - timeB;
+      });
+      setUpcomingAppointments(appointments);
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -176,18 +218,27 @@ function ScheduleConsultationContent() {
     }
   }, [resolvedDoctorUid]);
 
+  // When pressing browser back button from schedule page, navigate to /user/home
+  useEffect(() => {
+    const handlePopState = () => {
+      router.push('/user/home');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [router]);
+
   useEffect(() => {
     if (selectedDate && doctorSchedule && doctorTimezone && userTimezone) {
       generateTimeSlots();
     }
   }, [selectedDate, doctorSchedule, bookedSlots, doctorTimezone, userTimezone, isInstantAvailable]);
 
-  // Load / create PaymentIntent whenever a slot is selected
+  // Load / create PaymentIntent whenever a slot is selected (only when not rescheduling)
   useEffect(() => {
-    if (selectedSlot && user && !clientSecret) {
+    if (selectedSlot && user && !clientSecret && !isRescheduleParam) {
       initializePaymentIntent();
     }
-  }, [selectedSlot, user]);
+  }, [selectedSlot, user, isRescheduleParam, clientSecret]);
 
   const loadDoctorInfo = async (docUid) => {
     try {
@@ -490,6 +541,78 @@ function ScheduleConsultationContent() {
     }
   };
 
+  const handleConfirmReschedule = async () => {
+    if (!selectedSlot || !user) return;
+    setScheduling(true);
+
+    try {
+      const targetApptId = rescheduleAppointmentId || activeAppointment?.id || upcomingAppointments[0]?.id;
+      if (!targetApptId) {
+        throw new Error('No appointment found to reschedule.');
+      }
+
+      const userApptRef = doc(db, 'users', user.uid, 'appointments_upcoming', targetApptId);
+      const userApptSnap = await getDoc(userApptRef);
+      const apptData = userApptSnap.exists() ? userApptSnap.data() : null;
+      const targetDocUid = resolvedDoctorUid || apptData?.doctor_id || apptData?.doctor_uid;
+
+      const newTimestamp = Timestamp.fromDate(selectedSlot.time);
+      const updatePayload = {
+        time: newTimestamp,
+        rescheduled_at: serverTimestamp(),
+        rescheduled_by: 'user'
+      };
+
+      const batch = writeBatch(db);
+
+      if (userApptSnap.exists()) {
+        batch.update(userApptRef, updatePayload);
+      } else {
+        batch.set(userApptRef, {
+          appointment_id: targetApptId,
+          doctor_id: targetDocUid || '',
+          doctor_name: doctorDisplayName,
+          user_id: user.uid,
+          user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
+          status: 'scheduled',
+          deposit_paid: 50.00,
+          ...updatePayload
+        }, { merge: true });
+      }
+
+      if (targetDocUid) {
+        const docApptRef = doc(db, 'doctors', targetDocUid, 'appointments_upcoming', targetApptId);
+        const docApptSnap = await getDoc(docApptRef);
+        if (docApptSnap.exists()) {
+          batch.update(docApptRef, updatePayload);
+        } else {
+          batch.set(docApptRef, {
+            appointment_id: targetApptId,
+            doctor_id: targetDocUid,
+            doctor_name: doctorDisplayName,
+            user_id: user.uid,
+            user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
+            status: 'scheduled',
+            deposit_paid: 50.00,
+            ...updatePayload
+          }, { merge: true });
+        }
+      }
+
+      await batch.commit();
+
+      setBookingSuccess(true);
+      setTimeout(() => {
+        router.push('/user/consult');
+      }, 1500);
+    } catch (error) {
+      console.error('Error rescheduling appointment:', error);
+      alert('Could not reschedule your appointment. Please try again or contact support.');
+    } finally {
+      setScheduling(false);
+    }
+  };
+
   const handleCheckInstantAvailability = async () => {
     if (!user) return;
     setCheckingInstant(true);
@@ -540,7 +663,7 @@ function ScheduleConsultationContent() {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-2xl mx-auto space-y-6">
-          <BackButton href="/user/consult" label="Back" />
+          <BackButton href="/user/home" label="Back to Home" forceHref={true} />
           <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 text-center shadow-sm space-y-4">
             <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl">
               📋
@@ -575,7 +698,7 @@ function ScheduleConsultationContent() {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-md mx-auto space-y-6">
-          <BackButton href="/user/consult" label="Back to Consult" />
+          <BackButton href="/user/home" label="Back to Home" forceHref={true} />
           <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 text-center shadow-sm space-y-6">
             <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
               ⏳
@@ -610,15 +733,117 @@ function ScheduleConsultationContent() {
     );
   }
 
+  // 3. If Extended Questionnaire Not Completed -> Show Guard
+  if (!profile?.is_extended_questionnaire_completed) {
+    return (
+      <ProtectedRoute userType="user">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <BackButton href="/user/home" label="Back to Home" forceHref={true} />
+          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 text-center shadow-sm space-y-4">
+            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl">
+              📝
+            </div>
+            <h2 className="text-2xl font-bold text-[#1A1A1A]">Detailed Health Profile Required</h2>
+            <p className="text-sm text-[#6B6862] max-w-md mx-auto">
+              Please complete your health assessment (or skip it) before booking your consultation slot.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => setShowExtendedQuestionnaireModal(true)}
+                className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition shadow-sm uppercase tracking-wider cursor-pointer"
+              >
+                Complete Health Profile
+              </button>
+            </div>
+          </div>
+
+          {showExtendedQuestionnaireModal && (
+            <ExtendedQuestionnaireModal
+              onComplete={() => {
+                setShowExtendedQuestionnaireModal(false);
+                window.location.reload();
+              }}
+              onClose={() => setShowExtendedQuestionnaireModal(false)}
+            />
+          )}
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
   const doctorDisplayName = doctorInfo
     ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim()
     : (profile?.doctor_name || "Healthcare Provider");
 
+  // 4. If Already Has Active Consultation & Not in Reschedule Mode -> Guard View
+  if (hasActiveAppointment && !isRescheduleParam) {
+    return (
+      <ProtectedRoute userType="user">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <BackButton href="/user/consult" label="Back to Consultations" forceHref={true} />
+          <div className="bg-white border border-[#E7E2D9] rounded-3xl p-8 sm:p-10 text-center shadow-sm space-y-6">
+            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm">
+              ⏳
+            </div>
+            <div className="space-y-2">
+              <h2 
+                className="text-2xl sm:text-3xl font-bold text-[#1A1A1A]"
+                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+              >
+                Consultation Already Scheduled
+              </h2>
+              <p className="text-sm text-[#6B6862] max-w-md mx-auto leading-relaxed">
+                You already have an active consultation scheduled. You cannot book a second appointment until your current consultation is completed.
+              </p>
+            </div>
+
+            {activeAppointment && (
+              <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-5 max-w-md mx-auto text-left space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Doctor</span>
+                  <span className="font-semibold text-[#1A1A1A]">
+                    {activeAppointment.doctor_name || doctorDisplayName}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Scheduled Time</span>
+                  <span className="font-semibold text-[#C2691C]">
+                    {formatAppointmentTime(activeAppointment.time)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+              <button
+                onClick={() => {
+                  const apptId = activeAppointment?.id || activeAppointment?.appointment_id || '';
+                  router.push(`/user/consult/schedule?reschedule=true&appointmentId=${apptId}`);
+                }}
+                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm tracking-wider uppercase"
+              >
+                Reschedule Appointment
+              </button>
+              <button
+                onClick={() => router.push('/user/consult')}
+                className="w-full bg-[#FAF8F5] hover:bg-[#F4F1EA] text-[#1A1A1A] border border-[#E7E2D9] py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer"
+              >
+                View My Consultations
+              </button>
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute userType="user">
       <div className="max-w-5xl mx-auto space-y-6 pb-12">
-        <BackButton label="Back to Consult" href="/user/consult" />
-        <h1 className="text-3xl font-bold text-[#1A1A1A]">Schedule Consultation</h1>
+        <BackButton label="Back to Consultations" href="/user/consult" forceHref={true} />
+        <h1 className="text-3xl font-bold text-[#1A1A1A]">
+          {isRescheduleParam ? "Reschedule Consultation" : "Schedule Consultation"}
+        </h1>
 
         {/* Doctor Info Card */}
         <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 shadow-sm">
@@ -792,11 +1017,11 @@ function ScheduleConsultationContent() {
           </div>
         </div>
 
-        {/* Booking & $50 Deposit Review with Stripe Test Mode Payment Sheet */}
+        {/* Booking / Reschedule Review */}
         {selectedSlot && (
           <div className="mt-8 bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
             <h3 className="font-bold text-xl text-[#1A1A1A]">
-              Confirm Consultation & Pay Deposit
+              {isRescheduleParam ? "Confirm Rescheduled Slot" : "Confirm Consultation & Pay Deposit"}
             </h3>
 
             {/* Summary Details */}
@@ -806,7 +1031,9 @@ function ScheduleConsultationContent() {
                 <strong className="text-sm font-semibold">{doctorDisplayName}</strong>
               </div>
               <div>
-                <span className="text-[#8C827A] block font-medium">Date & Time</span>
+                <span className="text-[#8C827A] block font-medium">
+                  {isRescheduleParam ? "New Date & Time" : "Date & Time"}
+                </span>
                 <strong className="text-sm font-semibold">
                   {selectedSlot.isInstant 
                     ? "Available Now (Immediate)" 
@@ -815,70 +1042,100 @@ function ScheduleConsultationContent() {
               </div>
               <div>
                 <span className="text-[#8C827A] block font-medium">Deposit Fee</span>
-                <strong className="text-sm font-semibold text-[#1A1A1A]">$50.00 USD</strong>
+                <strong className={`text-sm font-semibold ${isRescheduleParam ? "text-[#2E7D32]" : "text-[#1A1A1A]"}`}>
+                  {isRescheduleParam ? "Previously Paid ($50.00)" : "$50.00 USD"}
+                </strong>
               </div>
             </div>
 
-            {/* Deposit & Refund Policy Card */}
-            <div className="bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl p-5 space-y-2 text-xs text-[#1A1A1A]">
-              <div className="flex items-center gap-2 font-bold text-sm text-[#C2691C]">
-                <ShieldCheckIcon className="w-5 h-5" />
-                Deposit & Refund Policy
-              </div>
-              <p className="leading-relaxed text-[#353535]">
-                A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
-              </p>
-              <ul className="list-disc list-inside space-y-1 text-[#353535] pt-1">
-                <li>
-                  <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
-                  <a 
-                    href="mailto:info@ambewellness.com" 
-                    className="font-semibold text-[#C2691C] underline hover:text-[#1A1A1A]"
-                  >
-                    info@ambewellness.com
-                  </a>{' '}
-                  within 30 days of the appointment date.
-                </li>
-                <li>
-                  <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
-                </li>
-              </ul>
-            </div>
-
-            {/* Stripe Test Mode Payment Sheet */}
-            <div className="pt-4 border-t border-[#E7E2D9]">
-              <h4 className="font-semibold text-sm text-[#1A1A1A] mb-3">Enter Payment Details</h4>
-              {paymentLoading || !clientSecret ? (
-                <div className="py-8 flex flex-col items-center justify-center space-y-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C8996A] border-t-transparent" />
-                  <p className="text-xs text-[#8C827A]">Loading secure payment sheet...</p>
+            {isRescheduleParam ? (
+              /* Reschedule Mode: No New Deposit Charged */
+              <div className="space-y-6 pt-2">
+                <div className="bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl p-5 space-y-2 text-xs text-[#1A1A1A]">
+                  <div className="flex items-center gap-2 font-bold text-sm text-[#C2691C]">
+                    <ShieldCheckIcon className="w-5 h-5" />
+                    Reschedule Policy
+                  </div>
+                  <p className="leading-relaxed text-[#353535]">
+                    Your original <strong>$50 deposit</strong> remains securely applied to this appointment. You do not need to pay anything additional to reschedule your slot.
+                  </p>
                 </div>
-              ) : (
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret,
-                    appearance: {
-                      theme: 'stripe',
-                      variables: { colorPrimary: '#C8996A' }
-                    }
-                  }}
-                >
-                  <ConsultationPaymentForm
-                    user={user}
-                    doctorInfo={doctorInfo}
-                    selectedSlot={selectedSlot}
-                    selectedDate={selectedDate}
-                    paymentIntentId={paymentIntentId}
-                    onSuccess={handlePaymentSuccessAndSchedule}
-                  />
-                </Elements>
-              )}
-            </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={handleConfirmReschedule}
+                    disabled={scheduling}
+                    className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-semibold text-sm transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer"
+                  >
+                    {scheduling ? "Updating Appointment..." : "Confirm Rescheduled Slot"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* New Booking Mode: Stripe $50 Deposit Payment Sheet */
+              <>
+                {/* Deposit & Refund Policy Card */}
+                <div className="bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl p-5 space-y-2 text-xs text-[#1A1A1A]">
+                  <div className="flex items-center gap-2 font-bold text-sm text-[#C2691C]">
+                    <ShieldCheckIcon className="w-5 h-5" />
+                    Deposit & Refund Policy
+                  </div>
+                  <p className="leading-relaxed text-[#353535]">
+                    A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-[#353535] pt-1">
+                    <li>
+                      <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
+                      <a 
+                        href="mailto:info@ambewellness.com" 
+                        className="font-semibold text-[#C2691C] underline hover:text-[#1A1A1A]"
+                      >
+                        info@ambewellness.com
+                      </a>{' '}
+                      within 30 days of the appointment date.
+                    </li>
+                    <li>
+                      <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Stripe Test Mode Payment Sheet */}
+                <div className="pt-4 border-t border-[#E7E2D9]">
+                  <h4 className="font-semibold text-sm text-[#1A1A1A] mb-3">Enter Payment Details</h4>
+                  {paymentLoading || !clientSecret ? (
+                    <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C8996A] border-t-transparent" />
+                      <p className="text-xs text-[#8C827A]">Loading secure payment sheet...</p>
+                    </div>
+                  ) : (
+                    <Elements
+                      stripe={stripePromise}
+                      options={{
+                        clientSecret,
+                        appearance: {
+                          theme: 'stripe',
+                          variables: { colorPrimary: '#C8996A' }
+                        }
+                      }}
+                    >
+                      <ConsultationPaymentForm
+                        user={user}
+                        doctorInfo={doctorInfo}
+                        selectedSlot={selectedSlot}
+                        selectedDate={selectedDate}
+                        paymentIntentId={paymentIntentId}
+                        onSuccess={handlePaymentSuccessAndSchedule}
+                      />
+                    </Elements>
+                  )}
+                </div>
+              </>
+            )}
 
             {bookingSuccess && (
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-emerald-800 text-sm font-semibold">
-                ✓ Consultation booked successfully! Redirecting to your dashboard...
+                ✓ {isRescheduleParam ? "Consultation rescheduled successfully! Redirecting to your dashboard..." : "Consultation booked successfully! Redirecting to your dashboard..."}
               </div>
             )}
           </div>

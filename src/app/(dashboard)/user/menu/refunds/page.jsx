@@ -226,6 +226,14 @@ export default function UserRefundsPage() {
           matchedAppt?.status === 'cancelled' ||
           matchedAppt?.status === 'cancelled_by_user' ||
           matchedAppt?.status === 'cancelled_by_doctor';
+        let isNoShow = false;
+        const consultationId =
+          p.consultation_id ||
+          p.appointment_id ||
+          matchedAppt?.id ||
+          matchedAppt?.appointment_id ||
+          matchedAppt?.document_id ||
+          'N/A';
 
         if (matchedAppt) {
           if (matchedAppt.time) {
@@ -733,14 +741,11 @@ export default function UserRefundsPage() {
               </button>
             </div>
 
-            {/* Read-Only Refund Amount Card */}
+            {/* Refund Amount Card */}
             <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-[#E7E2D9] space-y-2">
-              <div className="flex items-center justify-between">
+              <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#8C827A]">
                   Refundable Amount
-                </span>
-                <span className="text-[10px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-bold">
-                  READ-ONLY
                 </span>
               </div>
               <p className="text-3xl font-extrabold text-[#C8996A]">

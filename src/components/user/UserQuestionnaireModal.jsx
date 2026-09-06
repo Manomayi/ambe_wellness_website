@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { doc, writeBatch, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
@@ -238,38 +238,58 @@ export default function UserQuestionnaireModal({ onComplete }) {
   const [selectedHealthField, setSelectedHealthField] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
+  const timerRef = useRef(null);
 
-  const totalQuestions = DOSHA_QUESTIONS.length;
-  const currentQ = DOSHA_QUESTIONS[currentPage];
-  const isLastQuestion = currentPage === totalQuestions - 1;
+  // Clean up auto-advance timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const totalQuestions = DOSHA_QUESTIONS?.length || 49;
+  const safeCurrentPage = Math.max(0, Math.min(Number(currentPage) || 0, totalQuestions - 1));
+  const currentQ = (DOSHA_QUESTIONS && DOSHA_QUESTIONS[safeCurrentPage]) || DOSHA_QUESTIONS[0] || { question: "Loading question...", options: [] };
+  const isLastQuestion = safeCurrentPage === totalQuestions - 1;
 
   // Handle Option Select
   const handleSelectOption = (optionIndex, optionData = null) => {
     const updated = [...selectedAnswers];
-    updated[currentPage] = optionIndex;
+    updated[safeCurrentPage] = optionIndex;
     setSelectedAnswers(updated);
 
     if (isLastQuestion && optionData) {
       setSelectedHealthField(optionData.key);
     }
 
-    // Auto-advance if not last question
-    if (currentPage < totalQuestions - 1) {
-      setTimeout(() => {
-        setCurrentPage((p) => p + 1);
+    // Auto-advance if not last question, clearing any pending timeout
+    if (safeCurrentPage < totalQuestions - 1) {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      timerRef.current = setTimeout(() => {
+        setCurrentPage((p) => Math.min(totalQuestions - 1, p + 1));
       }, 180);
     }
   };
 
   const handleNext = () => {
-    if (currentPage < totalQuestions - 1) {
-      setCurrentPage((p) => p + 1);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    if (safeCurrentPage < totalQuestions - 1) {
+      setCurrentPage((p) => Math.min(totalQuestions - 1, p + 1));
     }
   };
 
   const handleBack = () => {
-    if (currentPage > 0) {
-      setCurrentPage((p) => p - 1);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    if (safeCurrentPage > 0) {
+      setCurrentPage((p) => Math.max(0, p - 1));
     }
   };
 
@@ -358,6 +378,9 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
       if (onComplete) {
         onComplete();
+      } else {
+        router.push("/user/home");
+        window.location.reload();
       }
     } catch (err) {
       console.error("Error saving questionnaire:", err);
@@ -398,13 +421,13 @@ export default function UserQuestionnaireModal({ onComplete }) {
         {/* Progress bar */}
         <div className="mb-6">
           <div className="flex justify-between items-center text-xs font-medium text-[#6B6862] mb-2 uppercase tracking-wider">
-            <span>Question {currentPage + 1} of {totalQuestions}</span>
-            <span>{Math.round(((currentPage + 1) / totalQuestions) * 100)}%</span>
+            <span>Question {safeCurrentPage + 1} of {totalQuestions}</span>
+            <span>{Math.round(((safeCurrentPage + 1) / totalQuestions) * 100)}%</span>
           </div>
           <div className="w-full h-1.5 bg-[#E7E2D9] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#C2691C] transition-all duration-300 rounded-full"
-              style={{ width: `${((currentPage + 1) / totalQuestions) * 100}%` }}
+              style={{ width: `${((safeCurrentPage + 1) / totalQuestions) * 100}%` }}
             />
           </div>
         </div>
@@ -419,7 +442,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
               className="text-2xl sm:text-3xl font-medium text-[#1A1A1A]"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              {currentQ.question}
+              {currentQ?.question || "Assessment Question"}
             </h2>
           </div>
 
@@ -428,8 +451,8 @@ export default function UserQuestionnaireModal({ onComplete }) {
             {isLastQuestion ? (
               // Question 49: Health Fields grid
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {currentQ.options.map((opt, i) => {
-                  const isSelected = selectedAnswers[currentPage] === i;
+                {(currentQ?.options || []).map((opt, i) => {
+                  const isSelected = selectedAnswers[safeCurrentPage] === i;
                   return (
                     <button
                       key={opt.key}
@@ -449,8 +472,8 @@ export default function UserQuestionnaireModal({ onComplete }) {
               </div>
             ) : (
               // Standard 3 Dosha options
-              currentQ.options.map((opt, i) => {
-                const isSelected = selectedAnswers[currentPage] === i;
+              (currentQ?.options || []).map((opt, i) => {
+                const isSelected = selectedAnswers[safeCurrentPage] === i;
                 return (
                   <button
                     key={i}
@@ -472,7 +495,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
           {/* Navigation */}
           <div className="flex justify-between items-center pt-4 border-t border-[#F4F1EA]">
-            {currentPage > 0 ? (
+            {safeCurrentPage > 0 ? (
               <button
                 type="button"
                 onClick={handleBack}
@@ -489,7 +512,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
               <button
                 type="button"
                 onClick={() => saveAndComplete(false)}
-                disabled={isSaving || selectedAnswers[currentPage] === null}
+                disabled={isSaving || selectedAnswers[safeCurrentPage] === null}
                 className="flex items-center px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSaving ? "Submitting..." : "Complete Assessment"}
@@ -498,7 +521,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
               <button
                 type="button"
                 onClick={handleNext}
-                disabled={selectedAnswers[currentPage] === null}
+                disabled={selectedAnswers[safeCurrentPage] === null}
                 className="flex items-center px-7 py-3 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 Next
