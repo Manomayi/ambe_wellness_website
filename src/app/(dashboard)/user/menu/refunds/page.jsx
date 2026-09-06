@@ -33,6 +33,48 @@ import {
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 
+function formatConsultationDate(dateVal) {
+  if (!dateVal) return null;
+  if (dateVal instanceof Date && !isNaN(dateVal.getTime())) {
+    return dateVal.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+  if (typeof dateVal === 'string') {
+    const d = new Date(dateVal);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    }
+    return dateVal;
+  }
+  return String(dateVal);
+}
+
+function parseDate(val) {
+  if (!val) return null;
+  if (val instanceof Date && !isNaN(val.getTime())) return val;
+  if (typeof val.toDate === 'function') return val.toDate();
+  if (val.seconds) return new Date(val.seconds * 1000);
+  if (typeof val === 'number') {
+    return new Date(val > 100000000000 ? val : val * 1000);
+  }
+  if (typeof val === 'string') {
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
 export default function UserRefundsPage() {
   const router = useRouter();
   const fileInputRef = useRef(null);
@@ -121,6 +163,8 @@ export default function UserRefundsPage() {
       }
     });
 
+    const claimedAppointmentIds = new Set();
+
     const now = new Date();
     let totalCount = 0;
     let paidCount = 0;
@@ -128,6 +172,16 @@ export default function UserRefundsPage() {
     let completedCount = historyAppts.length;
     let upcomingCount = upcomingAppts.length;
     let noShowCount = 0;
+
+    const parseDate = (val) => {
+      if (!val) return null;
+      if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+      if (val.toDate) return val.toDate();
+      if (typeof val === 'number') return new Date(val > 100000000000 ? val : val * 1000);
+      if (val.seconds) return new Date(val.seconds * 1000);
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
 
     const items = [];
 
@@ -148,85 +202,104 @@ export default function UserRefundsPage() {
         }
 
         // Payment date
-        let paymentDate = now;
-        if (p.created) {
-          if (p.created.toDate) paymentDate = p.created.toDate();
-          else if (typeof p.created === 'number') {
-            paymentDate = new Date(
-              p.created > 100000000000 ? p.created : p.created * 1000
-            );
-          } else {
-            paymentDate = new Date(p.created);
-          }
-        }
+        let paymentDate = parseDate(p.created) || now;
 
         const rawAmount = p.amount ?? 50.0;
         let depositAmount = Number(rawAmount) || 50.0;
         if (depositAmount > 500) depositAmount = depositAmount / 100.0;
 
-        // Match appointment
-        let matchedAppt =
-          upcomingAppts.find(
-            (a) => a.id === p.consultation_id || a.payment_id === paymentId || a.appointment_id === p.consultation_id || a.appointment_id === paymentId
-          ) ||
-          historyAppts.find(
-            (a) =>
-              a.id === p.consultation_id ||
-              a.document_id === p.consultation_id ||
-              a.payment_id === paymentId ||
-              a.appointment_id === p.consultation_id ||
-              a.appointment_id === paymentId
-          );
+        // 1. Try matching with upcoming appointments by ID
+        let matchedAppt = null;
+        let consultationStatus = 'upcoming';
 
-        let apptTime = null;
-        if (p.appointment_time) {
-          if (p.appointment_time.toDate) apptTime = p.appointment_time.toDate();
-          else if (typeof p.appointment_time === 'number') {
-            apptTime = new Date(p.appointment_time > 100000000000 ? p.appointment_time : p.appointment_time * 1000);
-          } else {
-            apptTime = new Date(p.appointment_time);
+        for (const a of upcomingAppts) {
+          const apptId = a.id || a.appointment_id || '';
+          if (apptId && claimedAppointmentIds.has(apptId)) continue;
+          if (
+            a.payment_id === paymentId ||
+            (p.consultation_id && (a.id === p.consultation_id || a.appointment_id === p.consultation_id)) ||
+            a.appointment_id === paymentId
+          ) {
+            matchedAppt = a;
+            consultationStatus = 'upcoming';
+            if (apptId) claimedAppointmentIds.add(apptId);
+            break;
           }
         }
 
-        if (!matchedAppt && upcomingAppts.length > 0) {
-          // Closest upcoming appointment to paymentDate
-          let closestUpcoming = null;
-          let minDiff = null;
-          for (const a of upcomingAppts) {
-            const t = a.time?.toDate ? a.time.toDate() : (a.time?.seconds ? new Date(a.time.seconds * 1000) : null);
-            if (t) {
-              const diff = Math.abs(t.getTime() - paymentDate.getTime());
-              if (minDiff === null || diff < minDiff) {
-                minDiff = diff;
-                closestUpcoming = a;
-              }
-            }
-          }
-          matchedAppt = closestUpcoming || upcomingAppts[0];
-        } else if (!matchedAppt && historyAppts.length > 0) {
-          // Closest history appointment
-          let closestHistory = null;
-          let minDiff = null;
-          const targetTime = apptTime || paymentDate;
+        // Try matching with history appointments by ID
+        if (!matchedAppt) {
           for (const a of historyAppts) {
-            const t = a.time?.toDate ? a.time.toDate() : (a.time?.seconds ? new Date(a.time.seconds * 1000) : null);
-            if (t) {
-              const diff = Math.abs(t.getTime() - targetTime.getTime());
-              if (minDiff === null || diff < minDiff) {
-                minDiff = diff;
-                closestHistory = a;
+            const apptId = a.id || a.appointment_id || a.document_id || '';
+            if (apptId && claimedAppointmentIds.has(apptId)) continue;
+            if (
+              a.payment_id === paymentId ||
+              (p.consultation_id && (a.id === p.consultation_id || a.document_id === p.consultation_id || a.appointment_id === p.consultation_id)) ||
+              a.appointment_id === paymentId
+            ) {
+              matchedAppt = a;
+              const rawSt = (a.status || '').toString().toLowerCase();
+              consultationStatus = rawSt || 'completed';
+              if (apptId) claimedAppointmentIds.add(apptId);
+              break;
+            }
+          }
+        }
+
+        // 2. Direct appointment time from purchase
+        let apptTime = parseDate(p.appointment_time || p.appointmentTime || p.consultation_time);
+
+        // Proximity matching for unlinked appointments (check upcoming, then history)
+        if (!matchedAppt && apptTime) {
+          for (const a of upcomingAppts) {
+            const apptId = a.id || a.appointment_id || '';
+            if (apptId && claimedAppointmentIds.has(apptId)) continue;
+            const t = parseDate(a.time || a.appointment_time || a.appointmentTime);
+            if (t && Math.abs(t.getTime() - apptTime.getTime()) < 15 * 60 * 1000) {
+              matchedAppt = a;
+              consultationStatus = 'upcoming';
+              if (apptId) claimedAppointmentIds.add(apptId);
+              break;
+            }
+          }
+
+          if (!matchedAppt) {
+            for (const a of historyAppts) {
+              const apptId = a.id || a.appointment_id || a.document_id || '';
+              if (apptId && claimedAppointmentIds.has(apptId)) continue;
+              const t = parseDate(a.time || a.appointment_time || a.appointmentTime);
+              if (t && Math.abs(t.getTime() - apptTime.getTime()) < 30 * 60 * 1000) {
+                matchedAppt = a;
+                const rawSt = (a.status || '').toString().toLowerCase();
+                consultationStatus = rawSt || 'completed';
+                if (apptId) claimedAppointmentIds.add(apptId);
+                break;
               }
             }
           }
-          matchedAppt = closestHistory;
         }
 
-        let doctorName = 'Assigned Doctor';
-        let isCancelled =
-          matchedAppt?.status === 'cancelled' ||
-          matchedAppt?.status === 'cancelled_by_user' ||
-          matchedAppt?.status === 'cancelled_by_doctor';
-        let isNoShow = false;
+        // Fallback: If still unmatched, and user has 0 upcoming appointments, match with any unclaimed appointment in history on same day
+        if (!matchedAppt && upcomingAppts.length === 0 && apptTime) {
+          for (const a of historyAppts) {
+            const apptId = a.id || a.appointment_id || a.document_id || '';
+            if (apptId && claimedAppointmentIds.has(apptId)) continue;
+            const t = parseDate(a.time || a.appointment_time || a.appointmentTime);
+            if (
+              t &&
+              t.getFullYear() === apptTime.getFullYear() &&
+              t.getMonth() === apptTime.getMonth() &&
+              t.getDate() === apptTime.getDate()
+            ) {
+              matchedAppt = a;
+              const rawSt = (a.status || '').toString().toLowerCase();
+              consultationStatus = rawSt || 'completed';
+              if (apptId) claimedAppointmentIds.add(apptId);
+              break;
+            }
+          }
+        }
+
         const consultationId =
           p.consultation_id ||
           p.appointment_id ||
@@ -235,36 +308,125 @@ export default function UserRefundsPage() {
           matchedAppt?.document_id ||
           'N/A';
 
-        if (matchedAppt) {
-          if (matchedAppt.time) {
-            apptTime = matchedAppt.time.toDate
-              ? matchedAppt.time.toDate()
-              : new Date(matchedAppt.time.seconds * 1000);
-          }
-          if (matchedAppt.doctor_name) {
-            doctorName = matchedAppt.doctor_name.startsWith('Dr.')
-              ? matchedAppt.doctor_name
-              : `Dr. ${matchedAppt.doctor_name}`;
-          }
+        const activeRefund =
+          refundsByPaymentId[paymentId] || refundsByConsultationId[consultationId];
 
-          if (
-            apptTime &&
-            (apptTime.getTime() + 60 * 60 * 1000) <= now.getTime() &&
-            matchedAppt.user_joined !== true &&
-            !isCancelled
-          ) {
-            isNoShow = true;
-            noShowCount++;
+        if (matchedAppt) {
+          const parsed = parseDate(matchedAppt.time || matchedAppt.appointment_time || matchedAppt.appointmentTime);
+          if (parsed) apptTime = parsed;
+        }
+
+        // If apptTime is still null, attempt to parse from activeRefund.consultationDate
+        if (!apptTime && activeRefund?.consultationDate) {
+          const parsed = parseDate(activeRefund.consultationDate);
+          if (parsed) apptTime = parsed;
+        }
+
+        let doctorName = 'Assigned Doctor';
+        if (matchedAppt?.doctor_name) {
+          doctorName = matchedAppt.doctor_name.trim();
+        } else if (activeRefund?.doctorName) {
+          doctorName = activeRefund.doctorName.trim();
+        } else if (p.doctor_name) {
+          doctorName = p.doctor_name.trim();
+        } else if (p.description && p.description.includes('Consultation Deposit - ')) {
+          doctorName = p.description.replace('Consultation Deposit - ', '').trim();
+        }
+        if (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')) {
+          doctorName = `Dr. ${doctorName}`;
+        }
+
+        // Attendance & call details
+        const userJoined = matchedAppt?.user_joined === true || activeRefund?.userJoined === true;
+        const userJoinedAt = parseDate(matchedAppt?.user_joined_at || activeRefund?.userJoinedAt);
+        const doctorJoined = matchedAppt?.doctor_joined === true || activeRefund?.doctorJoined === true;
+        const doctorJoinedAt = parseDate(matchedAppt?.doctor_joined_at || activeRefund?.doctorJoinedAt);
+        const callEndedAt = parseDate(matchedAppt?.call_ended_at || activeRefund?.callEndedAt);
+        const callEndedBy = matchedAppt?.call_ended_by || activeRefund?.callEndedBy || null;
+
+        let callDuration = activeRefund?.callDuration || null;
+        if (!callDuration && userJoined && doctorJoined && userJoinedAt && doctorJoinedAt) {
+          const uMs = userJoinedAt.getTime();
+          const dMs = doctorJoinedAt.getTime();
+          const startMs = Math.max(uMs, dMs);
+          let endMs = Date.now();
+          if (callEndedAt) {
+            endMs = callEndedAt.getTime();
+          }
+          const diffSec = Math.max(0, Math.floor((endMs - startMs) / 1000));
+          if (diffSec < 60) {
+            callDuration = `${diffSec} sec`;
+          } else {
+            const mins = Math.floor(diffSec / 60);
+            const remSec = diffSec % 60;
+            callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
           }
         }
 
-        if (doctorName === 'Assigned Doctor') {
-          if (p.doctor_name) {
-            doctorName = p.doctor_name.startsWith('Dr.') ? p.doctor_name : `Dr. ${p.doctor_name}`;
-          } else if (p.description && p.description.includes('Consultation Deposit - ')) {
-            const rawDoc = p.description.replace('Consultation Deposit - ', '').trim();
-            doctorName = rawDoc.startsWith('Dr.') ? rawDoc : `Dr. ${rawDoc}`;
+        // Cancellation and refund advance checks
+        const refundSubmittedAt = parseDate(activeRefund?.submittedAt);
+        const refundRequestedInAdvance =
+          refundSubmittedAt && apptTime && refundSubmittedAt.getTime() < apptTime.getTime();
+
+        const apptStatus = (matchedAppt?.status || '').toString().toLowerCase();
+        const wasCancelledByDoctor =
+          apptStatus === 'cancelled_by_doctor' ||
+          apptStatus === 'cancelled_doctor_deleted' ||
+          apptStatus === 'cancelled_by_admin';
+        const wasCancelledByUser =
+          apptStatus === 'cancelled_by_user' ||
+          apptStatus === 'cancelled';
+        const wasCancelled = wasCancelledByDoctor || wasCancelledByUser;
+
+        const cancelledAt = parseDate(
+          matchedAppt?.cancelled_at ||
+          matchedAppt?.cancelledAt ||
+          matchedAppt?.canceled_at ||
+          matchedAppt?.canceledAt
+        );
+
+        // Check if appointment was cancelled in advance:
+        // - Scenario 2 & 3: Cancelled by doctor/admin -> 100% full refund
+        // - Scenario 1: Cancelled by user before scheduled appointment start time -> 100% full refund
+        // - Cancelled after start time: NOT cancelled in advance -> 50% refund for missed consultation
+        let isCancelledInAdvance = false;
+        if (wasCancelledByDoctor) {
+          isCancelledInAdvance = true;
+        } else if (wasCancelledByUser) {
+          if (cancelledAt && apptTime) {
+            isCancelledInAdvance = cancelledAt.getTime() < apptTime.getTime();
+          } else if (!cancelledAt && apptTime) {
+            isCancelledInAdvance = now.getTime() < apptTime.getTime();
           }
+        }
+
+        // Consultation window passed (15 mins after scheduled start time)
+        const consultationWindowPassed =
+          apptTime && (apptTime.getTime() + 15 * 60 * 1000) <= now.getTime();
+
+        let isNoShow = false;
+        if (
+          consultationWindowPassed &&
+          !userJoined &&
+          !isCancelledInAdvance &&
+          !refundRequestedInAdvance
+        ) {
+          isNoShow = true;
+          consultationStatus = 'no_show';
+        }
+
+        // If a refund request has already been created, its stored values are authoritative!
+        if (activeRefund) {
+          if (typeof activeRefund.isNoShow === 'boolean') {
+            isNoShow = activeRefund.isNoShow;
+          }
+          if (isNoShow) {
+            consultationStatus = 'no_show';
+          }
+        }
+
+        if (isNoShow) {
+          noShowCount++;
         }
 
         // 30-day calculation
@@ -277,40 +439,27 @@ export default function UserRefundsPage() {
         );
 
         let calculatedRefund = 50.0;
-        let policyText = 'Full deposit refund eligible.';
+        let policyText = isCancelledInAdvance
+          ? (wasCancelledByDoctor
+              ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
+              : 'Full deposit refund eligible (Appointment was cancelled).')
+          : (refundRequestedInAdvance
+              ? 'Full deposit refund eligible (Refund requested in advance).'
+              : 'Full deposit refund eligible.');
 
-        if (isNoShow) {
+        if (activeRefund) {
+          if (typeof activeRefund.refundableAmount === 'number') {
+            calculatedRefund = activeRefund.refundableAmount;
+          }
+          if (activeRefund.refundPolicy) {
+            policyText = activeRefund.refundPolicy.replace(
+              'because the consultation was not joined.',
+              'because the consultation was missed.'
+            );
+          }
+        } else if (isNoShow) {
           calculatedRefund = 25.0;
-          policyText = '50% refund because the consultation was not joined.';
-        }
-
-        const activeRefund =
-          refundsByPaymentId[paymentId] || refundsByConsultationId[consultationId];
-
-        const userJoined = matchedAppt?.user_joined === true || activeRefund?.userJoined === true;
-        const userJoinedAt = matchedAppt?.user_joined_at || activeRefund?.userJoinedAt || null;
-        const doctorJoined = matchedAppt?.doctor_joined === true || activeRefund?.doctorJoined === true;
-        const doctorJoinedAt = matchedAppt?.doctor_joined_at || activeRefund?.doctorJoinedAt || null;
-        const callEndedAt = matchedAppt?.call_ended_at || activeRefund?.callEndedAt || null;
-        const callEndedBy = matchedAppt?.call_ended_by || activeRefund?.callEndedBy || null;
-
-        let callDuration = activeRefund?.callDuration || null;
-        if (!callDuration && userJoined && doctorJoined && userJoinedAt && doctorJoinedAt) {
-          const uMs = userJoinedAt.seconds ? userJoinedAt.seconds * 1000 : (userJoinedAt.toDate ? userJoinedAt.toDate().getTime() : new Date(userJoinedAt).getTime());
-          const dMs = doctorJoinedAt.seconds ? doctorJoinedAt.seconds * 1000 : (doctorJoinedAt.toDate ? doctorJoinedAt.toDate().getTime() : new Date(doctorJoinedAt).getTime());
-          const startMs = Math.max(uMs, dMs);
-          let endMs = Date.now();
-          if (callEndedAt) {
-            endMs = callEndedAt.seconds ? callEndedAt.seconds * 1000 : (callEndedAt.toDate ? callEndedAt.toDate().getTime() : new Date(callEndedAt).getTime());
-          }
-          const diffSec = Math.max(0, Math.floor((endMs - startMs) / 1000));
-          if (diffSec < 60) {
-            callDuration = `${diffSec} sec`;
-          } else {
-            const mins = Math.floor(diffSec / 60);
-            const remSec = diffSec % 60;
-            callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
-          }
+          policyText = '50% refund because the consultation was missed.';
         }
 
         items.push({
@@ -321,7 +470,9 @@ export default function UserRefundsPage() {
           paymentDate,
           depositAmount,
           paymentStatus: status,
+          consultationStatus,
           isNoShow,
+          isCancelled: isCancelledInAdvance,
           isWithin30Days,
           daysRemaining,
           deadline,
@@ -411,11 +562,13 @@ export default function UserRefundsPage() {
 
       // 2. Submit via Cloud Function
       const consultationDateStr = selectedItem.consultationDate
-        ? selectedItem.consultationDate.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })
+        ? (selectedItem.consultationDate instanceof Date
+            ? selectedItem.consultationDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : String(selectedItem.consultationDate))
         : 'N/A';
 
       try {
@@ -537,7 +690,7 @@ export default function UserRefundsPage() {
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#8C827A] mb-3">
           Consultation & Payment Summary
         </h3>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
           <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
             <p className="text-xl font-bold text-[#1A1A1A]">{stats.total}</p>
             <p className="text-[11px] font-medium text-[#6B6862]">Total</p>
@@ -556,11 +709,7 @@ export default function UserRefundsPage() {
           </div>
           <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
             <p className="text-xl font-bold text-amber-600">{stats.noShow}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">No-Show</p>
-          </div>
-          <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
-            <p className="text-xl font-bold text-red-600">{stats.unpaid}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">Unpaid</p>
+            <p className="text-[11px] font-medium text-[#6B6862]">Missed</p>
           </div>
         </div>
       </div>
@@ -610,13 +759,7 @@ export default function UserRefundsPage() {
                   {item.consultationDate && (
                     <p>
                       <span className="text-[#8C827A] font-medium">Consultation Date:</span>{' '}
-                      {item.consultationDate.toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
+                      {formatConsultationDate(item.consultationDate)}
                     </p>
                   )}
                   <p>
@@ -647,7 +790,7 @@ export default function UserRefundsPage() {
                   ) : item.isNoShow ? (
                     <p className="text-amber-700 font-medium sm:col-span-2">
                       <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
-                      Patient Missed Call (No-Show)
+                      Missed
                     </p>
                   ) : null}
                 </div>
@@ -763,6 +906,12 @@ export default function UserRefundsPage() {
                 <span className="font-semibold text-gray-700">Doctor:</span>{' '}
                 {selectedItem.doctorName}
               </p>
+              {selectedItem.consultationDate && (
+                <p>
+                  <span className="font-semibold text-gray-700">Consultation Date:</span>{' '}
+                  {formatConsultationDate(selectedItem.consultationDate)}
+                </p>
+              )}
               <p>
                 <span className="font-semibold text-gray-700">Deposit Paid:</span> $
                 {selectedItem.depositAmount.toFixed(2)}
