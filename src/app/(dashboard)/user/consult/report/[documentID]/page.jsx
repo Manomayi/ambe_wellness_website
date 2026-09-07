@@ -18,8 +18,11 @@ import {
   SparklesIcon,
   ClockIcon,
   QuestionMarkCircleIcon,
-  ArrowTopRightOnSquareIcon
+  ArrowTopRightOnSquareIcon,
+  XCircleIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import { getConsultationStatusInfo } from '@/lib/consultationStatus';
 
 export default function ConsultationReportPage() {
   const router = useRouter();
@@ -167,6 +170,8 @@ export default function ConsultationReportPage() {
     Boolean(notes) ||
     Boolean(referral);
 
+  const statusInfo = getConsultationStatusInfo(data);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <BackButton label="Back to Consultations" href="/user/consult" />
@@ -176,16 +181,26 @@ export default function ConsultationReportPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#2E7D32]/10 text-[#2E7D32]">
-                <CheckCircleIcon className="w-4 h-4" />
-                Completed Consultation
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusInfo.badgeClass}`}>
+                <span className={`w-2 h-2 rounded-full ${statusInfo.dotClass}`} />
+                {statusInfo.label}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A]">
-              Consultation Report
+              {statusInfo.isCancelled
+                ? 'Cancelled Consultation'
+                : statusInfo.isMissed
+                ? (statusInfo.statusKey === 'doctor_absent' ? 'Doctor Absent' : 'Missed Consultation')
+                : 'Consultation Report'}
             </h1>
             <p className="text-sm text-[#6B6862] mt-1">
-              Personalized wellness protocol and treatment guidance.
+              {statusInfo.isCancelled
+                ? 'This scheduled consultation was cancelled.'
+                : statusInfo.isMissed
+                ? (statusInfo.statusKey === 'doctor_absent'
+                    ? 'The assigned doctor was absent for the scheduled video session.'
+                    : 'This scheduled video consultation was not attended.')
+                : 'Personalized wellness protocol and treatment guidance.'}
             </p>
           </div>
 
@@ -204,8 +219,68 @@ export default function ConsultationReportPage() {
         </div>
       </div>
 
-      {/* If doctor hasn't submitted details yet */}
-      {!hasReportContent && (
+      {/* Cancelled Consultation View */}
+      {statusInfo.isCancelled && (
+        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 sm:p-12 text-center shadow-sm">
+          <XCircleIcon className="h-16 w-16 text-red-500/80 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">Consultation Cancelled</h2>
+          <p className="text-sm text-[#6B6862] max-w-lg mx-auto mb-6 leading-relaxed">
+            {statusInfo.statusKey === 'cancelled_by_doctor'
+              ? 'This consultation was cancelled by the healthcare provider. You are eligible for a 100% full refund on your deposit or you may schedule a new consultation with another doctor.'
+              : 'This consultation was cancelled by you. No clinical report or wellness protocol is generated for cancelled consultations. If eligible under our cancellation policy, you can view and claim your deposit refund in the Refunds section.'}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/user/menu/refunds"
+              className="inline-flex items-center gap-2 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-5 py-2.5 rounded-full text-xs font-semibold transition"
+            >
+              <InformationCircleIcon className="w-4 h-4" />
+              View Refund Status
+            </Link>
+            <Link
+              href="/user/consult/schedule"
+              className="inline-flex items-center gap-2 bg-[#FAF8F5] border border-[#E7E2D9] hover:border-[#C8996A] px-5 py-2.5 rounded-full text-xs font-semibold text-[#1A1A1A] transition"
+            >
+              <CalendarDaysIcon className="w-4 h-4 text-[#C8996A]" />
+              Book New Consultation
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Missed Consultation View */}
+      {statusInfo.isMissed && (
+        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 sm:p-12 text-center shadow-sm">
+          <ClockIcon className="h-16 w-16 text-amber-600/80 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">
+            {statusInfo.statusKey === 'doctor_absent' ? 'Doctor Absent' : 'Missed Consultation'}
+          </h2>
+          <p className="text-sm text-[#6B6862] max-w-lg mx-auto mb-6 leading-relaxed">
+            {statusInfo.statusKey === 'doctor_absent'
+              ? 'Your assigned doctor was unable to attend the scheduled video consultation. Under our policy, you are entitled to a 100% full refund of your deposit, or you can reschedule at your convenience.'
+              : 'This video consultation was missed because the session was not attended. As per our missed consultation policy, no personalized wellness protocol is generated, and you are eligible for a 50% deposit refund ($25.00 USD).'}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/user/menu/refunds"
+              className="inline-flex items-center gap-2 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-5 py-2.5 rounded-full text-xs font-semibold transition"
+            >
+              <InformationCircleIcon className="w-4 h-4" />
+              Claim 50% Refund
+            </Link>
+            <Link
+              href="/user/consult/schedule"
+              className="inline-flex items-center gap-2 bg-[#FAF8F5] border border-[#E7E2D9] hover:border-[#C8996A] px-5 py-2.5 rounded-full text-xs font-semibold text-[#1A1A1A] transition"
+            >
+              <CalendarDaysIcon className="w-4 h-4 text-[#C8996A]" />
+              Schedule Consultation
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* If completed but doctor hasn't submitted details yet */}
+      {statusInfo.isCompleted && !hasReportContent && (
         <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 sm:p-12 text-center shadow-sm">
           <ClockIcon className="h-16 w-16 text-[#C8996A] mx-auto mb-4 animate-pulse" />
           <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">Report Pending</h2>

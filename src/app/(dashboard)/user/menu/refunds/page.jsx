@@ -183,7 +183,7 @@ export default function UserRefundsPage() {
       return isNaN(d.getTime()) ? null : d;
     };
 
-    const items = [];
+    const candidates = [];
 
     purchases.forEach((p) => {
       const type = (p.type || '').toLowerCase();
@@ -192,14 +192,8 @@ export default function UserRefundsPage() {
         type === 'consultation_deposit' ||
         type === 'deposit'
       ) {
-        totalCount++;
         const paymentId = p.id;
         const status = (p.status || 'succeeded').toLowerCase();
-        if (status === 'succeeded' || status === 'paid') {
-          paidCount++;
-        } else {
-          unpaidCount++;
-        }
 
         // Payment date
         let paymentDate = parseDate(p.created) || now;
@@ -217,11 +211,14 @@ export default function UserRefundsPage() {
           if (apptId && claimedAppointmentIds.has(apptId)) continue;
           if (
             a.payment_id === paymentId ||
-            (p.consultation_id && (a.id === p.consultation_id || a.appointment_id === p.consultation_id)) ||
-            a.appointment_id === paymentId
+            a.payment_intent_id === paymentId ||
+            (p.consultation_id && (a.id === p.consultation_id || a.appointment_id === p.consultation_id || a.original_appointment_id === p.consultation_id)) ||
+            a.appointment_id === paymentId ||
+            a.id === paymentId
           ) {
             matchedAppt = a;
-            consultationStatus = 'upcoming';
+            const rawSt = (a.status || '').toString().toLowerCase();
+            consultationStatus = rawSt || 'upcoming';
             if (apptId) claimedAppointmentIds.add(apptId);
             break;
           }
@@ -234,8 +231,10 @@ export default function UserRefundsPage() {
             if (apptId && claimedAppointmentIds.has(apptId)) continue;
             if (
               a.payment_id === paymentId ||
-              (p.consultation_id && (a.id === p.consultation_id || a.document_id === p.consultation_id || a.appointment_id === p.consultation_id)) ||
-              a.appointment_id === paymentId
+              a.payment_intent_id === paymentId ||
+              (p.consultation_id && (a.id === p.consultation_id || a.document_id === p.consultation_id || a.appointment_id === p.consultation_id || a.original_appointment_id === p.consultation_id)) ||
+              a.appointment_id === paymentId ||
+              a.id === paymentId
             ) {
               matchedAppt = a;
               const rawSt = (a.status || '').toString().toLowerCase();
@@ -257,7 +256,8 @@ export default function UserRefundsPage() {
             const t = parseDate(a.time || a.appointment_time || a.appointmentTime);
             if (t && Math.abs(t.getTime() - apptTime.getTime()) < 15 * 60 * 1000) {
               matchedAppt = a;
-              consultationStatus = 'upcoming';
+              const rawSt = (a.status || '').toString().toLowerCase();
+              consultationStatus = rawSt || 'upcoming';
               if (apptId) claimedAppointmentIds.add(apptId);
               break;
             }
@@ -301,6 +301,7 @@ export default function UserRefundsPage() {
         }
 
         const consultationId =
+          matchedAppt?.original_appointment_id ||
           p.consultation_id ||
           p.appointment_id ||
           matchedAppt?.id ||
@@ -308,8 +309,38 @@ export default function UserRefundsPage() {
           matchedAppt?.document_id ||
           'N/A';
 
-        const activeRefund =
-          refundsByPaymentId[paymentId] || refundsByConsultationId[consultationId];
+        const candidateConsultationIds = [
+          consultationId,
+          paymentId,
+          p.payment_intent_id,
+          p.consultation_id,
+          p.appointment_id,
+          matchedAppt?.id,
+          matchedAppt?.appointment_id,
+          matchedAppt?.original_appointment_id,
+          matchedAppt?.document_id,
+        ].filter((id) => Boolean(id) && id !== 'N/A');
+
+        let activeRefund = null;
+        for (const cid of candidateConsultationIds) {
+          if (refundsByConsultationId[cid]) {
+            activeRefund = refundsByConsultationId[cid];
+            break;
+          }
+        }
+
+        if (!activeRefund && refundsByPaymentId[paymentId]) {
+          const cand = refundsByPaymentId[paymentId];
+          if (
+            !cand.consultationId ||
+            cand.consultationId === 'N/A' ||
+            cand.consultationId === paymentId ||
+            (p.payment_intent_id && cand.consultationId === p.payment_intent_id) ||
+            candidateConsultationIds.includes(cand.consultationId)
+          ) {
+            activeRefund = cand;
+          }
+        }
 
         if (matchedAppt) {
           const parsed = parseDate(matchedAppt.time || matchedAppt.appointment_time || matchedAppt.appointmentTime);
@@ -323,37 +354,205 @@ export default function UserRefundsPage() {
         }
 
         let doctorName = 'Assigned Doctor';
-        if (matchedAppt?.doctor_name) {
+        if (matchedAppt?.doctor_name && !matchedAppt.doctor_name.includes('Pending Assignment')) {
           doctorName = matchedAppt.doctor_name.trim();
-        } else if (activeRefund?.doctorName) {
-          doctorName = activeRefund.doctorName.trim();
-        } else if (p.doctor_name) {
+        } else if (p.doctor_name && !p.doctor_name.includes('Pending Assignment')) {
           doctorName = p.doctor_name.trim();
+        } else if (activeRefund?.doctorName && !activeRefund.doctorName.includes('Assigned Doctor')) {
+          doctorName = activeRefund.doctorName.trim();
         } else if (p.description && p.description.includes('Consultation Deposit - ')) {
-          doctorName = p.description.replace('Consultation Deposit - ', '').trim();
+          const extracted = p.description.replace('Consultation Deposit - ', '').trim();
+          if (!extracted.includes('Pending Assignment') && extracted !== 'Doctor' && extracted) {
+            doctorName = extracted;
+          }
         }
-        if (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')) {
+        if (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ') && doctorName !== 'Assigned Doctor') {
           doctorName = `Dr. ${doctorName}`;
         }
 
-        // Attendance & call details
-        const userJoined = matchedAppt?.user_joined === true || activeRefund?.userJoined === true;
-        const userJoinedAt = parseDate(matchedAppt?.user_joined_at || activeRefund?.userJoinedAt);
-        const doctorJoined = matchedAppt?.doctor_joined === true || activeRefund?.doctorJoined === true;
-        const doctorJoinedAt = parseDate(matchedAppt?.doctor_joined_at || activeRefund?.doctorJoinedAt);
-        const callEndedAt = parseDate(matchedAppt?.call_ended_at || activeRefund?.callEndedAt);
-        const callEndedBy = matchedAppt?.call_ended_by || activeRefund?.callEndedBy || null;
+        candidates.push({
+          paymentId,
+          p,
+          paymentDate,
+          depositAmount,
+          status,
+          matchedAppt,
+          apptTime,
+          doctorName,
+          consultationId,
+          consultationStatus,
+          activeRefund,
+          linkedStripePaymentIntentId: null,
+        });
+      }
+    });
 
-        let callDuration = activeRefund?.callDuration || null;
-        if (!callDuration && userJoined && doctorJoined && userJoinedAt && doctorJoinedAt) {
-          const uMs = userJoinedAt.getTime();
-          const dMs = doctorJoinedAt.getTime();
-          const startMs = Math.max(uMs, dMs);
-          let endMs = Date.now();
-          if (callEndedAt) {
-            endMs = callEndedAt.getTime();
+    // Deduplicate candidates representing the same consultation booking
+    const duplicateIndices = new Set();
+    for (let i = 0; i < candidates.length; i++) {
+      if (duplicateIndices.has(i)) continue;
+      const c1 = candidates[i];
+      const c1HasAppt = Boolean(c1.matchedAppt || c1.apptTime);
+
+      for (let j = i + 1; j < candidates.length; j++) {
+        if (duplicateIndices.has(j)) continue;
+        const c2 = candidates[j];
+        const c2HasAppt = Boolean(c2.matchedAppt || c2.apptTime);
+
+        let isDuplicate = false;
+        let keepIdx = i;
+        let dropIdx = j;
+
+        if (c1HasAppt !== c2HasAppt) {
+          const linked = c1HasAppt ? c1 : c2;
+          const orphan = c1HasAppt ? c2 : c1;
+          const linkedIdx = c1HasAppt ? i : j;
+          const orphanIdx = c1HasAppt ? j : i;
+
+          const linkedIntentId = linked.p?.payment_intent_id ? String(linked.p.payment_intent_id) : '';
+          const orphanIntentId = orphan.p?.payment_intent_id ? String(orphan.p.payment_intent_id) : '';
+
+          const intentMatches = (linkedIntentId && linkedIntentId === orphan.paymentId) ||
+            (orphanIntentId && orphanIntentId === linked.paymentId);
+
+          const timeDiffMinutes = Math.abs(linked.paymentDate.getTime() - orphan.paymentDate.getTime()) / (1000 * 60);
+          const isCloseTime = timeDiffMinutes <= 5;
+          const sameAmount = Math.abs(orphan.depositAmount - linked.depositAmount) < 0.01;
+          const isStripePair = orphan.paymentId.startsWith('pi_') && linked.paymentId.startsWith('deposit_');
+
+          if (intentMatches || (isStripePair && isCloseTime && sameAmount)) {
+            isDuplicate = true;
+            keepIdx = linkedIdx;
+            dropIdx = orphanIdx;
+
+            if (orphan.paymentId.startsWith('pi_')) {
+              candidates[linkedIdx].linkedStripePaymentIntentId = orphan.paymentId;
+            }
           }
-          const diffSec = Math.max(0, Math.floor((endMs - startMs) / 1000));
+        } else if (c1HasAppt && c2HasAppt) {
+          if (
+            (c1.consultationId && c1.consultationId !== 'N/A' && c1.consultationId === c2.consultationId) ||
+            (c1.matchedAppt && c2.matchedAppt && (c1.matchedAppt.id || c1.matchedAppt.appointment_id) === (c2.matchedAppt.id || c2.matchedAppt.appointment_id))
+          ) {
+            isDuplicate = true;
+            if (c2.paymentId.startsWith('pi_') && !c1.paymentId.startsWith('pi_')) {
+              keepIdx = j;
+              dropIdx = i;
+            } else {
+              keepIdx = i;
+              dropIdx = j;
+              if (c2.paymentId.startsWith('pi_')) {
+                candidates[i].linkedStripePaymentIntentId = c2.paymentId;
+              }
+            }
+          }
+        }
+
+        if (isDuplicate) {
+          duplicateIndices.add(dropIdx);
+        }
+      }
+    }
+
+    const items = [];
+    const claimedRefundRequestIds = new Set();
+
+    for (let i = 0; i < candidates.length; i++) {
+      if (duplicateIndices.has(i)) continue;
+      const c = candidates[i];
+
+      totalCount++;
+      const paymentId = c.linkedStripePaymentIntentId || c.paymentId;
+      const status = c.status;
+      if (status === 'succeeded' || status === 'paid') {
+        paidCount++;
+      } else {
+        unpaidCount++;
+      }
+
+      const paymentDate = c.paymentDate;
+      const depositAmount = c.depositAmount;
+      const matchedAppt = c.matchedAppt;
+      let apptTime = c.apptTime;
+      const doctorName = c.doctorName;
+      const consultationId = c.consultationId;
+      let consultationStatus = c.consultationStatus;
+
+      const candidatePaymentIds = [
+        paymentId,
+        c.paymentId,
+        c.linkedStripePaymentIntentId,
+        c.p?.payment_intent_id,
+        c.p?.id,
+      ].filter(Boolean);
+
+      const candidateConsultationIds = [
+        consultationId,
+        c.p?.consultation_id,
+        c.p?.appointment_id,
+        matchedAppt?.id,
+        matchedAppt?.appointment_id,
+        matchedAppt?.original_appointment_id,
+        matchedAppt?.document_id,
+      ].filter((id) => Boolean(id) && id !== 'N/A');
+
+      let activeRefund = null;
+
+      // 1. Priority A: Match by unique payment ID among unclaimed refund requests
+      for (const r of refundRequests) {
+        if (claimedRefundRequestIds.has(r.id)) continue;
+        const rPayId = r.paymentId || r.payment_id;
+        if (rPayId && candidatePaymentIds.includes(rPayId)) {
+          activeRefund = r;
+          claimedRefundRequestIds.add(r.id);
+          break;
+        }
+      }
+
+      // 2. Priority B: Match by consultation ID among unclaimed refund requests
+      if (!activeRefund) {
+        for (const r of refundRequests) {
+          if (claimedRefundRequestIds.has(r.id)) continue;
+          const rConsId = r.consultationId || r.consultation_id;
+          if (rConsId && rConsId !== 'N/A' && candidateConsultationIds.includes(rConsId)) {
+            activeRefund = r;
+            claimedRefundRequestIds.add(r.id);
+            break;
+          }
+        }
+      }
+
+      // Attendance & call details
+      const userJoined = matchedAppt?.user_joined === true || activeRefund?.userJoined === true;
+      const userJoinedAt = parseDate(matchedAppt?.user_joined_at || activeRefund?.userJoinedAt);
+      const doctorJoined = matchedAppt?.doctor_joined === true || activeRefund?.doctorJoined === true;
+      const doctorJoinedAt = parseDate(matchedAppt?.doctor_joined_at || activeRefund?.doctorJoinedAt);
+      const callEndedAt = parseDate(matchedAppt?.call_ended_at || activeRefund?.callEndedAt);
+      const callEndedBy = matchedAppt?.call_ended_by || activeRefund?.callEndedBy || null;
+
+      let callDuration = (activeRefund?.callDuration && activeRefund.callDuration !== '0 sec') ? activeRefund.callDuration : (matchedAppt?.call_duration && matchedAppt.call_duration !== '0 sec' ? matchedAppt.call_duration : null);
+
+      const durSec = Number(matchedAppt?.call_duration_seconds || matchedAppt?.doctor_work_duration_seconds);
+      if (!callDuration && durSec && durSec > 0) {
+        if (durSec < 60) {
+          callDuration = `${durSec} sec`;
+        } else {
+          const mins = Math.floor(durSec / 60);
+          const remSec = durSec % 60;
+          callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
+        }
+      }
+
+      if (!callDuration && userJoined && doctorJoined && userJoinedAt && doctorJoinedAt) {
+        const uMs = userJoinedAt.getTime();
+        const dMs = doctorJoinedAt.getTime();
+        const startMs = Math.max(uMs, dMs);
+        let endMs = Date.now();
+        if (callEndedAt) {
+          endMs = callEndedAt.getTime();
+        }
+        const diffSec = Math.max(0, Math.floor((endMs - startMs) / 1000));
+        if (diffSec > 0) {
           if (diffSec < 60) {
             callDuration = `${diffSec} sec`;
           } else {
@@ -362,131 +561,161 @@ export default function UserRefundsPage() {
             callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
           }
         }
+      }
 
-        // Cancellation and refund advance checks
-        const refundSubmittedAt = parseDate(activeRefund?.submittedAt);
-        const refundRequestedInAdvance =
-          refundSubmittedAt && apptTime && refundSubmittedAt.getTime() < apptTime.getTime();
+      // Cancellation and refund advance checks
+      const refundSubmittedAt = parseDate(activeRefund?.submittedAt);
+      const refundRequestedInAdvance =
+        refundSubmittedAt && apptTime && refundSubmittedAt.getTime() < apptTime.getTime();
 
-        const apptStatus = (matchedAppt?.status || '').toString().toLowerCase();
-        const wasCancelledByDoctor =
-          apptStatus === 'cancelled_by_doctor' ||
-          apptStatus === 'cancelled_doctor_deleted' ||
-          apptStatus === 'cancelled_by_admin';
-        const wasCancelledByUser =
-          apptStatus === 'cancelled_by_user' ||
-          apptStatus === 'cancelled';
-        const wasCancelled = wasCancelledByDoctor || wasCancelledByUser;
+      const apptStatus = (matchedAppt?.status || '').toString().toLowerCase();
+      const wasCancelledByDoctor =
+        apptStatus === 'cancelled_by_doctor' ||
+        apptStatus === 'cancelled_doctor_deleted' ||
+        apptStatus === 'cancelled_by_admin';
+      const wasCancelledByUser =
+        apptStatus === 'cancelled_by_user' ||
+        apptStatus === 'cancelled';
 
-        const cancelledAt = parseDate(
-          matchedAppt?.cancelled_at ||
-          matchedAppt?.cancelledAt ||
-          matchedAppt?.canceled_at ||
-          matchedAppt?.canceledAt
-        );
+      const cancelledAt = parseDate(
+        matchedAppt?.cancelled_at ||
+        matchedAppt?.cancelledAt ||
+        matchedAppt?.canceled_at ||
+        matchedAppt?.canceledAt
+      );
 
-        // Check if appointment was cancelled in advance:
-        // - Scenario 2 & 3: Cancelled by doctor/admin -> 100% full refund
-        // - Scenario 1: Cancelled by user before scheduled appointment start time -> 100% full refund
-        // - Cancelled after start time: NOT cancelled in advance -> 50% refund for missed consultation
-        let isCancelledInAdvance = false;
-        if (wasCancelledByDoctor) {
-          isCancelledInAdvance = true;
-        } else if (wasCancelledByUser) {
-          if (cancelledAt && apptTime) {
-            isCancelledInAdvance = cancelledAt.getTime() < apptTime.getTime();
-          } else if (!cancelledAt && apptTime) {
-            isCancelledInAdvance = now.getTime() < apptTime.getTime();
-          }
+      // Check if appointment was cancelled in advance:
+      // - Scenario 2 & 3: Cancelled by doctor/admin -> 100% full refund
+      // - Scenario 1: Cancelled by user before scheduled appointment start time -> 100% full refund
+      // - Cancelled after start time: NOT cancelled in advance -> 50% refund for missed consultation
+      let isCancelledInAdvance = false;
+      if (wasCancelledByDoctor) {
+        isCancelledInAdvance = true;
+      } else if (wasCancelledByUser) {
+        if (cancelledAt && apptTime) {
+          isCancelledInAdvance = cancelledAt.getTime() < apptTime.getTime();
+        } else if (!cancelledAt && apptTime) {
+          isCancelledInAdvance = now.getTime() < apptTime.getTime();
         }
+      }
 
-        // Consultation window passed (15 mins after scheduled start time)
-        const consultationWindowPassed =
-          apptTime && (apptTime.getTime() + 15 * 60 * 1000) <= now.getTime();
+      // Consultation window passed (60 mins after scheduled start time)
+      const consultationWindowPassed =
+        apptTime && (apptTime.getTime() + 60 * 60 * 1000) <= now.getTime();
 
-        let isNoShow = false;
-        if (
-          consultationWindowPassed &&
-          !userJoined &&
-          !isCancelledInAdvance &&
-          !refundRequestedInAdvance
-        ) {
-          isNoShow = true;
+      const isCallCompleted = apptStatus === 'completed' ||
+        consultationStatus === 'completed' ||
+        Boolean(callEndedAt) ||
+        (userJoined && doctorJoined);
+
+      const isUpcomingConsultation = !isCancelledInAdvance && !wasCancelledByUser && !wasCancelledByDoctor &&
+        !isCallCompleted &&
+        consultationStatus !== 'completed' &&
+        consultationStatus !== 'refunded' &&
+        (consultationStatus === 'upcoming' || consultationStatus === 'scheduled') &&
+        (!apptTime || now.getTime() < (apptTime.getTime() + 60 * 60 * 1000));
+
+      let isNoShow = false;
+      if (
+        consultationWindowPassed &&
+        !userJoined &&
+        !isCancelledInAdvance &&
+        !refundRequestedInAdvance &&
+        !isCallCompleted
+      ) {
+        isNoShow = true;
+        consultationStatus = 'no_show';
+      }
+
+      // If a refund request has already been created, its stored values are authoritative!
+      if (activeRefund) {
+        if (typeof activeRefund.isNoShow === 'boolean') {
+          isNoShow = activeRefund.isNoShow;
+        }
+        if (isNoShow) {
           consultationStatus = 'no_show';
         }
-
-        // If a refund request has already been created, its stored values are authoritative!
-        if (activeRefund) {
-          if (typeof activeRefund.isNoShow === 'boolean') {
-            isNoShow = activeRefund.isNoShow;
-          }
-          if (isNoShow) {
-            consultationStatus = 'no_show';
-          }
-        }
-
-        if (isNoShow) {
-          noShowCount++;
-        }
-
-        // 30-day calculation
-        const diffMs = now.getTime() - paymentDate.getTime();
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const isWithin30Days = diffDays <= 30;
-        const daysRemaining = Math.max(0, 30 - diffDays);
-        const deadline = new Date(
-          paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000
-        );
-
-        let calculatedRefund = 50.0;
-        let policyText = isCancelledInAdvance
-          ? (wasCancelledByDoctor
-              ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
-              : 'Full deposit refund eligible (Appointment was cancelled).')
-          : (refundRequestedInAdvance
-              ? 'Full deposit refund eligible (Refund requested in advance).'
-              : 'Full deposit refund eligible.');
-
-        if (activeRefund) {
-          if (typeof activeRefund.refundableAmount === 'number') {
-            calculatedRefund = activeRefund.refundableAmount;
-          }
-          if (activeRefund.refundPolicy) {
-            policyText = activeRefund.refundPolicy.replace(
-              'because the consultation was not joined.',
-              'because the consultation was missed.'
-            );
-          }
-        } else if (isNoShow) {
-          calculatedRefund = 25.0;
-          policyText = '50% refund because the consultation was missed.';
-        }
-
-        items.push({
-          paymentId,
-          consultationId,
-          doctorName,
-          consultationDate: apptTime,
-          paymentDate,
-          depositAmount,
-          paymentStatus: status,
-          consultationStatus,
-          isNoShow,
-          isCancelled: isCancelledInAdvance,
-          isWithin30Days,
-          daysRemaining,
-          deadline,
-          calculatedRefund,
-          policyText,
-          refundRequest: activeRefund || null,
-          userJoined,
-          doctorJoined,
-          callDuration,
-          callEndedAt,
-          callEndedBy,
-        });
       }
-    });
+
+      if (isNoShow) {
+        noShowCount++;
+      }
+
+      // 30-day calculation
+      const diffMs = now.getTime() - paymentDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const isWithin30Days = diffDays <= 30;
+      const daysRemaining = Math.max(0, 30 - diffDays);
+      const deadline = new Date(
+        paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+      );
+
+      let calculatedRefund = 50.0;
+      let policyText = isCancelledInAdvance
+        ? (wasCancelledByDoctor
+            ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
+            : 'Full deposit refund eligible (Appointment was cancelled in advance).')
+        : (refundRequestedInAdvance
+            ? 'Full deposit refund eligible (Refund requested in advance).'
+            : 'Full deposit refund eligible.');
+
+      if (activeRefund) {
+        if (typeof activeRefund.refundableAmount === 'number') {
+          calculatedRefund = activeRefund.refundableAmount;
+        }
+        if (activeRefund.refundPolicy) {
+          policyText = activeRefund.refundPolicy.replace(
+            'because the consultation was not joined.',
+            'because the consultation was missed.'
+          );
+        }
+      } else if (isCallCompleted || (userJoined && doctorJoined)) {
+        // Completed consultation: 100% full $50 refund eligible
+        calculatedRefund = 50.0;
+        policyText = 'Full deposit refund eligible (Consultation completed).';
+      } else if (isUpcomingConsultation) {
+        // Scenario 8: Upcoming / Before Call Starts
+        calculatedRefund = 0.0;
+        policyText = 'Refund locked until consultation ends or is cancelled.';
+      } else if (isNoShow) {
+        // Scenario 6 & 7: Patient Missed / Neither Joined
+        calculatedRefund = 25.0;
+        policyText = '50% refund because the consultation was missed.';
+      } else if (!isWithin30Days) {
+        // Scenario 9: After 30-day window
+        calculatedRefund = 0.0;
+        policyText = 'Refund period expired (exceeded 30 days).';
+      } else if (userJoined && !doctorJoined) {
+        // Scenario 5: Doctor Absent / No-Show
+        calculatedRefund = 50.0;
+        policyText = 'Full deposit refund eligible (Doctor was absent).';
+      }
+
+      items.push({
+        paymentId,
+        consultationId,
+        doctorName,
+        consultationDate: apptTime,
+        paymentDate,
+        depositAmount,
+        paymentStatus: status,
+        consultationStatus,
+        isNoShow,
+        isCancelled: isCancelledInAdvance,
+        isUpcoming: isUpcomingConsultation,
+        isWithin30Days,
+        daysRemaining,
+        deadline,
+        calculatedRefund,
+        policyText,
+        refundRequest: activeRefund || null,
+        userJoined,
+        doctorJoined,
+        callDuration,
+        callEndedAt,
+        callEndedBy,
+      });
+    }
 
     items.sort((a, b) => b.paymentDate.getTime() - a.paymentDate.getTime());
 
@@ -589,16 +818,27 @@ export default function UserRefundsPage() {
         await setDoc(doc(db, 'refundRequests', newReqId), {
           id: newReqId,
           userId: currentUser.uid,
+          user_id: currentUser.uid,
           userName: currentUser.displayName || 'Patient',
           userEmail: currentUser.email || '',
           paymentId: selectedItem.paymentId,
+          payment_id: selectedItem.paymentId,
           consultationId: selectedItem.consultationId || 'N/A',
+          consultation_id: selectedItem.consultationId || 'N/A',
           doctorName: selectedItem.doctorName || 'Assigned Doctor',
+          doctor_name: selectedItem.doctorName || 'Assigned Doctor',
           consultationDate: consultationDateStr,
           depositAmount: selectedItem.depositAmount,
           refundableAmount: selectedItem.calculatedRefund,
           isNoShow: selectedItem.isNoShow,
           refundPolicy: selectedItem.policyText,
+          userJoined: selectedItem.userJoined === true,
+          userJoinedAt: selectedItem.userJoinedAt || null,
+          doctorJoined: selectedItem.doctorJoined === true,
+          doctorJoinedAt: selectedItem.doctorJoinedAt || null,
+          callDuration: selectedItem.callDuration || null,
+          callEndedAt: selectedItem.callEndedAt || null,
+          callEndedBy: selectedItem.callEndedBy || null,
           status: 'waiting_for_approval',
           patientMessage: patientMessage.trim(),
           receiptUrl,
@@ -629,7 +869,29 @@ export default function UserRefundsPage() {
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, item = null) => {
+    if (!item?.refundRequest) {
+      if (item?.isUpcoming) {
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+            <ClockIcon className="w-3.5 h-3.5 mr-1" /> Upcoming
+          </span>
+        );
+      }
+      if (item && !item.isWithin30Days) {
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300">
+            <XCircleIcon className="w-3.5 h-3.5 mr-1" /> Expired
+          </span>
+        );
+      }
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FFD3AC]/30 text-[#1A1A1A] border border-[#FFD3AC]">
+          Eligible for Refund
+        </span>
+      );
+    }
+
     switch (status) {
       case 'waiting_for_approval':
         return (
@@ -734,7 +996,8 @@ export default function UserRefundsPage() {
             const currentStatus = req ? req.status : 'pending';
             const canRequest =
               item.isWithin30Days &&
-              (!req || req.status === 'pending');
+              !item.isUpcoming &&
+              !req;
 
             return (
               <div
@@ -751,7 +1014,7 @@ export default function UserRefundsPage() {
                       {item.doctorName}
                     </h3>
                   </div>
-                  <div>{getStatusBadge(currentStatus)}</div>
+                  <div>{getStatusBadge(currentStatus, item)}</div>
                 </div>
 
                 {/* Details Grid */}
@@ -779,7 +1042,9 @@ export default function UserRefundsPage() {
                   <p>
                     <span className="text-[#8C827A] font-medium">Calculated Refund:</span>{' '}
                     <span className="font-bold text-[#C8996A]">
-                      ${item.calculatedRefund.toFixed(2)} USD
+                      {item.isUpcoming && !req
+                        ? '$0.00 (Locked)'
+                        : `$${item.calculatedRefund.toFixed(2)} USD`}
                     </span>
                   </p>
                   {item.userJoined && item.doctorJoined && item.callDuration ? (
@@ -787,21 +1052,41 @@ export default function UserRefundsPage() {
                       <span className="text-[#8C827A] font-medium">Video Call Duration:</span>{' '}
                       Both Attended ({item.callDuration})
                     </p>
+                  ) : item.consultationStatus === 'completed' || item.callEndedAt ? (
+                    <p className="text-emerald-700 font-semibold sm:col-span-2">
+                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
+                      {item.callDuration ? `Completed (${item.callDuration})` : 'Completed'}
+                    </p>
+                  ) : item.userJoined && !item.doctorJoined && !item.isUpcoming ? (
+                    <p className="text-amber-700 font-medium sm:col-span-2">
+                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
+                      Doctor Absent
+                    </p>
                   ) : item.isNoShow ? (
                     <p className="text-amber-700 font-medium sm:col-span-2">
                       <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
                       Missed
                     </p>
+                  ) : item.isUpcoming ? (
+                    <p className="text-[#8C827A] font-medium sm:col-span-2">
+                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
+                      Upcoming
+                    </p>
                   ) : null}
                 </div>
 
-                {/* No-show warning */}
-                {item.isNoShow && (
+                {/* Upcoming or No-show notice */}
+                {item.isUpcoming && !req ? (
+                  <div className="flex items-center space-x-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
+                    <InformationCircleIcon className="w-4 h-4 shrink-0" />
+                    <span>Consultation scheduled. You must complete or cancel your consultation before requesting a refund.</span>
+                  </div>
+                ) : item.isNoShow ? (
                   <div className="flex items-center space-x-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
                     <InformationCircleIcon className="w-4 h-4 shrink-0" />
                     <span>{item.policyText}</span>
                   </div>
-                )}
+                ) : null}
 
                 {/* 30-Day deadline status */}
                 <div className="text-xs flex items-center justify-between text-[#8C827A] pt-1">
@@ -819,6 +1104,35 @@ export default function UserRefundsPage() {
                     </span>
                   )}
                 </div>
+
+                {/* Waiting for Approval Box */}
+                {currentStatus === 'waiting_for_approval' && req && (
+                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs space-y-1">
+                    <p className="font-bold text-amber-800 flex items-center space-x-1.5">
+                      <ClockIcon className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>Refund Request Submitted</span>
+                    </p>
+                    <p className="text-amber-700">
+                      Your refund request was submitted and is waiting for admin approval.
+                    </p>
+                    {req.patientMessage && (
+                      <p className="text-gray-600">Reason: {req.patientMessage}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Approved / Processing Box */}
+                {currentStatus === 'approved' && req && (
+                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-xs space-y-1">
+                    <p className="font-bold text-blue-800 flex items-center space-x-1.5">
+                      <CheckCircleIcon className="w-4 h-4 text-blue-600 shrink-0" />
+                      <span>Refund Approved</span>
+                    </p>
+                    <p className="text-blue-700">
+                      Your refund request has been approved by admin and is being processed.
+                    </p>
+                  </div>
+                )}
 
                 {/* Decline Box */}
                 {currentStatus === 'declined' && req && req.declineReason && (

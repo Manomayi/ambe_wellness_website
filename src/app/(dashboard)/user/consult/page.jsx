@@ -18,6 +18,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from "@/lib/firebase/config";
 import { matchUserWithDoctor } from "@/lib/doctorMatching";
+import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 import ExtendedQuestionnaireModal from "@/components/user/ExtendedQuestionnaireModal";
 import {
@@ -723,28 +724,37 @@ export default function UserConsultPage() {
           <div>
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">Consultation History</h2>
             <div className="space-y-3">
-              {pastAppointments.map((appointment) => (
-                <div 
-                  key={appointment.id}
-                  className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-4 hover:shadow-md transition cursor-pointer"
-                  onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-base text-[#1A1A1A]">
-                        {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name || 'Assigned Doctor'}`}
-                      </h4>
-                      <p className="text-sm text-[#6B6862]">
-                        {formatAppointmentTime(appointment.time)}
-                      </p>
-                    </div>
-                    <div className="flex items-center text-[#C8996A]">
-                      <DocumentTextIcon className="h-5 w-5 mr-1" />
-                      <span className="text-sm font-medium">View Report</span>
+              {pastAppointments.map((appointment) => {
+                const statusInfo = getConsultationStatusInfo(appointment);
+                return (
+                  <div 
+                    key={appointment.id}
+                    className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-4 hover:shadow-md transition cursor-pointer"
+                    onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <h4 className="font-medium text-base text-[#1A1A1A]">
+                            {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name || 'Assigned Doctor'}`}
+                          </h4>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.badgeClass}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`} />
+                            {statusInfo.label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-[#6B6862] mt-1">
+                          {formatAppointmentTime(appointment.time)}
+                        </p>
+                      </div>
+                      <div className="flex items-center text-[#C8996A] font-medium text-sm ml-4 shrink-0">
+                        <DocumentTextIcon className="h-5 w-5 mr-1" />
+                        <span>{statusInfo.actionText}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

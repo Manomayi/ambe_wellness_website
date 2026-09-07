@@ -190,15 +190,38 @@ export default function CompleteReportPage() {
         `${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
       const documentId = `${formattedTimestamp}_${doctorUid}`;
 
+      // Fetch existing upcoming / consultation doc data to preserve payment_id, consultation_id, and attendance
+      let existingApptData = {};
+      try {
+        const upSnap = await getDoc(doc(db, 'users', userUid, 'appointments_upcoming', oldAppointmentId));
+        if (upSnap.exists()) {
+          existingApptData = upSnap.data();
+        }
+      } catch (_) {}
+      try {
+        const cSnap = await getDoc(doc(db, 'consultations', oldAppointmentId));
+        if (cSnap.exists()) {
+          existingApptData = { ...cSnap.data(), ...existingApptData };
+        }
+      } catch (_) {}
+
       const userDataToSave = {
+        ...existingApptData,
         doctor_uid: doctorUid,
-        doctor_name: user.displayName,
+        doctor_name: user.displayName || existingApptData.doctor_name,
         time,
         recommendations,
         user_id: userUid,
         user_name: userName,
         notes: overallNotes.trim(),
         store_recommendations: recommendedProducts,
+        appointment_id: documentId,
+        original_appointment_id: oldAppointmentId,
+        consultation_id: oldAppointmentId,
+        status: 'completed',
+        user_joined: true,
+        doctor_joined: true,
+        updated_at: serverTimestamp(),
       };
 
       const batch = writeBatch(db);
@@ -206,6 +229,19 @@ export default function CompleteReportPage() {
       batch.set(
         doc(db, 'users', userUid, 'appointments_history', documentId),
         userDataToSave,
+        { merge: true }
+      );
+
+      // Keep consultation doc updated with completed status
+      batch.set(
+        doc(db, 'consultations', oldAppointmentId),
+        {
+          status: 'completed',
+          call_status: 'ended',
+          call_ended_by: 'doctor',
+          call_ended_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+        },
         { merge: true }
       );
 
@@ -230,6 +266,15 @@ export default function CompleteReportPage() {
       batch.update(doc(db, 'doctors', doctorUid), {
         'pending.finish_report': -1,
       });
+
+      batch.set(
+        doc(db, 'users', userUid),
+        {
+          is_consultation_set: false,
+          is_first_consultation_completed: true,
+        },
+        { merge: true }
+      );
 
       // Add recommended products to the patient's cart — same step
       // checkout_page.dart performs (its batch step 4).

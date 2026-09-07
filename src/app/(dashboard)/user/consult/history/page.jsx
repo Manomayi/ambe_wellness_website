@@ -8,6 +8,7 @@ import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import Link from 'next/link'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import BackButton from '@/components/common/BackButton'
+import { getConsultationStatusInfo } from "@/lib/consultationStatus"
 
 export default function ConsultationHistoryPage() {
   const router = useRouter();
@@ -64,27 +65,39 @@ export default function ConsultationHistoryPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {history.map((appt) => (
-            <div key={appt.id} className="bg-white shadow rounded-lg">
-              <Link
-                href={
-                  `/user/consult/report/${appt.id}` +
-                  `?doctorName=${encodeURIComponent(appt.doctor_name)}`
-                }
-                className="w-full block text-left flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition"
-              >
-                <div>
-                  <p className="font-medium text-gray-800">
-                    Dr. {appt.doctor_name}
-                  </p>
-                  <p className="text-gray-600 text-sm mt-1">
-                    {formatTime(appt.time)}
-                  </p>
-                </div>
-                <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-              </Link>
-            </div>
-          ))}
+          {history.map((appt) => {
+            const statusInfo = getConsultationStatusInfo(appt);
+            return (
+              <div key={appt.id} className="bg-white shadow rounded-lg border border-[#E7E2D9]">
+                <Link
+                  href={
+                    `/user/consult/report/${appt.id}` +
+                    `?doctorName=${encodeURIComponent(appt.doctor_name || '')}`
+                  }
+                  className="w-full block text-left flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition rounded-lg"
+                >
+                  <div>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <p className="font-medium text-gray-800">
+                        {appt.doctor_name?.startsWith('Dr.') ? appt.doctor_name : `Dr. ${appt.doctor_name || 'Assigned Doctor'}`}
+                      </p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.badgeClass}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`} />
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mt-1">
+                      {formatTime(appt.time)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#C8996A] font-medium ml-4 shrink-0">
+                    <span>{statusInfo.actionText}</span>
+                    <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

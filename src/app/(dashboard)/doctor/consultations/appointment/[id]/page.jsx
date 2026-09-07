@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import VideoCall from '@/components/video/VideoCall';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
@@ -77,21 +77,82 @@ export default function DoctorAppointmentPage() {
       return;
     }
 
+    const patientUid = appointment?.user_id || appointment?.user_uid || appointment?.userId;
+
+    // 1. Immediately reset is_consultation_set: false on patient's profile so user can book next appointment
+    if (patientUid) {
+      try {
+        await setDoc(
+          doc(db, 'users', patientUid),
+          {
+            is_consultation_set: false,
+            is_first_consultation_completed: true,
+          },
+          { merge: true }
+        );
+      } catch (error) {
+        console.error('Error resetting is_consultation_set on patient:', error);
+      }
+
+      // 2. Mark upcoming appointment as completed for the patient
+      try {
+        await setDoc(
+          doc(db, 'users', patientUid, 'appointments_upcoming', params.id),
+          {
+            status: 'completed',
+            doctor_joined: true,
+            doctor_joined_at: serverTimestamp(),
+            call_ended_at: serverTimestamp(),
+            call_ended_by: 'doctor',
+            ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
+            ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
+            ...(appointment?.doctor_name ? { doctor_name: appointment.doctor_name } : {}),
+          },
+          { merge: true }
+        );
+      } catch (error) {
+        console.error('Error updating patient upcoming appointment:', error);
+      }
+    }
+
+    // 3. Mark upcoming appointment as completed for the doctor
     try {
-      await updateDoc(
+      await setDoc(
         doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
         {
-          call_ended_at: new Date(),
-          status: 'completed'
-        }
+          call_ended_at: serverTimestamp(),
+          status: 'completed',
+          doctor_joined: true,
+        },
+        { merge: true }
       );
     } catch (error) {
-      console.error('Error updating appointment:', error);
+      console.error('Error updating doctor upcoming appointment:', error);
+    }
+
+    // 4. Mark consultations collection document as completed
+    try {
+      await setDoc(
+        doc(db, 'consultations', params.id),
+        {
+          status: 'completed',
+          call_status: 'ended',
+          call_ended_by: 'doctor',
+          call_ended_at: serverTimestamp(),
+          doctor_joined: true,
+          ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
+          ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
+          ...(appointment?.doctor_name ? { doctor_name: appointment.doctor_name } : {}),
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.error('Error updating consultation doc:', error);
     }
 
     const timeMillis = appointment?.time?.toMillis ? appointment.time.toMillis() : Date.now();
     const query = new URLSearchParams({
-      userUid: appointment?.user_id || '',
+      userUid: patientUid || '',
       userName: appointment?.user_name || '',
       time: String(timeMillis),
     });

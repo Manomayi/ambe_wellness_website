@@ -462,6 +462,9 @@ function ScheduleConsultationContent() {
 
       // 1. Schedule Appointment via Cloud Function
       let scheduledSuccessfully = false;
+      let finalApptId = `appt_${Date.now()}_${user.uid.substring(0, 5)}`;
+      let finalDocName = docName;
+
       try {
         const scheduleAppointment = httpsCallable(functions, 'scheduleAppointment');
         const result = await scheduleAppointment({
@@ -471,26 +474,34 @@ function ScheduleConsultationContent() {
         });
         if (result.data?.success) {
           scheduledSuccessfully = true;
+          if (result.data.appointmentId) {
+            finalApptId = result.data.appointmentId;
+          }
+          if (result.data.doctorName) {
+            finalDocName = result.data.doctorName.startsWith('Dr.') 
+              ? result.data.doctorName 
+              : `Dr. ${result.data.doctorName}`;
+          }
         }
       } catch (fnErr) {
         console.warn('Cloud function schedule error, executing Firestore fallback:', fnErr);
       }
 
       // 2. Fallback direct Firestore write if Cloud Function failed
-      const apptId = `appt_${Date.now()}_${user.uid.substring(0, 5)}`;
       if (!scheduledSuccessfully) {
         const batch = writeBatch(db);
-        const userApptRef = doc(db, 'users', user.uid, 'appointments_upcoming', apptId);
+        const userApptRef = doc(db, 'users', user.uid, 'appointments_upcoming', finalApptId);
         const apptData = {
-          appointment_id: apptId,
-          doctor_id: resolvedDoctorUid,
-          doctor_name: docName,
+          appointment_id: finalApptId,
+          doctor_id: resolvedDoctorUid || '',
+          doctor_name: finalDocName,
           user_id: user.uid,
           user_name: userFullName,
           time: Timestamp.fromMillis(appointmentTimeMillis),
           status: 'scheduled',
           is_instant: Boolean(selectedSlot.isInstant),
           deposit_paid: 50.00,
+          payment_id: intentId || paymentIntentId || '',
           payment_intent_id: intentId || paymentIntentId || '',
           created_at: serverTimestamp()
         };
@@ -498,7 +509,7 @@ function ScheduleConsultationContent() {
         batch.set(userApptRef, apptData);
 
         if (resolvedDoctorUid) {
-          const docApptRef = doc(db, 'doctors', resolvedDoctorUid, 'appointments_upcoming', apptId);
+          const docApptRef = doc(db, 'doctors', resolvedDoctorUid, 'appointments_upcoming', finalApptId);
           batch.set(docApptRef, apptData);
         }
 
@@ -508,7 +519,62 @@ function ScheduleConsultationContent() {
       }
 
       // 3. Record $50 Purchase in users/{uid}/purchases/{intentId}
-      const finalIntentId = intentId || paymentIntentId || `deposit_${Date.now()}`;
+      let effectiveIntentId = intentId || paymentIntentId;
+      if (!effectiveIntentId && user) {
+        try {
+          const uSnap = await getDoc(doc(db, 'users', user.uid));
+          if (uSnap.exists()) {
+            effectiveIntentId = uSnap.data()?.lastPaymentId || null;
+          }
+        } catch (_) {}
+      }
+      const finalIntentId = effectiveIntentId || `deposit_${Date.now()}`;
+
+      // 4. Ensure payment_id is linked back to the upcoming appointment and shared consultation doc
+      try {
+        await setDoc(
+          doc(db, 'users', user.uid, 'appointments_upcoming', finalApptId),
+          {
+            payment_id: finalIntentId,
+            payment_intent_id: finalIntentId,
+            doctor_name: finalDocName,
+          },
+          { merge: true }
+        );
+
+        if (resolvedDoctorUid) {
+          await setDoc(
+            doc(db, 'doctors', resolvedDoctorUid, 'appointments_upcoming', finalApptId),
+            {
+              payment_id: finalIntentId,
+              payment_intent_id: finalIntentId,
+              doctor_name: finalDocName,
+            },
+            { merge: true }
+          );
+        }
+
+        // Initialize shared consultations collection doc
+        await setDoc(
+          doc(db, 'consultations', finalApptId),
+          {
+            appointment_id: finalApptId,
+            user_id: user.uid,
+            user_name: userFullName,
+            doctor_id: resolvedDoctorUid || '',
+            doctor_name: finalDocName,
+            time: Timestamp.fromMillis(appointmentTimeMillis),
+            status: 'scheduled',
+            payment_id: finalIntentId,
+            payment_intent_id: finalIntentId,
+            created_at: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (linkErr) {
+        console.warn('Error linking payment_id to appointment:', linkErr);
+      }
+
       try {
         const purchaseRef = doc(db, 'users', user.uid, 'purchases', finalIntentId);
         await setDoc(purchaseRef, {
@@ -517,10 +583,12 @@ function ScheduleConsultationContent() {
           currency: 'USD',
           status: 'succeeded',
           type: 'consultation',
-          description: `Consultation Deposit - ${docName}`,
+          description: `Consultation Deposit - ${finalDocName}`,
           appointment_time: Timestamp.fromMillis(appointmentTimeMillis),
+          consultation_id: finalApptId,
+          appointment_id: finalApptId,
           doctor_id: resolvedDoctorUid || '',
-          doctor_name: docName,
+          doctor_name: finalDocName,
           refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
           created: serverTimestamp(),
           payment_intent_id: finalIntentId,

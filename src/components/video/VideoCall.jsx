@@ -276,6 +276,20 @@ export default function VideoCall({
             },
             { merge: true }
           );
+
+          // Redundantly stamp attendance on user & doctor upcoming appointment docs
+          const patientUid = isDoctor ? otherPartyUid : userId;
+          const docUid = isDoctor ? userId : otherPartyUid;
+          const joinPayload = isDoctor
+            ? { doctor_joined: true, doctor_joined_at: serverTimestamp() }
+            : { user_joined: true, user_joined_at: serverTimestamp() };
+
+          if (patientUid) {
+            setDoc(doc(db, 'users', patientUid, 'appointments_upcoming', appointmentId), joinPayload, { merge: true }).catch(() => {});
+          }
+          if (docUid) {
+            setDoc(doc(db, 'doctors', docUid, 'appointments_upcoming', appointmentId), joinPayload, { merge: true }).catch(() => {});
+          }
         } catch (signalError) {
           console.error('[VideoCall] Error writing join signal:', signalError);
         }

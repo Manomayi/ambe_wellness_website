@@ -18,8 +18,11 @@ import {
   DocumentTextIcon,
   ClockIcon,
   CalendarIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
+import CancelConsultationModal from "@/components/doctor/CancelConsultationModal";
+import RescheduleConsultationModal from "@/components/doctor/RescheduleConsultationModal";
 
 export default function DoctorConsultationsPage() {
   const router = useRouter();
@@ -29,8 +32,9 @@ export default function DoctorConsultationsPage() {
   const [currentAppointment, setCurrentAppointment] = useState(null);
   const [reportsToFinish, setReportsToFinish] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
+  const [cancelAppointment, setCancelAppointment] = useState(null);
+  const [statusMessage, setStatusMessage] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -140,15 +144,18 @@ export default function DoctorConsultationsPage() {
   };
 
   const handleReschedule = (appointment) => {
-    setSelectedAppointment(appointment);
-    setShowModal(true);
+    setRescheduleAppointment(appointment);
   };
 
-  const handleCancel = async (appointmentId) => {
-    if (confirm('Are you sure you want to cancel this appointment?')) {
-      // TODO: Implement cancellation logic with cloud function
-      alert('Cancellation functionality coming soon');
-    }
+  const handleCancel = (appointment) => {
+    setCancelAppointment(appointment);
+  };
+
+  const handleActionSuccess = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => {
+      setStatusMessage(null);
+    }, 5000);
   };
 
   return (
@@ -163,6 +170,14 @@ export default function DoctorConsultationsPage() {
             View History
           </button>
         </div>
+
+        {/* Status Message Toast */}
+        {statusMessage && (
+          <div className="mb-6 bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm animate-in fade-in duration-200">
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <span className="text-sm font-medium">{statusMessage}</span>
+          </div>
+        )}
 
         {/* Reports to Finish Alert */}
         {reportsToFinish.length > 0 && (
@@ -280,7 +295,7 @@ export default function DoctorConsultationsPage() {
                         Reschedule
                       </button>
                       <button
-                        onClick={() => handleCancel(appointment.id)}
+                        onClick={() => handleCancel(appointment)}
                         className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
                       >
                         Cancel
@@ -327,7 +342,7 @@ export default function DoctorConsultationsPage() {
                         Reschedule
                       </button>
                       <button
-                        onClick={() => handleCancel(appointment.id)}
+                        onClick={() => handleCancel(appointment)}
                         className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
                       >
                         Cancel
@@ -358,50 +373,24 @@ export default function DoctorConsultationsPage() {
           </div>
         )}
 
+        {/* Cancel Modal */}
+        {cancelAppointment && (
+          <CancelConsultationModal
+            appointment={cancelAppointment}
+            doctorUid={user?.uid}
+            onClose={() => setCancelAppointment(null)}
+            onSuccess={handleActionSuccess}
+          />
+        )}
+
         {/* Reschedule Modal */}
-        {showModal && selectedAppointment && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => setShowModal(false)}
-          >
-            <div
-              className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-bold mb-4">
-                Reschedule Appointment
-              </h3>
-              <p className="text-[#6B6862] mb-4">
-                Current time: {formatAppointmentTime(selectedAppointment.time)}
-              </p>
-              <div className="space-y-3">
-                <button
-                  className="w-full py-2 text-left hover:bg-[#F4F1EA] rounded px-3"
-                  onClick={() => {
-                    setShowModal(false);
-                    alert('Reschedule functionality coming soon');
-                  }}
-                >
-                  Choose New Time
-                </button>
-                <button
-                  className="w-full py-2 text-left hover:bg-[#F4F1EA] rounded px-3 text-red-600"
-                  onClick={() => {
-                    setShowModal(false);
-                    handleCancel(selectedAppointment.id);
-                  }}
-                >
-                  Cancel Appointment
-                </button>
-              </div>
-              <button
-                className="mt-4 w-full text-center text-[#8C827A] hover:text-[#1A1A1A]"
-                onClick={() => setShowModal(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
+        {rescheduleAppointment && (
+          <RescheduleConsultationModal
+            appointment={rescheduleAppointment}
+            doctorUid={user?.uid}
+            onClose={() => setRescheduleAppointment(null)}
+            onSuccess={handleActionSuccess}
+          />
         )}
       </div>
     </ProtectedRoute>
