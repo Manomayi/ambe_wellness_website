@@ -95,8 +95,8 @@ function ConsultationPaymentForm({
         const intentId = result.paymentIntent.id || paymentIntentId;
         await onSuccess(intentId);
       } else {
-        // Fallback success
-        await onSuccess(paymentIntentId);
+        setErrorMsg(result.paymentIntent?.status ? `Payment was not completed (status: ${result.paymentIntent.status}). Please try again.` : 'Payment was not completed. Please try again.');
+        setProcessing(false);
       }
     } catch (err) {
       console.error('Payment confirm error:', err);
@@ -475,6 +475,7 @@ function ScheduleConsultationContent() {
       await startPayPalCheckout({
         amountCents: 5000,
         type: "consultation",
+        isTestMode: Boolean(isTestMode),
         onSuccess: async ({ orderId }) => {
           await handlePaymentSuccessAndSchedule(orderId);
           setPaypalProcessing(false);
@@ -928,23 +929,15 @@ function ScheduleConsultationContent() {
               </div>
             )}
 
-            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-              <button
-                onClick={() => {
-                  const apptId = activeAppointment?.id || activeAppointment?.appointment_id || '';
-                  router.push(`/user/consult/schedule?reschedule=true&appointmentId=${apptId}`);
-                }}
-                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm tracking-wider uppercase"
-              >
-                Reschedule Appointment
-              </button>
+            <div className="pt-2 max-w-md mx-auto">
               <button
                 onClick={() => router.push('/user/consult')}
-                className="w-full bg-[#FAF8F5] hover:bg-[#F4F1EA] text-[#1A1A1A] border border-[#E7E2D9] py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer"
+                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm"
               >
                 View My Consultations
               </button>
             </div>
+
           </div>
         </div>
       </ProtectedRoute>

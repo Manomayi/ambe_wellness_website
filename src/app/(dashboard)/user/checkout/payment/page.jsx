@@ -154,13 +154,13 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
         const finalCurrency = result.paymentIntent.currency || 'USD';
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
-        setMessage("Payment submitted. Redirecting...");
-        await completeOrderAndRedirect();
+        setMessage("Payment was not completed. Status: " + (result.paymentIntent?.status || 'unknown'));
+        setIsProcessing(false);
       }
     } catch (err) {
       console.error('Payment confirmation error:', err);
-      setMessage("Payment processed. Completing order...");
-      await completeOrderAndRedirect();
+      setMessage("Payment failed. Please check your payment details and try again.");
+      setIsProcessing(false);
     }
   };
 
@@ -230,14 +230,8 @@ function PaymentPageContent() {
     <div className="max-w-md mx-auto space-y-4 pb-12">
       <BackButton href="/user/checkout" label="Back to Checkout" />
       <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Card Payment</h1>
-          {isTestMode && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
-              Test Mode
-            </span>
-          )}
-        </div>
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Card Payment</h1>
+
 
         <Elements options={options} stripe={stripePromise}>
           <CheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} />

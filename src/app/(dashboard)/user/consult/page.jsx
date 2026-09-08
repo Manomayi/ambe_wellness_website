@@ -368,18 +368,7 @@ export default function UserConsultPage() {
                 </div>
               )}
 
-              <div className="pt-2 space-y-2.5">
-                {activeAppointment && !isAppointmentPast(activeAppointment) && (
-                  <button
-                    onClick={() => {
-                      setShowActiveAppointmentModal(false);
-                      handleRescheduleClick(activeAppointment);
-                    }}
-                    className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm tracking-wider uppercase"
-                  >
-                    Reschedule Appointment
-                  </button>
-                )}
+              <div className="pt-2">
                 <button
                   onClick={() => {
                     setShowActiveAppointmentModal(false);
@@ -388,11 +377,12 @@ export default function UserConsultPage() {
                       el.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="w-full bg-[#FAF8F5] hover:bg-[#F4F1EA] text-[#1A1A1A] border border-[#E7E2D9] py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer"
+                  className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm"
                 >
                   View Existing Appointment
                 </button>
               </div>
+
             </div>
           </div>
         )}

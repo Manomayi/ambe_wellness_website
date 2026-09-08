@@ -3,6 +3,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db, storage, functions } from '@/lib/firebase/config';
+import {
+  decideRefund,
+  formatSeconds,
+  formatCallDuration,
+  OUTCOME,
+} from '@/lib/refundPolicy';
 import { onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
@@ -457,6 +463,21 @@ export default function UserRefundsPage() {
     const items = [];
     const claimedRefundRequestIds = new Set();
 
+    // Upcoming appointments that no purchase managed to claim.
+    //
+    // A deposit that could not be matched to an appointment is not
+    // automatically refundable: the patient may simply have a booked
+    // consultation whose link to the payment was never written. Treating
+    // "no appointment found" as "nothing was booked" offered a full refund on
+    // a deposit paying for a consultation that has not happened yet, which is
+    // scenario 8 and must be locked.
+    let unclaimedUpcomingRemaining = upcomingAppts.filter((a) => {
+      const apptId = String(a.id || a.appointment_id || '');
+      if (apptId && claimedAppointmentIds.has(apptId)) return false;
+      const st = String(a.status || '').toLowerCase();
+      return !st.includes('cancel');
+    }).length;
+
     for (let i = 0; i < candidates.length; i++) {
       if (duplicateIndices.has(i)) continue;
       const c = candidates[i];
@@ -530,44 +551,38 @@ export default function UserRefundsPage() {
       const callEndedAt = parseDate(matchedAppt?.call_ended_at || activeRefund?.callEndedAt);
       const callEndedBy = matchedAppt?.call_ended_by || activeRefund?.callEndedBy || null;
 
-      let callDuration = (activeRefund?.callDuration && activeRefund.callDuration !== '0 sec') ? activeRefund.callDuration : (matchedAppt?.call_duration && matchedAppt.call_duration !== '0 sec' ? matchedAppt.call_duration : null);
+      // Only a JOINT call has a duration to show. The old fallback to
+      // `doctor_work_duration_seconds` was the doctor's own time in the room,
+      // which is non-zero even when they sat there alone — so a consultation
+      // the patient missed displayed a call length as if it had happened.
+      let callDuration = null;
+      if (userJoined && doctorJoined) {
+        callDuration =
+          (activeRefund?.callDuration && activeRefund.callDuration !== '0 sec')
+            ? activeRefund.callDuration
+            : (matchedAppt?.call_duration && matchedAppt.call_duration !== '0 sec'
+                ? matchedAppt.call_duration
+                : null);
 
-      const durSec = Number(matchedAppt?.call_duration_seconds || matchedAppt?.doctor_work_duration_seconds);
-      if (!callDuration && durSec && durSec > 0) {
-        if (durSec < 60) {
-          callDuration = `${durSec} sec`;
-        } else {
-          const mins = Math.floor(durSec / 60);
-          const remSec = durSec % 60;
-          callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
+        if (!callDuration) {
+          callDuration = formatSeconds(Number(matchedAppt?.call_duration_seconds));
+        }
+        if (!callDuration) {
+          callDuration = formatCallDuration({
+            userJoined,
+            doctorJoined,
+            userJoinedAt,
+            doctorJoinedAt,
+            callEndedAt,
+            nowMs: now.getTime(),
+          });
         }
       }
 
-      if (!callDuration && userJoined && doctorJoined && userJoinedAt && doctorJoinedAt) {
-        const uMs = userJoinedAt.getTime();
-        const dMs = doctorJoinedAt.getTime();
-        const startMs = Math.max(uMs, dMs);
-        let endMs = Date.now();
-        if (callEndedAt) {
-          endMs = callEndedAt.getTime();
-        }
-        const diffSec = Math.max(0, Math.floor((endMs - startMs) / 1000));
-        if (diffSec > 0) {
-          if (diffSec < 60) {
-            callDuration = `${diffSec} sec`;
-          } else {
-            const mins = Math.floor(diffSec / 60);
-            const remSec = diffSec % 60;
-            callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
-          }
-        }
-      }
-
-      // Cancellation and refund advance checks
-      const refundSubmittedAt = parseDate(activeRefund?.submittedAt);
-      const refundRequestedInAdvance =
-        refundSubmittedAt && apptTime && refundSubmittedAt.getTime() < apptTime.getTime();
-
+      // Cancellation checks. Note there is deliberately no
+      // "refund requested in advance" special case any more: requesting a
+      // refund early does not change whether the patient turned up, and using
+      // it as a full-refund shortcut let a no-show claim the whole deposit.
       const apptStatus = (matchedAppt?.status || '').toString().toLowerCase();
       const wasCancelledByDoctor =
         apptStatus === 'cancelled_by_doctor' ||
@@ -599,48 +614,6 @@ export default function UserRefundsPage() {
         }
       }
 
-      // Consultation window passed (60 mins after scheduled start time)
-      const consultationWindowPassed =
-        apptTime && (apptTime.getTime() + 60 * 60 * 1000) <= now.getTime();
-
-      const isCallCompleted = apptStatus === 'completed' ||
-        consultationStatus === 'completed' ||
-        Boolean(callEndedAt) ||
-        (userJoined && doctorJoined);
-
-      const isUpcomingConsultation = !isCancelledInAdvance && !wasCancelledByUser && !wasCancelledByDoctor &&
-        !isCallCompleted &&
-        consultationStatus !== 'completed' &&
-        consultationStatus !== 'refunded' &&
-        (consultationStatus === 'upcoming' || consultationStatus === 'scheduled') &&
-        (!apptTime || now.getTime() < (apptTime.getTime() + 60 * 60 * 1000));
-
-      let isNoShow = false;
-      if (
-        consultationWindowPassed &&
-        !userJoined &&
-        !isCancelledInAdvance &&
-        !refundRequestedInAdvance &&
-        !isCallCompleted
-      ) {
-        isNoShow = true;
-        consultationStatus = 'no_show';
-      }
-
-      // If a refund request has already been created, its stored values are authoritative!
-      if (activeRefund) {
-        if (typeof activeRefund.isNoShow === 'boolean') {
-          isNoShow = activeRefund.isNoShow;
-        }
-        if (isNoShow) {
-          consultationStatus = 'no_show';
-        }
-      }
-
-      if (isNoShow) {
-        noShowCount++;
-      }
-
       // 30-day calculation
       const diffMs = now.getTime() - paymentDate.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -650,15 +623,59 @@ export default function UserRefundsPage() {
         paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000
       );
 
-      let calculatedRefund = 50.0;
-      let policyText = isCancelledInAdvance
-        ? (wasCancelledByDoctor
-            ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
-            : 'Full deposit refund eligible (Appointment was cancelled in advance).')
-        : (refundRequestedInAdvance
-            ? 'Full deposit refund eligible (Refund requested in advance).'
-            : 'Full deposit refund eligible.');
+      // One decision, shared with the Cloud Functions that store the amount and
+      // with the Flutter app, so the figure the patient is shown here is the
+      // figure the admin panel approves. The previous branch treated ANY ended
+      // call as a completed consultation worth a full refund, which is why a
+      // doctor who joined alone and hung up left this page showing "Completed"
+      // and $50.00 instead of a missed consultation and $25.00.
+      const recordedOutcome = (
+        matchedAppt?.consultation_outcome || matchedAppt?.status || null
+      );
+      // This deposit has no appointment of its own, but the patient has a
+      // booked consultation that no other deposit is paying for. Assume this
+      // is the one funding it and lock the refund until that call is over.
+      let fundsPendingAppointment = false;
+      if (!apptTime && !activeRefund && unclaimedUpcomingRemaining > 0) {
+        fundsPendingAppointment = true;
+        unclaimedUpcomingRemaining -= 1;
+      }
 
+      const decision = decideRefund({
+        nowMs: now.getTime(),
+        appointmentTimeMs: apptTime ? apptTime.getTime() : null,
+        cancelledAtMs: cancelledAt ? cancelledAt.getTime() : null,
+        userJoined,
+        doctorJoined,
+        status: wasCancelledByDoctor
+          ? 'cancelled_by_doctor'
+          : wasCancelledByUser
+            ? 'cancelled_by_user'
+            : (recordedOutcome ? String(recordedOutcome).toLowerCase() : null),
+        paymentDateMs: paymentDate ? paymentDate.getTime() : null,
+        depositAmount,
+        hasPendingAppointment: fundsPendingAppointment,
+      });
+
+      let calculatedRefund = decision.refundableAmount;
+      let policyText = decision.policyText;
+
+      // Attendance-derived flags now come from the same decision as the
+      // amount, so the badge, the policy sentence and the figure can never
+      // describe three different scenarios.
+      let isNoShow = decision.isNoShow;
+      const isUpcomingConsultation = decision.isUpcoming;
+      if (isNoShow) {
+        consultationStatus = 'no_show';
+      } else if (decision.outcome === OUTCOME.MISSED_BY_DOCTOR) {
+        consultationStatus = 'doctor_absent';
+      } else if (decision.outcome === OUTCOME.COMPLETED) {
+        consultationStatus = 'completed';
+      }
+
+      // A stored refund request is authoritative for the AMOUNT: it is what the
+      // admin panel approves and pays out, so the page must never display a
+      // different number from the one on record.
       if (activeRefund) {
         if (typeof activeRefund.refundableAmount === 'number') {
           calculatedRefund = activeRefund.refundableAmount;
@@ -669,26 +686,14 @@ export default function UserRefundsPage() {
             'because the consultation was missed.'
           );
         }
-      } else if (isCallCompleted || (userJoined && doctorJoined)) {
-        // Completed consultation: 100% full $50 refund eligible
-        calculatedRefund = 50.0;
-        policyText = 'Full deposit refund eligible (Consultation completed).';
-      } else if (isUpcomingConsultation) {
-        // Scenario 8: Upcoming / Before Call Starts
-        calculatedRefund = 0.0;
-        policyText = 'Refund locked until consultation ends or is cancelled.';
-      } else if (isNoShow) {
-        // Scenario 6 & 7: Patient Missed / Neither Joined
-        calculatedRefund = 25.0;
-        policyText = '50% refund because the consultation was missed.';
-      } else if (!isWithin30Days) {
-        // Scenario 9: After 30-day window
-        calculatedRefund = 0.0;
-        policyText = 'Refund period expired (exceeded 30 days).';
-      } else if (userJoined && !doctorJoined) {
-        // Scenario 5: Doctor Absent / No-Show
-        calculatedRefund = 50.0;
-        policyText = 'Full deposit refund eligible (Doctor was absent).';
+        if (typeof activeRefund.isNoShow === 'boolean') {
+          isNoShow = activeRefund.isNoShow;
+          if (isNoShow) consultationStatus = 'no_show';
+        }
+      }
+
+      if (isNoShow) {
+        noShowCount++;
       }
 
       items.push({

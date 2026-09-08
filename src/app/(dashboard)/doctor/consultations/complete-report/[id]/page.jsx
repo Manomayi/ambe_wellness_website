@@ -15,6 +15,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { classifyOutcome } from '@/lib/refundPolicy';
 import {
   HeartIcon,
   Cog6ToothIcon,
@@ -205,10 +206,23 @@ export default function CompleteReportPage() {
         }
       } catch (_) {}
 
+      // Attendance comes from the live consultation document, which each
+      // client stamps as it joins the call. It must NEVER be hardcoded here:
+      // writing `user_joined: true` unconditionally told the refund page that
+      // the patient attended even when the doctor sat alone and hung up, which
+      // is what turned a patient no-show into a full $50 refund.
+      const userJoined = existingApptData.user_joined === true;
+      const doctorJoined = existingApptData.doctor_joined === true;
+      const outcomeStatus = classifyOutcome({ userJoined, doctorJoined });
+
       const userDataToSave = {
         ...existingApptData,
         doctor_uid: doctorUid,
-        doctor_name: user.displayName || existingApptData.doctor_name,
+        doctor_id: doctorUid,
+        // `displayName` is unset on most doctor accounts, so prefer whatever
+        // name the consultation already carries rather than storing null and
+        // letting every surface fall back to "Assigned Doctor".
+        doctor_name: existingApptData.doctor_name || user.displayName || null,
         time,
         recommendations,
         user_id: userUid,
@@ -218,9 +232,10 @@ export default function CompleteReportPage() {
         appointment_id: documentId,
         original_appointment_id: oldAppointmentId,
         consultation_id: oldAppointmentId,
-        status: 'completed',
-        user_joined: true,
-        doctor_joined: true,
+        status: outcomeStatus,
+        consultation_outcome: outcomeStatus,
+        user_joined: userJoined,
+        doctor_joined: doctorJoined,
         updated_at: serverTimestamp(),
       };
 
@@ -236,10 +251,17 @@ export default function CompleteReportPage() {
       batch.set(
         doc(db, 'consultations', oldAppointmentId),
         {
-          status: 'completed',
+          // The real outcome, not a blanket "completed" — the earning trigger
+          // and the refund policy both read this document.
+          status: outcomeStatus,
+          consultation_outcome: outcomeStatus,
           call_status: 'ended',
           call_ended_by: 'doctor',
           call_ended_at: serverTimestamp(),
+          doctor_id: doctorUid,
+          user_id: userUid,
+          user_name: userName,
+          history_appointment_id: documentId,
           updated_at: serverTimestamp(),
         },
         { merge: true }

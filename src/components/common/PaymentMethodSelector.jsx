@@ -15,12 +15,8 @@ export default function PaymentMethodSelector({
         <label className="block text-sm font-semibold text-[#1A1A1A]">
           Select Payment Method
         </label>
-        {isTestMode && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
-            Test Mode Active
-          </span>
-        )}
       </div>
+
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Stripe Card Option */}

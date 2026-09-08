@@ -7,6 +7,7 @@ import ProtectedRoute from '@/components/common/ProtectedRoute';
 import VideoCall from '@/components/video/VideoCall';
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { classifyOutcome } from '@/lib/refundPolicy';
 import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -79,6 +80,22 @@ export default function DoctorAppointmentPage() {
 
     const patientUid = appointment?.user_id || appointment?.user_uid || appointment?.userId;
 
+    // Read attendance back off the live consultation document before deciding
+    // anything. Each client stamps its own join there, so this is the only
+    // trustworthy record of who was actually in the room. Writing
+    // `status: 'completed'` regardless (as this used to) is what made a call
+    // the patient never joined show up as a completed consultation with a full
+    // refund on their refund page.
+    let liveConsultation = {};
+    try {
+      const snap = await getDoc(doc(db, 'consultations', params.id));
+      if (snap.exists()) liveConsultation = snap.data() || {};
+    } catch (error) {
+      console.error('Error reading consultation attendance:', error);
+    }
+    const userJoined = liveConsultation.user_joined === true;
+    const outcomeStatus = classifyOutcome({ userJoined, doctorJoined: true });
+
     // 1. Immediately reset is_consultation_set: false on patient's profile so user can book next appointment
     if (patientUid) {
       try {
@@ -99,7 +116,8 @@ export default function DoctorAppointmentPage() {
         await setDoc(
           doc(db, 'users', patientUid, 'appointments_upcoming', params.id),
           {
-            status: 'completed',
+            status: outcomeStatus,
+            consultation_outcome: outcomeStatus,
             doctor_joined: true,
             doctor_joined_at: serverTimestamp(),
             call_ended_at: serverTimestamp(),
@@ -121,7 +139,8 @@ export default function DoctorAppointmentPage() {
         doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
         {
           call_ended_at: serverTimestamp(),
-          status: 'completed',
+          status: outcomeStatus,
+          consultation_outcome: outcomeStatus,
           doctor_joined: true,
         },
         { merge: true }
@@ -135,11 +154,14 @@ export default function DoctorAppointmentPage() {
       await setDoc(
         doc(db, 'consultations', params.id),
         {
-          status: 'completed',
+          status: outcomeStatus,
+          consultation_outcome: outcomeStatus,
           call_status: 'ended',
           call_ended_by: 'doctor',
           call_ended_at: serverTimestamp(),
           doctor_joined: true,
+          doctor_id: user.uid,
+          ...(patientUid ? { user_id: patientUid } : {}),
           ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
           ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
           ...(appointment?.doctor_name ? { doctor_name: appointment.doctor_name } : {}),

@@ -179,6 +179,7 @@ export default function UserCheckoutPage() {
           amountCents: Math.round(total * 100),
           type: 'store',
           referralCreditsToUse: referralCreditsToUse,
+          isTestMode: Boolean(isTestMode),
           onSuccess: async () => {
             router.push('/user/checkout/success');
           },

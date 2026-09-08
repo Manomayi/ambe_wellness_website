@@ -18,6 +18,7 @@ export async function startPayPalCheckout({
   type,
   referralCreditsToUse = 0,
   currency = "usd",
+  isTestMode = false,
   onSuccess,
   onError,
   onCancel,
@@ -37,6 +38,7 @@ export async function startPayPalCheckout({
       referral_credits_to_use: referralCreditsToUse,
       return_url: returnUrl,
       cancel_url: cancelUrl,
+      isTestMode: Boolean(isTestMode),
     });
 
     if (!result.data || !result.data.approveUrl || !result.data.orderId) {

@@ -185,6 +185,7 @@ export default function UserPaymentPage() {
       await startPayPalCheckout({
         amountCents: 5000,
         type: "consultation",
+        isTestMode: Boolean(isTestMode),
         onSuccess: async () => {
           setPaypalProcessing(false);
           router.push("/user/consult/schedule");
@@ -210,14 +211,8 @@ export default function UserPaymentPage() {
     <div className="max-w-md mx-auto space-y-4 pb-12">
       <BackButton href="/user/home" label="Back to Home" />
       <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl text-[#1A1A1A] font-bold">Consultation Deposit</h1>
-          {isTestMode && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
-              Test Mode
-            </span>
-          )}
-        </div>
+        <h1 className="text-2xl text-[#1A1A1A] font-bold">Consultation Deposit</h1>
+
 
         {/* Deposit & Refund Policy Card */}
         <div className="bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl p-5 space-y-2 text-xs text-[#1A1A1A]">
