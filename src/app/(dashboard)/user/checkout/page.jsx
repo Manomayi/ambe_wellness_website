@@ -16,9 +16,10 @@ import {
 } from 'firebase/firestore';
 import { db, functions } from '@/lib/firebase/config';
 import { httpsCallable } from 'firebase/functions';
-import { loadStripe } from '@stripe/stripe-js';
+import PaymentMethodSelector from '@/components/common/PaymentMethodSelector';
+import { useRemotePaymentConfig } from '@/lib/remoteConfig';
+import { startPayPalCheckout } from '@/lib/paypal';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export default function UserCheckoutPage() {
   const router = useRouter();
@@ -45,7 +46,10 @@ export default function UserCheckoutPage() {
   const [subscriptionDiscount, setMembershipDiscount] = useState(0);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [total, setTotal] = useState(0);
+  const { isTestMode } = useRemotePaymentConfig();
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
   const [referralCreditsToUse, setReferralCreditsToUse] = useState(0);
+
 
   useEffect(() => {
     if (!user) return;
@@ -170,13 +174,34 @@ export default function UserCheckoutPage() {
         email: user.email
       });
 
+      if (paymentMethod === 'paypal') {
+        await startPayPalCheckout({
+          amountCents: Math.round(total * 100),
+          type: 'store',
+          referralCreditsToUse: referralCreditsToUse,
+          onSuccess: async () => {
+            router.push('/user/checkout/success');
+          },
+          onError: (err) => {
+            console.error('PayPal checkout error:', err);
+            alert(err.message || 'PayPal payment could not be completed.');
+            setProcessing(false);
+          },
+          onCancel: () => {
+            setProcessing(false);
+          },
+        });
+        return;
+      }
+
       // Create payment intent via Cloud Function (matching Flutter implementation)
       const createPaymentIntentStore = httpsCallable(functions, 'createPaymentIntentStore');
       const result = await createPaymentIntentStore({
         amount: Math.round(total * 100), // Convert to cents
         currency: 'usd',
         type: 'store',
-        referral_credits_to_use: referralCreditsToUse
+        referral_credits_to_use: referralCreditsToUse,
+        isTestMode: Boolean(isTestMode),
       });
 
       console.log('Cloud function response:', result.data);
@@ -195,13 +220,16 @@ export default function UserCheckoutPage() {
       sessionStorage.setItem('paymentIntentId', paymentIntentId);
       
       // Redirect to Stripe payment page
-      router.push(`/user/checkout/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}`);
+      router.push(`/user/checkout/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}&test_mode=${isTestMode}`);
     } catch (error) {
       console.error('Checkout error:', error);
       alert(error.message || 'Failed to process checkout. Please try again.');
     } finally {
-      setProcessing(false);
+      if (paymentMethod !== 'paypal') {
+        setProcessing(false);
+      }
     }
+
   };
 
   if (loading) {
@@ -305,14 +333,33 @@ export default function UserCheckoutPage() {
           </div>
         </div>
 
+        {/* Payment Method Selector */}
+        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 shadow-sm">
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onSelectMethod={setPaymentMethod}
+            isTestMode={isTestMode}
+            disabled={processing}
+          />
+        </div>
+
         {/* Place Order Button */}
         <button
           onClick={handlePlaceOrder}
           disabled={processing || cartItems.length === 0}
-          className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider"
+          className={`w-full py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider cursor-pointer ${
+            paymentMethod === 'paypal'
+              ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
+              : 'bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white'
+          }`}
         >
-          {processing ? 'Processing...' : 'PLACE ORDER'}
+          {processing
+            ? 'Processing...'
+            : paymentMethod === 'paypal'
+            ? 'PAY WITH PAYPAL'
+            : 'PROCEED TO CARD PAYMENT'}
         </button>
+
 
         {/* Address Modal */}
         {showAddressModal && (

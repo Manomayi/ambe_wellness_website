@@ -6,7 +6,6 @@ import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
@@ -15,13 +14,13 @@ import {
 } from "@stripe/react-stripe-js";
 import BackButton from "@/components/common/BackButton";
 import { ShieldCheckIcon } from "@heroicons/react/24/outline";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-);
+import PaymentMethodSelector from "@/components/common/PaymentMethodSelector";
+import { useRemotePaymentConfig } from "@/lib/remoteConfig";
+import { startPayPalCheckout } from "@/lib/paypal";
 
 // Set to false in .env if you only want backend Stripe webhooks to write to Firestore
 const ENABLE_CLIENT_SIDE_FALLBACK_WRITE = process.env.NEXT_PUBLIC_ENABLE_CLIENT_PURCHASE_WRITE !== 'false';
+
 
 function CheckoutForm({ user, paymentIntentId }) {
   const stripe = useStripe();
@@ -109,9 +108,12 @@ function CheckoutForm({ user, paymentIntentId }) {
 export default function UserPaymentPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const { isTestMode, stripePromise, loading: configLoading } = useRemotePaymentConfig();
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [clientSecret, setClientSecret] = useState("");
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [paypalProcessing, setPaypalProcessing] = useState(false);
 
   // require auth
   useEffect(() => {
@@ -127,7 +129,27 @@ export default function UserPaymentPage() {
     if (!user) return;
     setLoading(true);
     try {
-      // 1. Try server Next.js API route
+      // 1. Try Firebase Cloud Function createPaymentIntent directly
+      try {
+        const functions = getFunctions(undefined, "us-central1");
+        const fn = httpsCallable(functions, "createPaymentIntent");
+        const { data: fbData } = await fn({
+          amount: 5000,
+          currency: "usd",
+          type: "consultation",
+          isTestMode: Boolean(isTestMode),
+        });
+        if (fbData?.clientSecret) {
+          setClientSecret(fbData.clientSecret);
+          setPaymentIntentId(fbData.paymentIntentId || fbData.payment_intent_id || "");
+          setLoading(false);
+          return;
+        }
+      } catch (fnErr) {
+        console.warn("createPaymentIntent Cloud Function fallback:", fnErr);
+      }
+
+      // 2. Try server Next.js API route
       const res = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,7 +157,8 @@ export default function UserPaymentPage() {
           amount: 5000,
           currency: "usd",
           userId: user.uid,
-          description: "Consultation Deposit Fee"
+          description: "Consultation Deposit Fee",
+          isTestMode: Boolean(isTestMode),
         })
       });
 
@@ -144,16 +167,7 @@ export default function UserPaymentPage() {
         setClientSecret(data.clientSecret);
         setPaymentIntentId(data.paymentIntentId || "");
       } else {
-        // Fallback to Cloud Function
-        const functions = getFunctions(undefined, "us-central1");
-        const fn = httpsCallable(functions, "createPaymentIntent");
-        const { data: fbData } = await fn({
-          amount: 5000,
-          currency: "usd",
-          type: "subscription",
-        });
-        setClientSecret(fbData.clientSecret);
-        setPaymentIntentId(fbData.paymentIntentId || fbData.payment_intent_id || "");
+        throw new Error(data.error || "Failed to initialize payment");
       }
     } catch (err) {
       console.error("Payment intent creation error:", err);
@@ -163,13 +177,47 @@ export default function UserPaymentPage() {
     }
   };
 
+  const handlePayPalCheckout = async () => {
+    if (!user || paypalProcessing) return;
+    setPaypalProcessing(true);
+
+    try {
+      await startPayPalCheckout({
+        amountCents: 5000,
+        type: "consultation",
+        onSuccess: async () => {
+          setPaypalProcessing(false);
+          router.push("/user/consult/schedule");
+        },
+        onError: (err) => {
+          console.error("PayPal deposit error:", err);
+          alert(err.message || "PayPal payment could not be completed.");
+          setPaypalProcessing(false);
+        },
+        onCancel: () => {
+          setPaypalProcessing(false);
+        }
+      });
+    } catch (e) {
+      console.error("PayPal error:", e);
+      setPaypalProcessing(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
     <div className="max-w-md mx-auto space-y-4 pb-12">
       <BackButton href="/user/home" label="Back to Home" />
       <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
-        <h1 className="text-2xl text-[#1A1A1A] font-bold">Consultation Deposit</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl text-[#1A1A1A] font-bold">Consultation Deposit</h1>
+          {isTestMode && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
+              Test Mode
+            </span>
+          )}
+        </div>
 
         {/* Deposit & Refund Policy Card */}
         <div className="bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl p-5 space-y-2 text-xs text-[#1A1A1A]">
@@ -197,29 +245,60 @@ export default function UserPaymentPage() {
           </ul>
         </div>
 
-        {!clientSecret ? (
-          <button
-            onClick={handleProceed}
-            disabled={loading}
-            className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer"
-          >
-            {loading ? "Loading Payment Sheet…" : "Proceed to Payment"}
-          </button>
-        ) : (
-          <Elements
-            stripe={stripePromise}
-            options={{ 
-              clientSecret, 
-              appearance: { 
-                theme: "stripe",
-                variables: { colorPrimary: '#C8996A' }
-              } 
+        {/* Payment Method Selector */}
+        <div className="pt-2">
+          <PaymentMethodSelector
+            selectedMethod={paymentMethod}
+            onSelectMethod={(m) => {
+              setPaymentMethod(m);
+              setClientSecret("");
             }}
+            isTestMode={isTestMode}
+            disabled={loading || paypalProcessing}
+          />
+        </div>
+
+        {paymentMethod === "stripe" ? (
+          !clientSecret ? (
+            <button
+              onClick={handleProceed}
+              disabled={loading || configLoading}
+              className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer"
+            >
+              {loading ? "Loading Payment Sheet…" : "Proceed to Card Payment"}
+            </button>
+          ) : (
+            <Elements
+              stripe={stripePromise}
+              options={{ 
+                clientSecret, 
+                appearance: { 
+                  theme: "stripe",
+                  variables: { colorPrimary: '#C8996A' }
+                } 
+              }}
+            >
+              <CheckoutForm user={user} paymentIntentId={paymentIntentId} />
+            </Elements>
+          )
+        ) : (
+          <button
+            onClick={handlePayPalCheckout}
+            disabled={paypalProcessing}
+            className="w-full bg-[#0070BA] hover:bg-[#003087] text-white py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
           >
-            <CheckoutForm user={user} paymentIntentId={paymentIntentId} />
-          </Elements>
+            {paypalProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                Connecting to PayPal...
+              </>
+            ) : (
+              "Pay $50 Deposit with PayPal"
+            )}
+          </button>
         )}
       </div>
     </div>
   );
 }
+

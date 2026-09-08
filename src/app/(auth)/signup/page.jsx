@@ -9,6 +9,7 @@ import { sendEmailVerification, updateProfile } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { ArrowRightIcon, ArrowLeftIcon, PhoneIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
+import PhoneInputWithCountry from '@/components/common/PhoneInputWithCountry';
 import Link from 'next/link';
 
 export default function SignUpPage() {
@@ -170,8 +171,8 @@ export default function SignUpPage() {
       case 3: // Phone number
         if (!formData.phone.trim()) {
           newErrors.phone = 'Phone number is required';
-        } else if (!/^\+?\d{10,15}$/.test(formData.phone.replace(/[\s-]/g, ''))) {
-          newErrors.phone = 'Invalid phone number';
+        } else if (!/^\+\d{8,16}$/.test(formData.phone.replace(/[\s-]/g, ''))) {
+          newErrors.phone = 'Please enter a valid phone number with country code';
         }
         break;
 
@@ -722,22 +723,15 @@ export default function SignUpPage() {
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
                 Phone Number
               </label>
-              <div className="relative">
-                <PhoneIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: "#9A948B" }} />
-                <input
-                  type="tel"
-                  name="phone"
-                  id="phone"
-                  autoComplete="tel"
-                  value={formData.phone}
-                  onChange={(e) => updateFormData("phone", e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
+              <PhoneInputWithCountry
+                value={formData.phone}
+                onChange={(fullPhone) => updateFormData("phone", fullPhone)}
+                error={!!errors.phone}
+                defaultCountryCode="US"
+                placeholder="Phone number"
+              />
               {errors.phone && (
-                <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                <p className="text-xs mt-1.5" style={{ color: "#C0392B" }}>
                   {errors.phone}
                 </p>
               )}

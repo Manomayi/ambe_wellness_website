@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
@@ -13,11 +12,12 @@ import {
 } from '@stripe/react-stripe-js';
 import { doc, getDoc, onSnapshot, deleteDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+import { useRemotePaymentConfig } from '@/lib/remoteConfig';
+import BackButton from '@/components/common/BackButton';
 
 // Set to false in .env (or Vercel environment variables) if you only want backend Stripe webhooks to write to Firestore
 const ENABLE_CLIENT_SIDE_FALLBACK_WRITE = process.env.NEXT_PUBLIC_ENABLE_CLIENT_PURCHASE_WRITE !== 'false';
+
 
 function CheckoutForm({ clientSecret, paymentIntentId }) {
   const stripe = useStripe();
@@ -192,6 +192,9 @@ function PaymentPageContent() {
   const searchParams = useSearchParams();
   const clientSecret = searchParams.get('client_secret');
   const paymentIntentId = searchParams.get('payment_intent');
+  const paramTestMode = searchParams.get('test_mode') === 'true';
+  const { isTestMode: remoteTestMode, stripePromise, loading: configLoading } = useRemotePaymentConfig();
+  const isTestMode = paramTestMode || remoteTestMode;
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -203,7 +206,7 @@ function PaymentPageContent() {
     }
   }, [clientSecret]);
 
-  if (loading || !clientSecret) {
+  if (loading || configLoading || !clientSecret || !stripePromise) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
@@ -224,21 +227,32 @@ function PaymentPageContent() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
-      <h1 className="text-2xl font-bold text-[#1A1A1A] mb-6 text-center">Complete Payment</h1>
+    <div className="max-w-md mx-auto space-y-4 pb-12">
+      <BackButton href="/user/checkout" label="Back to Checkout" />
+      <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">Card Payment</h1>
+          {isTestMode && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
+              Test Mode
+            </span>
+          )}
+        </div>
 
-      <Elements options={options} stripe={stripePromise}>
-        <CheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} />
-      </Elements>
+        <Elements options={options} stripe={stripePromise}>
+          <CheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} />
+        </Elements>
 
-      <div className="text-center">
-        <p className="text-xs text-[#8C827A]">
-          Your payment information is secure and encrypted.
-        </p>
+        <div className="text-center">
+          <p className="text-xs text-[#8C827A]">
+            Your payment information is encrypted and secured by Stripe.
+          </p>
+        </div>
       </div>
     </div>
   );
 }
+
 
 export default function PaymentPage() {
   return (

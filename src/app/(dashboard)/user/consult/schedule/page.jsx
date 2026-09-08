@@ -27,7 +27,9 @@ import ExtendedQuestionnaireModal from '@/components/user/ExtendedQuestionnaireM
 import { CalendarIcon, ClockIcon, BoltIcon, ShieldCheckIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import moment from 'moment-timezone';
 import BackButton from '@/components/common/BackButton';
-import { loadStripe } from '@stripe/stripe-js';
+import PaymentMethodSelector from '@/components/common/PaymentMethodSelector';
+import { useRemotePaymentConfig } from '@/lib/remoteConfig';
+import { startPayPalCheckout } from '@/lib/paypal';
 import {
   Elements,
   PaymentElement,
@@ -35,7 +37,6 @@ import {
   useElements
 } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 // Health field mapping
 const HEALTH_FIELD_LABELS = {
@@ -156,11 +157,15 @@ function ScheduleConsultationContent() {
   const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
   const [showExtendedQuestionnaireModal, setShowExtendedQuestionnaireModal] = useState(false);
 
-  // Stripe Payment Sheet states
+  // Stripe & PayPal Payment states
+  const { isTestMode, stripePromise, loading: configLoading } = useRemotePaymentConfig();
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [paypalProcessing, setPaypalProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState("");
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+
 
   // Active appointment detection
   const activeAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
@@ -414,7 +419,27 @@ function ScheduleConsultationContent() {
     setPaymentLoading(true);
     try {
       const docName = doctorInfo ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() : "Healthcare Provider";
-      
+
+      // 1. Try Firebase Cloud Function createPaymentIntent (dynamically switches test/live key based on isTestMode)
+      try {
+        const fn = httpsCallable(functions, "createPaymentIntent");
+        const fbRes = await fn({
+          amount: 5000,
+          currency: "usd",
+          type: "consultation",
+          isTestMode: Boolean(isTestMode),
+        });
+        if (fbRes.data?.clientSecret) {
+          setClientSecret(fbRes.data.clientSecret);
+          setPaymentIntentId(fbRes.data.paymentIntentId || "");
+          setPaymentLoading(false);
+          return;
+        }
+      } catch (fnErr) {
+        console.warn("createPaymentIntent Cloud Function fallback:", fnErr);
+      }
+
+      // 2. Fallback to API route
       const res = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -425,7 +450,8 @@ function ScheduleConsultationContent() {
           doctorId: resolvedDoctorUid || "",
           doctorName: docName,
           appointmentTime: selectedSlot?.time ? selectedSlot.time.getTime() : Date.now(),
-          description: `Consultation Deposit - ${docName}`
+          description: `Consultation Deposit - ${docName}`,
+          isTestMode: Boolean(isTestMode),
         })
       });
 
@@ -433,14 +459,6 @@ function ScheduleConsultationContent() {
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         setPaymentIntentId(data.paymentIntentId || "");
-      } else {
-        // Fallback: try Firebase Cloud Function createPaymentIntent
-        const fn = httpsCallable(functions, "createPaymentIntent");
-        const fbRes = await fn({ amount: 5000, currency: "usd", type: "consultation_deposit" });
-        if (fbRes.data?.clientSecret) {
-          setClientSecret(fbRes.data.clientSecret);
-          setPaymentIntentId(fbRes.data.paymentIntentId || "");
-        }
       }
     } catch (err) {
       console.error("Error creating payment intent:", err);
@@ -448,6 +466,34 @@ function ScheduleConsultationContent() {
       setPaymentLoading(false);
     }
   };
+
+  const handlePayPalDeposit = async () => {
+    if (!selectedSlot || !user || paypalProcessing) return;
+    setPaypalProcessing(true);
+
+    try {
+      await startPayPalCheckout({
+        amountCents: 5000,
+        type: "consultation",
+        onSuccess: async ({ orderId }) => {
+          await handlePaymentSuccessAndSchedule(orderId);
+          setPaypalProcessing(false);
+        },
+        onError: (err) => {
+          console.error("PayPal deposit error:", err);
+          alert(err.message || "PayPal deposit payment could not be completed.");
+          setPaypalProcessing(false);
+        },
+        onCancel: () => {
+          setPaypalProcessing(false);
+        }
+      });
+    } catch (e) {
+      console.error("PayPal flow error:", e);
+      setPaypalProcessing(false);
+    }
+  };
+
 
   const handlePaymentSuccessAndSchedule = async (intentId) => {
     if (!selectedSlot || !user) return;
@@ -1168,38 +1214,87 @@ function ScheduleConsultationContent() {
                   </ul>
                 </div>
 
-                {/* Stripe Test Mode Payment Sheet */}
+                {/* Payment Method Selector */}
                 <div className="pt-4 border-t border-[#E7E2D9]">
-                  <h4 className="font-semibold text-sm text-[#1A1A1A] mb-3">Enter Payment Details</h4>
-                  {paymentLoading || !clientSecret ? (
-                    <div className="py-8 flex flex-col items-center justify-center space-y-2">
-                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C8996A] border-t-transparent" />
-                      <p className="text-xs text-[#8C827A]">Loading secure payment sheet...</p>
-                    </div>
-                  ) : (
-                    <Elements
-                      stripe={stripePromise}
-                      options={{
-                        clientSecret,
-                        appearance: {
-                          theme: 'stripe',
-                          variables: { colorPrimary: '#C8996A' }
-                        }
-                      }}
-                    >
-                      <ConsultationPaymentForm
-                        user={user}
-                        doctorInfo={doctorInfo}
-                        selectedSlot={selectedSlot}
-                        selectedDate={selectedDate}
-                        paymentIntentId={paymentIntentId}
-                        onSuccess={handlePaymentSuccessAndSchedule}
-                      />
-                    </Elements>
-                  )}
+                  <PaymentMethodSelector
+                    selectedMethod={paymentMethod}
+                    onSelectMethod={(method) => {
+                      setPaymentMethod(method);
+                      if (method === "stripe" && !clientSecret && !paymentLoading) {
+                        initializePaymentIntent();
+                      }
+                    }}
+                    isTestMode={isTestMode}
+                    disabled={scheduling || paymentLoading || paypalProcessing}
+                  />
                 </div>
+
+                {paymentMethod === "stripe" ? (
+                  /* Stripe Card Payment Sheet */
+                  <div className="pt-3">
+                    <h4 className="font-semibold text-sm text-[#1A1A1A] mb-3">Enter Card Details</h4>
+                    {paymentLoading || !clientSecret || !stripePromise ? (
+                      <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C8996A] border-t-transparent" />
+                        <p className="text-xs text-[#8C827A]">Loading secure payment sheet...</p>
+                      </div>
+                    ) : (
+                      <Elements
+                        stripe={stripePromise}
+                        options={{
+                          clientSecret,
+                          appearance: {
+                            theme: 'stripe',
+                            variables: { colorPrimary: '#C8996A' }
+                          }
+                        }}
+                      >
+                        <ConsultationPaymentForm
+                          user={user}
+                          doctorInfo={doctorInfo}
+                          selectedSlot={selectedSlot}
+                          selectedDate={selectedDate}
+                          paymentIntentId={paymentIntentId}
+                          onSuccess={handlePaymentSuccessAndSchedule}
+                        />
+                      </Elements>
+                    )}
+                  </div>
+                ) : (
+                  /* PayPal Deposit Flow */
+                  <div className="pt-3 space-y-4">
+                    <div className="p-4 bg-[#F4F9FF] border border-[#0070BA]/20 rounded-xl flex items-center justify-between text-xs text-[#1A1A1A]">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center font-bold text-lg">
+                          <span className="font-serif italic">P</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm text-[#1A1A1A]">PayPal Checkout</p>
+                          <p className="text-[#6B6862]">Secure $50 deposit via your PayPal account or PayPal card</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handlePayPalDeposit}
+                      disabled={scheduling || paypalProcessing}
+                      className="w-full bg-[#0070BA] hover:bg-[#003087] text-white py-4 rounded-xl font-semibold text-sm transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      {paypalProcessing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Processing with PayPal...
+                        </>
+                      ) : (
+                        "Pay $50 Deposit with PayPal"
+                      )}
+                    </button>
+                  </div>
+                )}
               </>
             )}
+
 
             {bookingSuccess && (
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-emerald-800 text-sm font-semibold">

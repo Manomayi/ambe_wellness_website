@@ -26,4 +26,5 @@ export const auth      = getAuth(app);
 export const db        = getFirestore(app);
 export const functions = getFunctions(app, 'us-central1');
 export const storage   = getStorage(app);
-//export const messaging = getMessaging(app);
+export { app };
+export default app;
