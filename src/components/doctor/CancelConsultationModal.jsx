@@ -79,6 +79,11 @@ export default function CancelConsultationModal({
   };
 
   const handleCancelConfirm = async () => {
+    if (apptDate && (Date.now() - apptDate.getTime()) > 60 * 60 * 1000) {
+      setError("This appointment time has already passed and can no longer be cancelled.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 

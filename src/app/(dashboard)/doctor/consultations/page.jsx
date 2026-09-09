@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -10,7 +10,10 @@ import {
   where,
   orderBy,
   onSnapshot,
-  Timestamp
+  Timestamp,
+  doc,
+  writeBatch,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import {
@@ -35,6 +38,73 @@ export default function DoctorConsultationsPage() {
   const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
   const [cancelAppointment, setCancelAppointment] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
+
+  const resolvingSetRef = useRef(new Set());
+
+  const autoResolveExpiredConsultation = async (apt, docId) => {
+    if (!user) return;
+    const appointmentId = (apt.appointment_id || docId || '').toString();
+    if (!appointmentId || resolvingSetRef.current.has(appointmentId)) return;
+    resolvingSetRef.current.add(appointmentId);
+
+    const userUid = apt.user_id || apt.user_uid || apt.userId;
+    const doctorUid = user.uid;
+
+    const userJoined = apt.user_joined === true;
+    const doctorJoined = apt.doctor_joined === true;
+
+    let resolvedStatus = "no_show";
+    let isNoShow = true;
+    if (userJoined && doctorJoined) {
+      resolvedStatus = "completed";
+      isNoShow = false;
+    } else if (userJoined && !doctorJoined) {
+      resolvedStatus = "doctor_absent";
+      isNoShow = false;
+    } else {
+      resolvedStatus = "no_show";
+      isNoShow = true;
+    }
+
+    try {
+      const batch = writeBatch(db);
+      const historyData = {
+        ...apt,
+        status: resolvedStatus,
+        is_no_show: isNoShow,
+        auto_resolved: true,
+        resolved_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      const docUpcomingRef = doc(db, 'doctors', doctorUid, 'appointments_upcoming', appointmentId);
+      const docHistoryRef = doc(db, 'doctors', doctorUid, 'appointments_history', appointmentId);
+      batch.delete(docUpcomingRef);
+      batch.set(docHistoryRef, historyData, { merge: true });
+
+      if (userUid) {
+        const userUpcomingRef = doc(db, 'users', userUid, 'appointments_upcoming', appointmentId);
+        const userHistoryRef = doc(db, 'users', userUid, 'appointments_history', appointmentId);
+        batch.delete(userUpcomingRef);
+        batch.set(userHistoryRef, historyData, { merge: true });
+        batch.update(doc(db, 'users', userUid), { is_consultation_set: false });
+      }
+
+      const consultRef = doc(db, 'consultations', appointmentId);
+      batch.set(consultRef, {
+        status: resolvedStatus,
+        is_no_show: isNoShow,
+        auto_resolved: true,
+        resolved_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
+      await batch.commit();
+      console.log(`Doctor auto-resolved expired consultation ${appointmentId} to ${resolvedStatus}`);
+    } catch (e) {
+      console.warn("Doctor error auto-resolving expired consultation:", e);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -79,12 +149,13 @@ export default function DoctorConsultationsPage() {
             upcoming.push(apt);
             return;
           }
-          const diffMinutes = (aptDate - nowDate) / (1000 * 60);
+          const diffMinutes = (aptDate.getTime() - nowDate.getTime()) / (1000 * 60);
 
           if (diffMinutes >= -60 && diffMinutes <= 15 && !current) {
             current = apt;
           } else if (diffMinutes < -60) {
-            pending.push(apt);
+            // Expired past 60m: auto-resolve to history and do not show in pending
+            autoResolveExpiredConsultation(apt, apt.id);
           } else {
             upcoming.push(apt);
           }
@@ -143,11 +214,25 @@ export default function DoctorConsultationsPage() {
     }).format(date);
   };
 
+  const isExpiredAppointment = (appointment) => {
+    if (!appointment?.time) return false;
+    const aptDate = appointment.time?.toDate ? appointment.time.toDate() : new Date(appointment.time);
+    return (Date.now() - aptDate.getTime()) / (1000 * 60) > 60;
+  };
+
   const handleReschedule = (appointment) => {
+    if (isExpiredAppointment(appointment)) {
+      alert('This appointment has expired and cannot be rescheduled.');
+      return;
+    }
     setRescheduleAppointment(appointment);
   };
 
   const handleCancel = (appointment) => {
+    if (isExpiredAppointment(appointment)) {
+      alert('This appointment has expired and cannot be cancelled.');
+      return;
+    }
     setCancelAppointment(appointment);
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -98,7 +98,80 @@ export default function UserConsultPage() {
     }
   };
 
+  const resolvingSetRef = useRef(new Set());
+
+  const autoResolveExpiredConsultation = async (appt, docId) => {
+    if (!user) return;
+    const appointmentId = (appt.appointment_id || docId || '').toString();
+    if (!appointmentId || resolvingSetRef.current.has(appointmentId)) return;
+    resolvingSetRef.current.add(appointmentId);
+
+    const doctorUid = appt.doctor_id || appt.doctor_uid || resolvedDoctorUid;
+    const userJoined = appt.user_joined === true;
+    const doctorJoined = appt.doctor_joined === true;
+
+    let resolvedStatus = "no_show";
+    let isNoShow = true;
+    if (userJoined && doctorJoined) {
+      resolvedStatus = "completed";
+      isNoShow = false;
+    } else if (userJoined && !doctorJoined) {
+      resolvedStatus = "doctor_absent";
+      isNoShow = false;
+    } else {
+      resolvedStatus = "no_show";
+      isNoShow = true;
+    }
+
+    try {
+      const batch = writeBatch(db);
+      const historyData = {
+        ...appt,
+        status: resolvedStatus,
+        is_no_show: isNoShow,
+        auto_resolved: true,
+        resolved_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      const userUpcomingRef = doc(db, 'users', user.uid, 'appointments_upcoming', appointmentId);
+      const userHistoryRef = doc(db, 'users', user.uid, 'appointments_history', appointmentId);
+      batch.delete(userUpcomingRef);
+      batch.set(userHistoryRef, historyData, { merge: true });
+      batch.update(doc(db, 'users', user.uid), { is_consultation_set: false });
+
+      if (doctorUid) {
+        const docUpcomingRef = doc(db, 'doctors', doctorUid, 'appointments_upcoming', appointmentId);
+        const docHistoryRef = doc(db, 'doctors', doctorUid, 'appointments_history', appointmentId);
+        batch.delete(docUpcomingRef);
+        batch.set(docHistoryRef, historyData, { merge: true });
+      }
+
+      const consultRef = doc(db, 'consultations', appointmentId);
+      batch.set(consultRef, {
+        status: resolvedStatus,
+        is_no_show: isNoShow,
+        auto_resolved: true,
+        resolved_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
+      await batch.commit();
+      console.log(`Auto-resolved expired consultation ${appointmentId} to ${resolvedStatus}`);
+    } catch (e) {
+      console.warn("Error auto-resolving expired consultation:", e);
+    }
+  };
+
   const handleRescheduleClick = (appointment) => {
+    if (appointment?.time) {
+      const apptDate = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
+      const diffFromStart = (Date.now() - apptDate.getTime()) / (1000 * 60);
+      if (diffFromStart > 60) {
+        alert('This appointment time has already expired and cannot be rescheduled.');
+        return;
+      }
+    }
     const apptId = appointment?.id || appointment?.appointment_id || '';
     router.push(`/user/consult/schedule?reschedule=true&appointmentId=${apptId}`);
   };
@@ -139,16 +212,29 @@ export default function UserConsultPage() {
     const upcomingQuery = collection(db, 'users', user.uid, 'appointments_upcoming');
 
     const unsubscribeUpcoming = onSnapshot(upcomingQuery, (snapshot) => {
-      const appointments = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      appointments.sort((a, b) => {
+      const now = new Date();
+      const validUpcoming = [];
+
+      snapshot.docs.forEach(docSnap => {
+        const data = { id: docSnap.id, ...docSnap.data() };
+        const apptDate = data.time?.toDate ? data.time.toDate() : (data.time ? new Date(data.time) : null);
+        if (apptDate) {
+          const diffMinutes = (apptDate.getTime() - now.getTime()) / (1000 * 60);
+          if (diffMinutes < -60) {
+            // Expired! Auto-resolve to appointments_history and omit from upcoming
+            autoResolveExpiredConsultation(data, docSnap.id);
+            return;
+          }
+        }
+        validUpcoming.push(data);
+      });
+
+      validUpcoming.sort((a, b) => {
         const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
         const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
         return timeA - timeB;
       });
-      setUpcomingAppointments(appointments);
+      setUpcomingAppointments(validUpcoming);
     });
 
     // Listen to past appointments
@@ -224,6 +310,12 @@ export default function UserConsultPage() {
 
     if (appointment.time) {
       const apptDate = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
+      const diffFromStart = (Date.now() - apptDate.getTime()) / (1000 * 60);
+      if (diffFromStart > 60) {
+        alert('This appointment time has already expired and cannot be cancelled.');
+        setAppointmentToCancel(null);
+        return;
+      }
       const diffHours = (apptDate.getTime() - Date.now()) / (1000 * 60 * 60);
       if (diffHours >= 0 && diffHours < 2) {
         alert('You cannot cancel within 2 hours of the scheduled appointment time.');
@@ -623,14 +715,11 @@ export default function UserConsultPage() {
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">
               {upcomingAppointments.some(a => isAppointmentNow(a)) 
                 ? 'HAPPENING NOW' 
-                : upcomingAppointments.every(a => isAppointmentPast(a))
-                ? 'PENDING APPOINTMENT'
                 : 'UPCOMING APPOINTMENTS'}
             </h2>
             <div className="space-y-4">
               {upcomingAppointments.map((appointment) => {
                 const isNow = isAppointmentNow(appointment);
-                const isPast = isAppointmentPast(appointment);
                 const apptDocName = appointment.doctor_name 
                   ? (appointment.doctor_name.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name}`)
                   : doctorDisplayName;
@@ -656,11 +745,6 @@ export default function UserConsultPage() {
                             <ClockIcon className="h-4 w-4 mr-1.5 text-[#C8996A]" />
                             {formatAppointmentTime(appointment.time)}
                           </p>
-                          {isPast && (
-                            <p className="text-xs text-[#8C827A] mt-1">
-                              Consultation in progress or pending completion report
-                            </p>
-                          )}
                         </div>
 
                         <div className="flex items-center gap-3">

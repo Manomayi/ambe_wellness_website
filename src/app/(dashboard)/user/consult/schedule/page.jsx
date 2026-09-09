@@ -670,41 +670,51 @@ function ScheduleConsultationContent() {
       const userApptRef = doc(db, 'users', user.uid, 'appointments_upcoming', targetApptId);
       const userApptSnap = await getDoc(userApptRef);
       const apptData = userApptSnap.exists() ? userApptSnap.data() : null;
-      const targetDocUid = resolvedDoctorUid || apptData?.doctor_id || apptData?.doctor_uid;
 
-      const newTimestamp = Timestamp.fromDate(selectedSlot.time);
-      const updatePayload = {
-        time: newTimestamp,
-        rescheduled_at: serverTimestamp(),
-        rescheduled_by: 'user'
-      };
-
-      const batch = writeBatch(db);
-
-      if (userApptSnap.exists()) {
-        batch.update(userApptRef, updatePayload);
-      } else {
-        batch.set(userApptRef, {
-          appointment_id: targetApptId,
-          doctor_id: targetDocUid || '',
-          doctor_name: doctorDisplayName,
-          user_id: user.uid,
-          user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
-          status: 'scheduled',
-          deposit_paid: 50.00,
-          ...updatePayload
-        }, { merge: true });
+      if (apptData?.time) {
+        const apptDate = apptData.time.toDate ? apptData.time.toDate() : new Date(apptData.time);
+        if (Date.now() - apptDate.getTime() > 60 * 60 * 1000) {
+          alert('This appointment time has already passed and can no longer be rescheduled.');
+          router.push('/user/consult');
+          return;
+        }
       }
 
-      if (targetDocUid) {
-        const docApptRef = doc(db, 'doctors', targetDocUid, 'appointments_upcoming', targetApptId);
-        const docApptSnap = await getDoc(docApptRef);
-        if (docApptSnap.exists()) {
-          batch.update(docApptRef, updatePayload);
+      // 1. Try Cloud Function
+      let fnSuccess = false;
+      try {
+        const rescheduleFn = httpsCallable(functions, "rescheduleAppointmentByUser");
+        await rescheduleFn({
+          appointmentId: targetApptId,
+          newAppointmentTime: selectedSlot.time.getTime(),
+        });
+        fnSuccess = true;
+      } catch (fnErr) {
+        console.warn("Cloud function rescheduleAppointmentByUser failed, using fallback:", fnErr);
+        if (fnErr.message && fnErr.message.includes("past")) {
+          alert(fnErr.message);
+          router.push('/user/consult');
+          return;
+        }
+      }
+
+      if (!fnSuccess) {
+        const targetDocUid = resolvedDoctorUid || apptData?.doctor_id || apptData?.doctor_uid;
+        const newTimestamp = Timestamp.fromDate(selectedSlot.time);
+        const updatePayload = {
+          time: newTimestamp,
+          rescheduled_at: serverTimestamp(),
+          rescheduled_by: 'user'
+        };
+
+        const batch = writeBatch(db);
+
+        if (userApptSnap.exists()) {
+          batch.update(userApptRef, updatePayload);
         } else {
-          batch.set(docApptRef, {
+          batch.set(userApptRef, {
             appointment_id: targetApptId,
-            doctor_id: targetDocUid,
+            doctor_id: targetDocUid || '',
             doctor_name: doctorDisplayName,
             user_id: user.uid,
             user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
@@ -713,9 +723,28 @@ function ScheduleConsultationContent() {
             ...updatePayload
           }, { merge: true });
         }
-      }
 
-      await batch.commit();
+        if (targetDocUid) {
+          const docApptRef = doc(db, 'doctors', targetDocUid, 'appointments_upcoming', targetApptId);
+          const docApptSnap = await getDoc(docApptRef);
+          if (docApptSnap.exists()) {
+            batch.update(docApptRef, updatePayload);
+          } else {
+            batch.set(docApptRef, {
+              appointment_id: targetApptId,
+              doctor_id: targetDocUid,
+              doctor_name: doctorDisplayName,
+              user_id: user.uid,
+              user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
+              status: 'scheduled',
+              deposit_paid: 50.00,
+              ...updatePayload
+            }, { merge: true });
+          }
+        }
+
+        await batch.commit();
+      }
 
       setBookingSuccess(true);
       setTimeout(() => {

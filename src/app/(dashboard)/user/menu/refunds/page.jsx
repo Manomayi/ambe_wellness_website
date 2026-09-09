@@ -1057,6 +1057,7 @@ export default function UserRefundsPage() {
 
         await setDoc(doc(db, 'refundRequests', reqId), refPayload, { merge: true });
 
+        setSelectedItem(null);
         setIsSubmitting(false);
         setShowSuccessModal(true);
         return;
@@ -1214,14 +1215,10 @@ export default function UserRefundsPage() {
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#8C827A] mb-3">
           Consultation & Payment Summary
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
           <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
             <p className="text-xl font-bold text-[#1A1A1A]">{stats.total}</p>
             <p className="text-[11px] font-medium text-[#6B6862]">Total</p>
-          </div>
-          <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
-            <p className="text-xl font-bold text-emerald-600">{stats.paid}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">Paid</p>
           </div>
           <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
             <p className="text-xl font-bold text-blue-600">{stats.completed}</p>
@@ -1619,7 +1616,10 @@ export default function UserRefundsPage() {
               Your refund request was submitted successfully and is waiting for admin approval. Our team will review your payment and process the refund.
             </p>
             <button
-              onClick={() => setShowSuccessModal(false)}
+              onClick={() => {
+                setShowSuccessModal(false);
+                setSelectedItem(null);
+              }}
               className="w-full py-2.5 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
             >
               Close

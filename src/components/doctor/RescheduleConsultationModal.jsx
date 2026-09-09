@@ -308,6 +308,12 @@ export default function RescheduleConsultationModal({
 
   const handleRescheduleConfirm = async () => {
     if (!selectedSlot) return;
+
+    if (apptTimeMillis > 0 && (Date.now() - apptTimeMillis) > 60 * 60 * 1000) {
+      setErrorMessage("This appointment time has already passed and can no longer be rescheduled.");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
