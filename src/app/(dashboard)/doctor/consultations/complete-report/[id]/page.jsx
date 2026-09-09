@@ -13,6 +13,7 @@ import {
   writeBatch,
   serverTimestamp,
   Timestamp,
+  increment,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { classifyOutcome } from '@/lib/refundPolicy';
@@ -247,7 +248,7 @@ export default function CompleteReportPage() {
         { merge: true }
       );
 
-      // Keep consultation doc updated with completed status
+      // Keep consultation doc updated with completed status and clinical report
       batch.set(
         doc(db, 'consultations', oldAppointmentId),
         {
@@ -262,6 +263,9 @@ export default function CompleteReportPage() {
           user_id: userUid,
           user_name: userName,
           history_appointment_id: documentId,
+          recommendations,
+          notes: overallNotes.trim(),
+          store_recommendations: recommendedProducts,
           updated_at: serverTimestamp(),
         },
         { merge: true }
@@ -280,13 +284,16 @@ export default function CompleteReportPage() {
         user_name: userName,
         time,
         document_id: documentId,
+        appointment_id: oldAppointmentId,
+        consultation_id: oldAppointmentId,
         updated_at: serverTimestamp(),
         recommendations,
         notes: overallNotes.trim(),
+        store_recommendations: recommendedProducts,
       });
 
       batch.update(doc(db, 'doctors', doctorUid), {
-        'pending.finish_report': -1,
+        'pending.finish_report': increment(-1),
       });
 
       batch.set(

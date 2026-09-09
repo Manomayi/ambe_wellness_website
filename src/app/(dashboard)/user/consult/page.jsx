@@ -363,6 +363,14 @@ export default function UserConsultPage() {
         if (docId) {
           const doctorUpcomingRef = doc(db, 'doctors', docId, 'appointments_upcoming', appointment.id);
           batch.delete(doctorUpcomingRef);
+
+          const doctorHistoryRef = doc(db, 'doctors', docId, 'appointments_history', appointment.id);
+          batch.set(doctorHistoryRef, {
+            ...appointment,
+            status: 'cancelled_by_user',
+            cancelled_by: 'user',
+            cancelled_at: serverTimestamp()
+          }, { merge: true });
         }
         await batch.commit();
       }

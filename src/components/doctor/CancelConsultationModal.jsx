@@ -136,14 +136,37 @@ export default function CancelConsultationModal({
         );
         const userDocRef = doc(db, "users", targetUserId);
 
+        const doctorHistoryRef = doc(
+          db,
+          "doctors",
+          doctorUid,
+          "appointments_history",
+          appointment.id
+        );
+
         const batch = writeBatch(db);
         batch.delete(doctorApptRef);
         batch.delete(userApptRef);
+        batch.set(
+          doctorHistoryRef,
+          {
+            ...appointment,
+            status: "cancelled_by_doctor",
+            cancelled_by: "doctor",
+            cancellation_reason: cancelReason,
+            note: isLateCancellation
+              ? "Doctor cancelled late. Please reschedule."
+              : "Doctor requested cancellation. Please reschedule.",
+            cancelled_at: serverTimestamp(),
+          },
+          { merge: true }
+        );
         batch.set(
           userHistoryRef,
           {
             ...appointment,
             status: "cancelled_by_doctor",
+            cancelled_by: "doctor",
             cancellation_reason: cancelReason,
             note: isLateCancellation
               ? "Doctor cancelled late. Please reschedule."
