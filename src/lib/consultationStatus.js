@@ -3,7 +3,7 @@
  * Handles Completed, Cancelled by User, Cancelled by Doctor, Missed (No-Show), and Doctor Absent.
  */
 
-export function getConsultationStatusInfo(appointment) {
+export function getConsultationStatusInfo(appointment, role = 'user') {
   if (!appointment) {
     return {
       statusKey: 'unknown',
@@ -18,7 +18,9 @@ export function getConsultationStatusInfo(appointment) {
     };
   }
 
+  const isDoctor = role === 'doctor';
   const rawStatus = (appointment.status || '').toString().toLowerCase().trim();
+  const cancelledBy = (appointment.cancelled_by || appointment.cancelledBy || '').toString().toLowerCase().trim();
   const userJoined = appointment.user_joined === true;
   const doctorJoined = appointment.doctor_joined === true;
 
@@ -35,15 +37,18 @@ export function getConsultationStatusInfo(appointment) {
     Boolean(referral);
 
   // 1. Cancelled Scenarios
-  if (rawStatus.includes('cancel')) {
-    if (
+  if (rawStatus.includes('cancel') || cancelledBy) {
+    const isDocCancel =
       rawStatus.includes('doctor') ||
       rawStatus.includes('admin') ||
-      rawStatus === 'cancelled_doctor_deleted'
-    ) {
+      rawStatus === 'cancelled_doctor_deleted' ||
+      cancelledBy === 'doctor' ||
+      cancelledBy === 'admin';
+
+    if (isDocCancel) {
       return {
         statusKey: 'cancelled_by_doctor',
-        label: 'Cancelled by Doctor',
+        label: isDoctor ? 'Cancelled by You' : 'Cancelled by Doctor',
         badgeClass: 'bg-stone-100 text-stone-700 border border-stone-300',
         dotClass: 'bg-stone-500',
         isCancelled: true,
@@ -56,7 +61,7 @@ export function getConsultationStatusInfo(appointment) {
 
     return {
       statusKey: 'cancelled_by_user',
-      label: 'Cancelled by You',
+      label: isDoctor ? 'Cancelled by Patient' : 'Cancelled by You',
       badgeClass: 'bg-red-50 text-red-700 border border-red-200',
       dotClass: 'bg-red-500',
       isCancelled: true,

@@ -327,6 +327,8 @@ export default function UserRefundsPage() {
           policyText,
           refundRequest: refundReq,
           isCancelled,
+          cancelledBy: c.cancelled_by || (isCancelledByUser ? 'user' : (isCancelledByDoctor ? 'doctor' : null)),
+          cancelledAt: parseDate(c.cancelled_at || c.cancelledAt),
           isUpcoming,
           canRequestRefund,
           userJoined,
@@ -899,9 +901,10 @@ export default function UserRefundsPage() {
         paymentDate,
         depositAmount,
         paymentStatus: status,
-        consultationStatus,
         isNoShow,
-        isCancelled: isCancelledInAdvance,
+        isCancelled: wasCancelledByUser || wasCancelledByDoctor || isCancelledInAdvance,
+        cancelledBy: matchedAppt?.cancelled_by || (wasCancelledByUser ? 'user' : (wasCancelledByDoctor ? 'doctor' : null)),
+        cancelledAt: cancelledAt,
         isUpcoming: isUpcomingConsultation,
         isWithin30Days,
         daysRemaining,
@@ -996,6 +999,8 @@ export default function UserRefundsPage() {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
               })
             : String(selectedItem.consultationDate))
         : 'N/A';
@@ -1019,6 +1024,11 @@ export default function UserRefundsPage() {
           refundableAmount: selectedItem.calculatedRefund,
           isNoShow: selectedItem.isNoShow,
           refundPolicy: selectedItem.policyText,
+          consultationStatus: selectedItem.consultationStatus || (selectedItem.isCancelled ? 'cancelled_by_user' : null),
+          isCancelled: selectedItem.isCancelled || false,
+          cancelledBy: selectedItem.cancelledBy || (selectedItem.consultationStatus === 'cancelled_by_user' ? 'user' : (selectedItem.consultationStatus === 'cancelled_by_doctor' ? 'doctor' : null)),
+          cancelledAt: selectedItem.cancelledAt || null,
+          cancelledInAdvance: selectedItem.isCancelled || false,
           userJoined: selectedItem.userJoined === true,
           userJoinedAt: selectedItem.userJoinedAt || null,
           doctorJoined: selectedItem.doctorJoined === true,
@@ -1047,6 +1057,9 @@ export default function UserRefundsPage() {
 
         await setDoc(doc(db, 'consultations', reqId), {
           refund_status: 'waiting_for_approval',
+          ...(selectedItem.consultationStatus ? { status: selectedItem.consultationStatus } : {}),
+          ...(selectedItem.cancelledBy ? { cancelled_by: selectedItem.cancelledBy } : {}),
+          ...(selectedItem.cancelledAt ? { cancelled_at: selectedItem.cancelledAt } : {}),
           refundable_amount: selectedItem.calculatedRefund,
           patient_message: patientMessage.trim(),
           ...(receiptUrl ? { receipt_url: receiptUrl } : {}),
@@ -1306,7 +1319,17 @@ export default function UserRefundsPage() {
                         : `$${item.calculatedRefund.toFixed(2)} USD`}
                     </span>
                   </p>
-                  {item.userJoined && item.doctorJoined && item.callDuration ? (
+                  {item.isCancelled ? (
+                    <p className="text-orange-700 font-medium sm:col-span-2">
+                      <span className="text-[#8C827A] font-medium">Consultation Status:</span>{' '}
+                      Cancelled by {item.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
+                      {item.cancelledAt && (
+                        <span className="text-[#8C827A] font-normal ml-1">
+                          (on {formatConsultationDate(item.cancelledAt)})
+                        </span>
+                      )}
+                    </p>
+                  ) : item.userJoined && item.doctorJoined && item.callDuration ? (
                     <p className="text-emerald-700 font-semibold sm:col-span-2">
                       <span className="text-[#8C827A] font-medium">Video Call Duration:</span>{' '}
                       Both Attended ({item.callDuration})
@@ -1483,6 +1506,17 @@ export default function UserRefundsPage() {
                 <p>
                   <span className="font-semibold text-gray-700">Consultation Date:</span>{' '}
                   {formatConsultationDate(selectedItem.consultationDate)}
+                </p>
+              )}
+              {selectedItem.isCancelled && (
+                <p className="text-orange-700 font-medium">
+                  <span className="font-semibold text-gray-700">Status:</span>{' '}
+                  Cancelled by {selectedItem.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
+                  {selectedItem.cancelledAt && (
+                    <span className="text-gray-500 font-normal ml-1">
+                      (on {formatConsultationDate(selectedItem.cancelledAt)})
+                    </span>
+                  )}
                 </p>
               )}
               <p>

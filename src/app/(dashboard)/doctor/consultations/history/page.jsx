@@ -8,6 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import BackButton from '@/components/common/BackButton';
+import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 
 export default function DoctorConsultationHistoryPage() {
   const router = useRouter();
@@ -67,34 +68,44 @@ export default function DoctorConsultationHistoryPage() {
         <p className="text-[#6B6862]">No history yet.</p>
       ) : (
         <div className="space-y-4">
-          {history.map((appt) => (
-            <button
-              key={appt.id}
-              onClick={() => {
-                // use appt.id and its fields
-                const params = new URLSearchParams({
-                  userUid: appt.user_id,
-                  userName: appt.user_name,
-                  doctorName: appt.doctor_name,
-                }).toString();
+          {history.map((appt) => {
+            const statusInfo = getConsultationStatusInfo(appt, 'doctor');
+            return (
+              <button
+                key={appt.id}
+                onClick={() => {
+                  // use appt.id and its fields
+                  const params = new URLSearchParams({
+                    userUid: appt.user_id,
+                    userName: appt.user_name,
+                    doctorName: appt.doctor_name,
+                  }).toString();
 
-                router.push(
-                  `/doctor/consultations/report/${appt.id}?${params}`
-                );
-              }}
-              className="w-full bg-white shadow rounded-lg border-l-4 border-[#C8996A] p-4 flex justify-between items-center hover:bg-[#FAF8F5] transition"
-            >
-              <div>
-                <p className="text-[#1A1A1A] font-semibold text-left">
-                  {appt.user_name}
-                </p>
-                <p className="text-[#6B6862] text-sm mt-1">
-                  {formatTime(appt.time)}
-                </p>
-              </div>
-              <ChevronRightIcon className="h-5 w-5 text-[#8C827A]" />
-            </button>
-          ))}
+                  router.push(
+                    `/doctor/consultations/report/${appt.id}?${params}`
+                  );
+                }}
+                className="w-full bg-white shadow rounded-lg border-l-4 border-[#C8996A] p-4 flex justify-between items-center hover:bg-[#FAF8F5] transition"
+              >
+                <div>
+                  <p className="text-[#1A1A1A] font-semibold text-left">
+                    {appt.user_name}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-[#6B6862] text-sm">
+                      {formatTime(appt.time)}
+                    </p>
+                    {statusInfo.isCancelled && (
+                      <span className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full font-medium ${statusInfo.badgeClass}`}>
+                        {statusInfo.label}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <ChevronRightIcon className="h-5 w-5 text-[#8C827A]" />
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
