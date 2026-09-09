@@ -133,6 +133,10 @@ export default function VideoCall({
           call_status: 'ended',
           call_ended_by: isDoctor ? 'doctor' : 'user',
           call_ended_at: serverTimestamp(),
+          ...(isDoctor ? { doctor_id: userId } : { user_id: userId }),
+          ...(otherPartyUid
+            ? (isDoctor ? { user_id: otherPartyUid } : { doctor_id: otherPartyUid })
+            : {}),
         },
         { merge: true }
       );

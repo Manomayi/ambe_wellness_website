@@ -275,6 +275,18 @@ export default function UserConsultPage() {
         await batch.commit();
       }
 
+      // Direct sync to master consultations document
+      try {
+        await setDoc(doc(db, 'consultations', appointment.id), {
+          status: 'cancelled_by_user',
+          cancelled_at: serverTimestamp(),
+          cancelled_by: 'user',
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      } catch (cErr) {
+        console.warn('Error syncing cancel to consultations doc:', cErr);
+      }
+
       setAppointmentToCancel(null);
     } catch (err) {
       console.error('Error cancelling appointment:', err);

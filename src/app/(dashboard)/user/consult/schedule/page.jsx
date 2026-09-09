@@ -614,6 +614,7 @@ function ScheduleConsultationContent() {
             status: 'scheduled',
             payment_id: finalIntentId,
             payment_intent_id: finalIntentId,
+            deposit_amount: 50.00,
             created_at: serverTimestamp(),
           },
           { merge: true }

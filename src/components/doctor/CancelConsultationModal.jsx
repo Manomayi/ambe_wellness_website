@@ -10,6 +10,7 @@ import {
 import { httpsCallable } from "firebase/functions";
 import {
   doc,
+  setDoc,
   writeBatch,
   serverTimestamp,
   collection
@@ -155,6 +156,25 @@ export default function CancelConsultationModal({
         });
         batch.update(userDocRef, { is_consultation_set: false });
         await batch.commit();
+      }
+
+      // Direct sync to master consultations document
+      try {
+        await setDoc(
+          doc(db, "consultations", appointment.id),
+          {
+            status: "cancelled_by_doctor",
+            cancellation_reason: cancelReason,
+            is_late_cancellation: isLateCancellation,
+            cancelled_by: "doctor",
+            doctor_id: doctorUid,
+            cancelled_at: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (cErr) {
+        console.warn("Error syncing cancel to consultations doc:", cErr);
       }
 
       if (onSuccess) {

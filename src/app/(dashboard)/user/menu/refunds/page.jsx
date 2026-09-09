@@ -91,6 +91,7 @@ export default function UserRefundsPage() {
   const [upcomingAppts, setUpcomingAppts] = useState([]);
   const [historyAppts, setHistoryAppts] = useState([]);
   const [refundRequests, setRefundRequests] = useState([]);
+  const [consultations, setConsultations] = useState([]);
 
   // Modal State
   const [selectedItem, setSelectedItem] = useState(null);
@@ -116,6 +117,33 @@ export default function UserRefundsPage() {
 
   const initListeners = (uid) => {
     setLoading(true);
+
+    const useNewRefundFlow = process.env.NEXT_PUBLIC_USE_NEW_REFUND_FLOW !== 'false';
+    if (useNewRefundFlow) {
+      const consultQ = query(
+        collection(db, 'consultations'),
+        where('user_id', '==', uid)
+      );
+      const unsubConsult = onSnapshot(consultQ, (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setConsultations(list);
+      });
+
+      const refundQ = query(
+        collection(db, 'refundRequests'),
+        where('userId', '==', uid)
+      );
+      const unsubRefunds = onSnapshot(refundQ, (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setRefundRequests(list);
+        setLoading(false);
+      });
+
+      return () => {
+        unsubConsult();
+        unsubRefunds();
+      };
+    }
 
     // 1. Listen for purchases
     const purchasesQ = query(collection(db, 'users', uid, 'purchases'));
@@ -159,6 +187,173 @@ export default function UserRefundsPage() {
 
   // Build merged consultation deposit payment items & stats
   const { depositItems, stats } = useMemo(() => {
+    const useNewRefundFlow = process.env.NEXT_PUBLIC_USE_NEW_REFUND_FLOW !== 'false';
+    if (useNewRefundFlow) {
+      const refundsMap = {};
+      refundRequests.forEach((r) => {
+        if (r.id) refundsMap[r.id] = r;
+        if (r.consultationId && r.consultationId !== 'N/A') {
+          refundsMap[r.consultationId] = r;
+        }
+      });
+
+      const now = new Date();
+      let paidCount = 0;
+      let unpaidCount = 0;
+      let completedCount = 0;
+      let upcomingCount = 0;
+      let cancelledCount = 0;
+      let noShowCount = 0;
+
+      const parseDate = (val) => {
+        if (!val) return null;
+        if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+        if (val.toDate) return val.toDate();
+        if (typeof val === 'number') return new Date(val > 100000000000 ? val : val * 1000);
+        if (val.seconds) return new Date(val.seconds * 1000);
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
+      const items = consultations.map((c) => {
+        const consultationId = c.id;
+        const doctorName = c.doctor_name || 'Assigned Doctor';
+        const formattedDoctor = (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr '))
+          ? `Dr. ${doctorName}`
+          : doctorName;
+
+        const rawAmount = c.deposit_amount ?? 50.0;
+        const depositAmount = Number(rawAmount) || 50.0;
+        const paymentId = c.payment_id || c.payment_intent_id || consultationId;
+        const paymentStatus = (c.payment_status || 'succeeded').toLowerCase();
+
+        const consultationDate = parseDate(c.time || c.scheduled_at);
+        const paymentDate = parseDate(c.created_at || c.created) || consultationDate || now;
+
+        const userJoined = c.user_joined === true;
+        const userJoinedAt = parseDate(c.user_joined_at);
+        const doctorJoined = c.doctor_joined === true;
+        const doctorJoinedAt = parseDate(c.doctor_joined_at);
+        const callEndedAt = parseDate(c.call_ended_at);
+        const callEndedBy = c.call_ended_by;
+
+        const rawStatus = (c.status || 'scheduled').toLowerCase();
+        const isCancelledByUser = rawStatus === 'cancelled_by_user' || rawStatus === 'cancelled';
+        const isCancelledByDoctor = rawStatus.includes('cancelled_by_doctor') || rawStatus.includes('cancelled_doctor');
+        const isCancelled = isCancelledByUser || isCancelledByDoctor;
+
+        const refundReq = refundsMap[consultationId] || null;
+
+        const diffDays = Math.floor((now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24));
+        const isWithin30Days = diffDays <= 30;
+        const daysRemaining = Math.max(0, 30 - diffDays);
+        const deadline = new Date(paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+        let isNoShow = false;
+        let isUpcoming = false;
+        let calculatedRefund = 50.0;
+        let policyText = 'Full deposit refund eligible.';
+
+        if (refundReq) {
+          calculatedRefund = refundReq.refundableAmount ?? 50.0;
+          policyText = refundReq.refundPolicy || 'Full deposit refund eligible.';
+          isNoShow = refundReq.isNoShow === true;
+        } else if (!isWithin30Days) {
+          calculatedRefund = 0.0;
+          policyText = 'Refund period expired (exceeded 30 days).';
+        } else if (isCancelled) {
+          calculatedRefund = 50.0;
+          policyText = isCancelledByDoctor
+            ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
+            : 'Full deposit refund eligible (Appointment was cancelled).';
+        } else if (userJoined && doctorJoined) {
+          calculatedRefund = 50.0;
+          policyText = 'Full deposit refund eligible (Consultation completed).';
+        } else if (userJoined && !doctorJoined) {
+          calculatedRefund = 50.0;
+          policyText = 'Full deposit refund eligible (Doctor was absent).';
+        } else {
+          const sessionEnded = Boolean(callEndedAt || rawStatus === 'completed');
+          const windowPassed = sessionEnded || (consultationDate && now.getTime() >= (consultationDate.getTime() + 60 * 60 * 1000));
+          if (!windowPassed && consultationDate) {
+            isUpcoming = true;
+            calculatedRefund = 0.0;
+            policyText = 'Refund locked until the consultation ends or is cancelled.';
+          } else {
+            isNoShow = true;
+            calculatedRefund = 25.0;
+            policyText = '50% refund because the consultation was missed.';
+          }
+        }
+
+        let consultationStatus = rawStatus;
+        if (isNoShow) {
+          consultationStatus = 'no_show';
+          noShowCount++;
+        } else if (userJoined && !doctorJoined && !isCancelled) {
+          consultationStatus = 'doctor_absent';
+        } else if (userJoined && doctorJoined) {
+          consultationStatus = 'completed';
+          completedCount++;
+        } else if (isCancelled) {
+          cancelledCount++;
+        }
+
+        if (isUpcoming) upcomingCount++;
+
+        if (paymentStatus === 'succeeded' || paymentStatus === 'paid') {
+          paidCount++;
+        } else {
+          unpaidCount++;
+        }
+
+        const callDuration = (userJoined && doctorJoined) ? (c.call_duration || null) : null;
+        const canRequestRefund = isWithin30Days && !refundReq && !isUpcoming;
+
+        return {
+          paymentId,
+          consultationId,
+          doctorName: formattedDoctor,
+          consultationDate,
+          paymentDate,
+          depositAmount,
+          paymentStatus,
+          consultationStatus,
+          isNoShow,
+          isWithin30Days,
+          daysRemaining,
+          deadline,
+          calculatedRefund,
+          policyText,
+          refundRequest: refundReq,
+          isCancelled,
+          isUpcoming,
+          canRequestRefund,
+          userJoined,
+          userJoinedAt,
+          doctorJoined,
+          doctorJoinedAt,
+          callEndedAt,
+          callEndedBy,
+          callDuration,
+        };
+      });
+
+      items.sort((a, b) => b.paymentDate.getTime() - a.paymentDate.getTime());
+
+      return {
+        depositItems: items,
+        stats: {
+          total: items.length,
+          paid: paidCount,
+          unpaid: unpaidCount,
+          completed: completedCount,
+          upcoming: upcomingCount,
+          noShow: noShowCount,
+        },
+      };
+    }
+
     const refundsByPaymentId = {};
     const refundsByConsultationId = {};
 
@@ -805,6 +1000,68 @@ export default function UserRefundsPage() {
             : String(selectedItem.consultationDate))
         : 'N/A';
 
+      if (process.env.NEXT_PUBLIC_USE_NEW_REFUND_FLOW !== 'false') {
+        const reqId = selectedItem.consultationId;
+        const refPayload = {
+          id: reqId,
+          userId: currentUser.uid,
+          user_id: currentUser.uid,
+          userName: currentUser.displayName || 'Patient',
+          userEmail: currentUser.email || '',
+          paymentId: selectedItem.paymentId,
+          payment_id: selectedItem.paymentId,
+          consultationId: reqId,
+          consultation_id: reqId,
+          doctorName: selectedItem.doctorName || 'Assigned Doctor',
+          doctor_name: selectedItem.doctorName || 'Assigned Doctor',
+          consultationDate: consultationDateStr,
+          depositAmount: selectedItem.depositAmount,
+          refundableAmount: selectedItem.calculatedRefund,
+          isNoShow: selectedItem.isNoShow,
+          refundPolicy: selectedItem.policyText,
+          userJoined: selectedItem.userJoined === true,
+          userJoinedAt: selectedItem.userJoinedAt || null,
+          doctorJoined: selectedItem.doctorJoined === true,
+          doctorJoinedAt: selectedItem.doctorJoinedAt || null,
+          callDuration: selectedItem.callDuration || null,
+          callEndedAt: selectedItem.callEndedAt || null,
+          callEndedBy: selectedItem.callEndedBy || null,
+          status: 'waiting_for_approval',
+          patientMessage: patientMessage.trim(),
+          receiptUrl: receiptUrl || null,
+          receiptStoragePath: receiptStoragePath || null,
+          declineReason: null,
+          submittedAt: serverTimestamp(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          auditTrail: [
+            {
+              status: 'waiting_for_approval',
+              changedBy: currentUser.uid,
+              role: 'patient',
+              timestamp: new Date().toISOString(),
+              note: 'Refund request submitted by patient',
+            },
+          ],
+        };
+
+        await setDoc(doc(db, 'consultations', reqId), {
+          refund_status: 'waiting_for_approval',
+          refundable_amount: selectedItem.calculatedRefund,
+          patient_message: patientMessage.trim(),
+          ...(receiptUrl ? { receipt_url: receiptUrl } : {}),
+          ...(receiptStoragePath ? { receipt_storage_path: receiptStoragePath } : {}),
+          refund_submitted_at: serverTimestamp(),
+          is_no_show: selectedItem.isNoShow,
+        }, { merge: true });
+
+        await setDoc(doc(db, 'refundRequests', reqId), refPayload, { merge: true });
+
+        setIsSubmitting(false);
+        setShowSuccessModal(true);
+        return;
+      }
+
       try {
         const submitFn = httpsCallable(functions, 'submitRefundRequest');
         await submitFn({
@@ -996,7 +1253,7 @@ export default function UserRefundsPage() {
             </p>
           </div>
         ) : (
-          depositItems.map((item) => {
+          depositItems.map((item, idx) => {
             const req = item.refundRequest;
             const currentStatus = req ? req.status : 'pending';
             const canRequest =
@@ -1006,7 +1263,7 @@ export default function UserRefundsPage() {
 
             return (
               <div
-                key={item.paymentId}
+                key={item.consultationId || `${item.paymentId}_${idx}`}
                 className="bg-white border border-[#E7E2D9] rounded-2xl p-6 shadow-xs hover:shadow-md transition space-y-4"
               >
                 {/* Header */}

@@ -149,6 +149,24 @@ export default function DoctorAppointmentPage() {
       console.error('Error updating doctor upcoming appointment:', error);
     }
 
+    // Calculate joint call duration if both joined
+    let callDuration = null;
+    let callDurationSeconds = null;
+    if (userJoined && liveConsultation.user_joined_at && liveConsultation.doctor_joined_at) {
+      const uMs = liveConsultation.user_joined_at.toMillis ? liveConsultation.user_joined_at.toMillis() : new Date(liveConsultation.user_joined_at).getTime();
+      const dMs = liveConsultation.doctor_joined_at.toMillis ? liveConsultation.doctor_joined_at.toMillis() : new Date(liveConsultation.doctor_joined_at).getTime();
+      const startMs = Math.max(uMs, dMs);
+      const endMs = Date.now();
+      callDurationSeconds = Math.max(0, Math.floor((endMs - startMs) / 1000));
+      if (callDurationSeconds < 60) {
+        callDuration = `${callDurationSeconds} sec`;
+      } else {
+        const mins = Math.floor(callDurationSeconds / 60);
+        const remSec = callDurationSeconds % 60;
+        callDuration = remSec === 0 ? `${mins} min` : `${mins} min ${remSec} sec`;
+      }
+    }
+
     // 4. Mark consultations collection document as completed
     try {
       await setDoc(
@@ -161,6 +179,7 @@ export default function DoctorAppointmentPage() {
           call_ended_at: serverTimestamp(),
           doctor_joined: true,
           doctor_id: user.uid,
+          ...(callDuration ? { call_duration: callDuration, call_duration_seconds: callDurationSeconds } : {}),
           ...(patientUid ? { user_id: patientUid } : {}),
           ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
           ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
