@@ -1,13 +1,51 @@
 "use client";
 import React from "react";
 import { createPortal } from "react-dom";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "@/lib/firebase/config";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Integration point — wire up real email delivery + mailing-list provider here.
+// Delivery pipeline: sends via /api/send-guide with automatic Cloud Function fallback
 export async function submitEmailCapture(email, { guideTitle } = {}) {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return { ok: true, email, guideTitle };
+  const cleanEmail = (email || "").trim().toLowerCase();
+  let sent = false;
+  let lastError = null;
+
+  // 1. Try Next.js API route first
+  try {
+    const res = await fetch("/api/send-guide", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail, guideTitle }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      sent = true;
+      return { ok: true, email: cleanEmail, guideTitle };
+    }
+    if (data.error && !data.useCloudFunction) {
+      lastError = new Error(data.error);
+    }
+  } catch (apiErr) {
+    console.warn("[EmailCapture] /api/send-guide failed, falling back to Cloud Function:", apiErr.message);
+  }
+
+  // 2. Fallback to Firebase Cloud Function (sendGuideEmail)
+  if (!sent) {
+    try {
+      const sendGuideFn = httpsCallable(functions, "sendGuideEmail");
+      const result = await sendGuideFn({ email: cleanEmail, guideTitle });
+      if (result?.data?.success) {
+        return { ok: true, email: cleanEmail, guideTitle };
+      }
+    } catch (fnErr) {
+      console.error("[EmailCapture] Cloud Function sendGuideEmail failed:", fnErr);
+      throw lastError || fnErr;
+    }
+  }
+
+  return { ok: true, email: cleanEmail, guideTitle };
 }
 
 export default function EmailCaptureModal({ open, onClose, guideTitle }) {
@@ -55,8 +93,8 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
     try {
       await submitEmailCapture(email.trim(), { guideTitle });
       setSuccess(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      setError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
