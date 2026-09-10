@@ -551,6 +551,69 @@ export default function SignUpPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={(e) => updateFormData("email", e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                  placeholder="john@example.com"
+                />
+                {errors.email && (
+                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="new-password"
+                  autoComplete="new-password"
+                  value={formData.password}
+                  onChange={(e) => updateFormData("password", e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                  placeholder="At least 6 characters"
+                />
+                {errors.password && (
+                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  name="new-password"
+                  autoComplete="new-password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                  placeholder="Confirm your password"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
               {formData.userType !== "doctor" && (
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
@@ -640,69 +703,6 @@ export default function SignUpPage() {
                   </p>
                 </div>
               )}
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={(e) => updateFormData("email", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="john@example.com"
-                />
-                {errors.email && (
-                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                    {errors.email}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="new-password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={(e) => updateFormData("password", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="At least 6 characters"
-                />
-                {errors.password && (
-                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                    {errors.password}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="new-password"
-                  autoComplete="new-password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => updateFormData("confirmPassword", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="Confirm your password"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
             </div>
           </div>
         );

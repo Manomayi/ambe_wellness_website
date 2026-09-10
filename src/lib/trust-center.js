@@ -21,8 +21,8 @@ export const TRUST_STATUS = {
 
 export const LAST_REVIEWED = "September 2, 2026";
 
-export const SECURITY_CONTACT = "security@ambewellness.com";
-export const PRIVACY_CONTACT = "privacy@ambewellness.com";
+export const SECURITY_CONTACT = "info@ambewellness.com";
+export const PRIVACY_CONTACT = "info@ambewellness.com";
 
 // ---------------------------------------------------------------------------
 // Posture summary — the honest headline.

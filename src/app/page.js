@@ -301,8 +301,8 @@ export default function Home() {
                 <ul className="space-y-2 sm:space-y-2.5 mb-8 sm:mb-10">
                   {[
                     "Ancient wisdom. Modern science.",
-                    "Doctor-led. Deeply personal.",
                     "Vetted practitioners with accredited Ayurveda degrees and allopathic training.",
+                    "Doctor-led. Deeply personal.",
                     "No one-size-fits-all. No guesswork.",
                     "Available anywhere, anytime.",
                   ].map((item) => (
