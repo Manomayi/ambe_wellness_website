@@ -3,6 +3,19 @@
     "apps": [],
     "details": [
       {
+        "appIDs": [
+          "KDD3P2N6N8.com.ambe.wellness"
+        ],
+        "components": [
+          {
+            "/": "/auth/continue*"
+          },
+          {
+            "/": "/auth/action*"
+          }
+        ]
+      },
+      {
         "appID": "KDD3P2N6N8.com.ambe.wellness",
         "paths": [
           "/auth/continue",

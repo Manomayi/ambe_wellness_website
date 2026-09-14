@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { auth } from '@/lib/firebase/config';
+import { auth, db } from '@/lib/firebase/config';
 import { sendEmailVerification } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { EnvelopeIcon, ArrowPathIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -24,12 +25,20 @@ function VerifyEmailContent() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [isVerified, setIsVerified] = useState(false);
 
-  const navigateToDashboard = useCallback((role) => {
-    const destinationRole = role || userType || queryRole;
+  const navigateToDashboard = useCallback(async (role) => {
+    let destinationRole = role || userType || queryRole;
+    if (!destinationRole && auth.currentUser) {
+      try {
+        const doctorSnap = await getDoc(doc(db, 'doctors', auth.currentUser.uid));
+        destinationRole = doctorSnap.exists() ? 'doctor' : 'user';
+      } catch (err) {
+        console.warn('Could not check doctor doc:', err);
+      }
+    }
     if (destinationRole === 'doctor') {
-      router.push('/doctor/home');
+      router.push('/doctor/schedule');
     } else {
-      router.push('/user/home');
+      router.push('/user/menu/questionnaire');
     }
   }, [router, userType, queryRole]);
 
@@ -107,7 +116,15 @@ function VerifyEmailContent() {
           }, 1200);
           return;
         }
-        await sendEmailVerification(auth.currentUser);
+        const roleParam = userType || queryRole || 'user';
+        const continueUrl =
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/auth/continue?source=web&role=${roleParam}`
+            : `https://ambewellness.com/auth/continue?source=web&role=${roleParam}`;
+        await sendEmailVerification(auth.currentUser, {
+          url: continueUrl,
+          handleCodeInApp: false,
+        });
         setMessage({
           type: 'success',
           text: 'Verification email sent! Check your inbox and spam folder.',

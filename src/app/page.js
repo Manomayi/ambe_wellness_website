@@ -282,15 +282,17 @@ export default function Home() {
                   Holistic-Doctor{" "}
                   <em className="italic !text-ambe-cream font-normal">led care.</em>
                   <br />
-                  Pay as you{" "}
-                  <em className="italic !text-ambe-cream font-normal">can.</em>
+                  <span className="text-[#FFD3AC]">
+                    Pay as you{" "}
+                    <em className="italic text-[#FFD3AC] font-normal">can.</em>
+                  </span>
                 </h1>
 
                 <p className="text-ambe-cream/90 text-base sm:text-lg lg:text-xl font-light mb-3 leading-relaxed">
                   Evidence-based care with heart, tailored just for you.
                 </p>
 
-                <p className="text-ambe-gold text-xs sm:text-sm mb-2 tracking-wide">
+                <p className="text-white/70 text-base sm:text-lg lg:text-xl font-medium tracking-wide mb-2">
                   Tele-Wellness
                 </p>
 

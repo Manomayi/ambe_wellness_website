@@ -25,7 +25,15 @@ export default function LoginPage() {
 
       if (auth.currentUser && !auth.currentUser.emailVerified) {
         try {
-          await sendEmailVerification(auth.currentUser);
+          const roleParam = userType || 'user';
+          const continueUrl =
+            typeof window !== 'undefined'
+              ? `${window.location.origin}/auth/continue?source=web&role=${roleParam}`
+              : `https://ambewellness.com/auth/continue?source=web&role=${roleParam}`;
+          await sendEmailVerification(auth.currentUser, {
+            url: continueUrl,
+            handleCodeInApp: false,
+          });
         } catch (verifyErr) {
           console.warn("Verification email send error (may be throttled):", verifyErr);
         }

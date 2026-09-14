@@ -2,19 +2,22 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   applyActionCode,
   checkActionCode,
   confirmPasswordReset,
   verifyPasswordResetCode,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
+import { auth, db } from "@/lib/firebase/config";
+import { doc, getDoc } from "firebase/firestore";
 import {
   ArrowPathIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   DevicePhoneMobileIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 
 /**
@@ -74,30 +77,43 @@ export default function AuthActionHandler() {
   // browser, so we never ping-pong between app and browser.
   const forceWeb = searchParams.get("web") === "1";
 
+  const router = useRouter();
   const [status, setStatus] = useState("working"); // working | success | error | needsPassword
   const [error, setError] = useState("");
   const [accountEmail, setAccountEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [role, setRole] = useState("");
+  const [redirecting, setRedirecting] = useState(false);
 
   const platform = useMemo(detectPlatform, []);
   const isMobile = platform === "android" || platform === "ios";
   const ranRef = useRef(false);
   const autoOpenedRef = useRef(false);
 
-  const webContinueHref = useMemo(() => {
-    if (!continueUrl) return "/login";
-    try {
-      const parsed = new URL(continueUrl, "https://ambewellness.com");
-      // Only follow same-origin continue URLs — an attacker-supplied continueUrl
-      // must never turn this page into an open redirect.
-      if (parsed.origin !== "https://ambewellness.com") return "/login";
-      return `${parsed.pathname}${parsed.search}`;
-    } catch {
-      return "/login";
+  const isFromApp = continueUrl?.includes("source=app");
+
+  const targetWebPath = useMemo(() => {
+    if (role === "doctor") return "/doctor/schedule";
+    if (role === "user") return "/user/menu/questionnaire";
+    if (continueUrl) {
+      try {
+        const parsed = new URL(continueUrl, "https://ambewellness.com");
+        const r = parsed.searchParams.get("role");
+        if (r === "doctor") return "/doctor/schedule";
+        if (r === "user") return "/user/menu/questionnaire";
+        if (
+          parsed.origin === "https://ambewellness.com" &&
+          parsed.pathname !== "/auth/continue" &&
+          parsed.pathname !== "/auth/action"
+        ) {
+          return `${parsed.pathname}${parsed.search}`;
+        }
+      } catch {}
     }
-  }, [continueUrl]);
+    return "/user/menu/questionnaire";
+  }, [role, continueUrl]);
 
   const openApp = useCallback(() => {
     const fallback =
@@ -137,11 +153,14 @@ export default function AuthActionHandler() {
             // Non-fatal: we only wanted the email for display.
           }
           await applyActionCode(auth, oobCode);
-          // Refresh the local session so an already-signed-in web tab sees the
-          // new emailVerified flag without waiting for its poll.
+          // Refresh local session & check doctor/user role
           try {
             await auth.currentUser?.reload();
             await auth.currentUser?.getIdToken(true);
+            if (auth.currentUser) {
+              const docSnap = await getDoc(doc(db, "doctors", auth.currentUser.uid));
+              setRole(docSnap.exists() ? "doctor" : "user");
+            }
           } catch {
             /* not signed in on this device — fine */
           }
@@ -153,10 +172,6 @@ export default function AuthActionHandler() {
         setError("Unsupported link type.");
       } catch (err) {
         if (mode === MODE_VERIFY && err?.code === "auth/invalid-action-code") {
-          // The code was already consumed — by the native app, by a second tap,
-          // or by a mail-security scanner prefetching the URL. Only claim
-          // success if a verified session is actually visible here; otherwise
-          // say what happened rather than asserting something we can't see.
           try {
             await auth.currentUser?.reload();
           } catch {
@@ -179,16 +194,29 @@ export default function AuthActionHandler() {
     })();
   }, [mode, oobCode]);
 
-  // ---- Hand off to the native app on success -----------------------------
+  // ---- Web flow: Auto-redirect to next step ------------------------------
   useEffect(() => {
     if (status !== "success" || mode !== MODE_VERIFY) return;
-    if (!isMobile || forceWeb || autoOpenedRef.current) return;
+    if (isFromApp) return;
+    if (autoOpenedRef.current) return;
+
+    const timer = setTimeout(() => {
+      autoOpenedRef.current = true;
+      setRedirecting(true);
+      router.push(targetWebPath);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [status, mode, isFromApp, targetWebPath, router]);
+
+  // ---- Hand off to the native app on success (App flow only) -------------
+  useEffect(() => {
+    if (status !== "success" || mode !== MODE_VERIFY) return;
+    if (!isFromApp || !isMobile || forceWeb || autoOpenedRef.current) return;
     autoOpenedRef.current = true;
-    // Small delay so the success state paints first; if the OS refuses the
-    // handoff (in-app browsers often do) the user still sees the button below.
     const t = setTimeout(openApp, 600);
     return () => clearTimeout(t);
-  }, [status, mode, isMobile, forceWeb, openApp]);
+  }, [status, mode, isFromApp, isMobile, forceWeb, openApp]);
 
   const handleResetSubmit = async (e) => {
     e.preventDefault();
@@ -296,33 +324,50 @@ export default function AuthActionHandler() {
 
       {status === "success" && mode === MODE_VERIFY && (
         <Centered
-          icon={<CheckCircleIcon className="w-8 h-8 text-[#2E7D32]" />}
+          icon={<CheckCircleIcon className="w-8 h-8 text-[#4CAF50]" />}
           title="Email Verified"
           body={
             accountEmail
-              ? `${accountEmail} is confirmed. You can continue your registration.`
+              ? `${accountEmail} is confirmed. ${redirecting ? "Redirecting to your next step..." : "You can continue your registration."}`
+              : redirecting
+              ? "Redirecting to your next step..."
               : "Your email is confirmed. You can continue your registration."
           }
         >
-          {isMobile && !forceWeb && (
-            <button
-              type="button"
-              onClick={openApp}
-              className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white cursor-pointer"
-            >
-              <DevicePhoneMobileIcon className="w-4 h-4" />
-              Continue in the Ambé App
-            </button>
+          {isFromApp && isMobile ? (
+            <>
+              <button
+                type="button"
+                onClick={openApp}
+                className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white cursor-pointer"
+              >
+                <DevicePhoneMobileIcon className="w-4 h-4" />
+                Continue in the Ambé App
+              </button>
+              <PrimaryLink href={targetWebPath} muted>
+                Continue in this browser
+              </PrimaryLink>
+            </>
+          ) : (
+            <PrimaryLink href={targetWebPath}>
+              <span className="inline-flex items-center justify-center gap-2">
+                <span>
+                  {redirecting
+                    ? "Redirecting..."
+                    : role === "doctor"
+                    ? "Set Up Consultation Schedule"
+                    : "Complete Wellness Questionnaire"}
+                </span>
+                <ArrowRightIcon className="w-4 h-4" />
+              </span>
+            </PrimaryLink>
           )}
-          <PrimaryLink href={webContinueHref} muted={isMobile && !forceWeb}>
-            Continue in this browser
-          </PrimaryLink>
         </Centered>
       )}
 
       {status === "success" && mode === MODE_RESET && (
         <Centered
-          icon={<CheckCircleIcon className="w-8 h-8 text-[#2E7D32]" />}
+          icon={<CheckCircleIcon className="w-8 h-8 text-[#4CAF50]" />}
           title="Password Updated"
           body="You can now sign in with your new password."
         >
@@ -332,7 +377,7 @@ export default function AuthActionHandler() {
 
       {status === "success" && mode === MODE_RECOVER && (
         <Centered
-          icon={<CheckCircleIcon className="w-8 h-8 text-[#2E7D32]" />}
+          icon={<CheckCircleIcon className="w-8 h-8 text-[#4CAF50]" />}
           title="Email Address Restored"
           body="Your sign-in email has been changed back. We recommend resetting your password."
         >
@@ -347,27 +392,21 @@ export default function AuthActionHandler() {
 
 function Shell({ children }) {
   return (
-    <div className="min-h-screen bg-[#F4F1EA] flex items-center justify-center px-4 py-12 sm:py-16">
+    <div className="min-h-screen bg-[#1E1E1E] flex items-center justify-center px-4 py-12 sm:py-16">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-block text-3xl sm:text-4xl font-normal tracking-wide transition-opacity hover:opacity-80 select-none"
-            style={{
-              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              color: "#1A1A1A",
-            }}
-          >
-            AMBÉ
+          <Link href="/" className="inline-block transition-opacity hover:opacity-80 select-none">
+            <Image
+              src="/images/logos/ambe_logo.png"
+              alt="Ambé Wellness"
+              width={180}
+              height={50}
+              className="w-[160px] sm:w-[190px] h-auto mx-auto"
+              priority
+            />
           </Link>
-          <p
-            className="text-xs uppercase tracking-[0.2em] mt-1.5 font-medium"
-            style={{ color: "#C2691C" }}
-          >
-            Integrative Ayurveda
-          </p>
         </div>
-        <div className="bg-white p-7 sm:p-10 rounded-3xl shadow-xl border border-[#E7E2D9] text-center">
+        <div className="bg-[#2D2D30] p-7 sm:p-10 rounded-3xl shadow-2xl border border-white/10 text-center text-white">
           {children}
         </div>
       </div>
@@ -378,20 +417,19 @@ function Shell({ children }) {
 function Centered({ icon, title, body, children }) {
   return (
     <>
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FAF0E6] mb-5 border border-[#FFD3AC]">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1E1E1E] mb-5 border border-[#FFD3AC]/30">
         {icon}
       </div>
       <h1
-        className="text-2xl sm:text-3xl font-medium mb-2 select-none"
+        className="text-2xl sm:text-3xl font-medium mb-2 select-none text-white"
         style={{
           fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          color: "#1A1A1A",
         }}
       >
         {title}
       </h1>
       {body && (
-        <p className="text-sm leading-relaxed mb-6" style={{ color: "#6B6862" }}>
+        <p className="text-sm leading-relaxed mb-6 text-[#B0AAA0]">
           {body}
         </p>
       )}
@@ -406,8 +444,8 @@ function PrimaryLink({ href, children, muted = false }) {
       href={href}
       className={
         muted
-          ? "block w-full py-3 rounded-full text-xs font-medium uppercase tracking-[0.12em] transition-all border border-[#E7E2D9] text-[#1A1A1A] hover:bg-[#FAF8F5]"
-          : "block w-full px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white"
+          ? "block w-full py-3 rounded-full text-xs font-medium uppercase tracking-[0.12em] transition-all border border-white/20 text-white hover:bg-white/10"
+          : "block w-full px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white"
       }
     >
       {children}

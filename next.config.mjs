@@ -25,11 +25,28 @@ const nextConfig = {
       },
     ],
   },
- 
+  async rewrites() {
+    return [
+      {
+        source: "/apple-app-site-association",
+        destination: "/.well-known/apple-app-site-association",
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
         source: "/.well-known/apple-app-site-association",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/json",
+          },
+        ],
+      },
+      {
+        source: "/apple-app-site-association",
         headers: [
           {
             key: "Content-Type",

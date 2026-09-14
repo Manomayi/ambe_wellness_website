@@ -409,10 +409,18 @@ export default function SignUpPage() {
           }
         }
 
-        // Send email verification
+        // Send email verification with continueUrl pointing to web continue handler
         try {
           if (auth.currentUser) {
-            await sendEmailVerification(auth.currentUser);
+            const roleParam = userType || formData.userType;
+            const continueUrl =
+              typeof window !== 'undefined'
+                ? `${window.location.origin}/auth/continue?source=web&role=${roleParam}`
+                : `https://ambewellness.com/auth/continue?source=web&role=${roleParam}`;
+            await sendEmailVerification(auth.currentUser, {
+              url: continueUrl,
+              handleCodeInApp: false,
+            });
           }
         } catch (verifyErr) {
           console.warn("Initial email verification error (may be rate-limited):", verifyErr);
