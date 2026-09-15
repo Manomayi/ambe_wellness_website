@@ -398,6 +398,17 @@ export default function ExtendedQuestionnaireModal({ onComplete, onClose, standa
         } catch (e) {
           console.warn("matchWithDoctor call in extended questionnaire:", e);
         }
+        try {
+          const uSnap = await getDoc(userRef);
+          if (!uSnap.data()?.doctor?.uid) {
+            await updateDoc(userRef, {
+              needs_doctor_assignment: true,
+              preferred_health: uSnap.data()?.preferred_health || "general_health",
+            });
+          }
+        } catch (err) {
+          console.warn("Error ensuring needs_doctor_assignment:", err);
+        }
       }
 
       if (onComplete) {
@@ -425,10 +436,10 @@ export default function ExtendedQuestionnaireModal({ onComplete, onClose, standa
         <button
           onClick={() => setShowSkipModal(true)}
           disabled={isSaving}
-          className="absolute top-6 right-6 p-2 rounded-full text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#E7E2D9]/40 transition cursor-pointer"
-          title="Skip questionnaire"
+          className="absolute top-6 right-6 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#E7E2D9]/40 border border-[#E7E2D9] transition cursor-pointer"
+          title="Skip & Finish"
         >
-          <XMarkIcon className="w-6 h-6" />
+          Skip & Finish
         </button>
 
         <div className="max-w-xl mx-auto text-center space-y-3">
@@ -637,27 +648,39 @@ export default function ExtendedQuestionnaireModal({ onComplete, onClose, standa
               className="text-2xl font-normal text-[#1A1A1A]"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              Skip questionnaire?
+              Skip & Finish?
             </h3>
-            <p className="text-xs sm:text-sm text-[#6B6862] leading-relaxed">
-              The remaining questions will be skipped and you&apos;ll continue to consultation scheduling. You can update your answers later.
-            </p>
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowSkipModal(false)}
-                className="flex-1 py-3 rounded-full text-xs font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
-              >
-                CANCEL
-              </button>
-              <button
-                type="button"
-                onClick={handleSkipConfirm}
-                className="flex-1 py-3 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors cursor-pointer"
-              >
-                SKIP
-              </button>
-            </div>
+            {isSaving ? (
+              <div className="py-6 flex flex-col items-center justify-center space-y-3">
+                <svg className="animate-spin h-8 w-8 text-[#C2691C]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-sm font-medium text-[#1A1A1A]">Saving your responses...</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs sm:text-sm text-[#6B6862] leading-relaxed">
+                  Your current answers will be saved and you&apos;ll continue to consultation scheduling. You can update your answers later.
+                </p>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSkipModal(false)}
+                    className="flex-1 py-3 rounded-full text-xs font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    CANCEL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSkipConfirm}
+                    className="flex-1 py-3 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors cursor-pointer"
+                  >
+                    SKIP & FINISH
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

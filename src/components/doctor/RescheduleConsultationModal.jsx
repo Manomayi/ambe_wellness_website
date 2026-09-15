@@ -187,13 +187,21 @@ export default function RescheduleConsultationModal({
       );
 
       const nowLocal = moment.tz(localTimezone);
-      const currentCursor = doctorStartTime.clone();
+      const nowLocalCompare = nowLocal.clone().second(0).millisecond(0);
+      const minLeadTime = nowLocalCompare.clone().add(5, "minutes");
+      const startLocal = doctorStartTime.clone().tz(localTimezone);
+      const endLocal = doctorEndTime.clone().tz(localTimezone);
+
+      // Snap starting minute to clean 30-minute marks (:00 or :30)
+      const rawMinute = startLocal.minute();
+      const alignedMinute = rawMinute < 30 ? 0 : 30;
+      let currentCursor = startLocal.clone().minute(alignedMinute).second(0).millisecond(0);
       const slots = [];
 
-      while (currentCursor.isBefore(doctorEndTime)) {
-        const slotLocal = currentCursor.clone().tz(localTimezone);
-        const isPast = slotLocal.isBefore(nowLocal.clone().add(15, "minutes"));
-        const slotTimeDate = slotLocal.toDate();
+      while (currentCursor.isBefore(endLocal)) {
+        const isPast = currentCursor.isSameOrBefore(minLeadTime);
+        const slotTimeDate = currentCursor.toDate();
+        const currentDoctorTime = currentCursor.clone().tz(doctorTimezone);
 
         const isBooked = booked.some(
           (b) => Math.abs(b.getTime() - slotTimeDate.getTime()) < 60000
@@ -205,14 +213,14 @@ export default function RescheduleConsultationModal({
         if (!isPast && !isBooked) {
           slots.push({
             time: slotTimeDate,
-            doctorTime: currentCursor.clone().toDate(),
-            display: slotLocal.format("h:mm A"),
-            doctorDisplay: currentCursor.format("h:mm A"),
+            doctorTime: currentDoctorTime.toDate(),
+            display: currentCursor.format("h:mm A"),
+            doctorDisplay: currentDoctorTime.format("h:mm A"),
             isCurrentSlot,
           });
         }
 
-        currentCursor.add(60, "minutes");
+        currentCursor.add(30, "minutes");
       }
 
       setAvailableSlots(slots);

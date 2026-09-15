@@ -360,13 +360,21 @@ function ScheduleConsultationContent() {
     );
     
     const nowUser = moment.tz(userTimezone);
-    const currentDoctorTime = doctorStartTime.clone();
+    const nowUserCompare = nowUser.clone().second(0).millisecond(0);
+    const minLeadTime = nowUserCompare.clone().add(5, 'minutes');
+    const startUser = doctorStartTime.clone().tz(userTimezone);
+    const endUser = doctorEndTime.clone().tz(userTimezone);
+
+    // Snap starting minute to clean 30-minute marks (:00 or :30)
+    const rawMinute = startUser.minute();
+    const alignedMinute = rawMinute < 30 ? 0 : 30;
+    let currentUserTime = startUser.clone().minute(alignedMinute).second(0).millisecond(0);
     
-    while (currentDoctorTime.isBefore(doctorEndTime)) {
-      const slotInUserTz = currentDoctorTime.clone().tz(userTimezone);
-      const isPast = slotInUserTz.isBefore(nowUser);
+    while (currentUserTime.isBefore(endUser)) {
+      const isPast = currentUserTime.isSameOrBefore(minLeadTime);
       
-      const slotTimestamp = slotInUserTz.toDate();
+      const slotTimestamp = currentUserTime.toDate();
+      const currentDoctorTime = currentUserTime.clone().tz(doctorTimezone);
       const isBooked = bookedSlots.some(booked => 
         Math.abs(booked.getTime() - slotTimestamp.getTime()) < 60000
       );
@@ -375,14 +383,14 @@ function ScheduleConsultationContent() {
         slots.push({
           isInstant: false,
           time: slotTimestamp,
-          doctorTime: currentDoctorTime.clone().toDate(),
-          display: slotInUserTz.format('h:mm A'),
-          userDisplay: slotInUserTz.format('h:mm A'),
+          doctorTime: currentDoctorTime.toDate(),
+          display: currentUserTime.format('h:mm A'),
+          userDisplay: currentUserTime.format('h:mm A'),
           doctorDisplay: currentDoctorTime.format('h:mm A')
         });
       }
       
-      currentDoctorTime.add(60, 'minutes');
+      currentUserTime.add(30, 'minutes');
     }
     
     setAvailableSlots(slots);
@@ -762,15 +770,24 @@ function ScheduleConsultationContent() {
     if (!user) return;
     setCheckingInstant(true);
     try {
-      const result = await matchUserWithDoctor(user.uid, profile?.preferred_health || 'general_health', true);
+      const prefHealth = profile?.preferred_health || 'general_health';
+      const result = await matchUserWithDoctor(user.uid, prefHealth, true);
       if (result.matched && result.doctor) {
         window.location.href = '/user/consult/schedule?instant=true';
       } else {
-        alert('No doctor is currently available for instant consult. Your doctor will be assigned shortly, or you can pick your health areas to match.');
+        await updateDoc(doc(db, 'users', user.uid), {
+          needs_doctor_assignment: true,
+          preferred_health: prefHealth,
+        }).catch(() => {});
+        alert('No doctor is currently available for instant consult right now. Our medical team will assign a specialist for you shortly.');
       }
     } catch (err) {
       console.error('Instant matching error:', err);
-      alert('Could not check instant availability. Please try again.');
+      await updateDoc(doc(db, 'users', user.uid), {
+        needs_doctor_assignment: true,
+        preferred_health: profile?.preferred_health || 'general_health',
+      }).catch(() => {});
+      alert('Could not check instant availability right now. Your request has been queued for doctor assignment.');
     } finally {
       setCheckingInstant(false);
     }

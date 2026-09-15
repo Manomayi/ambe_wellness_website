@@ -72,6 +72,20 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
         });
         matchedDoc = matchInInstant || instantSnap.docs[0];
       }
+
+      // If no instant doctor was found, flag for manual admin assignment and return
+      if (!matchedDoc) {
+        await updateDoc(doc(db, "users", userId), {
+          needs_doctor_assignment: true,
+          preferred_health: normalizedField,
+        }).catch(() => {});
+
+        return {
+          matched: false,
+          doctor: null,
+          message: "No doctor is currently available for instant booking. Our medical team will assign a specialist for you shortly."
+        };
+      }
     }
 
     // 2. Specialty matching if not already matched

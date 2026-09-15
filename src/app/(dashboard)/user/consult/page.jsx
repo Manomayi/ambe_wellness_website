@@ -184,21 +184,26 @@ export default function UserConsultPage() {
       return;
     }
 
-    if (!profile?.is_extended_questionnaire_completed) {
-      setShowExtendedQuestionnaireModal(true);
-      return;
-    }
     setCheckingInstant(true);
     try {
-      const result = await matchUserWithDoctor(user.uid, profile?.preferred_health || 'general_health', true);
+      const prefHealth = profile?.preferred_health || 'general_health';
+      const result = await matchUserWithDoctor(user.uid, prefHealth, true);
       if (result.matched && result.doctor) {
         router.push('/user/consult/schedule?instant=true');
       } else {
-        alert('No doctor is currently available for instant consult right now. Your doctor will be assigned shortly, or you can pick your health areas to match.');
+        await updateDoc(doc(db, 'users', user.uid), {
+          needs_doctor_assignment: true,
+          preferred_health: prefHealth,
+        }).catch(() => {});
+        alert('No doctor is currently available for instant consult right now. Our medical team will assign a specialist for you shortly.');
       }
     } catch (err) {
       console.error('Instant availability error:', err);
-      alert('Could not check instant availability. Please try again.');
+      await updateDoc(doc(db, 'users', user.uid), {
+        needs_doctor_assignment: true,
+        preferred_health: profile?.preferred_health || 'general_health',
+      }).catch(() => {});
+      alert('Could not check instant availability right now. Your request has been queued for doctor assignment.');
     } finally {
       setCheckingInstant(false);
     }
