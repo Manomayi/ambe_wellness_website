@@ -9,7 +9,15 @@ export default function QuestionnairePage() {
 
   return (
     <div className="min-h-screen">
-      <UserQuestionnaireModal onComplete={() => { window.location.href = "/user/home"; }} />
+      <UserQuestionnaireModal
+        onComplete={(redirectUrl) => {
+          if (redirectUrl) {
+            router.push(redirectUrl);
+          } else {
+            router.push("/user/home");
+          }
+        }}
+      />
     </div>
   );
 }

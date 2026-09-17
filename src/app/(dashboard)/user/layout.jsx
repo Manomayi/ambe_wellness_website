@@ -1,23 +1,33 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import UserNav from "@/components/navigation/UserNav";
 import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserLayout({ children }) {
+  const router = useRouter();
   const { user, profile, loading } = useAuth();
   const pathname = usePathname();
+  const [questionnaireDismissed, setQuestionnaireDismissed] = useState(false);
 
   // If user is loaded and questionnaire is not completed yet AND has no specialty chosen:
   const isQuestionnairePage = pathname?.startsWith("/user/menu/questionnaire") || pathname?.startsWith("/user/delete-account");
-  const needsQuestionnaire = !isQuestionnairePage && !loading && user && profile && profile.is_free_questionnaire_completed !== true && !profile.preferred_health;
+  const needsQuestionnaire = !questionnaireDismissed && !isQuestionnairePage && !loading && user && profile && profile.is_free_questionnaire_completed !== true && !profile.preferred_health;
 
   if (needsQuestionnaire) {
     return (
       <UserQuestionnaireModal
-        onComplete={() => {
-          window.location.href = "/user/home";
+        onComplete={(redirectUrl) => {
+          setQuestionnaireDismissed(true);
+          if (redirectUrl) {
+            router.push(redirectUrl);
+          } else if (pathname === "/user/home") {
+            // Already on home
+          } else {
+            router.push("/user/home");
+          }
         }}
       />
     );

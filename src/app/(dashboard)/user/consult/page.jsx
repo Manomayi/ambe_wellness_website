@@ -423,8 +423,11 @@ export default function UserConsultPage() {
         {/* Questionnaire Modal */}
         {showQuestionnaireModal && (
           <UserQuestionnaireModal
-            onComplete={() => {
+            onComplete={(redirectUrl) => {
               setShowQuestionnaireModal(false);
+              if (redirectUrl) {
+                router.push(redirectUrl);
+              }
             }}
           />
         )}

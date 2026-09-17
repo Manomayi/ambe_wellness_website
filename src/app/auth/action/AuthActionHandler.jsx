@@ -121,7 +121,7 @@ export default function AuthActionHandler() {
     if (platform === "android") {
       window.location.href = androidIntentUrl(fallback);
     } else {
-      window.location.replace(`${APP_SCHEME_HOST}?source=web`);
+      window.location.href = `${APP_SCHEME_HOST}?source=web`;
     }
   }, [platform]);
 
@@ -212,8 +212,15 @@ export default function AuthActionHandler() {
   // ---- Hand off to the native app on success (App flow only) -------------
   useEffect(() => {
     if (status !== "success" || mode !== MODE_VERIFY) return;
-    if (!isFromApp || !isMobile || forceWeb || autoOpenedRef.current) return;
+    if (!isFromApp || !isMobile || forceWeb) return;
+    if (autoOpenedRef.current) return;
     autoOpenedRef.current = true;
+
+    try {
+      if (sessionStorage.getItem("ambe_action_handoff_attempted")) return;
+      sessionStorage.setItem("ambe_action_handoff_attempted", "true");
+    } catch (_) {}
+
     if (platform === "ios") {
       openApp();
     } else {

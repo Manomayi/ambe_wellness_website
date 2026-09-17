@@ -237,9 +237,10 @@ export default function UserQuestionnaireModal({ onComplete }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState(Array(DOSHA_QUESTIONS.length).fill(null));
   const [selectedHealthField, setSelectedHealthField] = useState(profile?.preferred_health || null);
+  const [initialHasSpecialty, setInitialHasSpecialty] = useState(Boolean(profile?.preferred_health));
   const [isSaving, setIsSaving] = useState(false);
-  const [showSkipModal, setShowSkipModal] = useState(false);
   const timerRef = useRef(null);
+  const hasLoadedDraftRef = useRef(false);
 
   // Clean up auto-advance timer on unmount
   useEffect(() => {
@@ -253,6 +254,8 @@ export default function UserQuestionnaireModal({ onComplete }) {
   // Load saved answers on mount and resume at first unanswered question
   useEffect(() => {
     if (!user) return;
+    if (hasLoadedDraftRef.current) return;
+    hasLoadedDraftRef.current = true;
 
     let isMounted = true;
 
@@ -272,7 +275,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
         console.warn("Could not read from localStorage:", e);
       }
 
-      let fetchedSpecialty = null;
+      let fetchedSpecialty = profile?.preferred_health || null;
 
       // 2. Fallback to Firestore draft if not in localStorage or check preferred_health
       try {
@@ -281,9 +284,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
           const data = userSnap.data();
           if (data.preferred_health) {
             fetchedSpecialty = data.preferred_health;
-            if (!selectedHealthField) {
-              setSelectedHealthField(data.preferred_health);
-            }
+            setSelectedHealthField(data.preferred_health);
           }
 
           if (!answersToRestore && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
@@ -303,15 +304,15 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
       if (!isMounted) return;
 
-      // 3. Restore state and set currentPage to first unanswered question
-      const hasSpec = Boolean(profile?.preferred_health || selectedHealthField || fetchedSpecialty);
-      const effectiveTotal = hasSpec ? 48 : totalQuestions;
+      const hasSpec = Boolean(fetchedSpecialty);
+      setInitialHasSpecialty(hasSpec);
+      const effectiveTotal = hasSpec ? 48 : 49;
 
+      // 3. Restore state and set currentPage to first unanswered question
       if (answersToRestore) {
-        const prefField = profile?.preferred_health || selectedHealthField || fetchedSpecialty;
-        if (prefField) {
+        if (fetchedSpecialty) {
           const sIdx = DOSHA_QUESTIONS[48].options.findIndex(
-            (opt) => opt.key === prefField
+            (opt) => opt.key === fetchedSpecialty
           );
           if (sIdx !== -1) {
             answersToRestore[48] = sIdx;
@@ -327,10 +328,9 @@ export default function UserQuestionnaireModal({ onComplete }) {
         } else {
           setCurrentPage(effectiveTotal - 1);
         }
-      } else if (profile?.preferred_health || fetchedSpecialty) {
-        const prefField = profile?.preferred_health || fetchedSpecialty;
+      } else if (fetchedSpecialty) {
         const sIdx = DOSHA_QUESTIONS[48].options.findIndex(
-          (opt) => opt.key === prefField
+          (opt) => opt.key === fetchedSpecialty
         );
         if (sIdx !== -1) {
           const initAnswers = Array(DOSHA_QUESTIONS.length).fill(null);
@@ -347,14 +347,16 @@ export default function UserQuestionnaireModal({ onComplete }) {
     return () => {
       isMounted = false;
     };
-  }, [user, profile?.preferred_health]);
+  }, [user]);
 
-  const hasExistingSpecialty = Boolean(profile?.preferred_health || selectedHealthField);
+  // hasExistingSpecialty reflects whether the user already had a specialty before taking the assessment.
+  // It must NOT change dynamically when picking a specialty on question 49!
+  const hasExistingSpecialty = initialHasSpecialty;
   const totalQuestions = hasExistingSpecialty ? 48 : (DOSHA_QUESTIONS?.length || 49);
   const safeCurrentPage = Math.max(0, Math.min(Number(currentPage) || 0, totalQuestions - 1));
   const currentQ = (DOSHA_QUESTIONS && DOSHA_QUESTIONS[safeCurrentPage]) || DOSHA_QUESTIONS[0] || { question: "Loading question...", options: [] };
   const isLastQuestion = safeCurrentPage === totalQuestions - 1;
-  const isSpecialtyQuestion = !hasExistingSpecialty && isLastQuestion;
+  const isSpecialtyQuestion = !hasExistingSpecialty && safeCurrentPage === (totalQuestions - 1);
 
   // Handle Option Select
   const handleSelectOption = (optionIndex, optionData = null) => {
@@ -435,14 +437,14 @@ export default function UserQuestionnaireModal({ onComplete }) {
         }
       }
       if (onComplete) {
-        onComplete();
+        onComplete("/user/home");
       } else {
-        window.location.href = "/user/home";
+        router.push("/user/home");
       }
       return;
     }
 
-    // 3. User does not have a specialty yet: jump to specialty selection (question 49)
+    // 3. User does not have a specialty yet: jump to specialty selection (question 49, index 48)
     setCurrentPage(totalQuestions - 1);
   };
 
@@ -560,19 +562,29 @@ export default function UserQuestionnaireModal({ onComplete }) {
         try {
           localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(selectedAnswers));
         } catch (e) {}
+
+        // Trigger doctor matching by specialty
+        try {
+          await matchUserWithDoctor(user.uid, prefHealthKey);
+        } catch (mErr) {
+          console.warn("Doctor matching during questionnaire skip:", mErr);
+          await setDoc(userRef, {
+            needs_doctor_assignment: true,
+            preferred_health: prefHealthKey,
+          }, { merge: true }).catch(() => {});
+        }
       }
 
       if (onComplete) {
-        onComplete();
+        onComplete("/user/home");
       } else {
-        window.location.href = "/user/home";
+        router.push("/user/home");
       }
     } catch (err) {
       console.error("Error saving questionnaire:", err);
       alert("Failed to save responses. Please try again.");
     } finally {
       setIsSaving(false);
-      setShowSkipModal(false);
     }
   };
 
@@ -708,7 +720,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
               <button
                 type="button"
                 onClick={saveAndComplete}
-                disabled={isSaving || selectedAnswers[safeCurrentPage] === null}
+                disabled={isSaving || (isSpecialtyQuestion ? !selectedHealthField : selectedAnswers[safeCurrentPage] === null)}
                 className="flex items-center px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSaving ? "Submitting..." : areAllAnswered ? "Complete Assessment" : "Continue"}
@@ -735,49 +747,6 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
       {/* Bottom spacer */}
       <div className="py-2" />
-
-      {/* Skip Confirmation Modal */}
-      {showSkipModal && (
-        <div className="fixed inset-0 z-60 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-[#E7E2D9] space-y-4 text-center">
-            <h3 
-              className="text-2xl font-normal text-[#1A1A1A]"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
-            >
-              Skip & Finish?
-            </h3>
-            {isSaving ? (
-              <div className="py-6 flex flex-col items-center justify-center space-y-3">
-                <svg className="animate-spin h-8 w-8 text-[#C2691C]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p className="text-sm font-medium text-[#1A1A1A]">Saving your responses...</p>
-              </div>
-            ) : (
-              <>
-                <p className="text-xs text-[#6B6862] leading-relaxed">
-                  Your current answers will be saved and you will continue to your dashboard. You can update your answers anytime.
-                </p>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => setShowSkipModal(false)}
-                    className="flex-1 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => saveAndComplete(true)}
-                    className="flex-1 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors cursor-pointer"
-                  >
-                    Skip & Finish
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

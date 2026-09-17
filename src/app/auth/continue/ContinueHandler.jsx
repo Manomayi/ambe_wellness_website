@@ -70,7 +70,7 @@ export default function ContinueHandler() {
     if (platform === "android") {
       window.location.href = androidIntentUrl(fallback);
     } else {
-      window.location.replace(`${APP_SCHEME_HOST}?source=web`);
+      window.location.href = `${APP_SCHEME_HOST}?source=web`;
     }
   }, [platform]);
 
@@ -115,12 +115,25 @@ export default function ContinueHandler() {
 
   // App flow: Mobile handoff
   useEffect(() => {
-    if (!isFromApp || !isMobile || autoOpenedRef.current) return;
+    if (!isFromApp || !isMobile) return;
+    if (autoOpenedRef.current) return;
     autoOpenedRef.current = true;
+
+    // Guard against repeated handoff calls in the same session
+    try {
+      if (sessionStorage.getItem("ambe_app_handoff_attempted")) {
+        setShowFallbackCard(true);
+        return;
+      }
+      sessionStorage.setItem("ambe_app_handoff_attempted", "true");
+    } catch (_) {}
+
     if (platform === "ios") {
       openApp();
       const t = setTimeout(() => {
-        setShowFallbackCard(true);
+        if (typeof document !== "undefined" && !document.hidden) {
+          setShowFallbackCard(true);
+        }
       }, 1500);
       return () => clearTimeout(t);
     } else {
