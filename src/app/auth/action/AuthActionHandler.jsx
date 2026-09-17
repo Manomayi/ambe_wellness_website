@@ -121,7 +121,7 @@ export default function AuthActionHandler() {
     if (platform === "android") {
       window.location.href = androidIntentUrl(fallback);
     } else {
-      window.location.href = `${APP_SCHEME_HOST}?source=web`;
+      window.location.replace(`${APP_SCHEME_HOST}?source=web`);
     }
   }, [platform]);
 
@@ -214,9 +214,13 @@ export default function AuthActionHandler() {
     if (status !== "success" || mode !== MODE_VERIFY) return;
     if (!isFromApp || !isMobile || forceWeb || autoOpenedRef.current) return;
     autoOpenedRef.current = true;
-    const t = setTimeout(openApp, 600);
-    return () => clearTimeout(t);
-  }, [status, mode, isFromApp, isMobile, forceWeb, openApp]);
+    if (platform === "ios") {
+      openApp();
+    } else {
+      const t = setTimeout(openApp, 600);
+      return () => clearTimeout(t);
+    }
+  }, [status, mode, isFromApp, isMobile, forceWeb, platform, openApp]);
 
   const handleResetSubmit = async (e) => {
     e.preventDefault();
@@ -278,7 +282,7 @@ export default function AuthActionHandler() {
               className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white cursor-pointer"
             >
               <DevicePhoneMobileIcon className="w-4 h-4" />
-              Open the Ambé App
+              Open the app
             </button>
           )}
           <PrimaryLink href="/login" muted={isMobile && !forceWeb}>
@@ -342,7 +346,7 @@ export default function AuthActionHandler() {
                 className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white cursor-pointer"
               >
                 <DevicePhoneMobileIcon className="w-4 h-4" />
-                Continue in the Ambé App
+                Continue in the app
               </button>
               <PrimaryLink href={targetWebPath} muted>
                 Continue in this browser

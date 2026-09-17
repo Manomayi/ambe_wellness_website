@@ -10,7 +10,7 @@ export default function UserLayout({ children }) {
   const pathname = usePathname();
 
   // If user is loaded and questionnaire is not completed yet AND has no specialty chosen:
-  const isQuestionnairePage = pathname?.startsWith("/user/menu/questionnaire");
+  const isQuestionnairePage = pathname?.startsWith("/user/menu/questionnaire") || pathname?.startsWith("/user/delete-account");
   const needsQuestionnaire = !isQuestionnairePage && !loading && user && profile && profile.is_free_questionnaire_completed !== true && !profile.preferred_health;
 
   if (needsQuestionnaire) {

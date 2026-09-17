@@ -179,18 +179,22 @@ export default function UserMenuPage() {
       title: 'Danger Zone',
       items: [
         {
-          label: 'Delete Account',
-          icon: TrashIcon,
-          route: '/user/delete-account',
-          isDanger: true,
-        },
-        {
           label: 'Logout',
           icon: ArrowRightOnRectangleIcon,
           action: handleLogout,
           isDanger: false,
         },
       ],
+      footer: (
+        <div className="pt-2 text-center">
+          <button
+            onClick={() => router.push('/user/delete-account')}
+            className="text-sm font-medium text-red-400 hover:text-red-500 underline transition cursor-pointer"
+          >
+            Delete Account
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -285,6 +289,7 @@ export default function UserMenuPage() {
                 </button>
               );
             })}
+            {section.footer}
           </div>
         </div>
       ))}

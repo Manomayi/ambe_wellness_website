@@ -199,6 +199,16 @@ export default function DoctorMenuPage() {
           action: handleLogout,
         },
       ],
+      footer: (
+        <div className="pt-2 text-center">
+          <button
+            onClick={() => router.push('/user/delete-account')}
+            className="text-sm font-medium text-red-400 hover:text-red-500 underline transition cursor-pointer"
+          >
+            Delete Account
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -286,6 +296,7 @@ export default function DoctorMenuPage() {
                 </button>
               );
             })}
+            {section.footer}
           </div>
         </div>
       ))}

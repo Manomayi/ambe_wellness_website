@@ -62,13 +62,15 @@ export default function ContinueHandler() {
 
   const nextWebPath = isDoctor ? "/doctor/schedule" : "/user/menu/questionnaire";
 
+  const [showFallbackCard, setShowFallbackCard] = useState(!isFromApp || platform !== "ios");
+
   const openApp = useCallback(() => {
     const fallback =
       typeof window !== "undefined" ? window.location.href : "https://ambewellness.com";
     if (platform === "android") {
       window.location.href = androidIntentUrl(fallback);
     } else {
-      window.location.href = `${APP_SCHEME_HOST}?source=web`;
+      window.location.replace(`${APP_SCHEME_HOST}?source=web`);
     }
   }, [platform]);
 
@@ -115,9 +117,17 @@ export default function ContinueHandler() {
   useEffect(() => {
     if (!isFromApp || !isMobile || autoOpenedRef.current) return;
     autoOpenedRef.current = true;
-    const t = setTimeout(openApp, 600);
-    return () => clearTimeout(t);
-  }, [isFromApp, isMobile, openApp]);
+    if (platform === "ios") {
+      openApp();
+      const t = setTimeout(() => {
+        setShowFallbackCard(true);
+      }, 1500);
+      return () => clearTimeout(t);
+    } else {
+      const t = setTimeout(openApp, 600);
+      return () => clearTimeout(t);
+    }
+  }, [isFromApp, isMobile, platform, openApp]);
 
   return (
     <div className="min-h-screen bg-[#1E1E1E] flex items-center justify-center px-4 py-12 sm:py-16">
@@ -136,63 +146,90 @@ export default function ContinueHandler() {
           </Link>
         </div>
 
-        <div className="bg-[#2D2D30] p-7 sm:p-10 rounded-3xl shadow-2xl border border-white/10 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1E1E1E] mb-5 border border-[#FFD3AC]/30">
-            <CheckCircleIcon className="w-8 h-8 text-[#4CAF50]" />
+        {isFromApp && platform === "ios" && !showFallbackCard ? (
+          <div className="bg-[#2D2D30] p-7 sm:p-10 rounded-3xl shadow-2xl border border-white/10 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1E1E1E] mb-5 border border-[#FFD3AC]/30">
+              <div className="w-8 h-8 border-2 border-[#FFD3AC] border-t-transparent rounded-full animate-spin" />
+            </div>
+            <h1
+              className="text-2xl sm:text-3xl font-medium mb-2 select-none text-white"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Opening Ambe Wellness...
+            </h1>
+            <p className="text-sm leading-relaxed text-[#B0AAA0]">
+              Redirecting to the app. If it doesn't open automatically,{" "}
+              <button
+                type="button"
+                onClick={openApp}
+                className="text-[#FFD3AC] underline hover:text-white cursor-pointer"
+              >
+                tap here
+              </button>
+              .
+            </p>
           </div>
+        ) : (
+          <div className="bg-[#2D2D30] p-7 sm:p-10 rounded-3xl shadow-2xl border border-white/10 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#1E1E1E] mb-5 border border-[#FFD3AC]/30">
+              <CheckCircleIcon className="w-8 h-8 text-[#4CAF50]" />
+            </div>
 
-          <h1
-            className="text-2xl sm:text-3xl font-medium mb-2 select-none text-white"
-            style={{
-              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            }}
-          >
-            Email Verified
-          </h1>
+            <h1
+              className="text-2xl sm:text-3xl font-medium mb-2 select-none text-white"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Email Verified
+            </h1>
 
-          <p className="text-sm leading-relaxed mb-6 text-[#B0AAA0]">
-            {email
-              ? `${email} is confirmed. ${redirecting ? "Redirecting to your next step..." : "You can continue your registration."}`
-              : redirecting
-              ? "Redirecting to your next step..."
-              : "Your email is confirmed. You can continue your registration."}
-          </p>
+            <p className="text-sm leading-relaxed mb-6 text-[#B0AAA0]">
+              {email
+                ? `${email} is confirmed. ${redirecting ? "Redirecting to your next step..." : "You can continue your registration."}`
+                : redirecting
+                ? "Redirecting to your next step..."
+                : "Your email is confirmed. You can continue your registration."}
+            </p>
 
-          <div className="space-y-3">
-            {isFromApp && isMobile ? (
-              <>
-                <button
-                  type="button"
-                  onClick={openApp}
-                  className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white cursor-pointer"
-                >
-                  <DevicePhoneMobileIcon className="w-4 h-4" />
-                  Continue in the Ambé App
-                </button>
+            <div className="space-y-3">
+              {isFromApp && isMobile ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={openApp}
+                    className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white cursor-pointer"
+                  >
+                    <DevicePhoneMobileIcon className="w-4 h-4" />
+                    Continue in the app
+                  </button>
+                  <Link
+                    href={nextWebPath}
+                    className="block w-full py-3 rounded-full text-xs font-medium uppercase tracking-[0.12em] transition-all border border-white/20 text-white hover:bg-white/10"
+                  >
+                    Continue in this browser
+                  </Link>
+                </>
+              ) : (
                 <Link
                   href={nextWebPath}
-                  className="block w-full py-3 rounded-full text-xs font-medium uppercase tracking-[0.12em] transition-all border border-white/20 text-white hover:bg-white/10"
+                  className="flex items-center justify-center gap-2 w-full px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white cursor-pointer"
                 >
-                  Continue in this browser
+                  <span>
+                    {redirecting
+                      ? "Redirecting..."
+                      : isDoctor
+                      ? "Set Up Consultation Schedule"
+                      : "Complete Wellness Questionnaire"}
+                  </span>
+                  <ArrowRightIcon className="w-4 h-4" />
                 </Link>
-              </>
-            ) : (
-              <Link
-                href={nextWebPath}
-                className="flex items-center justify-center gap-2 w-full px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white cursor-pointer"
-              >
-                <span>
-                  {redirecting
-                    ? "Redirecting..."
-                    : isDoctor
-                    ? "Set Up Consultation Schedule"
-                    : "Complete Wellness Questionnaire"}
-                </span>
-                <ArrowRightIcon className="w-4 h-4" />
-              </Link>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

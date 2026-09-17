@@ -62,13 +62,15 @@ export async function POST(request) {
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>Your Complimentary Ambe Wellness Guides</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Ambe Wellness Guides</title>
       </head>
       <body style="margin: 0; padding: 0; background-color: #FAF8F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+        <div style="display: none; max-height: 0px; overflow: hidden;">Your requested Ambe Wellness Guides PDF is attached.</div>
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #FAF8F5; padding: 32px 16px;">
           <tr>
             <td align="center">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #EAE5DE; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 580px; background-color: #FFFFFF; border-radius: 16px; border: 1px solid #EAE5DE; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
                 <tr>
                   <td style="padding: 24px 32px; background-color: #1A1A1A; text-align: left;">
                     <a href="https://ambewellness.com" target="_blank" style="text-decoration: none; display: inline-block;">
@@ -78,17 +80,17 @@ export async function POST(request) {
                 </tr>
                 <tr>
                   <td style="padding: 36px 32px 28px 32px;">
-                    <h2 style="margin: 0 0 16px 0; color: #1A1A1A; font-size: 22px; font-weight: 600; line-height: 1.3;">Your Complimentary Ambe Wellness Guides</h2>
-                    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #353535;">
-                      Thank you for your interest in Ambe Wellness. We are delighted to share our doctor-curated Clean Living Guide set with you.
+                    <h2 style="margin: 0 0 16px 0; color: #1A1A1A; font-size: 20px; font-weight: 600; line-height: 1.3;">Your Ambe Wellness Guides</h2>
+                    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #2A2A2A;">
+                      Thank you for requesting the Ambe Wellness guides. Our doctor-curated Clean Living Guide set is attached below.
                     </p>
-                    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #353535;">
-                      Your complimentary 8-guide PDF is attached to this email below.
+                    <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #2A2A2A;">
+                      Your 8-guide PDF library is attached directly to this email.
                     </p>
 
                     <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #EAE5DE; font-size: 13px; color: #7A746B; line-height: 1.5;">
                       Warm regards,<br>
-                      <strong>The Ambe Wellness Medical & Integrative Team</strong><br>
+                      <strong>The Ambe Wellness Medical &amp; Integrative Team</strong><br>
                       <a href="https://ambewellness.com" style="color: #C8996A; text-decoration: none;">ambewellness.com</a> • <a href="mailto:info@ambewellness.com" style="color: #C8996A; text-decoration: none;">info@ambewellness.com</a>
                     </div>
                   </td>
@@ -96,7 +98,7 @@ export async function POST(request) {
                 <tr>
                   <td style="padding: 16px 32px 24px 32px; background-color: #FAF8F5; text-align: center; font-size: 12px; color: #9A948B; border-top: 1px solid #EAE5DE;">
                     © ${new Date().getFullYear()} Ambe Wellness. All rights reserved.<br>
-                    <span style="font-size: 11px;">You received this email because you requested the complimentary Ambe Guide Library.</span>
+                    <span style="font-size: 11px;">You received this email because you requested the Ambe Wellness Guide Library.</span>
                   </td>
                 </tr>
               </table>
@@ -107,11 +109,11 @@ export async function POST(request) {
       </html>
     `;
 
-    const textContent = `Your Complimentary Ambe Wellness Guides (PDF)
+    const textContent = `Your Ambe Wellness Guides (PDF)
 
-Thank you for your interest in Ambe Wellness. We are delighted to share our doctor-curated Clean Living Guide set with you.
+Thank you for requesting the Ambe Wellness guides. Our doctor-curated Clean Living Guide set is attached below.
 
-Your complimentary 8-guide PDF is attached to this email below.
+Your 8-guide PDF library is attached directly to this email.
 
 Warm regards,
 The Ambe Wellness Medical & Integrative Team
@@ -121,14 +123,18 @@ info@ambewellness.com | ambewellness.com
     const payload = {
       personalizations: [
         {
-          to: [{ email: normalizedEmail }],
+          to: [{ email: normalizedEmail, name: "Ambe Wellness Member" }],
         },
       ],
       from: {
         email: SENDER_EMAIL,
         name: SENDER_NAME,
       },
-      subject: "Your Complimentary Ambe Wellness Guides (PDF)",
+      reply_to: {
+        email: SENDER_EMAIL,
+        name: "Ambe Wellness Medical Team",
+      },
+      subject: "Your Ambe Wellness Guides (PDF)",
       content: [
         {
           type: "text/plain",
@@ -140,6 +146,10 @@ info@ambewellness.com | ambewellness.com
         },
       ],
       ...(attachments.length > 0 ? { attachments } : {}),
+      tracking_settings: {
+        click_tracking: { enable: false, enable_text: false },
+        open_tracking: { enable: false },
+      },
     };
 
     const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
