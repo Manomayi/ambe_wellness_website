@@ -5,8 +5,9 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import ChatWindow from '@/components/chat/ChatWindow';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { UserIcon } from '@heroicons/react/24/outline';
 
 export default function DoctorChatPage() {
   const router = useRouter();
@@ -16,37 +17,92 @@ export default function DoctorChatPage() {
   const [chatData, setChatData] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  const userName = searchParams.get('userName');
+  const userNameQuery = searchParams.get('userName');
+  const chatId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   useEffect(() => {
-    if (user && params.id) {
+    if (user && chatId) {
       loadChatData();
     }
-  }, [user, params.id]);
+  }, [user, chatId]);
 
   const loadChatData = async () => {
+    if (!user || !chatId) return;
     try {
-      // Get chat metadata
+      // 1. Try to get chat metadata from doctor's subcollection
       const chatMetaDoc = await getDoc(
-        doc(db, 'doctors', user.uid, 'chats', params.id)
+        doc(db, 'doctors', user.uid, 'chats', chatId)
       );
       
+      let metaData = {};
       if (chatMetaDoc.exists()) {
-        const metaData = chatMetaDoc.data();
-        
-        // Get user profile
-        const userDoc = await getDoc(doc(db, 'users', metaData.user_uid));
-        const userData = userDoc.data();
-        
-        setChatData({
-          chatId: params.id,
-          userId: metaData.user_uid,
-          userName: metaData.user_name,
-          userProfile: userData
-        });
+        metaData = chatMetaDoc.data();
       }
+
+      // Mark as read by doctor immediately upon opening
+      try {
+        await setDoc(
+          doc(db, 'doctors', user.uid, 'chats', chatId),
+          { last_message_read_by_doctor: true, unread_count: 0 },
+          { merge: true }
+        );
+      } catch (e) {
+        // Non-critical, continue
+      }
+      
+      const targetUserId =
+        metaData.user_uid ||
+        metaData.user_id ||
+        (chatId.includes('_') ? chatId.split('_')[0] : '');
+      
+      let userData = null;
+      if (targetUserId) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', targetUserId));
+          if (userDoc.exists()) {
+            userData = userDoc.data();
+          }
+        } catch (err) {
+          console.warn('Could not fetch user profile:', err);
+        }
+      }
+      
+      const resolvedUserName =
+        metaData.user_name ||
+        userData?.name ||
+        userData?.displayName ||
+        userNameQuery ||
+        'User';
+        
+      const userPhotoUrl =
+        metaData.user_photo_url ||
+        userData?.photoURL ||
+        userData?.profile_image_url ||
+        null;
+
+      setChatData({
+        chatId: chatId,
+        userId: targetUserId,
+        userName: resolvedUserName,
+        userPhotoUrl: userPhotoUrl,
+        userProfile: userData,
+        isFirstConsultationCompleted:
+          metaData.is_first_consultation_completed ??
+          userData?.is_first_consultation_completed ??
+          false,
+      });
     } catch (error) {
       console.error('Error loading chat data:', error);
+      // Fallback so doctor is never blocked from chatting
+      const fallbackUserId = chatId.includes('_') ? chatId.split('_')[0] : '';
+      setChatData({
+        chatId: chatId,
+        userId: fallbackUserId,
+        userName: userNameQuery || 'User',
+        userPhotoUrl: null,
+        userProfile: null,
+        isFirstConsultationCompleted: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -83,33 +139,49 @@ export default function DoctorChatPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="h-screen flex flex-col">
+      <div className="h-screen flex flex-col bg-[#FAF8F5]">
         {/* Header */}
-        <div className="bg-white border-b px-6 py-4 flex items-center">
-          <button
-            onClick={() => router.push('/doctor/messages')}
-            className="mr-4 text-[#6B6862] hover:text-[#1A1A1A]"
-          >
-            ← Back
-          </button>
-          <div className="flex-1">
-            <h1 className="text-xl font-semibold">
-              {chatData.userName || userName}
-            </h1>
-            {chatData.userProfile && (
-              <p className="text-sm text-[#8C827A]">
-                {chatData.userProfile.is_first_consultation_completed 
-                  ? 'Active User' 
+        <div className="bg-white border-b border-[#E7E2D9] px-6 py-4 flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/doctor/messages')}
+              className="p-2 -ml-2 text-[#6B6862] hover:text-[#1A1A1A] rounded-full hover:bg-[#F4F1EA] transition cursor-pointer"
+              aria-label="Back to messages"
+            >
+              ← Back
+            </button>
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-[#FFD3AC]/50 bg-[#FAF8F5] flex items-center justify-center shrink-0">
+              {chatData.userPhotoUrl ? (
+                <img
+                  src={chatData.userPhotoUrl}
+                  alt={chatData.userName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement.innerHTML = '<span class="text-base">👤</span>';
+                  }}
+                />
+              ) : (
+                <UserIcon className="w-5 h-5 text-[#8C827A]" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-base font-semibold text-[#1A1A1A] leading-tight">
+                {chatData.userName}
+              </h1>
+              <p className="text-xs text-[#8C827A]">
+                {chatData.isFirstConsultationCompleted 
+                  ? 'Active Patient' 
                   : 'Pending First Consultation'}
               </p>
-            )}
+            </div>
           </div>
         </div>
 
         {/* Chat Window */}
         <div className="flex-1 overflow-hidden">
           <ChatWindow
-            chatId={params.id}
+            chatId={chatId}
             recipientName={chatData.userName}
             recipientId={chatData.userId}
             canSendMessage={canSendMessage}

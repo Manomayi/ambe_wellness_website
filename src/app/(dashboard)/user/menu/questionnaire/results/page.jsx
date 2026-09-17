@@ -217,8 +217,15 @@ export default function QuestionnaireResultsPage() {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) return router.push('/login');
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid, 'questionnaires', 'dosha_questionnaire'));
-        setDoshaData(snap.exists() ? snap.data() : null);
+        const userSnap = await getDoc(doc(db, 'users', user.uid));
+        const userData = userSnap.exists() ? userSnap.data() : null;
+
+        if (!userData?.is_free_questionnaire_completed) {
+          setDoshaData(null);
+        } else {
+          const snap = await getDoc(doc(db, 'users', user.uid, 'questionnaires', 'dosha_questionnaire'));
+          setDoshaData(snap.exists() ? snap.data() : null);
+        }
       } catch (e) {
         console.error(e);
         setError('Error fetching results');
@@ -243,11 +250,18 @@ export default function QuestionnaireResultsPage() {
     return (
       <div className="max-w-3xl mx-auto space-y-4">
         <BackButton />
-        <div className="flex flex-col items-center justify-center h-64 space-y-4 bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm">
-          <p className="text-base text-[#1A1A1A]">Please complete the questionnaire</p>
+        <div className="flex flex-col items-center justify-center min-h-[300px] text-center space-y-4 bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] flex items-center justify-center text-[#C2691C]">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p className="text-base font-medium text-[#1A1A1A] max-w-sm">
+            Please complete the questionnaire to view your personalized constitution report.
+          </p>
           <button
             onClick={() => router.push('/user/menu/questionnaire')}
-            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium shadow-sm transition"
+            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-7 py-3 rounded-full text-xs font-semibold uppercase tracking-wider shadow-sm transition-all cursor-pointer"
           >
             Complete Questionnaire
           </button>

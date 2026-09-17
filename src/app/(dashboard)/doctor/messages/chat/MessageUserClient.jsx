@@ -14,8 +14,9 @@ import {
   addDoc,
   serverTimestamp,
 } from 'firebase/firestore'
-import { auth, db } from '@/lib/firebase/config'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { auth, db, storage } from '@/lib/firebase/config'
+import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 
 export default function MessageUserClient() {
@@ -31,10 +32,22 @@ export default function MessageUserClient() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(null)
+  const [convertingHeic, setConvertingHeic] = useState(false)
+  const [fullscreenImage, setFullscreenImage] = useState(null)
 
   const containerRef = useRef(null)
   const endRef = useRef(null)
-  const BATCH = 10
+  const fileInputRef = useRef(null)
+  const BATCH = 15
+
+  useEffect(() => {
+    if (uploadingImage) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [uploadingImage])
 
   // 1) Auth + initial batch
   useEffect(() => {
@@ -79,14 +92,122 @@ export default function MessageUserClient() {
     if (el && el.scrollTop < 100) loadMore()
   }
 
-  // 4) send
+  // 4) image handling
+  const convertHeicToJpeg = async (file) => {
+    try {
+      const heic2any = (await import('heic2any')).default
+      const blob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.85,
+      })
+      const convertedBlob = Array.isArray(blob) ? blob[0] : blob
+      return new File(
+        [convertedBlob],
+        file.name.replace(/\.[^/.]+$/, "") + ".jpg",
+        { type: 'image/jpeg' }
+      )
+    } catch (err) {
+      console.error("HEIC conversion failed:", err)
+      return file
+    }
+  }
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+
+    const lowerName = file.name.toLowerCase()
+    const isHeic = lowerName.endsWith('.heic') || lowerName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif'
+    const isStandardImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif)$/i.test(lowerName)
+
+    if (!isHeic && !isStandardImage) {
+      alert('Please select a valid image (JPEG, PNG, WebP, GIF, or HEIC).')
+      return
+    }
+
+    if (isHeic) {
+      setConvertingHeic(true)
+      try {
+        const converted = await convertHeicToJpeg(file)
+        setSelectedImage(converted)
+        setImagePreviewUrl(URL.createObjectURL(converted))
+      } catch (err) {
+        console.error(err)
+        alert('Failed to process HEIC image.')
+      } finally {
+        setConvertingHeic(false)
+      }
+    } else {
+      setSelectedImage(file)
+      setImagePreviewUrl(URL.createObjectURL(file))
+    }
+  }
+
+  const removeSelectedImage = () => {
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl)
+    setSelectedImage(null)
+    setImagePreviewUrl(null)
+  }
+
+  // 5) send
   const handleSend = async () => {
-    if (!text.trim() || !user || !chatId) return
+    const trimmed = text.trim()
+    if ((!trimmed && !selectedImage) || !user || !chatId || sending) return
     setSending(true)
-    const col = collection(db, 'chats', chatId, 'messages')
-    await addDoc(col, { sender_uid: user.uid, text: text.trim(), timestamp: serverTimestamp() })
+
+    const imgToUpload = selectedImage
+    const previewToRevoke = imagePreviewUrl
+
+    if (imgToUpload && previewToRevoke) {
+      setUploadingImage({ url: previewToRevoke, caption: trimmed })
+    }
+
     setText('')
-    setSending(false)
+    setSelectedImage(null)
+    setImagePreviewUrl(null)
+    setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+
+    try {
+      let imageUrl = null
+      if (imgToUpload) {
+        const timestamp = Date.now()
+        const cleanFileName = imgToUpload.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const imgRef = storageRef(storage, `chats/${chatId}/images/${timestamp}_${cleanFileName}`)
+        const uploadResult = await uploadBytes(imgRef, imgToUpload, {
+          contentType: imgToUpload.type || 'image/jpeg',
+        })
+        imageUrl = await getDownloadURL(uploadResult.ref)
+      }
+
+      const col = collection(db, 'chats', chatId, 'messages')
+      const msgData = {
+        sender_uid: user.uid,
+        text: trimmed,
+        timestamp: serverTimestamp(),
+      }
+      if (imageUrl) {
+        msgData.image_url = imageUrl
+        msgData.type = 'image'
+      } else {
+        msgData.type = 'text'
+      }
+
+      await addDoc(col, msgData)
+
+      if (previewToRevoke) URL.revokeObjectURL(previewToRevoke)
+    } catch (err) {
+      console.error('Error sending message:', err)
+      setText(trimmed)
+      if (imgToUpload) {
+        setSelectedImage(imgToUpload)
+        setImagePreviewUrl(previewToRevoke)
+      }
+    } finally {
+      setUploadingImage(null)
+      setSending(false)
+    }
   }
 
   if (!chatId) return null
@@ -94,20 +215,20 @@ export default function MessageUserClient() {
   return (
     <div className="flex flex-col h-screen bg-[#FAF8F5]">
       {/* Header */}
-      <div className="flex items-center p-4 bg-white shadow">
-        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-[#F4F1EA]">
+      <div className="flex items-center p-4 bg-white shadow-xs border-b border-[#E7E2D9]">
+        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-[#F4F1EA] cursor-pointer">
           <ArrowLeftIcon className="h-6 w-6 text-[#6B6862]" />
         </button>
         {userPhotoUrl && (
           <img src={userPhotoUrl} alt={userName||''}
-               className="h-10 w-10 rounded-full mx-3 object-cover" />
+               className="h-10 w-10 rounded-full mx-3 object-cover border border-[#E7E2D9]" />
         )}
         <h1 className="text-lg font-medium text-[#1A1A1A]">{userName}</h1>
       </div>
 
       {/* Messages */}
       <div ref={containerRef}
-           className="flex-1 overflow-y-auto p-4"
+           className="flex-1 overflow-y-auto p-4 space-y-2"
            onScroll={onScroll}>
         {loadingMore && (
           <div className="flex justify-center mb-2">
@@ -120,34 +241,171 @@ export default function MessageUserClient() {
         {messages.map(msg => {
           const isUser = msg.sender_uid === user?.uid
           const time = msg.timestamp?.toDate?.().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) || ''
+          const hasImage = !!msg.image_url;
+          const hasText = !!(msg.text && msg.text.trim());
+          if (!hasImage && !hasText) return null;
+
           return (
             <div key={msg.id} className={`mb-2 flex ${isUser?'justify-end':'justify-start'}`}>
-              <div className={`max-w-xs p-3 rounded-lg ${
-                isUser?'bg-[#FFD3AC] text-[#1A1A1A]':'bg-[#E7E2D9] text-[#1A1A1A]'
+              <div className={`max-w-xs sm:max-w-md ${
+                hasImage && !hasText ? 'p-1' : hasImage && hasText ? 'p-1' : 'p-3'
+              } rounded-2xl ${
+                isUser?'bg-[#FFD3AC] text-[#1A1A1A] rounded-br-xs':'bg-white border border-[#E7E2D9] text-[#1A1A1A] rounded-bl-xs'
               }`}>
-                <p className="break-words">{msg.text}</p>
-                <p className="text-xs mt-1 text-[#E7E2D9] text-right">{time}</p>
+                {hasImage && !hasText ? (
+                  <div className="relative overflow-hidden rounded-xl">
+                    <img
+                      src={msg.image_url}
+                      alt="Chat Attachment"
+                      onClick={() => setFullscreenImage(msg.image_url)}
+                      className="max-h-64 max-w-[280px] w-full object-cover rounded-xl cursor-pointer hover:opacity-95 transition"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-black/65 to-transparent pointer-events-none" />
+                    <span className="absolute bottom-1.5 right-2 text-[10px] font-medium text-white drop-shadow-sm flex items-center gap-1">
+                      {time}
+                      {isUser && <span className="text-[11px] opacity-90">✓✓</span>}
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    {hasImage && (
+                      <div className="overflow-hidden rounded-xl">
+                        <img
+                          src={msg.image_url}
+                          alt="Chat Attachment"
+                          onClick={() => setFullscreenImage(msg.image_url)}
+                          className="max-h-64 max-w-[280px] w-full object-cover rounded-xl cursor-pointer hover:opacity-95 transition"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <div className={hasImage ? 'px-2.5 pt-2 pb-1' : ''}>
+                      {hasText && <p className="break-words text-sm leading-relaxed">{msg.text}</p>}
+                      <p className="text-[10px] mt-1 text-[#8C827A] text-right">{time}</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )
         })}
+
+        {/* Optimistic uploading image bubble */}
+        {uploadingImage && (
+          <div className="mb-2 flex justify-end">
+            <div className="max-w-xs sm:max-w-md p-1 rounded-2xl bg-[#FFD3AC] text-[#1A1A1A] rounded-br-xs shadow-2xs">
+              <div className="relative overflow-hidden rounded-xl">
+                <img
+                  src={uploadingImage.url}
+                  alt="Uploading preview"
+                  className="max-h-64 max-w-[280px] w-full object-cover rounded-xl"
+                />
+                {/* Dark overlay with centered spinner */}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="p-3 bg-black/60 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="w-6 h-6 border-[2.5px] border-[#FFD3AC] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                </div>
+                {/* Bottom Sending pill */}
+                <div className="absolute bottom-2 right-2 px-2.5 py-1 bg-black/60 backdrop-blur-xs rounded-full flex items-center gap-1.5 shadow-md">
+                  <div className="w-2.5 h-2.5 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[10px] font-medium text-white tracking-wide">Sending...</span>
+                </div>
+              </div>
+              {uploadingImage.caption && uploadingImage.caption.trim() && (
+                <div className="px-2.5 pt-2 pb-1">
+                  <p className="break-words text-sm leading-relaxed">{uploadingImage.caption}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <div ref={endRef}/>
       </div>
 
+      {/* Selected Image Preview */}
+      {selectedImage && (
+        <div className="px-4 py-2 bg-[#F4F1EA] border-t border-[#E7E2D9] flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={imagePreviewUrl} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-[#E7E2D9]" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold truncate text-[#1A1A1A]">{selectedImage.name}</p>
+              <p className="text-[10px] text-[#6B6862]">{(selectedImage.size / 1024).toFixed(0)} KB • Photo attached</p>
+            </div>
+          </div>
+          <button type="button" onClick={removeSelectedImage} className="p-1 text-[#6B6862] hover:text-[#1A1A1A] cursor-pointer">
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {convertingHeic && (
+        <div className="px-4 py-2 bg-[#FFF8E7] text-xs text-[#8A5800] border-t border-[#FFE2A9] flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#8A5800]" />
+          Processing Apple photo...
+        </div>
+      )}
+
       {/* Input */}
-      <div className="p-4 bg-white flex items-center">
+      <div className="p-3 sm:p-4 bg-white border-t border-[#E7E2D9] flex items-center gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={sending || convertingHeic}
+          className="p-3 bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E2D9] text-[#6B6862] hover:text-[#1A1A1A] rounded-2xl transition cursor-pointer flex-shrink-0"
+          title="Attach image"
+        >
+          <PhotoIcon className="w-5 h-5 text-[#8C827A]" />
+        </button>
         <textarea rows={1}
                   value={text}
                   onChange={e => setText(e.target.value)}
-                  className="flex-1 resize-none p-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:border-[#C8996A]"
-                  placeholder="Type a message…"/>
-        <button onClick={handleSend} disabled={sending}
-                className={`ml-3 p-3 rounded-full shadow ${
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSend()
+                    }
+                  }}
+                  className="flex-1 resize-none p-3 text-sm bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#C8996A]"
+                  placeholder={selectedImage ? "Add a caption…" : "Type a message…"}/>
+        <button onClick={handleSend} disabled={(!text.trim() && !selectedImage) || sending || convertingHeic}
+                className={`p-3.5 rounded-2xl transition flex items-center justify-center flex-shrink-0 cursor-pointer ${
                   sending?'bg-[#8C827A] text-white':'bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'
                 }`}>
-          <PaperAirplaneIcon className="h-5 w-5 transform rotate-90"/>
+          <PaperAirplaneIcon className="h-5 w-5"/>
         </button>
       </div>
+
+      {/* Lightbox Modal */}
+      {fullscreenImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-xs"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setFullscreenImage(null)}
+            className="absolute top-5 right-5 text-white bg-white/20 hover:bg-white/30 rounded-full p-2.5 transition cursor-pointer"
+            aria-label="Close"
+          >
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+          <img
+            src={fullscreenImage}
+            alt="Full size"
+            className="max-h-[85vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -108,25 +108,23 @@ export default function UserHomePage() {
       }
 
       // HEALTH ASSESSMENT (EXTENDED QUESTIONNAIRE)
-      if (
-        profile?.is_free_questionnaire_completed &&
-        !profile?.is_consultation_set &&
-        !profile?.is_extended_questionnaire_completed
-      ) {
+      const isExtendedCompleted = Boolean(profile?.is_extended_questionnaire_completed);
+
+      if (!isExtendedCompleted) {
         tasks.push({
           id: 'health-assessment',
           title: 'Health Assessment',
-          subtitle: 'Complete your health assessment before booking your consultation.',
+          subtitle: profile?.is_consultation_set
+            ? 'Please complete your health assessment before your upcoming consultation.'
+            : 'Complete your health assessment before your consultation.',
           onSelect: () => router.push('/user/consult/extended-questionnaire')
         });
-      }
-
-      // SCHEDULE CONSULTATION
-      if (!profile?.is_consultation_set && profile?.is_free_questionnaire_completed) {
+      } else if (!profile?.is_consultation_set) {
+        // SCHEDULE CONSULTATION
         tasks.push({
           id: 'schedule-consultation',
           title: 'Schedule your consultation',
-          subtitle: 'Schedule your consultation with a doctor.',
+          subtitle: 'Choose a date & time for your consultation with your doctor.',
           onSelect: () => {
             router.push('/user/consult');
           }

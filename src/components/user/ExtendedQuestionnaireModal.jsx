@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { doc, writeBatch, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, writeBatch, serverTimestamp, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "@/lib/firebase/config";
 import { useAuth } from "@/contexts/AuthContext";
@@ -378,7 +378,7 @@ export default function ExtendedQuestionnaireModal({ onComplete, onClose, standa
       // Update users doc
       const userRef = doc(db, "users", user.uid);
       batch.update(userRef, {
-        is_extended_questionnaire_completed: true,
+        is_extended_questionnaire_completed: !isSkipping,
         extended_questionnaire: results
       });
 

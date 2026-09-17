@@ -62,7 +62,7 @@ export async function POST(request) {
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <title>Your Complimentary Ambé Wellness Guides</title>
+        <title>Your Complimentary Ambe Wellness Guides</title>
       </head>
       <body style="margin: 0; padding: 0; background-color: #FAF8F5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #FAF8F5; padding: 32px 16px;">
@@ -72,15 +72,15 @@ export async function POST(request) {
                 <tr>
                   <td style="padding: 24px 32px; background-color: #1A1A1A; text-align: left;">
                     <a href="https://ambewellness.com" target="_blank" style="text-decoration: none; display: inline-block;">
-                      <img src="https://ambewellness.com/images/logos/ambe_logo.png" alt="Ambé Wellness" height="32" style="height: 32px; max-height: 32px; width: auto; display: block; border: 0;" />
+                      <img src="https://ambewellness.com/images/logos/ambe_logo.png" alt="Ambe Wellness" height="32" style="height: 32px; max-height: 32px; width: auto; display: block; border: 0;" />
                     </a>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 36px 32px 28px 32px;">
-                    <h2 style="margin: 0 0 16px 0; color: #1A1A1A; font-size: 22px; font-weight: 600; line-height: 1.3;">Your Complimentary Ambé Wellness Guides</h2>
+                    <h2 style="margin: 0 0 16px 0; color: #1A1A1A; font-size: 22px; font-weight: 600; line-height: 1.3;">Your Complimentary Ambe Wellness Guides</h2>
                     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #353535;">
-                      Thank you for your interest in Ambé Wellness. We are delighted to share our doctor-curated Clean Living Guide set with you.
+                      Thank you for your interest in Ambe Wellness. We are delighted to share our doctor-curated Clean Living Guide set with you.
                     </p>
                     <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #353535;">
                       Your complimentary 8-guide PDF is attached to this email below.
@@ -88,7 +88,7 @@ export async function POST(request) {
 
                     <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #EAE5DE; font-size: 13px; color: #7A746B; line-height: 1.5;">
                       Warm regards,<br>
-                      <strong>The Ambé Wellness Medical & Integrative Team</strong><br>
+                      <strong>The Ambe Wellness Medical & Integrative Team</strong><br>
                       <a href="https://ambewellness.com" style="color: #C8996A; text-decoration: none;">ambewellness.com</a> • <a href="mailto:info@ambewellness.com" style="color: #C8996A; text-decoration: none;">info@ambewellness.com</a>
                     </div>
                   </td>
@@ -96,7 +96,7 @@ export async function POST(request) {
                 <tr>
                   <td style="padding: 16px 32px 24px 32px; background-color: #FAF8F5; text-align: center; font-size: 12px; color: #9A948B; border-top: 1px solid #EAE5DE;">
                     © ${new Date().getFullYear()} Ambe Wellness. All rights reserved.<br>
-                    <span style="font-size: 11px;">You received this email because you requested the complimentary Ambé Guide Library.</span>
+                    <span style="font-size: 11px;">You received this email because you requested the complimentary Ambe Guide Library.</span>
                   </td>
                 </tr>
               </table>
@@ -107,14 +107,14 @@ export async function POST(request) {
       </html>
     `;
 
-    const textContent = `Your Complimentary Ambé Wellness Guides (PDF)
+    const textContent = `Your Complimentary Ambe Wellness Guides (PDF)
 
-Thank you for your interest in Ambé Wellness. We are delighted to share our doctor-curated Clean Living Guide set with you.
+Thank you for your interest in Ambe Wellness. We are delighted to share our doctor-curated Clean Living Guide set with you.
 
 Your complimentary 8-guide PDF is attached to this email below.
 
 Warm regards,
-The Ambé Wellness Medical & Integrative Team
+The Ambe Wellness Medical & Integrative Team
 info@ambewellness.com | ambewellness.com
 `;
 
@@ -128,7 +128,7 @@ info@ambewellness.com | ambewellness.com
         email: SENDER_EMAIL,
         name: SENDER_NAME,
       },
-      subject: "Your Complimentary Ambé Wellness Guides (PDF)",
+      subject: "Your Complimentary Ambe Wellness Guides (PDF)",
       content: [
         {
           type: "text/plain",

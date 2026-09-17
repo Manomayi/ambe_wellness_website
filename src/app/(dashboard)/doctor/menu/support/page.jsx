@@ -22,7 +22,6 @@ import {
   PaperAirplaneIcon,
   ChatBubbleLeftRightIcon,
   ChevronDownIcon,
-  PhotoIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 
@@ -33,7 +32,7 @@ const CATEGORIES = [
   'Feedback & Suggestions',
 ];
 
-export default function SupportPage() {
+export default function DoctorSupportPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -110,25 +109,34 @@ export default function SupportPage() {
     try {
       if (!user) return;
 
-      // Fetch user profile info from users collection
-      let userName = user.displayName || 'there';
+      // Fetch doctor profile info from doctors collection
+      let userName = user.displayName || 'Doctor';
       let profilePicture = user.photoURL || null;
 
       try {
-        const userSnap = await getDoc(doc(db, 'users', user.uid));
-        if (userSnap.exists()) {
-          const uData = userSnap.data();
-          userName = uData.first_name || uData.name || user.displayName || 'there';
-          profilePicture = uData.profile_picture || uData.photoURL || profilePicture;
+        const docSnap = await getDoc(doc(db, 'doctors', user.uid));
+        if (docSnap.exists()) {
+          const dData = docSnap.data();
+          const fullName = `${dData.first_name || ''} ${dData.last_name || ''}`.trim();
+          userName = fullName || user.displayName || 'Doctor';
+          profilePicture = dData.profile_picture || user.photoURL || profilePicture;
+        } else {
+          // Fallback check in users collection if needed
+          const userSnap = await getDoc(doc(db, 'users', user.uid));
+          if (userSnap.exists()) {
+            const uData = userSnap.data();
+            userName = uData.first_name || uData.name || user.displayName || 'Doctor';
+            profilePicture = uData.profile_picture || uData.photoURL || profilePicture;
+          }
         }
       } catch (err) {
-        console.warn('Could not fetch extra user info:', err);
+        console.warn('Could not fetch doctor info:', err);
       }
 
       // Create Ticket Document
       const ticketRef = await addDoc(collection(db, 'tickets'), {
         userId: user.uid,
-        userRole: 'user',
+        userRole: 'doctor',
         category: selectedCategory,
         status: 'open',
         createdAt: serverTimestamp(),
@@ -143,11 +151,11 @@ export default function SupportPage() {
         },
       });
 
-      // Add Initial User Message
+      // Add Initial Doctor Message
       await addDoc(collection(db, 'tickets', ticketRef.id, 'messages'), {
         content: trimmed,
         senderId: user.uid,
-        senderRole: 'user',
+        senderRole: 'doctor',
         timestamp: serverTimestamp(),
       });
 
@@ -193,7 +201,7 @@ export default function SupportPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <BackButton />
+      <BackButton href="/doctor/menu" label="Back to Menu" />
 
       {openTicket ? (
         <SupportChatView ticket={openTicket} user={user} />
@@ -323,7 +331,7 @@ function SupportChatView({ ticket, user }) {
       await addDoc(collection(db, 'tickets', ticket.id, 'messages'), {
         content: trimmed,
         senderId: user.uid,
-        senderRole: 'user',
+        senderRole: 'doctor',
         timestamp: serverTimestamp(),
       });
 
@@ -365,7 +373,7 @@ function SupportChatView({ ticket, user }) {
           </div>
         ) : (
           messages.map((msg) => {
-            const senderRole = msg.senderRole || 'user';
+            const senderRole = msg.senderRole || 'doctor';
             const isBot = senderRole === 'bot';
             const isMe = senderRole !== 'admin' && !isBot;
 

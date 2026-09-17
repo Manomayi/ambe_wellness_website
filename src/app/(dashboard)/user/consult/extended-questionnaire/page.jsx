@@ -27,7 +27,7 @@ export default function ExtendedQuestionnairePage() {
         <BackButton href="/user/home" label="Back to Home" forceHref={true} />
         <ExtendedQuestionnaireModal
           standalone={true}
-          onComplete={() => router.replace("/user/consult/schedule")}
+          onComplete={() => router.replace(profile?.is_consultation_set ? "/user/consult" : "/user/consult/schedule")}
           onClose={() => router.push("/user/home")}
         />
       </div>

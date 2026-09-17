@@ -193,7 +193,9 @@ export default function UserAppointmentPage() {
                 <h3 className="font-semibold text-lg text-[#1A1A1A]">
                   Dr. {appointment.doctor_name}
                 </h3>
-                <p className="text-xs text-[#8C827A] uppercase tracking-wider">Healthcare Provider</p>
+                <p className="text-xs text-[#8C827A] uppercase tracking-wider">
+                  {appointment.doctor_title || appointment.doctor?.title || appointment.doctor?.professional_title || "Healthcare Provider"}
+                </p>
               </div>
             </div>
           </div>

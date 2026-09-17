@@ -176,8 +176,13 @@ export default function DoctorMenuPage() {
       ],
     },
     {
-      title: 'Settings',
+      title: 'Connect & Support',
       items: [
+        {
+          label: 'Support',
+          icon: QuestionMarkCircleIcon,
+          route: '/doctor/menu/support',
+        },
         {
           label: 'Notifications',
           icon: Cog6ToothIcon,

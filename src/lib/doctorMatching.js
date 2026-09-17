@@ -144,6 +144,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
       first_name: doctorData.first_name || "",
       last_name: doctorData.last_name || "",
       title: doctorData.title || doctorData.professional_title || "Healthcare Provider",
+      professional_title: doctorData.professional_title || "",
       field: doctorData.field || [normalizedField],
       profile_picture: doctorData.profile_picture || "",
       email: doctorData.email || "",

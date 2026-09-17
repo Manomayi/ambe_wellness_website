@@ -69,7 +69,7 @@ export default function DoctorProfileModal({ doctor, onClose }) {
           className="text-xs font-semibold tracking-widest uppercase mb-3"
           style={{ color: "#C8996A" }}
         >
-          BAMS · Integrative Doctor
+          {doctor.professional_title ? `${doctor.professional_title} · Integrative Doctor` : (doctor.title || "BAMS · Integrative Doctor")}
         </div>
 
         <p className="text-sm leading-relaxed mb-2" style={{ color: "#535353" }}>

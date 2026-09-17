@@ -74,7 +74,7 @@ export default function MessageDoctorClient() {
           }
 
           resolvedDoctorPhoto = docData.profile_picture || docData.photoURL || null;
-          resolvedTitle = docData.title || (Array.isArray(docData.doctor_fields) ? docData.doctor_fields[0] : '') || '';
+          resolvedTitle = docData.professional_title || docData.title || (Array.isArray(docData.doctor_fields) ? docData.doctor_fields[0] : '') || '';
         }
       } catch (err) {
         console.error('Error fetching doctor details:', err);

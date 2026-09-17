@@ -45,6 +45,7 @@ export default function SignUpPage() {
     practiceStartYear: '',
     medicalSchool: '',
     professionalTitles: [],
+    customProfessionalTitle: '',
     referralCode: '',
   });
 
@@ -87,7 +88,7 @@ export default function SignUpPage() {
     { value: 'general_health', label: 'Other (Please Specify)' },
   ];
 
-  const PROFESSIONAL_TITLES = ['MD', 'DO', 'NPR', 'BAMS'];
+  const PROFESSIONAL_TITLES = ['MD', 'DO', 'NPR', 'BAMS', 'Other'];
   const currentYear = new Date().getFullYear();
 
   const updateFormData = (field, value) => {
@@ -110,13 +111,27 @@ export default function SignUpPage() {
   };
 
   const toggleProfessionalTitle = (title) => {
-    setFormData(prev => ({
-      ...prev,
-      professionalTitles: prev.professionalTitles.includes(title)
-        ? prev.professionalTitles.filter(t => t !== title)
-        : [...prev.professionalTitles, title],
-    }));
-    setErrors(prev => ({ ...prev, professionalTitles: '' }));
+    if (title === 'Other') {
+      const isCurrentlySelected = formData.professionalTitles.includes('Other');
+      setFormData(prev => ({
+        ...prev,
+        professionalTitles: isCurrentlySelected ? [] : ['Other'],
+        customProfessionalTitle: isCurrentlySelected ? '' : prev.customProfessionalTitle,
+      }));
+    } else {
+      setFormData(prev => {
+        const withoutOther = prev.professionalTitles.filter(t => t !== 'Other');
+        const isSelected = withoutOther.includes(title);
+        return {
+          ...prev,
+          professionalTitles: isSelected
+            ? withoutOther.filter(t => t !== title)
+            : [...withoutOther, title],
+          customProfessionalTitle: '',
+        };
+      });
+    }
+    setErrors(prev => ({ ...prev, professionalTitles: '', customProfessionalTitle: '' }));
   };
 
   const validateStep = () => {
@@ -205,6 +220,8 @@ export default function SignUpPage() {
           }
           if (formData.professionalTitles.length === 0) {
             newErrors.professionalTitles = 'Please select at least one professional title';
+          } else if (formData.professionalTitles.includes('Other') && !formData.customProfessionalTitle.trim()) {
+            newErrors.customProfessionalTitle = 'Please specify your professional title';
           }
         }
         break;
@@ -345,7 +362,12 @@ export default function SignUpPage() {
                 ? Number(formData.practiceStartYear)
                 : null,
               medical_school: formData.medicalSchool,
-              professional_title: formData.professionalTitles.join(', '),
+              professional_title: formData.professionalTitles.includes('Other')
+                ? formData.customProfessionalTitle.trim()
+                : formData.professionalTitles.join(', '),
+              custom_professional_title: formData.professionalTitles.includes('Other')
+                ? formData.customProfessionalTitle.trim()
+                : null,
               documents: documentsPayload,
             }
           : {}),
@@ -870,7 +892,7 @@ export default function SignUpPage() {
                           key={title}
                           type="button"
                           onClick={() => toggleProfessionalTitle(title)}
-                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${isSelected
+                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all cursor-pointer ${isSelected
                               ? "border-[#C2691C] bg-[#FFD3AC] text-[#1A1A1A]"
                               : "border-[#E7E2D9] hover:border-[#C8996A] bg-white text-[#353535]"
                             }`}
@@ -884,6 +906,27 @@ export default function SignUpPage() {
                     <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
                       {errors.professionalTitles}
                     </p>
+                  )}
+
+                  {formData.professionalTitles.includes("Other") && (
+                    <div className="mt-4">
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
+                        Please specify your professional title <span style={{ color: "#C0392B" }}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.customProfessionalTitle}
+                        onChange={(e) => updateFormData("customProfessionalTitle", e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
+                        style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
+                        placeholder="e.g., MBBS, ND, PharmD, etc."
+                      />
+                      {errors.customProfessionalTitle && (
+                        <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
+                          {errors.customProfessionalTitle}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
 

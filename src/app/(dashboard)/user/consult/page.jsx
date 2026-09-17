@@ -585,8 +585,8 @@ export default function UserConsultPage() {
           </div>
         )}
 
-        {/* 1. If Questionnaire NOT Completed */}
-        {!profile?.is_free_questionnaire_completed && (
+        {/* 1. If Questionnaire NOT Completed AND no specialty selected */}
+        {(!profile?.is_free_questionnaire_completed && !profile?.preferred_health) && (
           <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 mb-8 shadow-sm text-center max-w-xl mx-auto space-y-4">
             <div className="w-14 h-14 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-2xl">
               📋
@@ -604,8 +604,8 @@ export default function UserConsultPage() {
           </div>
         )}
 
-        {/* 2. If Questionnaire Completed but Doctor Not Yet Assigned -> Finding Your Perfect Match (Matching Image 1) */}
-        {!hasDoctor && profile?.is_free_questionnaire_completed && (
+        {/* 2. If Doctor Not Yet Assigned but specialty chosen or questionnaire completed */}
+        {!hasDoctor && (profile?.is_free_questionnaire_completed || Boolean(profile?.preferred_health)) && (
           <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 mb-8 shadow-sm max-w-md mx-auto text-center space-y-6">
             <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
               ⏳

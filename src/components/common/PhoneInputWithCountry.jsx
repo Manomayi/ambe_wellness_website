@@ -4,7 +4,10 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { ALL_COUNTRIES } from './countries';
 
-export const COUNTRIES = ALL_COUNTRIES;
+export const COUNTRIES = [
+  ...ALL_COUNTRIES.filter((c) => c.code === 'US'),
+  ...ALL_COUNTRIES.filter((c) => c.code !== 'US'),
+];
 
 export default function PhoneInputWithCountry({
   value = '',
@@ -26,6 +29,11 @@ export default function PhoneInputWithCountry({
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
   const numberInputRef = useRef(null);
+  const selectedCountryRef = useRef(selectedCountry);
+
+  useEffect(() => {
+    selectedCountryRef.current = selectedCountry;
+  }, [selectedCountry]);
 
   // Sync internal state when external `value` changes
   useEffect(() => {
@@ -34,18 +42,37 @@ export default function PhoneInputWithCountry({
       return;
     }
 
-    // Check if value already starts with any country dial code
-    const matchingCountry = COUNTRIES.slice()
-      .sort((a, b) => b.dialCode.length - a.dialCode.length)
-      .find((c) => value.startsWith(c.dialCode));
+    const currentCountry = selectedCountryRef.current;
 
-    if (matchingCountry) {
+    // If currently selected country already matches the dial code of value, keep it!
+    // (e.g. US +1 must not change to Canada +1 when typing digits)
+    if (currentCountry && value.startsWith(currentCountry.dialCode)) {
+      setLocalNumber(value.slice(currentCountry.dialCode.length).trim());
+      return;
+    }
+
+    // Check if value already starts with any country dial code
+    const matchingCountries = COUNTRIES.slice()
+      .sort((a, b) => b.dialCode.length - a.dialCode.length)
+      .filter((c) => value.startsWith(c.dialCode));
+
+    if (matchingCountries.length > 0) {
+      const longestDialCodeLen = matchingCountries[0].dialCode.length;
+      const topMatches = matchingCountries.filter(
+        (c) => c.dialCode.length === longestDialCodeLen
+      );
+      // Prioritize defaultCountryCode (default 'US'), then 'US', then first match
+      const matchingCountry =
+        topMatches.find((c) => c.code === defaultCountryCode) ||
+        topMatches.find((c) => c.code === 'US') ||
+        topMatches[0];
+
       setSelectedCountry(matchingCountry);
       setLocalNumber(value.slice(matchingCountry.dialCode.length).trim());
     } else {
       setLocalNumber(value.replace(/^\+/, '').trim());
     }
-  }, [value]);
+  }, [value, defaultCountryCode]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -78,6 +105,7 @@ export default function PhoneInputWithCountry({
 
   const handleCountrySelect = (country) => {
     setSelectedCountry(country);
+    selectedCountryRef.current = country;
     setIsOpen(false);
     setSearchQuery('');
     // Emit new combined value
@@ -92,10 +120,27 @@ export default function PhoneInputWithCountry({
     
     // Check if user pasted a full number with a plus sign, e.g. +919925034481
     if (rawVal.startsWith('+')) {
-      const match = COUNTRIES.slice()
+      if (selectedCountry && rawVal.startsWith(selectedCountry.dialCode)) {
+        const rest = rawVal.slice(selectedCountry.dialCode.length).replace(/[^\d]/g, '');
+        setLocalNumber(rest);
+        onChange?.(`${selectedCountry.dialCode}${rest}`);
+        return;
+      }
+
+      const matchingCountries = COUNTRIES.slice()
         .sort((a, b) => b.dialCode.length - a.dialCode.length)
-        .find((c) => rawVal.startsWith(c.dialCode));
-      if (match) {
+        .filter((c) => rawVal.startsWith(c.dialCode));
+
+      if (matchingCountries.length > 0) {
+        const longestDialCodeLen = matchingCountries[0].dialCode.length;
+        const topMatches = matchingCountries.filter(
+          (c) => c.dialCode.length === longestDialCodeLen
+        );
+        const match =
+          topMatches.find((c) => c.code === defaultCountryCode) ||
+          topMatches.find((c) => c.code === 'US') ||
+          topMatches[0];
+
         setSelectedCountry(match);
         const rest = rawVal.slice(match.dialCode.length).replace(/[^\d]/g, '');
         setLocalNumber(rest);

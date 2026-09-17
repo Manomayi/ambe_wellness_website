@@ -820,8 +820,8 @@ function ScheduleConsultationContent() {
     );
   }
 
-  // 1. If Questionnaire Not Completed -> Show Questionnaire
-  if (!profile?.is_free_questionnaire_completed) {
+  // 1. If Questionnaire Not Completed AND no specialty selected -> Show Questionnaire
+  if (!profile?.is_free_questionnaire_completed && !profile?.preferred_health) {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-2xl mx-auto space-y-6">
@@ -890,44 +890,6 @@ function ScheduleConsultationContent() {
               </button>
             </div>
           </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  // 3. If Extended Questionnaire Not Completed -> Show Guard
-  if (!profile?.is_extended_questionnaire_completed) {
-    return (
-      <ProtectedRoute userType="user">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <BackButton href="/user/home" label="Back to Home" forceHref={true} />
-          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 text-center shadow-sm space-y-4">
-            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl">
-              📝
-            </div>
-            <h2 className="text-2xl font-bold text-[#1A1A1A]">Detailed Health Profile Required</h2>
-            <p className="text-sm text-[#6B6862] max-w-md mx-auto">
-              Please complete your health assessment (or skip it) before booking your consultation slot.
-            </p>
-            <div className="pt-2">
-              <button
-                onClick={() => setShowExtendedQuestionnaireModal(true)}
-                className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-8 py-3.5 rounded-xl font-semibold text-sm transition shadow-sm uppercase tracking-wider cursor-pointer"
-              >
-                Complete Health Profile
-              </button>
-            </div>
-          </div>
-
-          {showExtendedQuestionnaireModal && (
-            <ExtendedQuestionnaireModal
-              onComplete={() => {
-                setShowExtendedQuestionnaireModal(false);
-                window.location.reload();
-              }}
-              onClose={() => setShowExtendedQuestionnaireModal(false)}
-            />
-          )}
         </div>
       </ProtectedRoute>
     );

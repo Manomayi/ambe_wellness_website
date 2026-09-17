@@ -9,14 +9,15 @@ export default function UserLayout({ children }) {
   const { user, profile, loading } = useAuth();
   const pathname = usePathname();
 
-  // If user is loaded and questionnaire is not completed yet:
-  const needsQuestionnaire = !loading && user && profile && profile.is_free_questionnaire_completed !== true;
+  // If user is loaded and questionnaire is not completed yet AND has no specialty chosen:
+  const isQuestionnairePage = pathname?.startsWith("/user/menu/questionnaire");
+  const needsQuestionnaire = !isQuestionnairePage && !loading && user && profile && profile.is_free_questionnaire_completed !== true && !profile.preferred_health;
 
   if (needsQuestionnaire) {
     return (
       <UserQuestionnaireModal
         onComplete={() => {
-          window.location.reload();
+          window.location.href = "/user/home";
         }}
       />
     );

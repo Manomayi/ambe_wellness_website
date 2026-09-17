@@ -19,18 +19,17 @@ export async function POST(request) {
 
     const amount = body.amount || 5000; // default $50.00 (5000 cents)
     const currency = (body.currency || "usd").toLowerCase();
-    const { userId, appointmentTime, doctorId, doctorName, description } = body;
+    const { userId, appointmentTime, doctorId, doctorName, description, type } = body;
 
     const stripe = new Stripe(secretKey);
-
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount),
       currency: currency,
       payment_method_types: ["card"],
-      description: description || "Consultation Deposit Fee",
+      description: description || (type === "store" ? "Store Product Purchase" : "Consultation Deposit Fee"),
       metadata: {
-        type: "consultation_deposit",
+        type: type || "consultation_deposit",
         userId: userId || "",
         doctorId: doctorId || "",
         doctorName: doctorName || "",

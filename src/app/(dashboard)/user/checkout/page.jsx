@@ -196,25 +196,49 @@ export default function UserCheckoutPage() {
       }
 
       // Create payment intent via Cloud Function (matching Flutter implementation)
-      const createPaymentIntentStore = httpsCallable(functions, 'createPaymentIntentStore');
-      const result = await createPaymentIntentStore({
-        amount: Math.round(total * 100), // Convert to cents
-        currency: 'usd',
-        type: 'store',
-        referral_credits_to_use: referralCreditsToUse,
-        isTestMode: Boolean(isTestMode),
-      });
+      let clientSecret = "";
+      let paymentIntentId = "";
 
-      console.log('Cloud function response:', result.data);
+      try {
+        const createPaymentIntentStore = httpsCallable(functions, 'createPaymentIntentStore');
+        const result = await createPaymentIntentStore({
+          amount: Math.round(total * 100), // Convert to cents
+          currency: 'usd',
+          type: 'store',
+          referral_credits_to_use: referralCreditsToUse,
+          isTestMode: Boolean(isTestMode),
+        });
 
-      if (!result.data) {
-        throw new Error('No response from payment service');
+        console.log('Cloud function response:', result.data);
+        if (result.data?.clientSecret) {
+          clientSecret = result.data.clientSecret;
+          paymentIntentId = result.data.paymentIntentId || "";
+        }
+      } catch (cfErr) {
+        console.warn('createPaymentIntentStore Cloud Function failed, attempting API fallback:', cfErr);
       }
 
-      const { clientSecret, paymentIntentId } = result.data;
-
+      // Fallback to Next.js API route if Cloud Function did not return clientSecret
       if (!clientSecret) {
-        throw new Error('Failed to create payment intent');
+        const res = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: Math.round(total * 100),
+            currency: "usd",
+            type: "store",
+            userId: user.uid,
+            description: "Store Product Purchase",
+            isTestMode: Boolean(isTestMode),
+          }),
+        });
+        const data = await res.json();
+        if (data.clientSecret) {
+          clientSecret = data.clientSecret;
+          paymentIntentId = data.paymentIntentId || "";
+        } else {
+          throw new Error(data.error || "Failed to create payment intent");
+        }
       }
 
       // Store payment intent ID for monitoring

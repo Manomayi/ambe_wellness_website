@@ -288,10 +288,6 @@ export default function Home() {
                   </span>
                 </h1>
 
-                <p className="text-ambe-cream/90 text-base sm:text-lg lg:text-xl font-light mb-3 leading-relaxed">
-                  Evidence-based care with heart, tailored just for you.
-                </p>
-
                 <p className="text-white/70 text-base sm:text-lg lg:text-xl font-medium tracking-wide mb-2">
                   Tele-Wellness
                 </p>
@@ -305,7 +301,6 @@ export default function Home() {
                     "Ancient wisdom. Modern science.",
                     "Vetted practitioners with accredited Ayurveda degrees and allopathic training.",
                     "Doctor-led. Deeply personal.",
-                    "No one-size-fits-all. No guesswork.",
                     "Available anywhere, anytime.",
                   ].map((item) => (
                     <li

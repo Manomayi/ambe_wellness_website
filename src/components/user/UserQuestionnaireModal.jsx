@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { doc, writeBatch, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, writeBatch, serverTimestamp, setDoc, updateDoc, getDoc, deleteField } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/contexts/AuthContext";
 import { matchUserWithDoctor } from "@/lib/doctorMatching";
@@ -228,14 +228,15 @@ export const DOSHA_QUESTIONS = [
 
 export default function UserQuestionnaireModal({ onComplete }) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [step, setStep] = useState("questions"); // "consent" | "questions"
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState(Array(DOSHA_QUESTIONS.length).fill(null));
-  const [selectedHealthField, setSelectedHealthField] = useState(null);
+  const [selectedHealthField, setSelectedHealthField] = useState(profile?.preferred_health || null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
   const timerRef = useRef(null);
@@ -249,10 +250,111 @@ export default function UserQuestionnaireModal({ onComplete }) {
     };
   }, []);
 
-  const totalQuestions = DOSHA_QUESTIONS?.length || 49;
+  // Load saved answers on mount and resume at first unanswered question
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+
+    const loadSavedAnswers = async () => {
+      let answersToRestore = null;
+
+      // 1. Check localStorage first
+      try {
+        const local = localStorage.getItem(`dosha_answers_${user.uid}`);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed) && parsed.length === DOSHA_QUESTIONS.length) {
+            answersToRestore = parsed;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not read from localStorage:", e);
+      }
+
+      let fetchedSpecialty = null;
+
+      // 2. Fallback to Firestore draft if not in localStorage or check preferred_health
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.preferred_health) {
+            fetchedSpecialty = data.preferred_health;
+            if (!selectedHealthField) {
+              setSelectedHealthField(data.preferred_health);
+            }
+          }
+
+          if (!answersToRestore && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
+            const restored = Array(DOSHA_QUESTIONS.length).fill(null);
+            Object.entries(data.dosha_draft_answers).forEach(([idxStr, val]) => {
+              const idx = parseInt(idxStr, 10);
+              if (!isNaN(idx) && idx >= 0 && idx < restored.length) {
+                restored[idx] = val;
+              }
+            });
+            answersToRestore = restored;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not load draft answers from Firestore:", e);
+      }
+
+      if (!isMounted) return;
+
+      // 3. Restore state and set currentPage to first unanswered question
+      const hasSpec = Boolean(profile?.preferred_health || selectedHealthField || fetchedSpecialty);
+      const effectiveTotal = hasSpec ? 48 : totalQuestions;
+
+      if (answersToRestore) {
+        const prefField = profile?.preferred_health || selectedHealthField || fetchedSpecialty;
+        if (prefField) {
+          const sIdx = DOSHA_QUESTIONS[48].options.findIndex(
+            (opt) => opt.key === prefField
+          );
+          if (sIdx !== -1) {
+            answersToRestore[48] = sIdx;
+          }
+        }
+
+        setSelectedAnswers(answersToRestore);
+        const firstUnanswered = answersToRestore.findIndex(
+          (ans, idx) => idx < 48 && (ans === null || ans === undefined)
+        );
+        if (firstUnanswered !== -1) {
+          setCurrentPage(firstUnanswered);
+        } else {
+          setCurrentPage(effectiveTotal - 1);
+        }
+      } else if (profile?.preferred_health || fetchedSpecialty) {
+        const prefField = profile?.preferred_health || fetchedSpecialty;
+        const sIdx = DOSHA_QUESTIONS[48].options.findIndex(
+          (opt) => opt.key === prefField
+        );
+        if (sIdx !== -1) {
+          const initAnswers = Array(DOSHA_QUESTIONS.length).fill(null);
+          initAnswers[48] = sIdx;
+          setSelectedAnswers(initAnswers);
+        }
+      }
+
+      setLoadingDraft(false);
+    };
+
+    loadSavedAnswers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, profile?.preferred_health]);
+
+  const hasExistingSpecialty = Boolean(profile?.preferred_health || selectedHealthField);
+  const totalQuestions = hasExistingSpecialty ? 48 : (DOSHA_QUESTIONS?.length || 49);
   const safeCurrentPage = Math.max(0, Math.min(Number(currentPage) || 0, totalQuestions - 1));
   const currentQ = (DOSHA_QUESTIONS && DOSHA_QUESTIONS[safeCurrentPage]) || DOSHA_QUESTIONS[0] || { question: "Loading question...", options: [] };
   const isLastQuestion = safeCurrentPage === totalQuestions - 1;
+  const isSpecialtyQuestion = !hasExistingSpecialty && isLastQuestion;
 
   // Handle Option Select
   const handleSelectOption = (optionIndex, optionData = null) => {
@@ -260,7 +362,15 @@ export default function UserQuestionnaireModal({ onComplete }) {
     updated[safeCurrentPage] = optionIndex;
     setSelectedAnswers(updated);
 
-    if (isLastQuestion && optionData) {
+    if (user) {
+      try {
+        localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(updated));
+      } catch (e) {
+        console.warn("Error saving answer to localStorage:", e);
+      }
+    }
+
+    if (isSpecialtyQuestion && optionData) {
       setSelectedHealthField(optionData.key);
     }
 
@@ -293,98 +403,169 @@ export default function UserQuestionnaireModal({ onComplete }) {
     }
   };
 
+  const areAllAnswered = selectedAnswers.slice(0, 48).every((a) => a !== null && a !== undefined);
+
+  const handleSkip = async () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    // 1. Save answers to localStorage
+    if (user) {
+      try {
+        localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(selectedAnswers));
+      } catch (e) {}
+    }
+
+    // 2. If user ALREADY has a specialty chosen, don't ask again — save draft and exit
+    if (hasExistingSpecialty) {
+      if (user) {
+        try {
+          const partialAnswers = {};
+          selectedAnswers.forEach((ans, idx) => {
+            if (idx < 48 && ans !== null && ans !== undefined) {
+              partialAnswers[idx] = ans;
+            }
+          });
+          const userRef = doc(db, "users", user.uid);
+          await setDoc(userRef, {
+            dosha_draft_answers: partialAnswers
+          }, { merge: true });
+        } catch (e) {
+          console.warn("Could not save draft on skip:", e);
+        }
+      }
+      if (onComplete) {
+        onComplete();
+      } else {
+        window.location.href = "/user/home";
+      }
+      return;
+    }
+
+    // 3. User does not have a specialty yet: jump to specialty selection (question 49)
+    setCurrentPage(totalQuestions - 1);
+  };
+
   // Scoring & Save
-  const saveAndComplete = async (isSkipping = false) => {
+  const saveAndComplete = async () => {
     if (!user) return;
     setIsSaving(true);
 
     try {
-      let vata = 0, pitta = 0, kapha = 0;
-      
-      // Calculate scores for first 48 questions (indices 0..47)
-      for (let i = 0; i < 48; i++) {
-        const sel = selectedAnswers[i];
-        if (sel === 0) vata++;
-        else if (sel === 1) pitta++;
-        else if (sel === 2) kapha++;
-        else {
-          // default/fallback
-          vata++;
-        }
-      }
-
-      let primary, secondary;
-      if (vata >= pitta && vata >= kapha) {
-        primary = "vata";
-        secondary = pitta >= kapha ? "pitta" : "kapha";
-      } else if (pitta >= vata && pitta >= kapha) {
-        primary = "pitta";
-        secondary = vata >= kapha ? "vata" : "kapha";
-      } else {
-        primary = "kapha";
-        secondary = vata >= pitta ? "vata" : "pitta";
-      }
-
-      // Map answers
-      const results = {};
-      for (let i = 0; i < 48; i++) {
-        const q = DOSHA_QUESTIONS[i];
-        const sel = selectedAnswers[i] ?? 0;
-        results[q.question] = q.options[sel];
-      }
-
-      const prefHealthKey = selectedHealthField || "general_health";
-      const q49 = DOSHA_QUESTIONS[48];
-      const sel49 = selectedAnswers[48] ?? 0;
-      results[q49.question] = q49.options[sel49]?.label || q49.options[sel49] || "General Health";
-
-      const batch = writeBatch(db);
-      
-      // 1. Questionnaire doc
-      const questionnaireRef = doc(db, "users", user.uid, "questionnaires", "dosha_questionnaire");
-      batch.set(questionnaireRef, {
-        results,
-        tally: {
-          column_1: vata,
-          column_2: pitta,
-          column_3: kapha
-        },
-        dosha_scores: {
-          primary,
-          secondary
-        },
-        timestamp: serverTimestamp()
-      });
-
-      // 2. User doc
+      const prefHealthKey = selectedHealthField || profile?.preferred_health || "general_health";
       const userRef = doc(db, "users", user.uid);
-      batch.update(userRef, {
-        is_free_questionnaire_completed: true,
-        preferred_health: prefHealthKey,
-        questionnaire_consent: {
-          accepted_at: serverTimestamp(),
-          disclaimer_version: "1.0"
+
+      if (areAllAnswered) {
+        let vata = 0, pitta = 0, kapha = 0;
+        
+        // Calculate scores for first 48 questions (indices 0..47)
+        for (let i = 0; i < 48; i++) {
+          const sel = selectedAnswers[i];
+          if (sel === 0) vata++;
+          else if (sel === 1) pitta++;
+          else if (sel === 2) kapha++;
         }
-      });
 
-      await batch.commit();
+        let primary, secondary;
+        if (vata >= pitta && vata >= kapha) {
+          primary = "vata";
+          secondary = pitta >= kapha ? "pitta" : "kapha";
+        } else if (pitta >= vata && pitta >= kapha) {
+          primary = "pitta";
+          secondary = vata >= kapha ? "vata" : "kapha";
+        } else {
+          primary = "kapha";
+          secondary = vata >= pitta ? "vata" : "pitta";
+        }
 
-      // 3. Trigger doctor matching by specialty
-      try {
-        await matchUserWithDoctor(user.uid, prefHealthKey);
-      } catch (mErr) {
-        console.warn("Doctor matching during questionnaire complete:", mErr);
-        await updateDoc(userRef, {
-          needs_doctor_assignment: true,
+        // Map answers
+        const results = {};
+        for (let i = 0; i < 48; i++) {
+          const q = DOSHA_QUESTIONS[i];
+          const sel = selectedAnswers[i] ?? 0;
+          results[q.question] = q.options[sel];
+        }
+
+        const q49 = DOSHA_QUESTIONS[48];
+        const healthOption = (q49.options || []).find(
+          (opt) => opt.key === prefHealthKey
+        );
+        const sel49 = selectedAnswers[48] ?? 0;
+        results[q49.question] = healthOption?.label || q49.options[sel49]?.label || q49.options[sel49] || "General Health";
+
+        const batch = writeBatch(db);
+        
+        // 1. Questionnaire doc
+        const questionnaireRef = doc(db, "users", user.uid, "questionnaires", "dosha_questionnaire");
+        batch.set(questionnaireRef, {
+          results,
+          tally: {
+            column_1: vata,
+            column_2: pitta,
+            column_3: kapha
+          },
+          dosha_scores: {
+            primary,
+            secondary
+          },
+          timestamp: serverTimestamp()
+        });
+
+        // 2. User doc
+        batch.set(userRef, {
+          is_free_questionnaire_completed: true,
           preferred_health: prefHealthKey,
-        }).catch(() => {});
+          dosha_draft_answers: deleteField(),
+          questionnaire_consent: {
+            accepted_at: serverTimestamp(),
+            disclaimer_version: "1.0"
+          }
+        }, { merge: true });
+
+        await batch.commit();
+
+        try {
+          localStorage.removeItem(`dosha_answers_${user.uid}`);
+        } catch (e) {}
+
+        // 3. Trigger doctor matching by specialty
+        try {
+          await matchUserWithDoctor(user.uid, prefHealthKey);
+        } catch (mErr) {
+          console.warn("Doctor matching during questionnaire complete:", mErr);
+          await setDoc(userRef, {
+            needs_doctor_assignment: true,
+            preferred_health: prefHealthKey,
+          }, { merge: true }).catch(() => {});
+        }
+      } else {
+        // User skipped to specialty: save preferred_health and partial answers without fake dosha scores
+        const partialAnswers = {};
+        selectedAnswers.forEach((ans, idx) => {
+          if (idx < 48 && ans !== null && ans !== undefined) {
+            partialAnswers[idx] = ans;
+          }
+        });
+
+        await setDoc(userRef, {
+          preferred_health: prefHealthKey,
+          is_free_questionnaire_completed: false,
+          dosha_draft_answers: partialAnswers,
+          questionnaire_consent: {
+            accepted_at: serverTimestamp(),
+            disclaimer_version: "1.0"
+          }
+        }, { merge: true });
+
+        try {
+          localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(selectedAnswers));
+        } catch (e) {}
       }
 
       if (onComplete) {
         onComplete();
       } else {
-        router.push("/user/home");
-        window.location.reload();
+        window.location.href = "/user/home";
       }
     } catch (err) {
       console.error("Error saving questionnaire:", err);
@@ -394,6 +575,15 @@ export default function UserQuestionnaireModal({ onComplete }) {
       setShowSkipModal(false);
     }
   };
+
+  if (loadingDraft) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#FAF8F5] flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-3 border-[#C2691C] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-medium text-[#1A1A1A]">Loading assessment...</p>
+      </div>
+    );
+  }
 
   // 2. QUESTIONS VIEW
   return (
@@ -412,12 +602,14 @@ export default function UserQuestionnaireModal({ onComplete }) {
           </span>
         </div>
 
-        <button
-          onClick={() => setShowSkipModal(true)}
-          className="text-xs font-semibold uppercase tracking-wider text-[#8C827A] hover:text-[#1A1A1A] transition-colors py-1.5 px-3.5 rounded-full hover:bg-white border border-[#E7E2D9] shadow-xs cursor-pointer"
-        >
-          Skip & Finish
-        </button>
+        {!isLastQuestion && (
+          <button
+            onClick={handleSkip}
+            className="text-xs font-semibold uppercase tracking-wider text-[#8C827A] hover:text-[#1A1A1A] transition-colors py-1.5 px-3.5 rounded-full hover:bg-white border border-[#E7E2D9] shadow-xs cursor-pointer"
+          >
+            Skip
+          </button>
+        )}
       </div>
 
       {/* Main Content Area */}
@@ -440,7 +632,7 @@ export default function UserQuestionnaireModal({ onComplete }) {
         <div className="bg-white p-7 sm:p-10 rounded-3xl shadow-xl border border-[#E7E2D9] space-y-6">
           <div className="text-center space-y-2">
             <span className="text-[11px] font-bold tracking-widest uppercase text-[#C2691C]">
-              {isLastQuestion ? "Area of Focus" : "Constitution & Dosha Profile"}
+              {isSpecialtyQuestion ? "Area of Focus" : "Constitution & Dosha Profile"}
             </span>
             <h2
               className="text-2xl sm:text-3xl font-medium text-[#1A1A1A]"
@@ -452,11 +644,11 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
           {/* Options */}
           <div className="space-y-3 pt-2">
-            {isLastQuestion ? (
+            {isSpecialtyQuestion ? (
               // Question 49: Health Fields grid
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {(currentQ?.options || []).map((opt, i) => {
-                  const isSelected = selectedAnswers[safeCurrentPage] === i;
+                  const isSelected = selectedAnswers[safeCurrentPage] === i || selectedHealthField === opt.key;
                   return (
                     <button
                       key={opt.key}
@@ -515,11 +707,11 @@ export default function UserQuestionnaireModal({ onComplete }) {
             {isLastQuestion ? (
               <button
                 type="button"
-                onClick={() => saveAndComplete(false)}
+                onClick={saveAndComplete}
                 disabled={isSaving || selectedAnswers[safeCurrentPage] === null}
                 className="flex items-center px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
-                {isSaving ? "Submitting..." : "Complete Assessment"}
+                {isSaving ? "Submitting..." : areAllAnswered ? "Complete Assessment" : "Continue"}
               </button>
             ) : (
               <button

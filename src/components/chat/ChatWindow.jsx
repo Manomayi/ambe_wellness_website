@@ -7,17 +7,18 @@ import {
   orderBy, 
   onSnapshot, 
   addDoc, 
+  setDoc,
   updateDoc, 
-  doc,
-  serverTimestamp,
-  writeBatch,
-  where,
-  getDocs,
-  increment
+  doc, 
+  serverTimestamp, 
+  writeBatch, 
+  increment 
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function ChatWindow({ 
   chatId, 
@@ -30,9 +31,16 @@ export default function ChatWindow({
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(null);
+  const [convertingHeic, setConvertingHeic] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
   const [sending, setSending] = useState(false);
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!chatId || !user) return;
@@ -64,6 +72,12 @@ export default function ChatWindow({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    if (uploadingImage) {
+      scrollToBottom();
+    }
+  }, [uploadingImage]);
+
   const markMessagesAsRead = async (messagesToMark) => {
     try {
       const batch = writeBatch(db);
@@ -81,10 +95,10 @@ export default function ChatWindow({
       // Reset unread count in chat metadata for doctor
       if (hasUnreadMessages && isDoctor) {
         const chatRef = doc(db, 'doctors', user.uid, 'chats', chatId);
-        batch.update(chatRef, { 
+        batch.set(chatRef, { 
           unread_count: 0,
           last_message_read_by_doctor: true 
-        });
+        }, { merge: true });
       }
       
       if (hasUnreadMessages) {
@@ -95,48 +109,169 @@ export default function ChatWindow({
     }
   };
 
+  const convertHeicToJpeg = async (file) => {
+    try {
+      const heic2any = (await import('heic2any')).default;
+      const blob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.85,
+      });
+      const convertedBlob = Array.isArray(blob) ? blob[0] : blob;
+      return new File(
+        [convertedBlob],
+        file.name.replace(/\.[^/.]+$/, "") + ".jpg",
+        { type: 'image/jpeg' }
+      );
+    } catch (err) {
+      console.error("HEIC conversion failed:", err);
+      return file;
+    }
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so the same file can be re-selected if removed
+    e.target.value = '';
+
+    const lowerName = file.name.toLowerCase();
+    const isHeic = lowerName.endsWith('.heic') || lowerName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif';
+    const isStandardImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif)$/i.test(lowerName);
+
+    if (!isHeic && !isStandardImage) {
+      alert('Please select a valid image file (JPEG, PNG, WebP, GIF, or HEIC).');
+      return;
+    }
+
+    if (isHeic) {
+      setConvertingHeic(true);
+      try {
+        const convertedFile = await convertHeicToJpeg(file);
+        setSelectedImage(convertedFile);
+        setImagePreviewUrl(URL.createObjectURL(convertedFile));
+      } catch (err) {
+        console.error('Error converting HEIC image:', err);
+        alert('Failed to process HEIC image from device.');
+      } finally {
+        setConvertingHeic(false);
+      }
+    } else {
+      setSelectedImage(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const removeSelectedImage = () => {
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    setSelectedImage(null);
+    setImagePreviewUrl(null);
+  };
+
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || sending || !canSendMessage) return;
+    const messageText = newMessage.trim();
+    if ((!messageText && !selectedImage) || sending || !canSendMessage) return;
     
     setSending(true);
-    const messageText = newMessage;
+    const imageToUpload = selectedImage;
+    const previewToRevoke = imagePreviewUrl;
+
+    if (imageToUpload && previewToRevoke) {
+      setUploadingImage({ url: previewToRevoke, caption: messageText });
+    }
+
     setNewMessage('');
+    setSelectedImage(null);
+    setImagePreviewUrl(null);
+    setTimeout(scrollToBottom, 50);
     
     try {
-      // Add message
-      await addDoc(collection(db, 'chats', chatId, 'messages'), {
-        text: messageText,
+      let imageUrl = null;
+      if (imageToUpload) {
+        const timestamp = Date.now();
+        const cleanFileName = imageToUpload.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const imgRef = storageRef(storage, `chats/${chatId}/images/${timestamp}_${cleanFileName}`);
+        const uploadResult = await uploadBytes(imgRef, imageToUpload, {
+          contentType: imageToUpload.type || 'image/jpeg',
+        });
+        imageUrl = await getDownloadURL(uploadResult.ref);
+      }
+
+      const messageData = {
         sender_uid: user.uid,
         timestamp: serverTimestamp(),
         read: false,
-      });
+        text: messageText,
+      };
+
+      if (imageUrl) {
+        messageData.image_url = imageUrl;
+        messageData.type = 'image';
+      } else {
+        messageData.type = 'text';
+      }
+
+      // Add message to Firestore
+      await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
       
+      const lastMsgDisplay = messageText || (imageUrl ? '📷 Photo' : '');
+
       // Update chat metadata
       const chatRef = doc(db, 'chats', chatId);
-      await updateDoc(chatRef, {
-        last_message: messageText,
+      await setDoc(chatRef, {
+        last_message: lastMsgDisplay,
         last_message_time: serverTimestamp(),
+        last_message_timestamp: serverTimestamp(),
         last_message_sender_uid: user.uid,
-      });
+      }, { merge: true });
       
       // Update doctor's chat metadata if user is sending
       if (!isDoctor && recipientId) {
         const doctorChatRef = doc(db, 'doctors', recipientId, 'chats', chatId);
-        await updateDoc(doctorChatRef, {
-          last_message: messageText,
+        await setDoc(doctorChatRef, {
+          chat_id: chatId,
+          user_uid: user.uid,
+          user_name: user.displayName || 'User',
+          user_photo_url: user.photoURL || null,
+          last_message: lastMsgDisplay,
           last_message_sender_uid: user.uid,
           last_message_timestamp: serverTimestamp(),
           last_message_time: serverTimestamp(),
           last_message_read_by_doctor: false,
           unread_count: increment(1),
-        });
+        }, { merge: true });
       }
-      
+
+      // If doctor is sending, update doctor's own chat metadata too
+      if (isDoctor) {
+        const doctorChatRef = doc(db, 'doctors', user.uid, 'chats', chatId);
+        await setDoc(doctorChatRef, {
+          chat_id: chatId,
+          last_message: lastMsgDisplay,
+          last_message_sender_uid: user.uid,
+          last_message_timestamp: serverTimestamp(),
+          last_message_time: serverTimestamp(),
+          last_message_read_by_doctor: true,
+        }, { merge: true });
+      }
+
+      if (previewToRevoke) {
+        URL.revokeObjectURL(previewToRevoke);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
-      setNewMessage(messageText); // Restore message
+      // Restore previous state if failed
+      setNewMessage(messageText);
+      if (imageToUpload) {
+        setSelectedImage(imageToUpload);
+        setImagePreviewUrl(previewToRevoke);
+      }
     } finally {
+      setUploadingImage(null);
       setSending(false);
     }
   };
@@ -197,43 +332,134 @@ export default function ChatWindow({
       
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#FAF8F5]">
-        {Object.keys(groupedMessages).length === 0 ? (
+        {Object.keys(groupedMessages).length === 0 && !uploadingImage ? (
           <div className="flex items-center justify-center h-full text-center p-6">
             <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 max-w-sm">
               <p className="text-sm font-semibold text-[#1A1A1A] mb-1">Direct Message Channel</p>
               <p className="text-xs text-[#6B6862]">
                 {canSendMessage
-                  ? 'Send a message to begin your conversation with your doctor.'
+                  ? 'Send a message or photo to begin your conversation with your doctor.'
                   : 'Complete your first video consultation to unlock direct messaging with your doctor.'}
               </p>
             </div>
           </div>
         ) : (
-          Object.entries(groupedMessages).map(([date, dateMessages]) => (
-            <div key={date}>
-              <div className="text-center my-3">
-                <span className="text-[11px] font-medium text-[#6B6862] bg-white border border-[#E7E2D9] px-3 py-1 rounded-full shadow-2xs">
-                  {date}
-                </span>
+          <>
+            {Object.entries(groupedMessages).map(([date, dateMessages]) => (
+              <div key={date}>
+                <div className="text-center my-3">
+                  <span className="text-[11px] font-medium text-[#6B6862] bg-white border border-[#E7E2D9] px-3 py-1 rounded-full shadow-2xs">
+                    {date}
+                  </span>
+                </div>
+                {dateMessages.map((message) => (
+                  <MessageBubble
+                    key={message.id}
+                    message={message}
+                    isOwn={message.sender_uid === user?.uid}
+                    time={formatTime(message.timestamp)}
+                    onImageClick={(url) => setFullscreenImage(url)}
+                  />
+                ))}
               </div>
-              {dateMessages.map((message) => (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  isOwn={message.sender_uid === user?.uid}
-                  time={formatTime(message.timestamp)}
-                />
-              ))}
-            </div>
-          ))
+            ))}
+
+            {/* Optimistic Uploading Image Bubble */}
+            {uploadingImage && (
+              <div className="flex justify-end mb-2.5">
+                <div className="max-w-[85%] sm:max-w-[70%] shadow-2xs p-1 bg-[#FFD3AC] text-[#1A1A1A] rounded-2xl rounded-br-xs">
+                  <div className="relative overflow-hidden rounded-xl">
+                    <img
+                      src={uploadingImage.url}
+                      alt="Uploading preview"
+                      className="max-h-72 max-w-[280px] w-full rounded-xl object-cover"
+                    />
+                    {/* Dark overlay with centered spinner */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="p-3 bg-black/60 rounded-full flex items-center justify-center shadow-lg">
+                        <div className="w-6 h-6 border-[2.5px] border-[#FFD3AC] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    </div>
+                    {/* Bottom Sending pill */}
+                    <div className="absolute bottom-2 right-2 px-2.5 py-1 bg-black/60 backdrop-blur-xs rounded-full flex items-center gap-1.5 shadow-md">
+                      <div className="w-2.5 h-2.5 border-[1.5px] border-white border-t-transparent rounded-full animate-spin" />
+                      <span className="text-[10px] font-medium text-white tracking-wide">Sending...</span>
+                    </div>
+                  </div>
+                  {uploadingImage.caption && uploadingImage.caption.trim() && (
+                    <div className="px-2.5 pt-2 pb-1">
+                      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
+                        {uploadingImage.caption}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Selected Image Preview */}
+      {selectedImage && (
+        <div className="px-4 py-2.5 border-t border-[#E7E2D9] bg-[#F4F1EA] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src={imagePreviewUrl}
+              alt="Preview"
+              className="w-12 h-12 object-cover rounded-lg border border-[#E7E2D9]"
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-[#1A1A1A] truncate max-w-[200px] sm:max-w-xs">
+                {selectedImage.name}
+              </p>
+              <p className="text-[10px] text-[#6B6862]">
+                {(selectedImage.size / 1024).toFixed(0)} KB • Photo attached
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={removeSelectedImage}
+            className="p-1.5 rounded-full hover:bg-black/10 text-[#6B6862] hover:text-[#1A1A1A] transition cursor-pointer"
+            aria-label="Remove image"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Processing HEIC notification */}
+      {convertingHeic && (
+        <div className="px-4 py-2 bg-[#FFF8E7] border-t border-[#FFE2A9] text-xs text-[#8A5800] flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#8A5800]" />
+          Processing Apple photo...
+        </div>
+      )}
       
       {/* Input */}
       {canSendMessage ? (
         <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-[#E7E2D9] bg-white">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+            onChange={handleImageSelect}
+            className="hidden"
+          />
           <div className="flex items-center gap-2 max-w-5xl mx-auto">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={sending || convertingHeic}
+              className="p-3 bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E2D9] text-[#6B6862] hover:text-[#1A1A1A] rounded-2xl disabled:opacity-40 transition flex items-center justify-center flex-shrink-0 cursor-pointer"
+              title="Attach image"
+              aria-label="Attach image"
+            >
+              <PhotoIcon className="w-5 h-5 text-[#8C827A]" />
+            </button>
+
             <textarea
               ref={inputRef}
               value={newMessage}
@@ -244,17 +470,21 @@ export default function ChatWindow({
                   sendMessage(e);
                 }
               }}
-              placeholder="Type your message..."
+              placeholder={selectedImage ? "Add a caption..." : "Type your message..."}
               className="flex-1 p-3 text-sm bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#C8996A] text-[#1A1A1A] placeholder-[#8C827A]"
               rows={1}
             />
             <button
               type="submit"
-              disabled={!newMessage.trim() || sending}
+              disabled={(!newMessage.trim() && !selectedImage) || sending || convertingHeic}
               className="p-3.5 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition shadow-xs flex items-center justify-center flex-shrink-0 cursor-pointer"
               aria-label="Send message"
             >
-              <PaperAirplaneIcon className="w-5 h-5" />
+              {sending ? (
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <PaperAirplaneIcon className="w-5 h-5" />
+              )}
             </button>
           </div>
         </form>
@@ -267,31 +497,99 @@ export default function ChatWindow({
           </p>
         </div>
       )}
+
+      {/* Fullscreen Image Lightbox Modal */}
+      {fullscreenImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-xs"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setFullscreenImage(null)}
+            className="absolute top-5 right-5 text-white bg-white/20 hover:bg-white/30 rounded-full p-2.5 transition cursor-pointer"
+            aria-label="Close image preview"
+          >
+            <XMarkIcon className="w-6 h-6" />
+          </button>
+          <img
+            src={fullscreenImage}
+            alt="Full size view"
+            className="max-h-[85vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
 // Message Bubble Component with Ambé Theme
-function MessageBubble({ message, isOwn, time }) {
+function MessageBubble({ message, isOwn, time, onImageClick }) {
+  const hasImage = !!message.image_url;
+  const hasText = !!(message.text && message.text.trim());
+
+  if (!hasImage && !hasText) return null;
+
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2.5`}>
       <div
-        className={`max-w-[78%] sm:max-w-[65%] px-4 py-2.5 shadow-2xs ${
+        className={`max-w-[85%] sm:max-w-[70%] shadow-2xs ${
+          hasImage && !hasText
+            ? 'p-1'
+            : hasImage && hasText
+            ? 'p-1'
+            : 'px-4 py-2.5'
+        } ${
           isOwn
             ? 'bg-[#FFD3AC] text-[#1A1A1A] rounded-2xl rounded-br-xs'
             : 'bg-white text-[#1A1A1A] border border-[#E7E2D9] rounded-2xl rounded-bl-xs'
         }`}
       >
-        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
-          {message.text}
-        </p>
-        <p
-          className={`text-[10px] mt-1 font-medium ${
-            isOwn ? 'text-[#8C827A] text-right' : 'text-[#8C827A]'
-          }`}
-        >
-          {time}
-        </p>
+        {hasImage && !hasText ? (
+          <div className="relative overflow-hidden rounded-xl">
+            <img
+              src={message.image_url}
+              alt="Chat attachment"
+              onClick={() => onImageClick?.(message.image_url)}
+              className="max-h-72 max-w-[280px] w-full rounded-xl object-cover cursor-pointer hover:opacity-95 transition"
+              loading="lazy"
+            />
+            <div className="absolute inset-x-0 bottom-0 h-9 bg-gradient-to-t from-black/65 to-transparent pointer-events-none" />
+            <span className="absolute bottom-1.5 right-2 text-[10px] font-medium text-white drop-shadow-sm flex items-center gap-1">
+              {time}
+              {isOwn && <span className="text-[11px] opacity-90">✓✓</span>}
+            </span>
+          </div>
+        ) : (
+          <>
+            {hasImage && (
+              <div className="overflow-hidden rounded-xl">
+                <img
+                  src={message.image_url}
+                  alt="Chat attachment"
+                  onClick={() => onImageClick?.(message.image_url)}
+                  className="max-h-72 max-w-[280px] w-full rounded-xl object-cover cursor-pointer hover:opacity-95 transition"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div className={hasImage ? 'px-2.5 pt-2 pb-1' : ''}>
+              {hasText && (
+                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
+                  {message.text}
+                </p>
+              )}
+              <p
+                className={`text-[10px] mt-1 font-medium ${
+                  isOwn ? 'text-[#8C827A] text-right' : 'text-[#8C827A]'
+                }`}
+              >
+                {time}
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
