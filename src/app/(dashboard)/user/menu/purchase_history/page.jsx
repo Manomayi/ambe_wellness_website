@@ -66,10 +66,23 @@ export default function PurchaseHistoryPage() {
         const uid = user.uid;
         const q = query(collection(db, 'users', uid, 'purchases'));
         const snap = await getDocs(q);
+
+        const parseDate = (val) => {
+          if (!val) return new Date();
+          if (val.toDate) return val.toDate();
+          if (typeof val === 'number') {
+            return new Date(val < 10000000000 ? val * 1000 : val);
+          }
+          const parsed = new Date(val);
+          return isNaN(parsed.getTime()) ? new Date() : parsed;
+        };
+
         const items = snap.docs.map(doc => {
           const data = doc.data();
-          const ts = data.created;
-          const date = ts && ts.toDate ? ts.toDate() : (ts ? new Date(ts < 10000000000 ? ts * 1000 : ts) : new Date());
+          const orderType = data.type || 'store';
+          const rawTime = data.created_at || data.createdAt || data.created || data.timestamp;
+          const date = parseDate(rawTime);
+
           const rawAmount = data.amount ?? 0;
           const amountNum = typeof rawAmount === 'number' ? rawAmount : parseFloat(rawAmount) || 0;
           // If stored in cents (e.g. 5000), format to 50.00
@@ -77,7 +90,6 @@ export default function PurchaseHistoryPage() {
             ? (amountNum / 100).toFixed(2)
             : amountNum.toFixed(2);
 
-          const orderType = data.type || 'store';
           let productStatus =
             data.product_status ||
             data.fulfillment_status ||
@@ -112,6 +124,8 @@ export default function PurchaseHistoryPage() {
             items: Array.isArray(data.items) ? data.items : [],
             time: date,
             shipDate: data.ship_date || data.shipped_at || null,
+            consultationId: data.consultation_id || data.appointment_id || null,
+            paymentIntentId: data.payment_intent_id || data.payment_id || null,
           };
         });
         // Sort newest first
@@ -237,7 +251,7 @@ export default function PurchaseHistoryPage() {
                     </span>
                     <div className="mt-2 space-y-0.5 text-xs text-[#6B6862]">
                       <p>
-                        <strong className="text-[#353535]">Order Date:</strong>{' '}
+                        <strong className="text-[#353535]">{type === 'store' ? 'Order Date:' : 'Date:'}</strong>{' '}
                         {time.toLocaleString(undefined, {
                           year: 'numeric',
                           month: 'short',

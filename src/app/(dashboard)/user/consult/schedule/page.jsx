@@ -633,7 +633,8 @@ function ScheduleConsultationContent() {
 
       try {
         const purchaseRef = doc(db, 'users', user.uid, 'purchases', finalIntentId);
-        await setDoc(purchaseRef, {
+        const pSnap = await getDoc(purchaseRef);
+        const purchaseData = {
           id: finalIntentId,
           amount: 50.00,
           currency: 'USD',
@@ -646,9 +647,13 @@ function ScheduleConsultationContent() {
           doctor_id: resolvedDoctorUid || '',
           doctor_name: finalDocName,
           refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
-          created: serverTimestamp(),
           payment_intent_id: finalIntentId,
-        }, { merge: true });
+        };
+        if (!pSnap.exists() || (!pSnap.data()?.created && !pSnap.data()?.created_at)) {
+          purchaseData.created = serverTimestamp();
+          purchaseData.created_at = serverTimestamp();
+        }
+        await setDoc(purchaseRef, purchaseData, { merge: true });
       } catch (pErr) {
         console.error('Error saving purchase record:', pErr);
       }

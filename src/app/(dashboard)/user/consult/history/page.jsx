@@ -24,8 +24,15 @@ export default function ConsultationHistoryPage() {
           orderBy("time", "desc")
         );
         const snap = await getDocs(histQuery);
-        const items = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setHistory(items);
+        const uniqueMap = {};
+        snap.docs.forEach((doc) => {
+          const data = { id: doc.id, ...doc.data() };
+          const canonicalId = data.appointment_id || data.consultation_id || doc.id;
+          if (!uniqueMap[canonicalId]) {
+            uniqueMap[canonicalId] = data;
+          }
+        });
+        setHistory(Object.values(uniqueMap));
       } catch (e) {
         console.error("Error fetching history:", e);
       } finally {

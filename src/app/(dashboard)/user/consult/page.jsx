@@ -301,16 +301,26 @@ export default function UserConsultPage() {
     const pastQuery = collection(db, 'users', user.uid, 'appointments_history');
 
     const unsubscribePast = onSnapshot(pastQuery, (snapshot) => {
-      const appointments = snapshot.docs.map(doc => ({
+      const rawAppointments = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      appointments.sort((a, b) => {
+      rawAppointments.sort((a, b) => {
         const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
         const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
         return timeB - timeA;
       });
-      setPastAppointments(appointments);
+
+      // Deduplicate by canonical appointment ID
+      const uniqueMap = {};
+      rawAppointments.forEach((item) => {
+        const canonicalId = item.appointment_id || item.consultation_id || item.id;
+        if (!uniqueMap[canonicalId]) {
+          uniqueMap[canonicalId] = item;
+        }
+      });
+
+      setPastAppointments(Object.values(uniqueMap));
       setLoading(false);
     });
 

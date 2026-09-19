@@ -181,14 +181,9 @@ export default function CompleteReportPage() {
         recommendations[cat.key] = { notes: notesByCategory[cat.key].trim() };
       }
 
-      // Same document ID scheme as the mobile app, so the doctor's and
-      // patient's history entries for this report line up.
-      const pad = (n) => String(n).padStart(2, '0');
-      const d = time.toDate();
-      const formattedTimestamp =
-        `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_` +
-        `${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-      const documentId = `${formattedTimestamp}_${doctorUid}`;
+      // Use the canonical appointment ID matching the mobile app so all
+      // documents and history entries share the exact same ID.
+      const documentId = oldAppointmentId;
 
       // Fetch existing upcoming / consultation doc data to preserve payment_id, consultation_id, and attendance
       let existingApptData = {};
