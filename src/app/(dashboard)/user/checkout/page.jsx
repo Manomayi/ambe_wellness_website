@@ -19,6 +19,7 @@ import { httpsCallable } from 'firebase/functions';
 import PaymentMethodSelector from '@/components/common/PaymentMethodSelector';
 import { useRemotePaymentConfig } from '@/lib/remoteConfig';
 import { startPayPalCheckout } from '@/lib/paypal';
+import { getItemUnitPrice } from '@/lib/cartUtils';
 
 
 export default function UserCheckoutPage() {
@@ -96,7 +97,7 @@ export default function UserCheckoutPage() {
 
     // Calculate subtotal
     const sub = cartItems.reduce((sum, item) => {
-      return sum + ((item.mrp || item.price || 0) * item.quantity);
+      return sum + (getItemUnitPrice(item) * (item.quantity || 1));
     }, 0);
     setSubtotal(sub);
 
@@ -388,8 +389,13 @@ export default function UserCheckoutPage() {
 
         {/* Address Modal */}
         {showAddressModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 max-w-md w-full">
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowAddressModal(false);
+            }}
+          >
+            <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 max-w-md w-full shadow-2xl">
               <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">
                 {deliveryAddress ? 'Update Address' : 'Add Address'}
               </h3>

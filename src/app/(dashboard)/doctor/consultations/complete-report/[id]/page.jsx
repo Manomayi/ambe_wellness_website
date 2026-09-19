@@ -17,6 +17,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { classifyOutcome } from '@/lib/refundPolicy';
+import { generateCartItemId } from '@/lib/cartUtils';
 import {
   HeartIcon,
   Cog6ToothIcon,
@@ -119,12 +120,9 @@ export default function CompleteReportPage() {
     const pack = product.packs.find((p) => p.size === size);
     if (!pack) return;
 
-    // Same field shape UserCartItem.toJson() produces in the app, so
-    // report viewers and the patient's cart read identical data regardless
-    // of which platform the report was submitted from. item_id includes
-    // shop_id so recommending the same product from two different shops
-    // doesn't collide into a single cart entry.
-    const itemId = `${product.productKey}_${size}`.replace(/\s+/g, '_');
+    // Same deterministic item_id logic that UserCartItem.generateItemId() produces in the app,
+    // so cart entries and doctor recommendations merge seamlessly across web and mobile.
+    const itemId = generateCartItemId(product.product_name, size, product.product_id);
     const newItem = {
       item_id: itemId,
       product_id: product.product_id || null,
@@ -230,6 +228,7 @@ export default function CompleteReportPage() {
         user_name: userName,
         notes: overallNotes.trim(),
         store_recommendations: recommendedProducts,
+        recommendations_added_to_cart: true,
         appointment_id: documentId,
         original_appointment_id: oldAppointmentId,
         consultation_id: oldAppointmentId,
@@ -266,6 +265,7 @@ export default function CompleteReportPage() {
           recommendations,
           notes: overallNotes.trim(),
           store_recommendations: recommendedProducts,
+          recommendations_added_to_cart: true,
           updated_at: serverTimestamp(),
         },
         { merge: true }
@@ -308,7 +308,7 @@ export default function CompleteReportPage() {
       // Add recommended products to the patient's cart — same step
       // checkout_page.dart performs (its batch step 4).
       for (const item of recommendedProducts) {
-        batch.set(doc(db, 'users', userUid, 'cart', item.item_id), item);
+        batch.set(doc(db, 'users', userUid, 'cart', item.item_id), item, { merge: true });
       }
 
       await batch.commit();

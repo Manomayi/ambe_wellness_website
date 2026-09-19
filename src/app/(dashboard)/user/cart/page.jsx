@@ -20,6 +20,7 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { getItemUnitPrice } from '@/lib/cartUtils';
 import { 
   TrashIcon, 
   MinusIcon, 
@@ -32,8 +33,6 @@ export default function UserCartPage() {
   const { user, profile } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [doctorRecommendations, setDoctorRecommendations] = useState([]);
-  const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
   const [userSubscription, setUserSubscription] = useState(null);
   const [referralInfo, setReferralInfo] = useState({
     credits: 0,
@@ -142,39 +141,18 @@ export default function UserCartPage() {
       }
     });
 
-    // Load doctor recommendations
-    loadDoctorRecommendations();
-
     return () => {
       unsubscribeCart();
       unsubscribeUser();
     };
   }, [user]);
 
-  const loadDoctorRecommendations = async () => {
-    try {
-      const profileQuery = query(
-        collection(db, 'users', user.uid, 'profile'),
-        orderBy('time', 'desc'),
-        limit(1)
-      );
-      const snapshot = await getDocs(profileQuery);
-      
-      if (!snapshot.empty) {
-        const profileData = snapshot.docs[0].data();
-        setDoctorRecommendations(profileData.store_recommendations || []);
-      }
-    } catch (error) {
-      console.error('Error loading recommendations:', error);
-    }
-  };
-
   const getTotalQuantity = () => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   };
 
   const getSubtotal = () => {
-    return cartItems.reduce((sum, item) => sum + (item.mrp || item.price || 0) * item.quantity, 0);
+    return cartItems.reduce((sum, item) => sum + getItemUnitPrice(item) * (item.quantity || 1), 0);
   };
 
   const getTax = (subtotal) => {
@@ -213,27 +191,6 @@ export default function UserCartPage() {
       await deleteDoc(doc(db, 'users', user.uid, 'cart', itemId));
     } catch (error) {
       console.error('Error removing item:', error);
-    }
-  };
-
-  const addDoctorRecommendations = async () => {
-    try {
-      for (const recommendation of doctorRecommendations) {
-        await addDoc(collection(db, 'users', user.uid, 'cart'), {
-          doctor_recommended: true,
-          item_id: '',
-          product_name: recommendation.product_name,
-          productName: recommendation.product_name,
-          quantity: recommendation.quantity,
-          size: recommendation.size,
-          mrp: 0.0, // This should be fetched from product data
-          price: 0.0
-        });
-      }
-      setShowRecommendationsModal(false);
-      alert('Doctor recommendations added to cart');
-    } catch (error) {
-      console.error('Error adding recommendations:', error);
     }
   };
 
@@ -277,60 +234,61 @@ export default function UserCartPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {cartItems.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-lg text-[#1A1A1A]">{item.productName || item.product_name}</h3>
-                  {item.doctor_recommended && (
-                    <span className="text-[#C8996A] text-xs font-bold uppercase tracking-wider">RECOMMENDED</span>
-                  )}
-                </div>
-                <p className="text-[#1A1A1A] font-medium text-sm mb-3">
-                  Size: {item.size || item.variantName || 'Standard'} - MRP: ${item.mrp || item.price || 0}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-full flex items-center">
+            {cartItems.map((item) => {
+              const unitPrice = getItemUnitPrice(item);
+              const mrp = Number(item.mrp) || 0;
+              const hasDiscount = item.price != null && Number(item.price) > 0 && mrp > unitPrice;
+
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-bold text-lg text-[#1A1A1A]">{item.productName || item.product_name}</h3>
+                    {item.doctor_recommended && (
+                      <span className="text-[#C8996A] text-xs font-bold uppercase tracking-wider">RECOMMENDED</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap text-sm mb-3">
+                    <span className="text-[#6B6862]">Size: {item.size || item.variantName || 'Standard'}</span>
+                    <span className="text-[#E7E2D9]">•</span>
+                    <span className="font-semibold text-[#1A1A1A]">Price: ${unitPrice.toFixed(2)}</span>
+                    {hasDiscount && (
+                      <span className="text-xs text-[#8C827A] line-through">${mrp.toFixed(2)}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-full flex items-center">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="p-2 text-[#1A1A1A] disabled:opacity-40"
+                      >
+                        <MinusIcon className="h-4 w-4" />
+                      </button>
+                      <span className="px-3 text-[#1A1A1A] font-medium text-sm">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="p-2 text-[#1A1A1A]"
+                      >
+                        <PlusIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1}
-                      className="p-2 text-[#1A1A1A] disabled:opacity-40"
+                      onClick={() => removeItem(item.id)}
+                      className="text-[#8C827A] hover:text-red-600 transition"
                     >
-                      <MinusIcon className="h-4 w-4" />
-                    </button>
-                    <span className="px-3 text-[#1A1A1A] font-medium text-sm">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-2 text-[#1A1A1A]"
-                    >
-                      <PlusIcon className="h-4 w-4" />
+                      <TrashIcon className="h-5 w-5" />
                     </button>
                   </div>
-                  <button
-                    onClick={() => removeItem(item.id)}
-                    className="text-[#8C827A] hover:text-red-600 transition"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {/* Doctor Recommendations Button */}
-        {doctorRecommendations.length > 0 && (
-          <div className="text-center py-4">
-            <button
-              onClick={() => setShowRecommendationsModal(true)}
-              className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider"
-            >
-              ADD DOCTOR RECOMMENDATIONS
-            </button>
-          </div>
-        )}
+        {/* Doctor recommendations are auto-added on report submission & synced on the report page */}
 
         {/* Order Summary */}
         {cartItems.length > 0 && (
@@ -398,38 +356,6 @@ export default function UserCartPage() {
           </div>
         )}
 
-        {/* Doctor Recommendations Modal */}
-        {showRecommendationsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full border border-[#E7E2D9]">
-              <h3 className="text-xl font-bold mb-4 text-center text-[#1A1A1A]">Doctor Recommendations</h3>
-              <div className="space-y-3 mb-6">
-                {doctorRecommendations.map((rec, index) => (
-                  <div key={index} className="p-3 bg-[#FAF8F5] border border-[#E7E2D9] rounded-lg">
-                    <p className="font-medium text-[#1A1A1A] text-sm">{rec.product_name}</p>
-                    <p className="text-sm text-[#6B6862]">
-                      Size: {rec.size}, Quantity: {rec.quantity}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowRecommendationsModal(false)}
-                  className="flex-1 py-3 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={addDoctorRecommendations}
-                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-lg text-sm font-medium transition"
-                >
-                  CONFIRM
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </ProtectedRoute>
   );

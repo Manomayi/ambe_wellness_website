@@ -48,6 +48,20 @@ const HEALTH_FIELD_LABELS = {
   unknown: "General Health"
 };
 
+const CLINICAL_SPECIALTIES = [
+  { value: 'general_health', label: 'General Health', icon: '🏥' },
+  { value: 'womens_health', label: "Women's Health", icon: '👩‍⚕️' },
+  { value: 'mens_health', label: "Men's Health", icon: '👨‍⚕️' },
+  { value: 'muscular_skeletal', label: 'Muscular Skeletal', icon: '🦴' },
+  { value: 'heart_health', label: 'Heart Health', icon: '❤️' },
+  { value: 'skin_hair_health', label: 'Skin & Hair Health', icon: '✨' },
+  { value: 'mental_emotional_health', label: 'Mental Emotional Health', icon: '🧠' },
+  { value: 'digestive_metabolic', label: 'Digestive & Metabolic', icon: '🍎' },
+  { value: 'oncology', label: 'Oncology', icon: '🎗️' },
+  { value: 'disabilities', label: 'Disabilities', icon: '♿' },
+  { value: 'behavorial', label: 'Behavioral', icon: '🧩' },
+];
+
 const getHealthFieldLabel = (key) => {
   return HEALTH_FIELD_LABELS[key] || key;
 };
@@ -66,6 +80,9 @@ export default function UserConsultPage() {
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
   const [checkingInstant, setCheckingInstant] = useState(false);
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [matchingSpecialty, setMatchingSpecialty] = useState(false);
+  const [specialtyError, setSpecialtyError] = useState("");
   const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
   const [showExtendedQuestionnaireModal, setShowExtendedQuestionnaireModal] = useState(false);
   const [showActiveAppointmentModal, setShowActiveAppointmentModal] = useState(false);
@@ -91,11 +108,7 @@ export default function UserConsultPage() {
       return;
     }
 
-    if (!profile?.is_extended_questionnaire_completed) {
-      setShowExtendedQuestionnaireModal(true);
-    } else {
-      router.push('/user/consult/schedule');
-    }
+    router.push('/user/consult/schedule');
   };
 
   const resolvingSetRef = useRef(new Set());
@@ -206,6 +219,48 @@ export default function UserConsultPage() {
       alert('Could not check instant availability right now. Your request has been queued for doctor assignment.');
     } finally {
       setCheckingInstant(false);
+    }
+  };
+
+  const handleConfirmSpecialty = async () => {
+    if (!selectedSpecialty) {
+      alert('Please select a clinical specialty.');
+      return;
+    }
+    if (!user) return;
+
+    setMatchingSpecialty(true);
+    setSpecialtyError('');
+
+    try {
+      // 1. Direct match first to update doctor & preferred_health in one write
+      let matchResult = await matchUserWithDoctor(user.uid, selectedSpecialty);
+
+      // 2. Fallback to Cloud Function if direct match didn't find doctor
+      if (!matchResult || !matchResult.matched) {
+        try {
+          const matchFn = httpsCallable(functions, 'matchWithDoctor');
+          const res = await matchFn();
+          if (res?.data?.success && res?.data?.matched !== false) {
+            matchResult = res.data;
+          }
+        } catch (fnErr) {
+          console.warn('matchWithDoctor function call failed:', fnErr);
+        }
+      }
+
+      // 3. If still no doctor matched immediately, mark needs_doctor_assignment
+      if (!matchResult || !matchResult.matched) {
+        await updateDoc(doc(db, 'users', user.uid), {
+          needs_doctor_assignment: true,
+          preferred_health: selectedSpecialty,
+        });
+      }
+    } catch (err) {
+      console.error('Error confirming specialty:', err);
+      setSpecialtyError('An error occurred while matching. Please try again.');
+    } finally {
+      setMatchingSpecialty(false);
     }
   };
 
@@ -588,27 +643,99 @@ export default function UserConsultPage() {
           </div>
         )}
 
-        {/* 1. If Questionnaire NOT Completed AND no specialty selected */}
-        {(!profile?.is_free_questionnaire_completed && !profile?.preferred_health) && (
-          <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 mb-8 shadow-sm text-center max-w-xl mx-auto space-y-4">
-            <div className="w-14 h-14 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-2xl">
-              📋
+        {/* 1. Direct Specialty Selection if Doctor Not Assigned AND Specialty is Pending */}
+        {!hasDoctor && !profile?.preferred_health && (
+          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 sm:p-8 mb-8 shadow-sm max-w-2xl mx-auto space-y-6">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 bg-[#FFF3E8] border border-[#FFD3AC] rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                🩺
+              </div>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+                  Select Your Specialty
+                </h3>
+                <p className="text-sm text-[#6B6862]">
+                  Choose an area of care for your consult
+                </p>
+              </div>
             </div>
-            <h3 className="font-semibold text-xl text-[#1A1A1A]">Complete Your Intake Assessment</h3>
-            <p className="text-sm text-[#6B6862]">
-              Complete your questionnaire so our system can analyze your unique constitution and match you with the right specialist.
-            </p>
-            <button 
-              onClick={() => setShowQuestionnaireModal(true)}
-              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm uppercase tracking-wider"
-            >
-              Start Intake Assessment
-            </button>
+
+            <div className="h-px bg-[#E7E2D9]" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {CLINICAL_SPECIALTIES.map((spec) => {
+                const isSelected = selectedSpecialty === spec.value;
+                return (
+                  <button
+                    key={spec.value}
+                    type="button"
+                    onClick={() => setSelectedSpecialty(spec.value)}
+                    disabled={matchingSpecialty}
+                    className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-[#FFF3E8] border-[#C2691C] text-[#9E4E0A] font-semibold ring-1 ring-[#C2691C]"
+                        : "bg-[#FAF8F5] border-[#E7E2D9] text-[#1A1A1A] hover:border-[#C2691C]/50 hover:bg-white"
+                    }`}
+                  >
+                    <span className="text-xl flex-shrink-0">{spec.icon}</span>
+                    <span className="text-sm sm:text-base flex-1">{spec.label}</span>
+                    <div
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isSelected
+                          ? "border-[#C2691C] bg-[#C2691C] text-white"
+                          : "border-[#D1C9BF] bg-white"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="w-2 h-2 rounded-full bg-white" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {specialtyError && (
+              <p className="text-xs sm:text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+                {specialtyError}
+              </p>
+            )}
+
+            <div className="space-y-3 pt-2">
+              <button
+                type="button"
+                onClick={handleConfirmSpecialty}
+                disabled={matchingSpecialty}
+                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm sm:text-base font-bold transition cursor-pointer shadow-sm disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2"
+              >
+                {matchingSpecialty ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
+                    Matching Specialist...
+                  </>
+                ) : selectedSpecialty ? (
+                  "Confirm & Match Specialist"
+                ) : (
+                  "Select a Specialty Above"
+                )}
+              </button>
+
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowQuestionnaireModal(true)}
+                  disabled={matchingSpecialty}
+                  className="text-xs sm:text-sm text-[#9E4E0A] hover:text-[#1A1A1A] underline transition cursor-pointer font-medium"
+                >
+                  Or complete the full health questionnaire (48 questions)
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* 2. If Doctor Not Yet Assigned but specialty chosen or questionnaire completed */}
-        {!hasDoctor && (profile?.is_free_questionnaire_completed || Boolean(profile?.preferred_health)) && (
+        {/* 2. If Doctor Not Yet Assigned but specialty chosen */}
+        {!hasDoctor && Boolean(profile?.preferred_health) && (
           <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 mb-8 shadow-sm max-w-md mx-auto text-center space-y-6">
             <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
               ⏳
@@ -643,26 +770,6 @@ export default function UserConsultPage() {
         {/* Doctor Info Card */}
         {hasDoctor && (
           <>
-            {/* Extended Questionnaire Prompt Banner (matching mobile app ExtendedQuestionnairePromptView) */}
-            {!profile?.is_extended_questionnaire_completed && (
-              <div className="bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl p-6 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-                <div className="space-y-1 text-center sm:text-left">
-                  <h4 className="font-bold text-base text-[#1A1A1A]">
-                    Please complete the detailed health profile to continue
-                  </h4>
-                  <p className="text-sm text-[#6B6862]">
-                    Our doctors review your detailed health history to deliver personalized care during your consultation.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowExtendedQuestionnaireModal(true)}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer flex-shrink-0 shadow-sm"
-                >
-                  COMPLETE PROFILE
-                </button>
-              </div>
-            )}
-
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">MY DOCTOR</h2>
             <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-6 mb-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

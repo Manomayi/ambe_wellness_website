@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs, limit, onSnapshot } from 'firebase/firestore';
+import { generateCartItemId } from '@/lib/cartUtils';
 import { format } from 'date-fns';
 import BackButton from '@/components/common/BackButton';
 import Link from 'next/link';
@@ -31,10 +32,13 @@ export default function ConsultationReportPage() {
   const queryDoctorName = searchParams.get('doctorName') || '';
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [cartItemsMap, setCartItemsMap] = useState({});
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) return router.push('/login');
+      setCurrentUser(user);
       if (!documentID) {
         setLoading(false);
         return;
@@ -119,6 +123,185 @@ export default function ConsultationReportPage() {
 
     return () => unsub();
   }, [documentID, router]);
+
+  // Real-time cart listener to track items currently in cart
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsubCart = onSnapshot(collection(db, 'users', currentUser.uid, 'cart'), (snap) => {
+      const map = {};
+      snap.docs.forEach((d) => {
+        map[d.id] = true;
+        const cData = d.data();
+        if (cData.item_id) map[cData.item_id] = true;
+        if (cData.product_name && cData.size) {
+          map[`${cData.product_name}_${cData.size}`] = true;
+          map[generateCartItemId(cData.product_name, cData.size, cData.product_id)] = true;
+        }
+      });
+      setCartItemsMap(map);
+    });
+    return () => unsubCart();
+  }, [currentUser]);
+
+  // Auto-sync recommendations to cart only once (if not previously added or purchased)
+  useEffect(() => {
+    if (!currentUser || !data) return;
+    if (data.recommendations_added_to_cart === true) return;
+    const storeRecs = data.store_recommendations || data.storeRecommendations || [];
+    if (!Array.isArray(storeRecs) || storeRecs.length === 0) return;
+
+    const syncToCart = async () => {
+      try {
+        // Mark as added immediately on appointment history and consultation doc so this never repeats
+        const apptHistoryId = data.document_id || documentID;
+        const reportRef = doc(db, 'users', currentUser.uid, 'appointments_history', apptHistoryId);
+        await setDoc(reportRef, { recommendations_added_to_cart: true }, { merge: true }).catch(() => {});
+        const masterApptId = data.appointment_id || data.consultation_id;
+        if (masterApptId) {
+          await setDoc(doc(db, 'consultations', masterApptId), { recommendations_added_to_cart: true }, { merge: true }).catch(() => {});
+        }
+
+        // Check user's purchase history - if already purchased, do not re-add to cart!
+        const purchasesSnap = await getDocs(collection(db, 'users', currentUser.uid, 'purchases'));
+        const purchasedKeys = new Set();
+        purchasesSnap.docs.forEach((pDoc) => {
+          const pData = pDoc.data();
+          const pItems = Array.isArray(pData.items) ? pData.items : [];
+          pItems.forEach((it) => {
+            const itName = String(it.product_name || it.productName || '').toLowerCase().trim();
+            const itSize = String(it.size || '').toLowerCase().trim();
+            if (itName) {
+              purchasedKeys.add(`${itName}_${itSize}`);
+              if (it.item_id) purchasedKeys.add(it.item_id);
+            }
+          });
+        });
+
+        let storeCatalog = null;
+        for (const item of storeRecs) {
+          const pName = item.product_name || item.productName;
+          const pSize = item.size || '';
+          if (!pName || !pSize) continue;
+          const itemKey = `${String(pName).toLowerCase().trim()}_${String(pSize).toLowerCase().trim()}`;
+          const pId = item.product_id || item.productId || null;
+          const itemId = generateCartItemId(pName, pSize, pId);
+
+          // Skip if already purchased in an earlier order
+          if (purchasedKeys.has(itemKey) || (item.item_id && purchasedKeys.has(item.item_id)) || purchasedKeys.has(itemId)) {
+            continue;
+          }
+
+          const cartDocRef = doc(db, 'users', currentUser.uid, 'cart', itemId);
+          const cartDocSnap = await getDoc(cartDocRef);
+          if (!cartDocSnap.exists()) {
+            let mrp = Number(item.mrp) || 0;
+            let price = item.price != null ? Number(item.price) : null;
+            let shopId = item.shop_id || null;
+
+            if (mrp <= 0) {
+              if (!storeCatalog) {
+                const storeSnap = await getDocs(collection(db, 'store'));
+                storeCatalog = [];
+                storeSnap.docs.forEach((sDoc) => {
+                  const prods = sDoc.data().products || [];
+                  prods.forEach((p) => storeCatalog.push({ ...p, shop_id: sDoc.id }));
+                });
+              }
+              const matchedProduct = storeCatalog.find(
+                (p) =>
+                  (p.product_id && p.product_id === pId) ||
+                  (p.product_name && p.product_name.toLowerCase().trim() === pName.toLowerCase().trim())
+              );
+              if (matchedProduct) {
+                shopId = shopId || matchedProduct.shop_id;
+                const matchedPack = (matchedProduct.packs || []).find((pack) => pack.size === pSize);
+                if (matchedPack) {
+                  mrp = Number(matchedPack.mrp) || mrp;
+                  price = matchedPack.price != null ? Number(matchedPack.price) : price;
+                }
+              }
+            }
+
+            await setDoc(
+              cartDocRef,
+              {
+                item_id: itemId,
+                product_id: pId,
+                product_name: pName,
+                size: pSize,
+                mrp: mrp,
+                price: price,
+                shop_id: shopId,
+                quantity: Number(item.quantity || item.qty) || 1,
+                doctor_recommended: true,
+              },
+              { merge: true }
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('Auto-sync recommendations to cart failed:', err);
+      }
+    };
+
+    syncToCart();
+  }, [currentUser, data]);
+
+  const handleAddToCart = async (item) => {
+    if (!currentUser || !item) return;
+    const pName = item.product_name || item.productName;
+    const pSize = item.size || '';
+    if (!pName) return;
+    const pId = item.product_id || item.productId || null;
+    const itemId = generateCartItemId(pName, pSize, pId);
+
+    try {
+      let mrp = Number(item.mrp) || 0;
+      let price = item.price != null ? Number(item.price) : null;
+      let shopId = item.shop_id || null;
+
+      if (mrp <= 0) {
+        const storeSnap = await getDocs(collection(db, 'store'));
+        for (const sDoc of storeSnap.docs) {
+          const prods = sDoc.data().products || [];
+          for (const p of prods) {
+            if (
+              (p.product_id && p.product_id === pId) ||
+              (p.product_name && p.product_name.toLowerCase().trim() === pName.toLowerCase().trim())
+            ) {
+              shopId = shopId || sDoc.id;
+              const pack = (p.packs || []).find((pk) => pk.size === pSize);
+              if (pack) {
+                mrp = Number(pack.mrp) || mrp;
+                price = pack.price != null ? Number(pack.price) : price;
+              }
+              break;
+            }
+          }
+          if (shopId && mrp > 0) break;
+        }
+      }
+
+      await setDoc(
+        doc(db, 'users', currentUser.uid, 'cart', itemId),
+        {
+          item_id: itemId,
+          product_id: pId,
+          product_name: pName,
+          size: pSize,
+          mrp: mrp,
+          price: price,
+          shop_id: shopId,
+          quantity: Number(item.quantity || item.qty) || 1,
+          doctor_recommended: true,
+        },
+        { merge: true }
+      );
+      alert(`${pName} added to cart!`);
+    } catch (err) {
+      console.error('Error adding item to cart:', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -369,12 +552,21 @@ export default function ConsultationReportPage() {
               <ShoppingBagIcon className="w-4 h-4 text-[#C8996A]" />
               Recommended Formulations & Products
             </div>
-            <Link
-              href="/user/store"
-              className="text-xs font-semibold text-[#C8996A] hover:text-[#1A1A1A] inline-flex items-center gap-1 transition"
-            >
-              Browse Store <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
-            </Link>
+            <div className="flex items-center gap-2.5">
+              <Link
+                href="/user/cart"
+                className="inline-flex items-center gap-1.5 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition shadow-sm"
+              >
+                <ShoppingBagIcon className="w-3.5 h-3.5" />
+                GO TO CART
+              </Link>
+              <Link
+                href="/user/store"
+                className="text-xs font-semibold text-[#C8996A] hover:text-[#1A1A1A] inline-flex items-center gap-1 transition"
+              >
+                Browse Store <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -382,6 +574,13 @@ export default function ConsultationReportPage() {
               const productName = item.product_name || item.productName || 'Ayurvedic Formula';
               const size = item.size || '';
               const quantity = item.quantity || item.qty || 1;
+              const productId = item.product_id || item.productId || null;
+              const itemId = generateCartItemId(productName, size, productId);
+              const isInCart = Boolean(
+                cartItemsMap[itemId] ||
+                cartItemsMap[`${productName}_${size}`] ||
+                (item.item_id && cartItemsMap[item.item_id])
+              );
 
               return (
                 <div
@@ -404,9 +603,24 @@ export default function ConsultationReportPage() {
                     </div>
                   </div>
 
-                  <span className="px-3 py-1 rounded-full bg-[#FFD3AC]/40 text-xs font-bold text-[#1A1A1A] flex-shrink-0">
-                    x{quantity}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {isInCart ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                        <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" />
+                        In Cart
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleAddToCart(item)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#C8996A] hover:text-[#1A1A1A] bg-[#FAF8F5] hover:bg-[#FFD3AC] border border-[#E7E2D9] px-2.5 py-1 rounded-full transition cursor-pointer"
+                      >
+                        + Add to Cart
+                      </button>
+                    )}
+                    <span className="px-3 py-1 rounded-full bg-[#FFD3AC]/40 text-xs font-bold text-[#1A1A1A]">
+                      x{quantity}
+                    </span>
+                  </div>
                 </div>
               );
             })}

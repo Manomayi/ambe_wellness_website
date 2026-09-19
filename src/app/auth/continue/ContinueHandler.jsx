@@ -220,7 +220,7 @@ export default function ContinueHandler() {
                   </button>
                   <Link
                     href={nextWebPath}
-                    className="block w-full py-3 rounded-full text-xs font-medium uppercase tracking-[0.12em] transition-all border border-white/20 text-white hover:bg-white/10"
+                    className="block w-full py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition-all border border-[#FFD3AC]/50 text-[#FFD3AC] bg-[#FFD3AC]/5 hover:bg-[#FFD3AC]/15 hover:border-[#FFD3AC] cursor-pointer"
                   >
                     Continue in this browser
                   </Link>

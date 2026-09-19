@@ -28,14 +28,16 @@ function addBusinessDays(startDate, days) {
 function getShipDateString(orderDate, explicitShipDate) {
   if (explicitShipDate) {
     const d = explicitShipDate.toDate ? explicitShipDate.toDate() : new Date(explicitShipDate);
-    return `Shipped on ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    return `Shipped on ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   }
   const start = addBusinessDays(orderDate, 3);
   const end = addBusinessDays(orderDate, 4);
-  if (start.getMonth() === end.getMonth()) {
-    return `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { day: 'numeric', year: 'numeric' })}`;
+  const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+  const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+  if (startMonth === endMonth) {
+    return `${startMonth} ${start.getDate()} – ${end.getDate()}, ${end.getFullYear()}`;
   }
-  return `${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  return `${startMonth} ${start.getDate()} – ${endMonth} ${end.getDate()}, ${end.getFullYear()}`;
 }
 
 export default function PurchaseHistoryPage() {
@@ -75,11 +77,29 @@ export default function PurchaseHistoryPage() {
             ? (amountNum / 100).toFixed(2)
             : amountNum.toFixed(2);
 
-          const productStatus =
+          const orderType = data.type || 'store';
+          let productStatus =
             data.product_status ||
             data.fulfillment_status ||
             data.order_status ||
-            (data.status === 'succeeded' ? 'Processing' : (data.status || 'Processing'));
+            data.status;
+
+          if (orderType === 'consultation' || orderType === 'consultation_deposit') {
+            if (
+              !productStatus ||
+              ['succeeded', 'paid', 'success'].includes(productStatus.toLowerCase())
+            ) {
+              productStatus = 'Success';
+            }
+          } else if (orderType === 'store') {
+            if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
+              productStatus = 'Processing';
+            }
+          } else {
+            if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
+              productStatus = 'Paid';
+            }
+          }
 
           return {
             id: doc.id,
@@ -87,7 +107,7 @@ export default function PurchaseHistoryPage() {
             currency: (data.currency || 'USD').toUpperCase(),
             status: productStatus,
             paymentStatus: data.status || 'succeeded',
-            type: data.type || 'store',
+            type: orderType,
             description: data.description || '',
             items: Array.isArray(data.items) ? data.items : [],
             time: date,
@@ -133,7 +153,7 @@ export default function PurchaseHistoryPage() {
     try {
       await addDoc(collection(db, 'reviews'), {
         targetType: 'product',
-        targetId: reviewingProduct.product_id || reviewingProduct.productId || reviewingProduct.id || '',
+        targetId: reviewingProduct.product_id || reviewingProduct.productId || reviewingProduct.item_id || reviewingProduct.id || (reviewingProduct.shop_id ? `${reviewingProduct.shop_id}_${reviewingProduct.product_name || reviewingProduct.name}` : (reviewingProduct.product_name || reviewingProduct.name || 'Product')),
         shopId: reviewingProduct.shop_id || reviewingProduct.shopId || null,
         productName: reviewingProduct.product_name || reviewingProduct.name || 'Product',
         userId: currentUser.uid,
@@ -178,7 +198,9 @@ export default function PurchaseHistoryPage() {
 
   const getStatusBadgeColor = (statusStr) => {
     const s = (statusStr || '').toLowerCase();
-    if (s === 'delivered') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    if (s === 'delivered' || s === 'paid' || s === 'succeeded' || s === 'success') {
+      return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    }
     if (s === 'shipped') return 'text-blue-700 bg-blue-50 border-blue-200';
     return 'text-amber-700 bg-amber-50 border-amber-200';
   };
@@ -269,7 +291,7 @@ export default function PurchaseHistoryPage() {
                         const productName = item.name || item.product_name || item.productName || 'Product';
                         const qty = item.quantity || 1;
                         const price = Number(item.price) || 0;
-                        const hasProduct = Boolean(item.product_id || item.productId || item.id);
+                        const hasProduct = Boolean(item.product_id || item.productId || item.item_id || item.id || item.product_name || item.name);
 
                         return (
                           <div

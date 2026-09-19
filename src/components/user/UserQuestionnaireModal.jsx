@@ -1,257 +1,611 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { doc, writeBatch, serverTimestamp, setDoc, updateDoc, getDoc, deleteField } from "firebase/firestore";
+import { doc, writeBatch, serverTimestamp, setDoc, getDoc, deleteField } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { useAuth } from "@/contexts/AuthContext";
 import { matchUserWithDoctor } from "@/lib/doctorMatching";
-import { 
-  ArrowLeftIcon, 
-  ArrowRightIcon, 
-  CheckIcon, 
-  XMarkIcon,
+import {
+  CheckIcon,
+  InformationCircleIcon,
+  ClockIcon,
+  SparklesIcon,
+  HeartIcon,
   ShieldCheckIcon,
-  SparklesIcon
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
 
+// ============================================================================
+// 1. DOSHA QUESTIONS (48 CONSTITUTIONAL QUESTIONS)
+// ============================================================================
 export const DOSHA_QUESTIONS = [
   {
+    category: "Physical Constitution & Body Frame",
     question: "Body size",
     options: ["Thin build", "Medium build", "Large build"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Body weight",
     options: ["Low", "Medium", "Heavy Side"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Weight change",
     options: ["Trouble gaining", "Can gain but lose quickly", "Gains weight easily, hard to lose"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Skin type",
     options: ["Thin, dry", "Smooth combination skin", "Thick, oily"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Skin texture",
     options: ["Cold, roughness, light color", "Warm, reddish, freckles", "Cool, pale"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Hair",
     options: ["Dry, brittle, scarce, gets, knotted", "Straight, oily, prone to hair loss", "Thick, curly, oily, wavy, luxuriant"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Hair color",
     options: ["Brown, black", "Blond, gray, red", "Dark black, dark brown"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Teeth",
     options: ["Big, roomy, stick out, thin gums", "Medium size, soft, tender gums", "Healthy, white, strong gums"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Nose",
     options: ["Uneven shape, deviated septum", "Long, pointed, red nose tip", "Short, rounded, button nose"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Eyes",
     options: ["Small, sunken, dry, active, frequent blinking", "Sharp, sensitive to light", "Big, calm"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Eye color",
     options: ["Black, brown", "Bright gray, green, yellow / red", "Blue"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Nails",
     options: ["Dry, rough, easily broken", "Sharp, flexible, long, reddish tint", "Thick, smooth, shiny surface"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Lip",
     options: ["Dry, cracked", "Often inflamed", "Smooth, large"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Lip color",
     options: ["Black or brown tint", "Red or yellowish", "Pale"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Chin",
     options: ["Thin and angular", "Tapered", "Rounded, big"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Cheeks",
     options: ["Sunken, lines or wrinkles", "Flat and smooth", "Big or round"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Neck",
     options: ["Long, thin", "Medium", "Wide"]
   },
   {
+    category: "Physical Constitution & Body Frame",
     question: "Chest",
     options: ["Small, flat", "Moderate", "Broad chested"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Belly",
     options: ["Small, flat", "Moderate", "Large, defined"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Bellybutton",
     options: ["Small, irregular", "Oval, superficial", "Big, deep, round"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Hips",
     options: ["Small or thin", "Moderate", "Big"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Joints",
     options: ["Cracking noise", "Moderate", "Large, lubricated"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Taste preference",
     options: ["Bitter, pungent, astringent", "Sweet, bitter, astringent", "Sweet, sour, salty"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Thirst",
     options: ["Variable", "Need water regularly", "Sparse need for water"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Digestion",
     options: ["Irregular", "Quick", "Slow"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "When there is indigestion",
     options: ["Tendency to constipation, forms gas", "Causes burning, heartburn, reflux", "Forms mucous"]
   },
   {
+    category: "Digestion, Metabolism & Elimination",
     question: "Elimination",
     options: ["Dry", "Loose", "Thick, sluggish"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Physical activity",
     options: ["Always active", "Moderate", "Slow, measured"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Mental activity",
     options: ["Always active", "Moderate", "Calm"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Personality",
     options: ["Vivacious, talkative, social, outgoing", "Likes to be in control, intense, ambitious", "Reserved, laid back, concerned"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Emotional response when stressed",
     options: ["Anxiety, fear", "Anger, jealousy", "Greedy, possessive, withdrawn"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Faith or beliefs",
     options: ["Variable", "Dedicated/strong", "Consistent"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Intellectual response",
     options: ["Quick, not detailed", "Accurate, timely", "Paced but exact"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Memory",
     options: ["Good short term, quick to forget", "Medium but accurate", "Slow to remember but then sustained"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Career, life preference",
     options: ["Creative arts, designing", "Science or engineering", "Management, human relations, caregiving"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Environment",
     options: ["Easily feels cold", "Intolerant of heat", "Uncomfortable in humidity"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Sleep",
     options: ["Short, broken up", "Moderate and sound", "Deep and long"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Dreams",
     options: ["Multiple and quick, fearful", "Fiery, often about conflicts", "Slow, romantic"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Speech",
     options: ["Rapid, hither thither", "Precise, articulate", "Slow, monotonous"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Financial",
     options: ["Buy on impulse", "Spends money on luxuries", "Good at saving money"]
   },
   {
+    category: "Mind, Temperament & Sleep",
     question: "Cravings",
     options: ["Fried food, hot, sharp, dry, meat or other protein & spicy food", "Sweets, cooling foods & drinks", "Wine or alcohol"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Pain",
     options: ["Shifting, tearing", "Excruciating with breathlessness, fear and tachycardia", "Sucking pain with fever, nausea and irritability"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Seasonal allergies",
     options: ["Breathlessness, wheezing, constricted breathing, runny nose, congestion", "Hives, watery eyes, rash, inflammation", "Itching eyes, irritation"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Food sensitivity",
     options: ["Leftovers", "Dry fruits, raw food, hot spicy foods", "Sour foods, fermented foods, dairy products"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Sweating",
     options: ["Scanty or no sweat", "Excess, profuse with body odor", "Cold/clammy"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Muscle reactivity",
     options: ["Twitching, cramping, weakness, numbness, tingling", "Spasms, bruising, tenderness to touch, sore, excess heat", "Tumors, cysts, growths, generalized weakness"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Bone and joints",
     options: ["Painful, popping, cracking, stiffness, loose", "Scoliosis, inflamed, hot / feverish, tender, inflammatory arthritis", "Swollen, rigid, painful with lack of mobility, swelling, stiffness, and deformities"]
   },
   {
+    category: "Physical Sensitivities & Vitals",
     question: "Circulation",
     options: ["Cold, poor, anemia", "Hypertension, varicosities", "Edema, fluid retention, and lymphatic stasis"]
-  },
-  {
-    question: "Which area are you looking to improve",
-    options: [
-      { label: "General Health", key: "general_health" },
-      { label: "Women's Health", key: "womens_health" },
-      { label: "Men's Health", key: "mens_health" },
-      { label: "Muscular Skeletal", key: "muscular_skeletal" },
-      { label: "Heart Health", key: "heart_health" },
-      { label: "Skin & Hair Health", key: "skin_hair_health" },
-      { label: "Mental/Emotional Health", key: "mental_emotional_health" },
-      { label: "Digestive & Metabolic", key: "digestive_metabolic" },
-      { label: "Oncology", key: "oncology" },
-      { label: "Disabilities", key: "disabilities" },
-      { label: "Behavioral", key: "behavorial" }
-    ]
   }
 ];
 
-export default function UserQuestionnaireModal({ onComplete }) {
+// ============================================================================
+// 2. HEALTH SPECIALTY OPTIONS (QUESTION 49 / AREA OF FOCUS)
+// ============================================================================
+export const HEALTH_FIELDS = [
+  { label: "General Health", key: "general_health", desc: "Overall vitality, preventive care & wellness" },
+  { label: "Women's Health", key: "womens_health", desc: "Hormonal balance, fertility & lifecycle care" },
+  { label: "Men's Health", key: "mens_health", desc: "Energy, hormone health & peak performance" },
+  { label: "Muscular Skeletal", key: "muscular_skeletal", desc: "Joint mobility, posture & pain relief" },
+  { label: "Heart Health", key: "heart_health", desc: "Cardiovascular health, circulation & BP" },
+  { label: "Skin & Hair Health", key: "skin_hair_health", desc: "Glow, hair nourishment & natural healing" },
+  { label: "Mental/Emotional Health", key: "mental_emotional_health", desc: "Stress management, focus & calm" },
+  { label: "Digestive & Metabolic", key: "digestive_metabolic", desc: "Gut flora, bloating & metabolic balance" },
+  { label: "Oncology Support", key: "oncology", desc: "Integrative recovery & immune resilience" },
+  { label: "Disabilities & Rehabilitation", key: "disabilities", desc: "Specialized holistic adaptive support" },
+  { label: "Behavioral Wellness", key: "behavorial", desc: "Habit renewal, lifestyle change & mindfulness" }
+];
+
+// ============================================================================
+// 3. MEDICAL CONDITIONS LIST (33 CONDITIONS)
+// ============================================================================
+export const MEDICAL_CONDITIONS_LIST = [
+  "Allergies to food/mold/drugs",
+  "Anemia (Iron deficiency / Sickle cell / others)",
+  "IBS / Crohn’s disease / IBD",
+  "HIV exposure",
+  "Arthritis / Gout / Rheumatic",
+  "Ulcer (Duodenal / Peptic)",
+  "COPD / Asthma / Sarcoidosis / Cystic fibrosis",
+  "Cholelithiasis / Jaundice",
+  "Pneumonia / TB of lungs or bone",
+  "Thyroid disorders",
+  "Autoimmune diseases",
+  "Stroke / Cerebrovascular accident",
+  "Hypertension / Hypotension",
+  "Psychiatric conditions",
+  "Cancer of any organ",
+  "Mononucleosis",
+  "CAD / Angina / Valvular heart disease",
+  "Herpes / Gonorrhea",
+  "Hypercholesterolemia",
+  "Tinnitus / ENT conditions",
+  "Dental conditions",
+  "Nephrotic syndrome / Cystitis",
+  "Diabetes (Type 1 or Type 2)",
+  "Adhesive capsulitis / Brachial neuralgia",
+  "Epilepsy / Seizures",
+  "Multiple sclerosis / Parkinsons / Alzheimers",
+  "Kidney disease (CKD / AKD)",
+  "ALS",
+  "Migraine",
+  "Dementia",
+  "Cataract / Glaucoma",
+  "Paraplegia / Hemiplegia / Ataxia",
+  "Hepatitis A/B/C / Fatty liver",
+];
+
+// ============================================================================
+// 4. EXTENDED LIFESTYLE & CLINICAL QUESTIONS
+// ============================================================================
+export const ACTIVITY_QUESTIONS = [
+  {
+    id: "exercise",
+    question: "Do you currently engage in any exercise or physical activity?",
+    options: ["Yes", "No", "Never"]
+  },
+  {
+    id: "yoga",
+    question: "Have you ever done yoga postures before?",
+    options: ["Yes", "No", "Never"]
+  }
+];
+
+export const LIFESTYLE_HEALTH_QUESTIONS = [
+  {
+    id: "bowels_consistency",
+    question: "Bowels Consistency",
+    options: ["Hard", "Soft", "Loose"]
+  },
+  {
+    id: "flatulence",
+    question: "Flatulence",
+    options: ["Mild (5-10)", "Moderate (10-20)", "Severe (>20)"]
+  },
+  {
+    id: "acid_reflux",
+    question: "Acid reflux",
+    options: ["Mild", "Moderate", "Severe", "None"]
+  },
+  {
+    id: "tongue",
+    question: "Tongue",
+    options: ["Coated", "Uncoated", "Can’t say"]
+  },
+  {
+    id: "pale_eyelids",
+    question: "Pale inner eyelids (Anemia signs)",
+    options: ["Mild", "Moderate", "Severe", "None"]
+  },
+  {
+    id: "yellowing_eyes",
+    question: "Yellowing of eyes (Jaundice signs)",
+    options: ["Mild", "Moderate", "Severe", "None"]
+  },
+  {
+    id: "addiction_habits",
+    question: "Addiction / Habits",
+    options: ["Tea / Coffee", "Alcohol / Substance / Smoking", "Others", "None"]
+  },
+  {
+    id: "child_health",
+    question: "Health as a child",
+    options: ["Healthy", "Unhealthy", "Can’t say"]
+  },
+  {
+    id: "energy_level",
+    question: "How would you rate your usual energy level?",
+    options: ["High", "Moderate", "Low"]
+  },
+  {
+    id: "bowel_movements",
+    question: "Bowel Movements",
+    options: ["Once every 2-3 days", "Once daily", "2-3 times per day"]
+  },
+  {
+    id: "bowel_associated",
+    question: "Bowel movement associated with",
+    options: ["Pain / Gas", "Blood", "Mucous / Foul smell", "None"]
+  },
+  {
+    id: "urinary_problems",
+    question: "Do you have any of the following urinary problems?",
+    options: [
+      "Pain / Burning sensation",
+      "Discoloration / Frequent daytime urination",
+      "Urination several times at night",
+      "Sometimes",
+      "None"
+    ]
+  },
+  {
+    id: "suppress_urges",
+    question: "Do you delay or suppress any of the following urges?",
+    options: [
+      "Bowel movements / Gas / Urination",
+      "Sleep / Yawning / Burping",
+      "Breathing / Sneezing / Hunger / Thirst",
+      "None"
+    ]
+  },
+  {
+    id: "daytime_sleep",
+    question: "Do you sleep in the daytime?",
+    options: ["Yes", "No", "Sometimes"]
+  },
+  {
+    id: "morning_rising",
+    question: "How do you generally feel on rising in the morning?",
+    options: ["Fresh and rested", "A little tired", "Very tired"]
+  },
+  {
+    id: "state_of_mind",
+    question: "What is your present state of mind and emotions?",
+    options: ["Good", "Fair", "Poor"]
+  },
+  {
+    id: "relationships",
+    question: "How are your relationships?",
+    options: ["Excellent", "Fair", "Poor"]
+  },
+  {
+    id: "social_life",
+    question: "How is your social life?",
+    options: ["Excellent", "Fair", "Poor"]
+  },
+  {
+    id: "career",
+    question: "How is your career?",
+    options: ["Love it", "Like it", "Dislike it"]
+  },
+  {
+    id: "purposeful_life",
+    question: "How purposeful is your life?",
+    options: ["Completely", "Neutral", "Not happy"]
+  },
+  {
+    id: "spiritual_life",
+    question: "Rate your spiritual life",
+    options: ["Satisfying", "Neutral", "Empty"]
+  },
+  {
+    id: "daily_routine",
+    question: "How regular is your daily routine (sleep, meals, exercise)?",
+    options: ["Very regular", "Somewhat regular", "Irregular"]
+  },
+  {
+    id: "travel",
+    question: "Do you travel a lot?",
+    options: ["Yes", "No", "Sometimes"]
+  },
+  {
+    id: "main_meal",
+    question: "Which is your main meal?",
+    options: ["Breakfast", "Lunch", "Dinner"]
+  },
+  {
+    id: "water_per_day",
+    question: "How much water do you drink per day?",
+    options: ["1-2 glasses", "4-6 glasses", "7+ glasses"]
+  },
+  {
+    id: "eating_habits",
+    question: "Eating habits include",
+    options: [
+      "Eat with full attention on food",
+      "Talk or converse a lot while eating",
+      "Eat very fast"
+    ]
+  },
+  {
+    id: "diet",
+    question: "Describe your diet",
+    options: ["Vegan", "Pescatarian", "Non-vegetarian"]
+  },
+  {
+    id: "crave_taste",
+    question: "What taste(s) do you like or crave?",
+    options: ["Sweet / Bitter", "Salty / Sour", "Hot / Spicy"]
+  },
+  {
+    id: "menstruation",
+    question: "Which of the following describes your menstruation? (For Women)",
+    options: ["Regular", "Irregular", "Absent"],
+    womenOnly: true
+  },
+  {
+    id: "menstrual_days",
+    question: "How many days does your menstrual period last? (For Women)",
+    options: ["0-4 days", "5-7 days", "7+ days"],
+    womenOnly: true
+  },
+  {
+    id: "menstrual_flow",
+    question: "How is your menstrual flow? (For Women)",
+    options: ["Heavy", "Light", "Normal"],
+    womenOnly: true
+  },
+  {
+    id: "menstrual_symptoms",
+    question: "Associated symptoms before or during menstruation (For Women)",
+    options: [
+      "Food Cravings / Cramping / Bloating",
+      "Migraine / Mood changes / Tension",
+      "Tenderness / Nightmares",
+      "None"
+    ],
+    womenOnly: true
+  },
+  {
+    id: "pain_intercourse",
+    question: "Do you experience pain during intercourse? (For Women)",
+    options: ["Yes", "No", "Can’t say"],
+    womenOnly: true
+  },
+  {
+    id: "sexual_difficulties",
+    question: "Do you have any sexual difficulties? (For Women)",
+    options: ["Yes", "No", "Can’t say"],
+    womenOnly: true
+  },
+  {
+    id: "pregnant_now",
+    question: "Are you pregnant now? (For Women)",
+    options: ["Yes", "No", "Don’t know"],
+    womenOnly: true
+  },
+  {
+    id: "contraceptive",
+    question: "Do you take birth control pills, use an IUD, or other contraceptive devices? (For Women)",
+    options: ["Yes", "No", "Rarely"],
+    womenOnly: true
+  },
+  {
+    id: "energy_afternoon",
+    question: "Energy Level: Afternoon",
+    options: ["High", "Medium", "Low"]
+  },
+  {
+    id: "energy_night",
+    question: "Energy Level: Night",
+    options: ["High", "Medium", "Low"]
+  }
+];
+
+// ============================================================================
+// MAIN UNIFIED QUESTIONNAIRE COMPONENT
+// ============================================================================
+export default function UserQuestionnaireModal({ onComplete, onClose }) {
   const router = useRouter();
   const { user, profile } = useAuth();
 
-  const [step, setStep] = useState("questions"); // "consent" | "questions"
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState(Array(DOSHA_QUESTIONS.length).fill(null));
-  const [selectedHealthField, setSelectedHealthField] = useState(profile?.preferred_health || null);
-  const [initialHasSpecialty, setInitialHasSpecialty] = useState(Boolean(profile?.preferred_health));
   const [isSaving, setIsSaving] = useState(false);
-  const timerRef = useRef(null);
+  const [showSpecialtyAlert, setShowSpecialtyAlert] = useState(false);
+
+  // 1. Dosha Answers state [0..47] -> option index (0, 1, 2)
+  const [doshaAnswers, setDoshaAnswers] = useState(Array(DOSHA_QUESTIONS.length).fill(null));
+
+  // 2. Specialty selection state
+  const [hasInitialSpecialty, setHasInitialSpecialty] = useState(Boolean(profile?.preferred_health));
+  const [selectedHealthField, setSelectedHealthField] = useState(profile?.preferred_health || null);
+
+  useEffect(() => {
+    if (profile?.preferred_health) {
+      setHasInitialSpecialty(true);
+      setSelectedHealthField(profile.preferred_health);
+    }
+  }, [profile?.preferred_health]);
+
+  // 3. Extended conditions state
+  const [selectedConditions, setSelectedConditions] = useState(new Set());
+  const [noneConditions, setNoneConditions] = useState(false);
+
+  // 4. Extended single choice answers state { [id]: optionString }
+  const [extendedAnswers, setExtendedAnswers] = useState({});
+
+  const specialtyRef = useRef(null);
   const hasLoadedDraftRef = useRef(false);
 
-  // Clean up auto-advance timer on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
+  // Gender filter for women-only questions
+  const filteredLifestyleQuestions = useMemo(() => {
+    const isMale = profile?.genderAtBirth?.trim()?.toLowerCase() === "male";
+    if (isMale) {
+      return LIFESTYLE_HEALTH_QUESTIONS.filter((q) => !q.womenOnly);
+    }
+    return LIFESTYLE_HEALTH_QUESTIONS;
+  }, [profile?.genderAtBirth]);
 
-  // Load saved answers on mount and resume at first unanswered question
+  const allExtendedSingleQuestions = useMemo(() => {
+    return [...ACTIVITY_QUESTIONS, ...filteredLifestyleQuestions];
+  }, [filteredLifestyleQuestions]);
+
+  // Load existing draft answers and profile data on mount
   useEffect(() => {
     if (!user) return;
     if (hasLoadedDraftRef.current) return;
@@ -259,43 +613,74 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
     let isMounted = true;
 
-    const loadSavedAnswers = async () => {
-      let answersToRestore = null;
+    const loadDraftData = async () => {
+      let restoredDosha = null;
+      let restoredSpecialty = profile?.preferred_health || null;
+      let restoredExtended = {};
+      let restoredConditions = new Set();
+      let restoredNoneConditions = false;
 
-      // 1. Check localStorage first
+      // 1. Try local storage first
       try {
-        const local = localStorage.getItem(`dosha_answers_${user.uid}`);
-        if (local) {
-          const parsed = JSON.parse(local);
-          if (Array.isArray(parsed) && parsed.length === DOSHA_QUESTIONS.length) {
-            answersToRestore = parsed;
+        const localDosha = localStorage.getItem(`dosha_answers_${user.uid}`);
+        if (localDosha) {
+          const parsed = JSON.parse(localDosha);
+          if (Array.isArray(parsed) && parsed.length >= DOSHA_QUESTIONS.length) {
+            restoredDosha = parsed.slice(0, DOSHA_QUESTIONS.length);
+          }
+        }
+        const localExt = localStorage.getItem(`extended_answers_${user.uid}`);
+        if (localExt) {
+          restoredExtended = JSON.parse(localExt) || {};
+        }
+        const localConds = localStorage.getItem(`extended_conditions_${user.uid}`);
+        if (localConds) {
+          const arr = JSON.parse(localConds);
+          if (Array.isArray(arr)) {
+            if (arr.includes("None")) {
+              restoredNoneConditions = true;
+            } else {
+              restoredConditions = new Set(arr);
+            }
           }
         }
       } catch (e) {
-        console.warn("Could not read from localStorage:", e);
+        console.warn("Could not read draft from localStorage:", e);
       }
 
-      let fetchedSpecialty = profile?.preferred_health || null;
-
-      // 2. Fallback to Firestore draft if not in localStorage or check preferred_health
+      // 2. Fallback to Firestore
       try {
         const userSnap = await getDoc(doc(db, "users", user.uid));
         if (userSnap.exists()) {
           const data = userSnap.data();
           if (data.preferred_health) {
-            fetchedSpecialty = data.preferred_health;
-            setSelectedHealthField(data.preferred_health);
+            restoredSpecialty = data.preferred_health;
           }
 
-          if (!answersToRestore && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
-            const restored = Array(DOSHA_QUESTIONS.length).fill(null);
+          // Restore Dosha draft answers
+          if (!restoredDosha && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
+            const arr = Array(DOSHA_QUESTIONS.length).fill(null);
             Object.entries(data.dosha_draft_answers).forEach(([idxStr, val]) => {
               const idx = parseInt(idxStr, 10);
-              if (!isNaN(idx) && idx >= 0 && idx < restored.length) {
-                restored[idx] = val;
+              if (!isNaN(idx) && idx >= 0 && idx < arr.length) {
+                arr[idx] = val;
               }
             });
-            answersToRestore = restored;
+            restoredDosha = arr;
+          }
+
+          // Restore Extended draft answers
+          if (Object.keys(restoredExtended).length === 0 && data.extended_draft_answers) {
+            if (data.extended_draft_answers.answers) {
+              restoredExtended = data.extended_draft_answers.answers;
+            }
+            if (Array.isArray(data.extended_draft_answers.conditions)) {
+              if (data.extended_draft_answers.conditions.includes("None")) {
+                restoredNoneConditions = true;
+              } else {
+                restoredConditions = new Set(data.extended_draft_answers.conditions);
+              }
+            }
           }
         }
       } catch (e) {
@@ -304,165 +689,127 @@ export default function UserQuestionnaireModal({ onComplete }) {
 
       if (!isMounted) return;
 
-      const hasSpec = Boolean(fetchedSpecialty);
-      setInitialHasSpecialty(hasSpec);
-      const effectiveTotal = hasSpec ? 48 : 49;
-
-      // 3. Restore state and set currentPage to first unanswered question
-      if (answersToRestore) {
-        if (fetchedSpecialty) {
-          const sIdx = DOSHA_QUESTIONS[48].options.findIndex(
-            (opt) => opt.key === fetchedSpecialty
-          );
-          if (sIdx !== -1) {
-            answersToRestore[48] = sIdx;
-          }
-        }
-
-        setSelectedAnswers(answersToRestore);
-        const firstUnanswered = answersToRestore.findIndex(
-          (ans, idx) => idx < 48 && (ans === null || ans === undefined)
-        );
-        if (firstUnanswered !== -1) {
-          setCurrentPage(firstUnanswered);
-        } else {
-          setCurrentPage(effectiveTotal - 1);
-        }
-      } else if (fetchedSpecialty) {
-        const sIdx = DOSHA_QUESTIONS[48].options.findIndex(
-          (opt) => opt.key === fetchedSpecialty
-        );
-        if (sIdx !== -1) {
-          const initAnswers = Array(DOSHA_QUESTIONS.length).fill(null);
-          initAnswers[48] = sIdx;
-          setSelectedAnswers(initAnswers);
-        }
+      if (restoredDosha) setDoshaAnswers(restoredDosha);
+      if (restoredSpecialty) {
+        setSelectedHealthField(restoredSpecialty);
+        setHasInitialSpecialty(true);
       }
+      if (Object.keys(restoredExtended).length > 0) setExtendedAnswers(restoredExtended);
+      if (restoredConditions.size > 0) setSelectedConditions(restoredConditions);
+      if (restoredNoneConditions) setNoneConditions(true);
 
       setLoadingDraft(false);
     };
 
-    loadSavedAnswers();
+    loadDraftData();
 
     return () => {
       isMounted = false;
     };
   }, [user]);
 
-  // hasExistingSpecialty reflects whether the user already had a specialty before taking the assessment.
-  // It must NOT change dynamically when picking a specialty on question 49!
-  const hasExistingSpecialty = initialHasSpecialty;
-  const totalQuestions = hasExistingSpecialty ? 48 : (DOSHA_QUESTIONS?.length || 49);
-  const safeCurrentPage = Math.max(0, Math.min(Number(currentPage) || 0, totalQuestions - 1));
-  const currentQ = (DOSHA_QUESTIONS && DOSHA_QUESTIONS[safeCurrentPage]) || DOSHA_QUESTIONS[0] || { question: "Loading question...", options: [] };
-  const isLastQuestion = safeCurrentPage === totalQuestions - 1;
-  const isSpecialtyQuestion = !hasExistingSpecialty && safeCurrentPage === (totalQuestions - 1);
-
-  // Handle Option Select
-  const handleSelectOption = (optionIndex, optionData = null) => {
-    const updated = [...selectedAnswers];
-    updated[safeCurrentPage] = optionIndex;
-    setSelectedAnswers(updated);
-
+  // Handlers for Dosha questions
+  const handleSelectDosha = (index, optionIndex) => {
+    const updated = [...doshaAnswers];
+    updated[index] = optionIndex;
+    setDoshaAnswers(updated);
     if (user) {
       try {
         localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(updated));
-      } catch (e) {
-        console.warn("Error saving answer to localStorage:", e);
-      }
-    }
-
-    if (isSpecialtyQuestion && optionData) {
-      setSelectedHealthField(optionData.key);
-    }
-
-    // Auto-advance if not last question, clearing any pending timeout
-    if (safeCurrentPage < totalQuestions - 1) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-      timerRef.current = setTimeout(() => {
-        setCurrentPage((p) => Math.min(totalQuestions - 1, p + 1));
-      }, 180);
-    }
-  };
-
-  const handleNext = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    if (safeCurrentPage < totalQuestions - 1) {
-      setCurrentPage((p) => Math.min(totalQuestions - 1, p + 1));
-    }
-  };
-
-  const handleBack = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    if (safeCurrentPage > 0) {
-      setCurrentPage((p) => Math.max(0, p - 1));
-    }
-  };
-
-  const areAllAnswered = selectedAnswers.slice(0, 48).every((a) => a !== null && a !== undefined);
-
-  const handleSkip = async () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    // 1. Save answers to localStorage
-    if (user) {
-      try {
-        localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(selectedAnswers));
       } catch (e) {}
     }
+  };
 
-    // 2. If user ALREADY has a specialty chosen, don't ask again — save draft and exit
-    if (hasExistingSpecialty) {
+  // Handlers for Specialty selection
+  const handleSelectSpecialty = (key) => {
+    setSelectedHealthField(key);
+    setShowSpecialtyAlert(false);
+  };
+
+  // Handlers for Medical Conditions
+  const handleToggleCondition = (cond) => {
+    setNoneConditions(false);
+    setSelectedConditions((prev) => {
+      const next = new Set(prev);
+      if (next.has(cond)) {
+        next.delete(cond);
+      } else {
+        next.add(cond);
+      }
       if (user) {
         try {
-          const partialAnswers = {};
-          selectedAnswers.forEach((ans, idx) => {
-            if (idx < 48 && ans !== null && ans !== undefined) {
-              partialAnswers[idx] = ans;
-            }
-          });
-          const userRef = doc(db, "users", user.uid);
-          await setDoc(userRef, {
-            dosha_draft_answers: partialAnswers
-          }, { merge: true });
-        } catch (e) {
-          console.warn("Could not save draft on skip:", e);
-        }
+          localStorage.setItem(`extended_conditions_${user.uid}`, JSON.stringify(Array.from(next)));
+        } catch (e) {}
       }
-      if (onComplete) {
-        onComplete("/user/home");
-      } else {
-        router.push("/user/home");
+      return next;
+    });
+  };
+
+  const handleToggleNoneConditions = () => {
+    setNoneConditions(true);
+    setSelectedConditions(new Set());
+    if (user) {
+      try {
+        localStorage.setItem(`extended_conditions_${user.uid}`, JSON.stringify(["None"]));
+      } catch (e) {}
+    }
+  };
+
+  // Handlers for Extended single choice questions
+  const handleSelectExtendedSingle = (questionId, option) => {
+    setExtendedAnswers((prev) => {
+      const next = { ...prev, [questionId]: option };
+      if (user) {
+        try {
+          localStorage.setItem(`extended_answers_${user.uid}`, JSON.stringify(next));
+        } catch (e) {}
+      }
+      return next;
+    });
+  };
+
+  // Answer stats & counts
+  const answeredDoshaCount = doshaAnswers.filter((a) => a !== null && a !== undefined).length;
+  const isSpecialtyAnswered = Boolean(selectedHealthField);
+  const isConditionsAnswered = selectedConditions.size > 0 || noneConditions;
+  const answeredExtendedCount = Object.keys(extendedAnswers).length;
+  const totalQuestionsCount = DOSHA_QUESTIONS.length + (hasInitialSpecialty ? 0 : 1) + 1 + allExtendedSingleQuestions.length;
+  const totalAnsweredCount = answeredDoshaCount + (!hasInitialSpecialty && isSpecialtyAnswered ? 1 : 0) + (isConditionsAnswered ? 1 : 0) + answeredExtendedCount;
+  const percentComplete = Math.min(100, Math.round((totalAnsweredCount / totalQuestionsCount) * 100));
+
+  const areAllDoshaAnswered = answeredDoshaCount === DOSHA_QUESTIONS.length;
+  const areAllExtendedAnswered = answeredExtendedCount >= allExtendedSingleQuestions.length && isConditionsAnswered;
+  const isFullyCompleted = areAllDoshaAnswered && (hasInitialSpecialty || isSpecialtyAnswered) && areAllExtendedAnswered;
+
+  // Skip handler: jump to specialty if not selected; otherwise save draft and finish
+  const handleSkip = async () => {
+    if (!hasInitialSpecialty && !selectedHealthField) {
+      setShowSpecialtyAlert(true);
+      if (specialtyRef.current) {
+        specialtyRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
       }
       return;
     }
 
-    // 3. User does not have a specialty yet: jump to specialty selection (question 49, index 48)
-    setCurrentPage(totalQuestions - 1);
+    // Specialty is selected! Save draft and finish
+    await saveAssessment(false);
   };
 
-  // Scoring & Save
-  const saveAndComplete = async () => {
+  // Core save function
+  const saveAssessment = async (isCompleted = false) => {
     if (!user) return;
     setIsSaving(true);
 
     try {
-      const prefHealthKey = selectedHealthField || profile?.preferred_health || "general_health";
+      const prefHealthKey = selectedHealthField || "general_health";
       const userRef = doc(db, "users", user.uid);
+      const batch = writeBatch(db);
 
-      if (areAllAnswered) {
+      // 1. If user answered all dosha questions: score and write dosha questionnaire doc
+      if (areAllDoshaAnswered) {
         let vata = 0, pitta = 0, kapha = 0;
-        
-        // Calculate scores for first 48 questions (indices 0..47)
         for (let i = 0; i < 48; i++) {
-          const sel = selectedAnswers[i];
+          const sel = doshaAnswers[i];
           if (sel === 0) vata++;
           else if (sel === 1) pitta++;
           else if (sel === 2) kapha++;
@@ -480,108 +827,108 @@ export default function UserQuestionnaireModal({ onComplete }) {
           secondary = vata >= pitta ? "vata" : "pitta";
         }
 
-        // Map answers
-        const results = {};
+        const doshaResults = {};
         for (let i = 0; i < 48; i++) {
           const q = DOSHA_QUESTIONS[i];
-          const sel = selectedAnswers[i] ?? 0;
-          results[q.question] = q.options[sel];
+          const sel = doshaAnswers[i] ?? 0;
+          doshaResults[q.question] = q.options[sel];
         }
 
-        const q49 = DOSHA_QUESTIONS[48];
-        const healthOption = (q49.options || []).find(
-          (opt) => opt.key === prefHealthKey
-        );
-        const sel49 = selectedAnswers[48] ?? 0;
-        results[q49.question] = healthOption?.label || q49.options[sel49]?.label || q49.options[sel49] || "General Health";
+        const healthFieldObj = HEALTH_FIELDS.find((hf) => hf.key === prefHealthKey);
+        doshaResults["Which area are you looking to improve"] = healthFieldObj?.label || "General Health";
 
-        const batch = writeBatch(db);
-        
-        // 1. Questionnaire doc
         const questionnaireRef = doc(db, "users", user.uid, "questionnaires", "dosha_questionnaire");
         batch.set(questionnaireRef, {
-          results,
-          tally: {
-            column_1: vata,
-            column_2: pitta,
-            column_3: kapha
-          },
-          dosha_scores: {
-            primary,
-            secondary
-          },
+          results: doshaResults,
+          tally: { column_1: vata, column_2: pitta, column_3: kapha },
+          dosha_scores: { primary, secondary },
           timestamp: serverTimestamp()
         });
-
-        // 2. User doc
-        batch.set(userRef, {
-          is_free_questionnaire_completed: true,
-          preferred_health: prefHealthKey,
-          dosha_draft_answers: deleteField(),
-          questionnaire_consent: {
-            accepted_at: serverTimestamp(),
-            disclaimer_version: "1.0"
-          }
-        }, { merge: true });
-
-        await batch.commit();
-
-        try {
-          localStorage.removeItem(`dosha_answers_${user.uid}`);
-        } catch (e) {}
-
-        // 3. Trigger doctor matching by specialty
-        try {
-          await matchUserWithDoctor(user.uid, prefHealthKey);
-        } catch (mErr) {
-          console.warn("Doctor matching during questionnaire complete:", mErr);
-          await setDoc(userRef, {
-            needs_doctor_assignment: true,
-            preferred_health: prefHealthKey,
-          }, { merge: true }).catch(() => {});
-        }
-      } else {
-        // User skipped to specialty: save preferred_health and partial answers without fake dosha scores
-        const partialAnswers = {};
-        selectedAnswers.forEach((ans, idx) => {
-          if (idx < 48 && ans !== null && ans !== undefined) {
-            partialAnswers[idx] = ans;
-          }
-        });
-
-        await setDoc(userRef, {
-          preferred_health: prefHealthKey,
-          is_free_questionnaire_completed: false,
-          dosha_draft_answers: partialAnswers,
-          questionnaire_consent: {
-            accepted_at: serverTimestamp(),
-            disclaimer_version: "1.0"
-          }
-        }, { merge: true });
-
-        try {
-          localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(selectedAnswers));
-        } catch (e) {}
-
-        // Trigger doctor matching by specialty
-        try {
-          await matchUserWithDoctor(user.uid, prefHealthKey);
-        } catch (mErr) {
-          console.warn("Doctor matching during questionnaire skip:", mErr);
-          await setDoc(userRef, {
-            needs_doctor_assignment: true,
-            preferred_health: prefHealthKey,
-          }, { merge: true }).catch(() => {});
-        }
       }
 
+      // 2. Save Extended Questionnaire doc
+      const extendedResults = {};
+      for (const q of allExtendedSingleQuestions) {
+        extendedResults[q.question] = extendedAnswers[q.id] || "Skipped";
+      }
+      extendedResults["medical_conditions"] = noneConditions
+        ? ["None"]
+        : selectedConditions.size > 0
+        ? Array.from(selectedConditions)
+        : ["None"];
+
+      for (const condition of MEDICAL_CONDITIONS_LIST) {
+        extendedResults[condition] = noneConditions
+          ? "No"
+          : selectedConditions.has(condition)
+          ? "Yes"
+          : "No";
+      }
+
+      const extendedDocRef = doc(db, "users", user.uid, "questionnaires", "extended");
+      batch.set(extendedDocRef, {
+        results: extendedResults,
+        timestamp: serverTimestamp()
+      });
+
+      // 3. User document updates
+      const partialDosha = {};
+      doshaAnswers.forEach((ans, idx) => {
+        if (ans !== null && ans !== undefined) partialDosha[idx] = ans;
+      });
+
+      const userDocUpdate = {
+        preferred_health: prefHealthKey,
+        is_free_questionnaire_completed: areAllDoshaAnswered,
+        is_extended_questionnaire_completed: areAllExtendedAnswered,
+        questionnaire_consent: {
+          accepted_at: serverTimestamp(),
+          disclaimer_version: "1.0"
+        }
+      };
+
+      if (areAllDoshaAnswered && areAllExtendedAnswered) {
+        userDocUpdate.dosha_draft_answers = deleteField();
+        userDocUpdate.extended_draft_answers = deleteField();
+      } else {
+        userDocUpdate.dosha_draft_answers = partialDosha;
+        userDocUpdate.extended_draft_answers = {
+          answers: extendedAnswers,
+          conditions: noneConditions ? ["None"] : Array.from(selectedConditions)
+        };
+      }
+
+      batch.set(userRef, userDocUpdate, { merge: true });
+      await batch.commit();
+
+      // Clear local storage if fully completed
+      if (areAllDoshaAnswered && areAllExtendedAnswered) {
+        try {
+          localStorage.removeItem(`dosha_answers_${user.uid}`);
+          localStorage.removeItem(`extended_answers_${user.uid}`);
+          localStorage.removeItem(`extended_conditions_${user.uid}`);
+        } catch (e) {}
+      }
+
+      // 4. Trigger doctor matching with the chosen specialty
+      try {
+        await matchUserWithDoctor(user.uid, prefHealthKey);
+      } catch (mErr) {
+        console.warn("Doctor matching call:", mErr);
+        await setDoc(userRef, {
+          needs_doctor_assignment: true,
+          preferred_health: prefHealthKey,
+        }, { merge: true }).catch(() => {});
+      }
+
+      // 5. Clean redirect without dialogs
       if (onComplete) {
         onComplete("/user/home");
       } else {
         router.push("/user/home");
       }
     } catch (err) {
-      console.error("Error saving questionnaire:", err);
+      console.error("Error saving assessment:", err);
       alert("Failed to save responses. Please try again.");
     } finally {
       setIsSaving(false);
@@ -592,161 +939,414 @@ export default function UserQuestionnaireModal({ onComplete }) {
     return (
       <div className="fixed inset-0 z-50 bg-[#FAF8F5] flex flex-col items-center justify-center p-4">
         <div className="w-10 h-10 border-3 border-[#C2691C] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-medium text-[#1A1A1A]">Loading assessment...</p>
+        <p className="text-sm font-medium text-[#1A1A1A]">Loading assessment & health profile...</p>
       </div>
     );
   }
 
-  // 2. QUESTIONS VIEW
+  // Group Dosha questions by category
+  const categories = [
+    "Physical Constitution & Body Frame",
+    "Digestion, Metabolism & Elimination",
+    "Mind, Temperament & Sleep",
+    "Physical Sensitivities & Vitals"
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#FAF8F5] overflow-y-auto flex flex-col justify-between p-4 sm:p-8">
-      {/* Top Header */}
-      <div className="max-w-2xl w-full mx-auto flex items-center justify-between py-2">
-        <div className="flex items-center gap-3">
-          <span 
-            className="text-2xl font-normal text-[#1A1A1A]"
-            style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
-          >
-            AMBÉ®
-          </span>
-          <span className="text-xs uppercase tracking-widest font-medium text-[#C2691C] hidden sm:inline">
-            Intake Assessment
-          </span>
-        </div>
-
-        {!isLastQuestion && (
-          <button
-            onClick={handleSkip}
-            className="text-xs font-semibold uppercase tracking-wider text-[#8C827A] hover:text-[#1A1A1A] transition-colors py-1.5 px-3.5 rounded-full hover:bg-white border border-[#E7E2D9] shadow-xs cursor-pointer"
-          >
-            Skip
-          </button>
-        )}
-      </div>
-
-      {/* Main Content Area */}
-      <div className="max-w-xl w-full mx-auto my-auto py-6">
-        {/* Progress bar */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center text-xs font-medium text-[#6B6862] mb-2 uppercase tracking-wider">
-            <span>Question {safeCurrentPage + 1} of {totalQuestions}</span>
-            <span>{Math.round(((safeCurrentPage + 1) / totalQuestions) * 100)}%</span>
-          </div>
-          <div className="w-full h-1.5 bg-[#E7E2D9] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#C2691C] transition-all duration-300 rounded-full"
-              style={{ width: `${((safeCurrentPage + 1) / totalQuestions) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Question Card */}
-        <div className="bg-white p-7 sm:p-10 rounded-3xl shadow-xl border border-[#E7E2D9] space-y-6">
-          <div className="text-center space-y-2">
-            <span className="text-[11px] font-bold tracking-widest uppercase text-[#C2691C]">
-              {isSpecialtyQuestion ? "Area of Focus" : "Constitution & Dosha Profile"}
-            </span>
-            <h2
-              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A]"
+    <div className="fixed inset-0 z-50 bg-[#FAF8F5] overflow-y-auto flex flex-col justify-between">
+      {/* Sticky Top Header */}
+      <div className="sticky top-0 z-30 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#E7E2D9] px-4 sm:px-8 py-3.5 shadow-xs">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span
+              className="text-2xl font-normal text-[#1A1A1A]"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              {currentQ?.question || "Assessment Question"}
-            </h2>
+              AMBÉ®
+            </span>
+            <span className="text-xs uppercase tracking-widest font-semibold text-[#C2691C] hidden sm:inline">
+              Intake Assessment & Health Profile
+            </span>
           </div>
 
-          {/* Options */}
-          <div className="space-y-3 pt-2">
-            {isSpecialtyQuestion ? (
-              // Question 49: Health Fields grid
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {(currentQ?.options || []).map((opt, i) => {
-                  const isSelected = selectedAnswers[safeCurrentPage] === i || selectedHealthField === opt.key;
-                  return (
-                    <button
-                      key={opt.key}
-                      onClick={() => handleSelectOption(i, opt)}
-                      type="button"
-                      className={`p-3.5 rounded-2xl text-left border transition-all text-xs font-medium cursor-pointer flex items-center justify-between ${
-                        isSelected
-                          ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-sm font-semibold"
-                          : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
-                      }`}
-                    >
-                      <span>{opt.label}</span>
-                      {isSelected && <CheckIcon className="w-4 h-4 text-[#1A1A1A]" />}
-                    </button>
-                  );
-                })}
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex flex-col items-end text-right">
+              <span className="text-xs font-semibold text-[#1A1A1A]">
+                {totalAnsweredCount} of {totalQuestionsCount} completed
+              </span>
+              <div className="w-32 h-1.5 bg-[#E7E2D9] rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-full bg-[#C2691C] transition-all duration-300 rounded-full"
+                  style={{ width: `${percentComplete}%` }}
+                />
               </div>
-            ) : (
-              // Standard 3 Dosha options
-              (currentQ?.options || []).map((opt, i) => {
-                const isSelected = selectedAnswers[safeCurrentPage] === i;
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSkip}
+              disabled={isSaving}
+              className="text-xs font-semibold uppercase tracking-wider text-[#8C827A] hover:text-[#1A1A1A] transition-colors py-1.5 px-4 rounded-full bg-white border border-[#E7E2D9] shadow-xs cursor-pointer hover:border-[#1A1A1A]"
+            >
+              {(hasInitialSpecialty || selectedHealthField) ? "Skip & Finish" : "Skip"}
+            </button>
+
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSaving}
+                className="p-1 text-[#8C827A] hover:text-[#1A1A1A] transition-colors rounded-full hover:bg-[#E7E2D9]/40 cursor-pointer"
+                title="Close"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Form Container */}
+      <main className="max-w-4xl w-full mx-auto px-4 sm:px-8 py-8 space-y-12">
+        {/* Intro Hero Banner */}
+        <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-10 shadow-sm text-center space-y-3">
+          <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+            Holistic Intake Profile
+          </span>
+          <h1
+            className="text-3xl sm:text-4xl font-normal text-[#1A1A1A]"
+            style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+          >
+            Wellness Assessment & Medical History
+          </h1>
+          <p className="text-sm text-[#6B6862] max-w-xl mx-auto leading-relaxed">
+            Please complete your holistic profile below. All answers are kept strictly confidential and reviewed with your doctor to deliver personalized care.
+          </p>
+        </div>
+
+        {/* ================================================================ */}
+        {/* SECTION 1: CONSTITUTION & DOSHA ASSESSMENT (48 QUESTIONS)        */}
+        {/* ================================================================ */}
+        <section className="space-y-8">
+          <div className="border-b border-[#E7E2D9] pb-4">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+              Part 1 of {hasInitialSpecialty ? 3 : 4}
+            </span>
+            <h2
+              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+            >
+              Constitution & Dosha Profile
+            </h2>
+            <p className="text-sm text-[#6B6862] mt-1">
+              Select the option that most closely describes your lifelong baseline tendencies.
+            </p>
+          </div>
+
+          {categories.map((catName) => {
+            const catQuestions = DOSHA_QUESTIONS.map((q, originalIdx) => ({ ...q, originalIdx }))
+              .filter((q) => q.category === catName);
+
+            return (
+              <div key={catName} className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#8C827A] px-1">
+                  {catName}
+                </h3>
+                <div className="space-y-4">
+                  {catQuestions.map(({ question, options, originalIdx }) => {
+                    const selectedOpt = doshaAnswers[originalIdx];
+                    return (
+                      <div
+                        key={originalIdx}
+                        className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 space-y-3 hover:border-[#D1C9BE] transition shadow-xs"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="w-6 h-6 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] text-[#1A1A1A] text-xs font-bold flex items-center justify-center shrink-0">
+                            {originalIdx + 1}
+                          </span>
+                          <h4 className="font-semibold text-[#1A1A1A] text-base sm:text-lg">{question}</h4>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                          {options.map((optText, optIdx) => {
+                            const isSelected = selectedOpt === optIdx;
+                            return (
+                              <button
+                                key={optIdx}
+                                type="button"
+                                onClick={() => handleSelectDosha(originalIdx, optIdx)}
+                                className={`p-3.5 rounded-xl text-left border transition text-sm sm:text-base font-medium cursor-pointer flex items-center justify-between ${
+                                  isSelected
+                                    ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-xs font-semibold"
+                                    : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                                }`}
+                              >
+                                <span>{optText}</span>
+                                {isSelected && <CheckIcon className="w-4 h-4 text-[#1A1A1A] shrink-0 ml-2" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </section>
+
+        {/* ================================================================ */}
+        {/* SECTION 2: AREA OF FOCUS / SPECIALTY (MANDATORY TO MATCH DOCTOR) */}
+        {/* ================================================================ */}
+        {!hasInitialSpecialty && (
+          <section
+            ref={specialtyRef}
+            id="specialty-section"
+            className={`space-y-6 bg-white border-2 rounded-3xl p-6 sm:p-8 transition-all ${
+              showSpecialtyAlert ? "border-[#C2691C] shadow-lg ring-2 ring-[#FFD3AC]" : "border-[#E7E2D9] shadow-sm"
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E7E2D9] pb-4">
+              <div>
+                <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+                  Part 2 of 4 (Required)
+                </span>
+                <h2
+                  className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+                  style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+                >
+                  Which area are you looking to improve?
+                </h2>
+                <p className="text-sm text-[#6B6862] mt-1">
+                  Your primary health specialty matches you with the ideal licensed practitioner for your consultation.
+                </p>
+              </div>
+              {selectedHealthField && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                  <CheckIcon className="w-3.5 h-3.5" /> Selected
+                </span>
+              )}
+            </div>
+
+            {showSpecialtyAlert && (
+              <div className="bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl p-4 flex items-center gap-3 text-xs font-medium text-[#C2691C] animate-pulse">
+                <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
+                <span>Please select your health specialty to continue. This is required to match you with a doctor.</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {HEALTH_FIELDS.map((hf) => {
+                const isSelected = selectedHealthField === hf.key;
                 return (
                   <button
-                    key={i}
-                    onClick={() => handleSelectOption(i)}
+                    key={hf.key}
                     type="button"
-                    className={`w-full p-4 rounded-2xl text-left border transition-all text-sm cursor-pointer flex items-center justify-between ${
+                    onClick={() => handleSelectSpecialty(hf.key)}
+                    className={`p-4 rounded-2xl text-left border transition cursor-pointer flex flex-col justify-between space-y-2 ${
                       isSelected
-                        ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-sm font-medium"
+                        ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-xs"
                         : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
                     }`}
                   >
-                    <span>{opt}</span>
-                    {isSelected && <CheckIcon className="w-4 h-4 text-[#1A1A1A] shrink-0 ml-3" />}
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-bold text-base sm:text-lg text-[#1A1A1A]">{hf.label}</span>
+                      <span
+                        className={`w-5 h-5 rounded-full flex items-center justify-center border text-xs ${
+                          isSelected ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "border-[#C5BCAD] bg-white text-transparent"
+                        }`}
+                      >
+                        ✓
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#6B6862] leading-snug">{hf.desc}</p>
                   </button>
                 );
-              })
-            )}
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ================================================================ */}
+        {/* SECTION 3: MEDICAL CONDITIONS CHECKLIST (33 CONDITIONS)          */}
+        {/* ================================================================ */}
+        <section className="space-y-6">
+          <div className="border-b border-[#E7E2D9] pb-4">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+              Part {hasInitialSpecialty ? 2 : 3} of {hasInitialSpecialty ? 3 : 4}
+            </span>
+            <h2
+              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+            >
+              Medical History & Existing Conditions
+            </h2>
+            <p className="text-sm text-[#6B6862] mt-1">
+              Select all conditions that currently apply or that you have been diagnosed with, or choose &ldquo;None of the above&rdquo;.
+            </p>
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between items-center pt-4 border-t border-[#F4F1EA]">
-            {safeCurrentPage > 0 ? (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex items-center text-xs font-semibold uppercase tracking-wider text-[#6B6862] hover:text-[#1A1A1A] transition-colors cursor-pointer"
-              >
-                <ArrowLeftIcon className="h-4 w-4 mr-1.5" />
-                Previous
-              </button>
-            ) : (
-              <div />
-            )}
+          <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+            <div className="flex flex-wrap gap-2.5">
+              {MEDICAL_CONDITIONS_LIST.map((condition) => {
+                const isSelected = selectedConditions.has(condition);
+                return (
+                  <button
+                    key={condition}
+                    type="button"
+                    onClick={() => handleToggleCondition(condition)}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer text-left ${
+                      isSelected
+                        ? "bg-[#FFF3E8] border-2 border-[#1A1A1A] text-[#1A1A1A] font-semibold shadow-xs"
+                        : "bg-[#FAF8F5] border border-[#E7E2D9] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                    }`}
+                  >
+                    <span
+                      className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
+                        isSelected
+                          ? "bg-[#1A1A1A] border-[#1A1A1A] text-white"
+                          : "border-[#C5BCAD] text-transparent bg-white"
+                      }`}
+                    >
+                      ✓
+                    </span>
+                    <span>{condition}</span>
+                  </button>
+                );
+              })}
 
-            {isLastQuestion ? (
               <button
                 type="button"
-                onClick={saveAndComplete}
-                disabled={isSaving || (isSpecialtyQuestion ? !selectedHealthField : selectedAnswers[safeCurrentPage] === null)}
-                className="flex items-center px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                onClick={handleToggleNoneConditions}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
+                  noneConditions
+                    ? "bg-[#1A1A1A] text-white border-2 border-[#1A1A1A] shadow-xs"
+                    : "bg-[#FAF8F5] border border-[#E7E2D9] text-[#6B6862] hover:text-[#1A1A1A] hover:bg-[#F4F1EA]"
+                }`}
               >
-                {isSaving ? "Submitting..." : areAllAnswered ? "Complete Assessment" : "Continue"}
+                <span
+                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
+                    noneConditions
+                      ? "bg-white border-white text-[#1A1A1A]"
+                      : "border-[#C5BCAD] text-transparent bg-white"
+                  }`}
+                >
+                  ✓
+                </span>
+                <span>None of the above</span>
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={selectedAnswers[safeCurrentPage] === null}
-                className="flex items-center px-7 py-3 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                Next
-                <ArrowRightIcon className="h-4 w-4 ml-1.5" />
-              </button>
-            )}
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================ */}
+        {/* SECTION 4: CLINICAL & LIFESTYLE ASSESSMENT                       */}
+        {/* ================================================================ */}
+        <section className="space-y-6">
+          <div className="border-b border-[#E7E2D9] pb-4">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+              Part {hasInitialSpecialty ? 3 : 4} of {hasInitialSpecialty ? 3 : 4}
+            </span>
+            <h2
+              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+            >
+              Lifestyle, Habits & Clinical Symptoms
+            </h2>
+            <p className="text-sm text-[#6B6862] mt-1">
+              Physical activity, digestive patterns, energy and daily habits.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {allExtendedSingleQuestions.map((q, idx) => {
+              const selectedOpt = extendedAnswers[q.id];
+              return (
+                <div
+                  key={q.id}
+                  className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 space-y-3 hover:border-[#D1C9BE] transition shadow-xs"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] text-[#1A1A1A] text-xs font-bold flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <h4 className="font-semibold text-[#1A1A1A] text-base sm:text-lg">{q.question}</h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                    {q.options.map((optText) => {
+                      const isSelected = selectedOpt === optText;
+                      return (
+                        <button
+                          key={optText}
+                          type="button"
+                          onClick={() => handleSelectExtendedSingle(q.id, optText)}
+                          className={`p-3.5 rounded-xl text-left border transition text-sm sm:text-base font-medium cursor-pointer flex items-center justify-between ${
+                            isSelected
+                              ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-xs font-semibold"
+                              : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                          }`}
+                        >
+                          <span>{optText}</span>
+                          {isSelected && <CheckIcon className="w-4 h-4 text-[#1A1A1A] shrink-0 ml-2" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Bottom Submission & Action Card */}
+        <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#F4F1EA] pb-6">
+            <div>
+              <h3 className="font-semibold text-lg text-[#1A1A1A]">Ready to submit?</h3>
+              <p className="text-xs text-[#8C827A] mt-1">
+                {isFullyCompleted
+                  ? "All sections are answered. Submitting unlocks your personalized Dosha constitution report."
+                  : "You can submit now, or choose Skip & Finish to proceed with booking your consultation."}
+              </p>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-xs font-bold text-[#C2691C] uppercase tracking-wider">
+                {percentComplete}% Completed
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={handleSkip}
+              disabled={isSaving}
+              className="w-full sm:w-auto px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-wider text-[#6B6862] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] border border-[#E7E2D9] transition cursor-pointer"
+            >
+              {(hasInitialSpecialty || selectedHealthField) ? "Skip & Finish" : "Skip to Specialty"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => saveAssessment(isFullyCompleted)}
+              disabled={isSaving || (!hasInitialSpecialty && !selectedHealthField)}
+              className="w-full sm:w-auto px-10 py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {isSaving
+                ? "Saving..."
+                : isFullyCompleted
+                ? "Complete Assessment"
+                : "Save & Continue"}
+            </button>
           </div>
         </div>
 
-        {/* Reassurance footer note */}
-        <p className="text-center text-xs text-[#8C827A] mt-4">
-          Your answers are private and will be reviewed with your doctor during your video consultation.
+        <p className="text-center text-xs text-[#8C827A] pb-8">
+          Your answers are private and encrypted. They will only be reviewed with your licensed specialist during your clinical consultation.
         </p>
-      </div>
-
-      {/* Bottom spacer */}
-      <div className="py-2" />
+      </main>
     </div>
   );
 }

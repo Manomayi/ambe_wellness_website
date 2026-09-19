@@ -455,8 +455,8 @@ function PrimaryLink({ href, children, muted = false }) {
       href={href}
       className={
         muted
-          ? "block w-full py-3 rounded-full text-xs font-medium uppercase tracking-[0.12em] transition-all border border-white/20 text-white hover:bg-white/10"
-          : "block w-full px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white"
+          ? "block w-full py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition-all border border-[#FFD3AC]/50 text-[#FFD3AC] bg-[#FFD3AC]/5 hover:bg-[#FFD3AC]/15 hover:border-[#FFD3AC] cursor-pointer text-center"
+          : "block w-full px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white text-center"
       }
     >
       {children}
