@@ -1,299 +1,264 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  orderBy,
-  limit,
-  Timestamp,
-  doc,
-  getDoc,
-  onSnapshot
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
-import {
-  CalendarIcon,
-  ChatBubbleLeftRightIcon,
-  ShoppingBagIcon,
-  UserCircleIcon,
-  BellIcon,
-  ChevronRightIcon,
-  ShoppingCartIcon
-} from '@heroicons/react/24/outline';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 
 export default function UserHomePage() {
   const router = useRouter();
   const { user, profile } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [thingsToDoTasks, setThingsToDoTasks] = useState([]);
-  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
-  useEffect(() => {
-    if (!user) return;
-    const unsub = onSnapshot(
-      collection(db, 'users', user.uid, 'notifications'),
-      (snapshot) => {
-        const unread = snapshot.docs.filter((d) => !d.data().is_read).length;
-        setUnreadNotifCount(unread);
-      },
-      (err) => console.error('Error fetching unread notifications count:', err)
-    );
-    return () => unsub();
-  }, [user]);
+  const isMember = Boolean(profile?.subscription?.active);
+  const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "there";
+  const isQuestionnaireCompleted = profile?.is_free_questionnaire_completed === true;
+  const isExtendedQuestionnaireCompleted = profile?.is_extended_questionnaire_completed === true;
 
-  useEffect(() => {
-    if (user && profile) {
-      loadThingsToDo();
-    } else if (user && !profile) {
-      setLoading(false);
-    }
-  }, [user, profile]);
-
-  const loadThingsToDo = async () => {
-    try {
-      const tasks = [];
-      
-      // Become a member
-      if (!profile?.subscription?.active) {
-        tasks.push({
-          id: 'become-member',
-          title: 'Become a member',
-          subtitle: 'Become a member to save on products recommended by our doctors and enjoy exclusive benefits.',
-          onSelect: () => router.push('/user/membership')
-        });
-      }
-
-      // VIEW PERSONALIZED PRODUCTS
-      if (profile?.is_first_consultation_completed) {
-        tasks.push({
-          id: 'view-products',
-          title: 'Checkout your personalized products',
-          subtitle: 'Checkout the personalized products recommended for you by our doctor.',
-          onSelect: () => router.push('/user/cart')
-        });
-      }
-
-      // VIEW LATEST CONSULT RESULTS
-      if (profile?.is_first_consultation_completed) {
-        tasks.push({
-          id: 'view-consult',
-          title: 'View latest consultation results',
-          subtitle: 'View your personalized report on your latest consultation from your doctor.',
-          onSelect: () => navigateToLatestConsultationResults()
-        });
-      }
-
-      // VIEW QUESTIONNAIRE RESULTS
-      if (profile?.is_free_questionnaire_completed) {
-        tasks.push({
-          id: 'view-questionnaire',
-          title: 'Review questionnaire results',
-          subtitle: 'Review your personalized report on your unique constitution.',
-          onSelect: () => router.push('/user/menu/questionnaire/results')
-        });
-      } else {
-        // COMPLETE QUESTIONNAIRE
-        tasks.push({
-          id: 'complete-questionnaire',
-          title: 'Complete the questionnaire',
-          subtitle: 'Complete the questionnaire to receive a personalized report on your unique constitution from a doctor.',
-          onSelect: () => router.push('/user/menu/questionnaire')
-        });
-      }
-
-      // HEALTH ASSESSMENT (EXTENDED QUESTIONNAIRE)
-      const isExtendedCompleted = Boolean(profile?.is_extended_questionnaire_completed);
-
-      if (!isExtendedCompleted) {
-        tasks.push({
-          id: 'health-assessment',
-          title: 'Health Assessment',
-          subtitle: profile?.is_consultation_set
-            ? 'Please complete your health assessment before your upcoming consultation.'
-            : 'Complete your health assessment before your consultation.',
-          onSelect: () => router.push('/user/consult/extended-questionnaire')
-        });
-      } else if (!profile?.is_consultation_set) {
-        // SCHEDULE CONSULTATION
-        tasks.push({
-          id: 'schedule-consultation',
-          title: 'Schedule your consultation',
-          subtitle: 'Choose a date & time for your consultation with your doctor.',
-          onSelect: () => {
-            router.push('/user/consult');
-          }
-        });
-      }
-
-      setThingsToDoTasks(tasks);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading things to do:', error);
-      setLoading(false);
+  const handleNextStepClick = () => {
+    if (!isExtendedQuestionnaireCompleted) {
+      router.push("/user/consult/extended-questionnaire");
+    } else {
+      router.push("/user/consult");
     }
   };
-
-  const navigateToLatestConsultationResults = async () => {
-    try {
-      const snapshot = await getDocs(
-        query(
-          collection(db, 'users', user.uid, 'appointments_history'),
-          orderBy('time', 'desc'),
-          limit(1)
-        )
-      );
-
-      if (!snapshot.empty) {
-        const doc = snapshot.docs[0];
-        const appointmentId = doc.data().appointment_id || doc.id;
-        router.push(`/user/consult/report/${appointmentId}`);
-      } else {
-        alert('No consultation history found.');
-      }
-    } catch (error) {
-      console.error('Error fetching latest consultation:', error);
-      alert('Failed to load consultation report.');
-    }
-  };
-
-  const firstName = user?.displayName?.split(' ')[0] || profile?.first_name || 'there';
 
   return (
-    <ProtectedRoute userType="user">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+    <ProtectedRoute allowedRoles={["user"]}>
+      <div className="w-full space-y-7 pb-10">
+        {/* Top Greeting Section matching Flutter UserHomePage */}
+        <div className="flex items-start justify-between gap-4 pt-1">
           <div>
-            <h1 className="text-2xl font-bold text-[#1A1A1A] mb-1">Ambe</h1>
-            <h2 className="text-3xl font-normal text-[#1A1A1A]">
-              Hello {firstName},
-            </h2>
-          </div>
-
-          {/* Notification Button (matching Mobile App) */}
-          <button
-            type="button"
-            onClick={() => router.push('/user/notifications')}
-            className="relative p-3 rounded-full bg-white border border-[#E7E2D9] hover:border-[#C8996A] text-[#1A1A1A] hover:bg-[#FAF8F5] transition shadow-sm cursor-pointer"
-            aria-label="Notifications"
-          >
-            <BellIcon className="h-6 w-6 text-[#1A1A1A]" />
-            {unreadNotifCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#C8996A] px-1 text-[11px] font-bold text-white shadow-sm">
-                {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Things To Do Section */}
-        {thingsToDoTasks.length > 0 && (
-          <div>
-            <h3 className="text-xl font-semibold text-[#1A1A1A] mb-4">THINGS TO DO</h3>
-            <div className="space-y-3">
-              {thingsToDoTasks.map((task) => (
-                <button
-                  key={task.id}
-                  onClick={task.onSelect}
-                  className="w-full bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-4 transition-all duration-200 shadow-sm hover:shadow-md text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-bold text-base text-[#1A1A1A] mb-1">{task.title}</h4>
-                      <p className="text-sm text-[#6B6862]">{task.subtitle}</p>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-[#FAF8F5] flex items-center justify-center flex-shrink-0 ml-4">
-                      <ChevronRightIcon className="h-4 w-4 text-[#1A1A1A]" />
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        <div>
-          <h3 className="text-xl font-semibold text-[#1A1A1A] mb-4">QUICK ACTIONS</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button
-              onClick={() => router.push('/user/consult')}
-              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
+            <h1
+              className="text-[#FAF7F2] text-3xl sm:text-4xl font-medium tracking-tight"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
             >
-              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
-                <CalendarIcon className="h-6 w-6 text-[#1A1A1A]" />
-              </div>
-              <h4 className="font-semibold text-base text-[#1A1A1A]">Consultations</h4>
-              <p className="text-sm text-[#6B6862] mt-1">
-                Book or view
-              </p>
-            </button>
-
-            <button
-              onClick={() => router.push('/user/consult/message_doctor')}
-              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
-              disabled={!profile?.doctor}
-            >
-              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
-                <ChatBubbleLeftRightIcon className="h-6 w-6 text-[#1A1A1A]" />
-              </div>
-              <h4 className="font-semibold text-base text-[#1A1A1A]">Messages</h4>
-              <p className="text-sm text-[#6B6862] mt-1">
-                Chat with doctor
-              </p>
-            </button>
-
-            <button
-              onClick={() => router.push('/user/store')}
-              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
-            >
-              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
-                <ShoppingBagIcon className="h-6 w-6 text-[#1A1A1A]" />
-              </div>
-              <h4 className="font-semibold text-base text-[#1A1A1A]">Store</h4>
-              <p className="text-sm text-[#6B6862] mt-1">
-                Browse products
-              </p>
-            </button>
-
-            <button
-              onClick={() => router.push('/user/cart')}
-              className="bg-white border border-[#E7E2D9] hover:border-[#C8996A] rounded-xl p-6 transition-all duration-200 shadow-sm text-center flex flex-col items-center justify-center"
-            >
-              <div className="w-12 h-12 rounded-full bg-[#FAF8F5] flex items-center justify-center mb-3">
-                <ShoppingCartIcon className="h-6 w-6 text-[#1A1A1A]" />
-              </div>
-              <h4 className="font-semibold text-base text-[#1A1A1A]">Cart</h4>
-              <p className="text-sm text-[#6B6862] mt-1">
-                View your cart
-              </p>
-            </button>
-          </div>
-        </div>
-
-        {/* What's New Section */}
-        <div>
-          <h3 className="text-xl font-semibold text-[#1A1A1A] mb-4">COMING SOON</h3>
-          <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 shadow-sm">
-            <h4 className="font-bold text-lg text-[#1A1A1A] mb-2">Courses section opening soon</h4>
-            <p className="text-sm text-[#6B6862] leading-relaxed">
-              We are proud to announce our new courses section. Stay tuned for more updates.
+              Hello, {displayName}!
+            </h1>
+            <p className="text-[#B5AFA8] text-sm sm:text-base font-sans mt-1">
+              How are you feeling today?
             </p>
           </div>
+
+          {isMember && (
+            <div className="px-3.5 py-1 rounded-full bg-[#FFD3AC]/20 border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-wider font-sans uppercase">
+              MEMBER
+            </div>
+          )}
         </div>
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+        {/* YOUR NEXT STEP Card (Flutter _buildNextStepCard) */}
+        <div
+          onClick={handleNextStepClick}
+          className="
+            w-full bg-[#FFD3AC] text-[#1E1E1E] p-5 sm:p-6 rounded-[26px]
+            cursor-pointer transition-all duration-200 hover:shadow-lg active:scale-[0.99]
+            flex items-center justify-between gap-4 select-none
+          "
+        >
+          <div>
+            <span className="text-[11px] font-semibold tracking-[1.2px] text-[#7D6553] uppercase font-sans">
+              YOUR NEXT STEP
+            </span>
+            <h3
+              className="text-xl sm:text-2xl font-bold text-[#1E1E1E] mt-1 leading-tight"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Book your consultation
+            </h3>
+            <p className="text-xs sm:text-sm text-[#7D6553] font-sans mt-0.5">
+              Meet your doctor over video
+            </p>
           </div>
-        )}
+
+          {/* Black circle arrow */}
+          <div className="w-10 h-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+            <svg
+              className="w-4.5 h-4.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Made for you Section (Flutter _buildMadeForYouSection) */}
+        <div className="space-y-3.5 pt-2">
+          <h2
+            className="text-xl sm:text-2xl font-normal italic text-[#FFD3AC]"
+            style={{
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            }}
+          >
+            Made for you
+          </h2>
+
+          {/* Personalized Remedies Card */}
+          <div
+            onClick={() => router.push("/user/store")}
+            className="
+              bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
+              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+            "
+          >
+            <div className="inline-block px-3.5 py-1 rounded-full bg-[#FFD3AC] text-[#1E1E1E] text-[11px] font-bold tracking-wider font-sans uppercase mb-4">
+              RECOMMENDED
+            </div>
+
+            <h3
+              className="text-xl sm:text-2xl font-semibold text-[#F7F4EE] leading-snug mb-2"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Personalized remedies, made just for you
+            </h3>
+
+            <p className="text-[#B5AFA8] text-xs sm:text-[13.5px] font-sans leading-relaxed mb-4">
+              Herbal protocols and wellness products chosen for your constitution.
+            </p>
+
+            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans">
+              <span>Explore the Shop</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Constitution Report Card (Flutter _buildMadeForYouSection - Card 2) */}
+          <div
+            onClick={() => {
+              if (isQuestionnaireCompleted) {
+                router.push("/user/menu/questionnaire/results");
+              } else {
+                router.push("/user/menu/questionnaire");
+              }
+            }}
+            className="
+              bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
+              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+              flex items-center justify-between gap-3
+            "
+          >
+            <div className="flex-1">
+              <h3
+                className="text-lg sm:text-xl font-semibold text-[#F7F4EE]"
+                style={{
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                }}
+              >
+                {isQuestionnaireCompleted
+                  ? "Your Constitution Report"
+                  : "Complete Your Constitution Assessment"}
+              </h3>
+              <p className="text-[#B5AFA8] text-xs sm:text-[13px] font-sans leading-relaxed mt-1.5">
+                {isQuestionnaireCompleted
+                  ? "Review your personalized results and recommendations."
+                  : "Complete your questionnaire to unlock your personalized constitution report."}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isQuestionnaireCompleted && (
+                <span className="px-2.5 py-1 rounded-full border border-[#CCA776] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
+                  READY
+                </span>
+              )}
+              <svg
+                className="w-5 h-5 text-[#B5AFA8]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Coming soon Section (Flutter _buildComingSoonSection) */}
+        <div className="space-y-3.5 pt-2">
+          <h2
+            className="text-xl sm:text-2xl font-normal italic text-white"
+            style={{
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            }}
+          >
+            Coming soon
+          </h2>
+
+          {/* Yoga & Meditation Classes Card */}
+          <div
+            onClick={() => router.push("/user/courses")}
+            className="
+              bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
+              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+            "
+          >
+            <div className="flex justify-end mb-2">
+              <span className="px-2.5 py-1 rounded-full border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
+                COMING SOON
+              </span>
+            </div>
+
+            <h3
+              className="text-2xl sm:text-3xl font-semibold text-[#F7F4EE] mb-3"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Yoga &amp; Meditation Classes
+            </h3>
+
+            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans">
+              <span>Start your journey</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Membership Card */}
+          <div
+            onClick={() => router.push("/user/membership")}
+            className="
+              bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
+              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+            "
+          >
+            <div className="flex justify-end mb-2">
+              <span className="px-2.5 py-1 rounded-full border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
+                COMING SOON
+              </span>
+            </div>
+
+            <h3
+              className="text-2xl sm:text-3xl font-semibold text-[#F7F4EE] mb-3"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Membership
+            </h3>
+
+            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans">
+              <span>Quality holistic care, for everyone</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
     </ProtectedRoute>
   );
 }
+

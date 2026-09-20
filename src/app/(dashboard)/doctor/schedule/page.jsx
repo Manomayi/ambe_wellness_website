@@ -6,9 +6,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { ClockIcon, CheckIcon, BoltIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckIcon, BoltIcon, InformationCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { BoltIcon as BoltIconSolid } from '@heroicons/react/24/solid';
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import AmbeButton from '@/components/common/AmbeButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 
 const DAYS_OF_WEEK = [
   'monday',
@@ -300,328 +302,295 @@ export default function DoctorSchedulePage() {
     return displayHour + ':' + minutes + ' ' + ampm;
   };
 
+  const hasSelectedDay = DAYS_OF_WEEK.some(d => schedule[d]?.isAvailable);
+
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <BackButton href="/doctor/menu" label="Back to Menu" />
-        <div>
-          <h1 className="text-3xl font-bold text-[#1A1A1A]">Set Your Availability</h1>
-          <p className="text-[#6B6862] mt-2">
-            Configure your instant availability and weekly schedule for patient consultations
-          </p>
-        </div>
+      <WebLayoutWrapper>
+        <div className="space-y-6 pb-12">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <AmbeBackButton href="/doctor/menu" />
+            <h1 className="font-heading font-bold text-2xl sm:text-3xl text-white">
+              Set Schedule
+            </h1>
+          </div>
 
-        {/* Instant Availability Toggle Card */}
-        <div 
-          className={`rounded-xl border p-5 transition-all shadow-sm ${
-            isAvailableNow 
-              ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-200' 
-              : 'bg-white border-[#E7E2D9]'
-          }`}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-3.5">
-              <div 
-                className={`p-2.5 rounded-xl transition-colors shrink-0 ${
-                  isAvailableNow 
-                    ? 'bg-emerald-500 text-white' 
-                    : 'bg-[#F4F1EA] text-[#8C827A]'
-                }`}
-              >
-                {isAvailableNow ? (
-                  <BoltIconSolid className="h-6 w-6" />
-                ) : (
-                  <BoltIcon className="h-6 w-6" />
-                )}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-lg text-[#1A1A1A]">
-                    Available for Instant Consult
-                  </h3>
-                  {isAvailableNow ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                      <span className="w-1.5 h-1.5 mr-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                      Active Now
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                      Offline
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-[#6B6862] mt-0.5">
-                  {isAvailableNow 
-                    ? 'Users will see you as available right now for immediate bookings' 
-                    : 'Toggle to become active for immediate bookings'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              {togglingInstant ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#C8996A] border-t-transparent" />
-              ) : (
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isAvailableNow}
-                  onClick={handleToggleInstantAvailability}
-                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#C8996A] focus:ring-offset-2 ${
-                    isAvailableNow ? 'bg-emerald-600' : 'bg-gray-300'
+          {/* Instant Consult Availability Card */}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 shadow-lg">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={`p-2.5 rounded-full transition-colors shrink-0 ${
+                    isAvailableNow
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-white/10 text-white/50'
                   }`}
                 >
-                  <span className="sr-only">Toggle instant consult availability</span>
-                  <span
-                    aria-hidden="true"
-                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      isAvailableNow ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {instantMessage && (
-            <div 
-              className={`mt-3 pt-3 border-t text-sm font-medium transition-all flex items-center gap-1.5 ${
-                isAvailableNow 
-                  ? 'border-emerald-200 text-emerald-700' 
-                  : 'border-gray-200 text-gray-600'
-              }`}
-            >
-              <CheckIcon className="h-4 w-4 shrink-0" />
-              {instantMessage}
-            </div>
-          )}
-        </div>
-
-        {/* Timezone Selection */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <label className="block text-sm font-medium text-[#353535] mb-2">
-            Your Timezone
-          </label>
-          <select
-            value={timezone}
-            onChange={handleTimezoneChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#C8996A] focus:border-transparent"
-          >
-            <option value="America/New_York">Eastern Time (ET)</option>
-            <option value="America/Chicago">Central Time (CT)</option>
-            <option value="America/Denver">Mountain Time (MT)</option>
-            <option value="America/Los_Angeles">Pacific Time (PT)</option>
-            <option value="America/Phoenix">Arizona Time</option>
-            <option value="Pacific/Honolulu">Hawaii Time</option>
-            <option value="Europe/London">London Time</option>
-            <option value="Europe/Paris">Central European Time</option>
-            <option value="Asia/Dubai">Dubai Time</option>
-            <option value="Asia/Kolkata">India Time</option>
-            <option value="Asia/Singapore">Singapore Time</option>
-            <option value="Australia/Sydney">Sydney Time</option>
-          </select>
-          <p className="text-sm text-[#8C827A] mt-2">
-            All appointment times will be shown in this timezone
-          </p>
-        </div>
-
-        {/* Weekly Schedule */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-[#1A1A1A]">Weekly Schedule</h2>
-              <p className="text-sm text-[#6B6862] mt-0.5">
-                Select your active consultation days and times
-              </p>
-            </div>
-          </div>
-
-          {/* Use Same Hours Toggle */}
-          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 mb-6 flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-[#1A1A1A]">
-                Use same hours for all days
-              </h3>
-              <p className="text-xs sm:text-sm text-[#6B6862] mt-0.5">
-                Set standard start and end times once for all active workdays
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={useSameHours}
-              onClick={handleToggleSameHours}
-              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#C8996A] ${
-                useSameHours ? 'bg-[#C8996A]' : 'bg-gray-300'
-              }`}
-            >
-              <span className="sr-only">Use same hours for all days</span>
-              <span
-                aria-hidden="true"
-                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  useSameHours ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Shared Time Slot Editor (when Same Hours is active) */}
-          {useSameHours && (
-            <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 mb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="font-medium text-[#1A1A1A] flex items-center gap-2">
-                  <ClockIcon className="h-5 w-5 text-[#C8996A] shrink-0" />
-                  <span className="text-sm sm:text-base">Working Hours for All Selected Days:</span>
+                  {isAvailableNow ? (
+                    <BoltIconSolid className="h-6 w-6" />
+                  ) : (
+                    <BoltIcon className="h-6 w-6" />
+                  )}
                 </div>
-                <div className="flex items-center space-x-3 sm:space-x-4">
-                  <div className="flex items-center">
-                    <label className="text-sm text-[#8C827A] mr-2">From:</label>
-                    <select
-                      value={commonStartTime}
-                      onChange={(e) => handleCommonTimeChange('startTime', e.target.value)}
-                      className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
-                    >
-                      {TIME_SLOTS.map(time => (
-                        <option key={time} value={time}>
-                          {formatTime(time)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <label className="text-sm text-[#8C827A] mr-2">To:</label>
-                    <select
-                      value={commonEndTime}
-                      onChange={(e) => handleCommonTimeChange('endTime', e.target.value)}
-                      className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
-                    >
-                      {TIME_SLOTS.map(time => (
-                        <option key={time} value={time}>
-                          {formatTime(time)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Days List */}
-          <div className="space-y-3">
-            {DAYS_OF_WEEK.map(day => (
-              <div 
-                key={day} 
-                className={`border rounded-xl p-4 transition-all ${
-                  schedule[day]?.isAvailable 
-                    ? 'border-[#C8996A]/60 bg-white shadow-xs' 
-                    : 'border-[#E7E2D9] bg-[#FAF8F5]/50'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={day}
-                      checked={schedule[day]?.isAvailable || false}
-                      onChange={() => handleDayToggle(day)}
-                      className="h-5 w-5 text-[#C8996A] rounded focus:ring-[#C8996A] cursor-pointer"
-                    />
-                    <label htmlFor={day} className="ml-3 font-semibold text-[#353535] capitalize cursor-pointer">
-                      {day}
-                    </label>
-                    {schedule[day]?.isAvailable && useSameHours && (
-                      <span className="ml-3 text-xs font-medium text-[#8C827A] bg-[#F4F1EA] px-2.5 py-1 rounded-md">
-                        {formatTime(commonStartTime)} – {formatTime(commonEndTime)}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-white">
+                      Available for Instant Consult
+                    </h3>
+                    {isAvailableNow ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <span className="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                        Active Now
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white/60">
+                        Offline
                       </span>
                     )}
                   </div>
-                  
-                  {schedule[day]?.isAvailable && !useSameHours && (
-                    <div className="flex items-center space-x-3 sm:space-x-4 pl-8 sm:pl-0">
-                      <div className="flex items-center">
-                        <label className="text-sm text-[#8C827A] mr-2">From:</label>
-                        <select
-                          value={schedule[day]?.startTime || '09:00'}
-                          onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
-                          className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
-                        >
-                          {TIME_SLOTS.map(time => (
-                            <option key={time} value={time}>
-                              {formatTime(time)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div className="flex items-center">
-                        <label className="text-sm text-[#8C827A] mr-2">To:</label>
-                        <select
-                          value={schedule[day]?.endTime || '17:00'}
-                          onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
-                          className="p-2 bg-white border border-[#E7E2D9] rounded-lg focus:ring-2 focus:ring-[#C8996A] text-sm"
-                        >
-                          {TIME_SLOTS.map(time => (
-                            <option key={time} value={time}>
-                              {formatTime(time)}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-xs text-white/60 mt-0.5">
+                    {isAvailableNow
+                      ? 'Users will see you as available right now for immediate bookings'
+                      : 'Toggle to become active for immediate bookings'}
+                  </p>
                 </div>
               </div>
-            ))}
+
+              <div className="flex items-center">
+                {togglingInstant ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#FFD3AC] border-t-transparent" />
+                ) : (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isAvailableNow}
+                    onClick={handleToggleInstantAvailability}
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      isAvailableNow ? 'bg-emerald-500' : 'bg-white/20'
+                    }`}
+                  >
+                    <span className="sr-only">Toggle instant consult availability</span>
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        isAvailableNow ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {instantMessage && (
+              <div
+                className={`mt-3 pt-3 border-t text-xs font-medium transition-all flex items-center gap-1.5 ${
+                  isAvailableNow
+                    ? 'border-emerald-500/20 text-emerald-400'
+                    : 'border-white/10 text-white/60'
+                }`}
+              >
+                <CheckIcon className="h-4 w-4 shrink-0" />
+                {instantMessage}
+              </div>
+            )}
+          </div>
+
+          {/* Instructions banner */}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 flex items-center gap-3">
+            <InformationCircleIcon className="w-5 h-5 text-[#FFD3AC] shrink-0" />
+            <p className="text-xs sm:text-sm text-white/70">
+              Select the days you&apos;re available and set your working hours
+            </p>
+          </div>
+
+          {/* Timezone Section */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-white/60 tracking-wider uppercase block">
+              TIMEZONE
+            </label>
+            <div className="bg-white rounded-xl p-3 border border-gray-300 flex items-center gap-3 shadow-xs">
+              <ClockIcon className="w-5 h-5 text-[#FFD3AC] shrink-0" />
+              <select
+                value={timezone}
+                onChange={handleTimezoneChange}
+                className="w-full bg-transparent text-[#1E1E1E] text-sm font-medium focus:outline-none cursor-pointer"
+              >
+                <option value="America/New_York">Eastern Time (New York)</option>
+                <option value="America/Chicago">Central Time (Chicago)</option>
+                <option value="America/Denver">Mountain Time (Denver)</option>
+                <option value="America/Los_Angeles">Pacific Time (Los Angeles)</option>
+                <option value="America/Phoenix">Arizona Time (Phoenix)</option>
+                <option value="America/Anchorage">Alaska Time (Anchorage)</option>
+                <option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option>
+                <option value="America/Toronto">Toronto Time</option>
+                <option value="America/Vancouver">Vancouver Time</option>
+                <option value="Europe/London">London Time (GMT)</option>
+                <option value="Europe/Paris">Paris Time (CET)</option>
+                <option value="Asia/Dubai">Dubai Time (GST)</option>
+                <option value="Asia/Kolkata">India Time (Kolkata)</option>
+                <option value="Asia/Singapore">Singapore Time</option>
+                <option value="Asia/Tokyo">Tokyo Time (JST)</option>
+                <option value="Australia/Sydney">Sydney Time (AEST)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Days Selection */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-white/60 tracking-wider uppercase block">
+              SELECT DAYS
+            </label>
+            <div className="flex flex-wrap gap-2.5">
+              {DAYS_OF_WEEK.map((day) => {
+                const isSelected = schedule[day]?.isAvailable || false;
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => handleDayToggle(day)}
+                    className={`capitalize px-5 py-2.5 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#FFD3AC] text-[#1E1E1E] border-2 border-[#FFD3AC] shadow-md shadow-[#FFD3AC]/20'
+                        : 'bg-white text-[#1E1E1E] border border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Hours Section */}
+          <div className="space-y-4">
+            <label className="text-xs font-semibold text-white/60 tracking-wider uppercase block">
+              SET HOURS
+            </label>
+
+            {/* Same hours toggle */}
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-sm sm:text-base text-white">
+                  Use same hours for all days
+                </h3>
+                <p className="text-xs text-white/60 mt-0.5">
+                  Set standard start and end times once for all active workdays
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={useSameHours}
+                onClick={handleToggleSameHours}
+                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  useSameHours ? 'bg-[#FFD3AC]' : 'bg-white/20'
+                }`}
+              >
+                <span className="sr-only">Use same hours for all days</span>
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    useSameHours ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Time Slot Editor */}
+            {useSameHours ? (
+              <div className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-sm sm:text-base text-white">All Days</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-white/60 mb-1 block">Start Time</label>
+                    <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                      <select
+                        value={commonStartTime}
+                        onChange={(e) => handleCommonTimeChange('startTime', e.target.value)}
+                        className="w-full bg-transparent text-[#1E1E1E] text-sm font-semibold focus:outline-none cursor-pointer"
+                      >
+                        {TIME_SLOTS.map((t) => (
+                          <option key={t} value={t}>
+                            {formatTime(t)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-white/60 mb-1 block">End Time</label>
+                    <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                      <select
+                        value={commonEndTime}
+                        onChange={(e) => handleCommonTimeChange('endTime', e.target.value)}
+                        className="w-full bg-transparent text-[#1E1E1E] text-sm font-semibold focus:outline-none cursor-pointer"
+                      >
+                        {TIME_SLOTS.map((t) => (
+                          <option key={t} value={t}>
+                            {formatTime(t)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {DAYS_OF_WEEK.filter((day) => schedule[day]?.isAvailable).map((day) => (
+                  <div key={day} className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 space-y-3">
+                    <h4 className="font-bold text-sm sm:text-base text-white capitalize">{day}</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-white/60 mb-1 block">Start Time</label>
+                        <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                          <select
+                            value={schedule[day]?.startTime || '09:00'}
+                            onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
+                            className="w-full bg-transparent text-[#1E1E1E] text-sm font-semibold focus:outline-none cursor-pointer"
+                          >
+                            {TIME_SLOTS.map((t) => (
+                              <option key={t} value={t}>
+                                {formatTime(t)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-white/60 mb-1 block">End Time</label>
+                        <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                          <select
+                            value={schedule[day]?.endTime || '17:00'}
+                            onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
+                            className="w-full bg-transparent text-[#1E1E1E] text-sm font-semibold focus:outline-none cursor-pointer"
+                          >
+                            {TIME_SLOTS.map((t) => (
+                              <option key={t} value={t}>
+                                {formatTime(t)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Save Action */}
+          <div className="pt-4">
+            <AmbeButton
+              label={saved ? "SAVED!" : loading ? "SAVING..." : "SAVE SCHEDULE"}
+              onClick={handleSave}
+              disabled={loading || !hasSelectedDay}
+            />
           </div>
         </div>
-
-        {/* Save Button */}
-        <div className="mt-6 flex items-center justify-between">
-          <button
-            onClick={() => router.push('/doctor/dashboard')}
-            className="text-[#6B6862] hover:text-[#1A1A1A]"
-          >
-            Cancel
-          </button>
-          
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg hover:bg-[#1A1A1A] transition disabled:opacity-50 flex items-center"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                Saving...
-              </>
-            ) : saved ? (
-              <>
-                <CheckIcon className="h-5 w-5 mr-2" />
-                Saved!
-              </>
-            ) : (
-              <>
-                <ClockIcon className="h-5 w-5 mr-2" />
-                Save Schedule
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Info Box */}
-        <div className="mt-8 bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4">
-          <h3 className="font-semibold text-[#1A1A1A] mb-2">Important Notes:</h3>
-          <ul className="text-sm text-[#6B6862] space-y-1 list-disc list-inside">
-            <li>Users can book 30-minute consultation slots within your available hours</li>
-            <li>Instant availability allows patients searching for immediate care to connect with you right now</li>
-            <li>Use the "same hours" toggle to quickly set identical hours across all selected days</li>
-            <li>You can update your instant availability and schedule at any time</li>
-            <li>Existing appointments won't be affected by schedule changes</li>
-          </ul>
-        </div>
-      </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

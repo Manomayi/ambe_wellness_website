@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { 
@@ -12,7 +13,8 @@ import {
   CalendarDaysIcon, 
   ClockIcon, 
   UserPlusIcon,
-  CheckIcon
+  CheckIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -26,7 +28,6 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (!user) return;
 
-    // Listen to notifications matching Flutter app schema (created_at desc)
     let notificationsQuery;
     try {
       notificationsQuery = query(
@@ -45,7 +46,6 @@ export default function NotificationsPage() {
           ...d.data(),
         }));
 
-        // Sort defensively by created_at or createdAt if not already sorted
         notifs.sort((a, b) => {
           const timeA = a.created_at?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
           const timeB = b.created_at?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
@@ -56,8 +56,8 @@ export default function NotificationsPage() {
         setLoading(false);
       },
       (error) => {
+        if (error?.code === 'permission-denied') return;
         console.error('Error fetching notifications:', error);
-        // Fallback listener without orderBy in case index or field missing
         const fallbackUnsub = onSnapshot(
           collection(db, 'users', user.uid, 'notifications'),
           (fallbackSnapshot) => {
@@ -71,6 +71,11 @@ export default function NotificationsPage() {
               return timeB - timeA;
             });
             setNotifications(notifs);
+            setLoading(false);
+          },
+          (fallbackErr) => {
+            if (fallbackErr?.code === 'permission-denied') return;
+            console.error('Fallback notifications error:', fallbackErr);
             setLoading(false);
           }
         );
@@ -102,7 +107,6 @@ export default function NotificationsPage() {
   };
 
   const handleNotificationClick = async (notification) => {
-    // Mark as read in Firestore
     if (user && !notification.is_read) {
       try {
         await updateDoc(doc(db, 'users', user.uid, 'notifications', notification.id), {
@@ -113,7 +117,6 @@ export default function NotificationsPage() {
       }
     }
 
-    // Handle navigation matching Flutter app behavior
     const type = notification.type;
     if (type === 'new_message' || type === 'consultation_scheduled' || type === 'consultation_reminder') {
       router.push('/user/consult');
@@ -141,15 +144,15 @@ export default function NotificationsPage() {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'new_message':
-        return <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#C8996A]" />;
+        return <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'consultation_scheduled':
         return <CalendarDaysIcon className="w-5 h-5 text-[#2E7D32]" />;
       case 'consultation_reminder':
-        return <ClockIcon className="w-5 h-5 text-[#C8996A]" />;
+        return <ClockIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'doctor_referral':
-        return <UserPlusIcon className="w-5 h-5 text-[#C8996A]" />;
+        return <UserPlusIcon className="w-5 h-5 text-[#FFD3AC]" />;
       default:
-        return <BellIcon className="w-5 h-5 text-[#8C827A]" />;
+        return <BellIcon className="w-5 h-5 text-white/50" />;
     }
   };
 
@@ -157,96 +160,116 @@ export default function NotificationsPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <BackButton />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-[#1A1A1A]">Notifications</h1>
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#1A1A1A] text-white shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-[#FFD3AC]" />
-                {unreadCount} unread
-              </span>
-            )}
-          </div>
+      <WebLayoutWrapper>
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+          <BackButton />
 
-          {unreadCount > 0 && (
-            <button
-              type="button"
-              onClick={handleMarkAllAsRead}
-              disabled={markingAll}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1A1A1A] bg-white border border-[#E7E2D9] hover:border-[#C8996A] hover:bg-[#FAF8F5] transition shadow-xs cursor-pointer disabled:opacity-50"
-            >
-              <CheckIcon className="w-3.5 h-3.5 text-[#C8996A]" />
-              {markingAll ? 'Marking...' : 'Mark all as read'}
-            </button>
-          )}
-        </div>
+          {/* Header row matching Flutter AppBar */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-white">Notifications</h1>
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/10">
+                  <span className="w-2 h-2 rounded-full bg-[#FFD3AC]" />
+                  {unreadCount} unread
+                </span>
+              )}
+            </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-[#E7E2D9] p-8 shadow-sm">
-            <BellIcon className="h-16 w-16 text-[#8C827A]/60 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-[#1A1A1A] mb-1">No notifications yet</h3>
-            <p className="text-sm text-[#6B6862]">
-              You'll see notifications about your consultations, messages, and wellness updates here.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {notifications.map((notification) => {
-              const isRead = notification.is_read === true;
-              const title = notification.title || 'Notification';
-              const body = notification.body || notification.message || '';
-              const time = notification.created_at || notification.createdAt;
-
-              return (
-                <div
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`flex items-start gap-4 p-4 rounded-xl border transition cursor-pointer ${
-                    isRead
-                      ? 'bg-white border-[#E7E2D9] hover:bg-[#FAF8F5]'
-                      : 'bg-[#FAF8F5] border-[#C8996A]/40 shadow-sm hover:border-[#C8996A]'
-                  }`}
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllAsRead}
+                  disabled={markingAll}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-white/10 border border-white/10 hover:border-[#FFD3AC]/40 hover:bg-white/15 transition cursor-pointer disabled:opacity-50"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {getNotificationIcon(notification.type)}
-                  </div>
+                  <CheckIcon className="w-3.5 h-3.5 text-[#FFD3AC]" />
+                  {markingAll ? 'Marking...' : 'Mark all as read'}
+                </button>
+              )}
+              <button
+                onClick={() => router.push('/user/notifications-settings')}
+                className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition cursor-pointer"
+                aria-label="Notification settings"
+              >
+                <Cog6ToothIcon className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3
-                        className={`text-sm ${
-                          isRead ? 'font-medium text-[#1A1A1A]' : 'font-bold text-[#1A1A1A]'
-                        }`}
-                      >
-                        {title}
-                      </h3>
-                      {!isRead && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#C8996A] flex-shrink-0" />
-                      )}
+          {/* Content */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 p-8 backdrop-blur-md">
+              <BellIcon className="h-16 w-16 text-white/30 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-1">No notifications yet</h3>
+              <p className="text-sm text-white/50">
+                You&apos;ll see notifications about your consultations, messages, and wellness updates here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notification) => {
+                const isRead = notification.is_read === true;
+                const title = notification.title || 'Notification';
+                const body = notification.body || notification.message || '';
+                const time = notification.created_at || notification.createdAt;
+
+                return (
+                  <div
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`flex items-start gap-3 sm:gap-4 p-4 rounded-2xl border transition cursor-pointer backdrop-blur-md ${
+                      isRead
+                        ? 'bg-[#2D2D30] border-white/10 hover:bg-[#38383c]'
+                        : 'bg-[#2D2D30] border-[#FFD3AC]/30 hover:border-[#FFD3AC]/50 shadow-sm'
+                    }`}
+                  >
+                    {/* Icon container */}
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      notification.type === 'consultation_scheduled'
+                        ? 'bg-[#2E7D32]/15'
+                        : 'bg-[#FFD3AC]/15'
+                    }`}>
+                      {getNotificationIcon(notification.type)}
                     </div>
 
-                    {body && (
-                      <p className="text-xs text-[#6B6862] mt-1 line-clamp-2 leading-relaxed">
-                        {body}
-                      </p>
-                    )}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3
+                          className={`text-sm sm:text-base ${
+                            isRead ? 'font-medium text-white' : 'font-bold text-white'
+                          }`}
+                        >
+                          {title}
+                        </h3>
+                        {!isRead && (
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#FFD3AC] flex-shrink-0 shadow-[0_0_4px_rgba(255,211,172,0.5)]" />
+                        )}
+                      </div>
 
-                    <p className="text-[11px] text-[#8C827A] mt-2 font-medium">
-                      {formatNotificationTime(time)}
-                    </p>
+                      {body && (
+                        <p className="text-xs sm:text-sm text-white/60 mt-1 line-clamp-2 leading-relaxed">
+                          {body}
+                        </p>
+                      )}
+
+                      <p className="text-[11px] text-white/40 mt-2 font-medium">
+                        {formatNotificationTime(time)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

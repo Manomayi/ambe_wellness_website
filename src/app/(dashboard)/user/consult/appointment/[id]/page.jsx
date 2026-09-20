@@ -8,6 +8,8 @@ import VideoCall from '@/components/video/VideoCall';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 
 export default function UserAppointmentPage() {
   const router = useRouter();
@@ -97,7 +99,7 @@ export default function UserAppointmentPage() {
 
   const formatAppointmentTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = timestamp.toDate();
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -112,8 +114,8 @@ export default function UserAppointmentPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -122,18 +124,20 @@ export default function UserAppointmentPage() {
   if (!appointment) {
     return (
       <ProtectedRoute userType="user">
-        <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Appointment Not Found</h2>
-          <p className="text-sm text-[#6B6862] mb-6">
-            The appointment you're looking for doesn't exist or has been cancelled.
-          </p>
-          <button
-            onClick={() => router.push('/user/consult')}
-            className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg text-sm font-medium transition shadow-sm"
-          >
-            Back to Consultations
-          </button>
-        </div>
+        <WebLayoutWrapper>
+          <div className="max-w-4xl mx-auto p-6 text-center space-y-4">
+            <h2 className="text-2xl font-bold text-white mb-2">Appointment Not Found</h2>
+            <p className="text-sm text-white/60 mb-6">
+              The appointment you're looking for doesn't exist or has been cancelled.
+            </p>
+            <button
+              onClick={() => router.push('/user/consult')}
+              className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-6 py-3 rounded-full text-sm font-bold transition shadow-md cursor-pointer"
+            >
+              Back to Consultations
+            </button>
+          </div>
+        </WebLayoutWrapper>
       </ProtectedRoute>
     );
   }
@@ -170,114 +174,118 @@ export default function UserAppointmentPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <button
-          onClick={() => router.push('/user/consult')}
-          className="text-[#6B6862] hover:text-[#1A1A1A] text-sm flex items-center font-medium"
-        >
-          ← Back to Consultations
-        </button>
+      <WebLayoutWrapper>
+        <div className="space-y-6 pb-24">
+          <div className="flex items-center gap-4 pt-2">
+            <AmbeBackButton onClick={() => router.push('/user/consult')} />
+            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+              Video Consultation
+            </h1>
+          </div>
 
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl shadow-sm p-8">
-          <h1 className="text-3xl font-bold text-[#1A1A1A] mb-6">
-            Video Consultation
-          </h1>
-
-          {/* Doctor Info */}
-          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-6 mb-6">
-            <div className="flex items-center">
-              <div className="w-14 h-14 bg-white border border-[#E7E2D9] rounded-full flex items-center justify-center">
-                <UserIcon className="w-7 h-7 text-[#C8996A]" />
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-xl">
+            {/* Doctor Info */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 mb-6 flex items-center gap-4">
+              <div className="w-14 h-14 bg-black/30 border border-[#FFD3AC]/40 rounded-full flex items-center justify-center shrink-0">
+                <UserIcon className="w-7 h-7 text-[#FFD3AC]" />
               </div>
-              <div className="ml-4">
-                <h3 className="font-semibold text-lg text-[#1A1A1A]">
+              <div className="min-w-0">
+                <h3 className="font-bold text-lg text-white truncate">
                   Dr. {appointment.doctor_name}
                 </h3>
-                <p className="text-xs text-[#8C827A] uppercase tracking-wider">
+                <p className="text-xs text-white/60 uppercase tracking-wider">
                   {appointment.doctor_title || appointment.doctor?.title || appointment.doctor?.professional_title || "Healthcare Provider"}
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* Appointment Details */}
-          <div className="space-y-3 mb-8">
-            <div className="flex items-center text-sm text-[#1A1A1A]">
-              <CalendarIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
-              <span>{formatAppointmentTime(appointment.time)}</span>
+            {/* Appointment Details */}
+            <div className="space-y-3 mb-8">
+              <div className="flex items-center text-white/80 text-sm">
+                <CalendarIcon className="w-5 h-5 mr-3 text-[#FFD3AC] shrink-0" />
+                <span>{formatAppointmentTime(appointment.time)}</span>
+              </div>
+              {appointment.duration && (
+                <div className="flex items-center text-white/80 text-sm">
+                  <ClockIcon className="w-5 h-5 mr-3 text-[#FFD3AC] shrink-0" />
+                  <span>Duration: {appointment.duration}</span>
+                </div>
+              )}
             </div>
-            {appointment.duration && (
-              <div className="flex items-center text-sm text-[#1A1A1A]">
-                <ClockIcon className="w-5 h-5 mr-3 text-[#C8996A]" />
-                <span>Duration: {appointment.duration}</span>
+
+            {/* Status Messages */}
+            {appointment.completed && (
+              <div className="bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 rounded-2xl p-5 mb-6">
+                <p className="text-[#FFD3AC] text-sm font-medium">
+                  This appointment has been completed. To view the consultation report, 
+                  please visit your consultation history.
+                </p>
               </div>
             )}
-          </div>
 
-          {/* Status Messages */}
-          {appointment.completed && (
-            <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 mb-6">
-              <p className="text-sm text-[#6B6862]">
-                This appointment has been completed. To view the consultation report, 
-                please visit your consultation history.
-              </p>
+            {!appointment.completed && isAppointmentPast() && (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-amber-500/20 text-amber-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                    Past Due
+                  </span>
+                  <p className="text-white font-semibold text-sm">
+                    This consultation time has passed
+                  </p>
+                </div>
+                <p className="text-xs text-white/60 mt-1">
+                  The consultation report will appear in your history once submitted by your doctor.
+                </p>
+              </div>
+            )}
+
+            {!appointment.completed && !canJoinCall && !isAppointmentPast() && (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <p className="text-sm text-white/80 leading-relaxed">
+                  Your appointment is scheduled for <span className="text-[#FFD3AC] font-medium">{formatAppointmentTime(appointment.time)}</span>.
+                  You can join the call 15 minutes before the scheduled time.
+                </p>
+              </div>
+            )}
+
+            {canJoinCall && (
+              <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-5 mb-6">
+                <p className="text-emerald-400 font-semibold text-sm mb-1">
+                  Your appointment is happening now!
+                </p>
+                <p className="text-emerald-300/80 text-xs">
+                  Click the button below to join the video consultation with your doctor.
+                </p>
+              </div>
+            )}
+
+            {/* Join Call Button */}
+            {canJoinCall && (
+              <button
+                onClick={() => setInCall(true)}
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold transition flex items-center justify-center text-base shadow-lg cursor-pointer"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Join Video Call
+              </button>
+            )}
+
+            {/* Instructions */}
+            <div className="mt-8 bg-black/20 border border-white/10 rounded-2xl p-5 space-y-2">
+              <h4 className="font-semibold text-white text-sm mb-2">Before joining:</h4>
+              <ul className="text-xs text-white/70 space-y-1.5 leading-relaxed">
+                <li>• Ensure you have a stable internet connection</li>
+                <li>• Test your camera and microphone</li>
+                <li>• Find a quiet, well-lit space</li>
+                <li>• Have any relevant medical information ready</li>
+                <li>• <strong className="text-white">Attendance & Refund Policy:</strong> Please join your call on time. If you do not attend the scheduled consultation, only 50% ($25) of the deposit is refunded. For refund inquiries within 30 days, contact <a href="mailto:info@ambewellness.com" className="text-[#FFD3AC] underline font-semibold">info@ambewellness.com</a>.</li>
+              </ul>
             </div>
-          )}
-
-          {!appointment.completed && isAppointmentPast() && (
-            <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 mb-6">
-              <p className="text-sm text-[#6B6862]">
-                This consultation time has passed. The consultation report will appear in your history once submitted by your doctor.
-              </p>
-            </div>
-          )}
-
-          {!appointment.completed && !canJoinCall && !isAppointmentPast() && (
-            <div className="bg-[#FAF8F5] border border-[#C8996A]/30 rounded-xl p-4 mb-6">
-              <p className="text-sm text-[#353535]">
-                Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.
-                You can join the call 15 minutes before the scheduled time.
-              </p>
-            </div>
-          )}
-
-          {canJoinCall && (
-            <div className="bg-[#FAF8F5] border border-[#C8996A] rounded-xl p-4 mb-6">
-              <p className="text-[#1A1A1A] font-semibold text-sm mb-1">
-                Your appointment is happening now!
-              </p>
-              <p className="text-xs text-[#6B6862]">
-                Click the button below to join the video consultation with your doctor.
-              </p>
-            </div>
-          )}
-
-          {/* Join Call Button */}
-          {canJoinCall && (
-            <button
-              onClick={() => setInCall(true)}
-              className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl transition flex items-center justify-center text-base font-semibold uppercase tracking-wider shadow-sm"
-            >
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Join Video Call
-            </button>
-          )}
-
-          {/* Instructions */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-            <h4 className="font-semibold text-blue-900">Before joining:</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Ensure you have a stable internet connection</li>
-              <li>• Test your camera and microphone</li>
-              <li>• Find a quiet, well-lit space</li>
-              <li>• Have any relevant medical information ready</li>
-              <li>• <strong>Attendance & Refund Policy:</strong> Please join your call on time. If you do not attend the scheduled consultation, only 50% ($25) of the deposit is refunded. For refund inquiries within 30 days, contact <a href="mailto:info@ambewellness.com" className="underline font-semibold">info@ambewellness.com</a>.</li>
-            </ul>
           </div>
         </div>
-      </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

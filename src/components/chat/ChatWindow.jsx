@@ -51,19 +51,26 @@ export default function ChatWindow({
       orderBy('timestamp', 'asc')
     );
     
-    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setMessages(msgs);
-      scrollToBottom();
-      
-      // Mark messages as read
-      if (msgs.length > 0) {
-        markMessagesAsRead(msgs);
+    const unsubscribe = onSnapshot(
+      messagesQuery,
+      (snapshot) => {
+        const msgs = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setMessages(msgs);
+        scrollToBottom();
+        
+        // Mark messages as read
+        if (msgs.length > 0) {
+          markMessagesAsRead(msgs);
+        }
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to chat messages:', err);
       }
-    });
+    );
     
     return () => unsubscribe();
   }, [chatId, user]);
@@ -317,13 +324,13 @@ export default function ChatWindow({
   }, {});
 
   return (
-    <div className="flex flex-col h-full bg-[#FAF8F5]">
+    <div className="flex flex-col h-full bg-transparent">
       {/* Optional Inner Header */}
       {!hideHeader && (
-        <div className="p-4 border-b border-[#E7E2D9] bg-white">
-          <h3 className="font-semibold text-sm text-[#1A1A1A]">{recipientName}</h3>
+        <div className="p-4 border-b border-white/10 bg-[#1E1E1E]/80 backdrop-blur-md">
+          <h3 className="font-semibold text-sm text-white">{recipientName}</h3>
           {!canSendMessage && !isDoctor && (
-            <p className="text-xs text-[#8C827A] mt-0.5">
+            <p className="text-xs text-white/60 mt-0.5">
               Messaging is enabled after completing your first consultation
             </p>
           )}
@@ -331,15 +338,15 @@ export default function ChatWindow({
       )}
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#FAF8F5]">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
         {Object.keys(groupedMessages).length === 0 && !uploadingImage ? (
           <div className="flex items-center justify-center h-full text-center p-6">
-            <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 max-w-sm">
-              <p className="text-sm font-semibold text-[#1A1A1A] mb-1">Direct Message Channel</p>
-              <p className="text-xs text-[#6B6862]">
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 max-w-sm backdrop-blur-md shadow-xl">
+              <p className="text-sm font-semibold text-white mb-1">Direct Message Channel</p>
+              <p className="text-xs text-white/70">
                 {canSendMessage
-                  ? 'Send a message or photo to begin your conversation with your doctor.'
-                  : 'Complete your first video consultation to unlock direct messaging with your doctor.'}
+                  ? 'Send a message or photo to begin your conversation.'
+                  : 'Complete your first video consultation to unlock direct messaging.'}
               </p>
             </div>
           </div>
@@ -348,7 +355,7 @@ export default function ChatWindow({
             {Object.entries(groupedMessages).map(([date, dateMessages]) => (
               <div key={date}>
                 <div className="text-center my-3">
-                  <span className="text-[11px] font-medium text-[#6B6862] bg-white border border-[#E7E2D9] px-3 py-1 rounded-full shadow-2xs">
+                  <span className="text-[11px] font-medium text-white/75 bg-black/40 border border-white/10 px-3.5 py-1 rounded-full backdrop-blur-xs shadow-xs">
                     {date}
                   </span>
                 </div>
@@ -367,7 +374,7 @@ export default function ChatWindow({
             {/* Optimistic Uploading Image Bubble */}
             {uploadingImage && (
               <div className="flex justify-end mb-2.5">
-                <div className="max-w-[85%] sm:max-w-[70%] shadow-2xs p-1 bg-[#FFD3AC] text-[#1A1A1A] rounded-2xl rounded-br-xs">
+                <div className="max-w-[85%] sm:max-w-[70%] shadow-lg p-1 bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl rounded-br-xs">
                   <div className="relative overflow-hidden rounded-xl">
                     <img
                       src={uploadingImage.url}
@@ -403,26 +410,26 @@ export default function ChatWindow({
 
       {/* Selected Image Preview */}
       {selectedImage && (
-        <div className="px-4 py-2.5 border-t border-[#E7E2D9] bg-[#F4F1EA] flex items-center justify-between gap-3">
+        <div className="px-4 py-2.5 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <img
               src={imagePreviewUrl}
               alt="Preview"
-              className="w-12 h-12 object-cover rounded-lg border border-[#E7E2D9]"
+              className="w-12 h-12 object-cover rounded-xl border border-white/20"
             />
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-[#1A1A1A] truncate max-w-[200px] sm:max-w-xs">
+              <p className="text-xs font-semibold text-white truncate max-w-[200px] sm:max-w-xs">
                 {selectedImage.name}
               </p>
-              <p className="text-[10px] text-[#6B6862]">
-                {(selectedImage.size / 1024).toFixed(0)} KB • Photo attached
+              <p className="text-[10px] text-[#FFD3AC]">
+                {(selectedImage.size / 1024).toFixed(0)} KB • Photo attached • Ready to send
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={removeSelectedImage}
-            className="p-1.5 rounded-full hover:bg-black/10 text-[#6B6862] hover:text-[#1A1A1A] transition cursor-pointer"
+            className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
             aria-label="Remove image"
           >
             <XMarkIcon className="w-5 h-5" />
@@ -432,15 +439,15 @@ export default function ChatWindow({
 
       {/* Processing HEIC notification */}
       {convertingHeic && (
-        <div className="px-4 py-2 bg-[#FFF8E7] border-t border-[#FFE2A9] text-xs text-[#8A5800] flex items-center gap-2">
-          <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#8A5800]" />
+        <div className="px-4 py-2 bg-black/60 backdrop-blur-md border-t border-[#FFD3AC]/30 text-xs text-[#FFD3AC] flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#FFD3AC]" />
           Processing Apple photo...
         </div>
       )}
       
       {/* Input */}
       {canSendMessage ? (
-        <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-[#E7E2D9] bg-white">
+        <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
           <input
             ref={fileInputRef}
             type="file"
@@ -448,16 +455,16 @@ export default function ChatWindow({
             onChange={handleImageSelect}
             className="hidden"
           />
-          <div className="flex items-center gap-2 max-w-5xl mx-auto">
+          <div className="flex items-center gap-2 max-w-4xl mx-auto">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={sending || convertingHeic}
-              className="p-3 bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E2D9] text-[#6B6862] hover:text-[#1A1A1A] rounded-2xl disabled:opacity-40 transition flex items-center justify-center flex-shrink-0 cursor-pointer"
+              className="w-11 h-11 bg-white/10 hover:bg-white/15 border border-white/15 text-[#FFD3AC] rounded-full disabled:opacity-40 transition flex items-center justify-center flex-shrink-0 cursor-pointer"
               title="Attach image"
               aria-label="Attach image"
             >
-              <PhotoIcon className="w-5 h-5 text-[#8C827A]" />
+              <PhotoIcon className="w-5 h-5 text-[#FFD3AC]" />
             </button>
 
             <textarea
@@ -470,27 +477,27 @@ export default function ChatWindow({
                   sendMessage(e);
                 }
               }}
-              placeholder={selectedImage ? "Add a caption..." : "Type your message..."}
-              className="flex-1 p-3 text-sm bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#C8996A] text-[#1A1A1A] placeholder-[#8C827A]"
+              placeholder={selectedImage ? "Add a caption..." : "Type a message..."}
+              className="flex-1 px-4 py-2.5 text-sm bg-white/10 border border-white/15 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-white placeholder-white/50 leading-relaxed"
               rows={1}
             />
             <button
               type="submit"
               disabled={(!newMessage.trim() && !selectedImage) || sending || convertingHeic}
-              className="p-3.5 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed transition shadow-xs flex items-center justify-center flex-shrink-0 cursor-pointer"
+              className="w-11 h-11 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center flex-shrink-0 cursor-pointer"
               aria-label="Send message"
             >
               {sending ? (
-                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
               ) : (
-                <PaperAirplaneIcon className="w-5 h-5" />
+                <PaperAirplaneIcon className="w-5 h-5 ml-0.5" />
               )}
             </button>
           </div>
         </form>
       ) : (
-        <div className="p-4 border-t border-[#E7E2D9] bg-white text-center">
-          <p className="text-xs text-[#6B6862] font-medium">
+        <div className="p-4 border-t border-white/10 bg-black/40 backdrop-blur-md text-center">
+          <p className="text-xs text-white/60 font-medium">
             {isDoctor 
               ? 'This conversation is currently locked' 
               : 'Complete your first consultation to start messaging with your doctor.'}
@@ -501,7 +508,7 @@ export default function ChatWindow({
       {/* Fullscreen Image Lightbox Modal */}
       {fullscreenImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setFullscreenImage(null)}
         >
           <button
@@ -534,7 +541,7 @@ function MessageBubble({ message, isOwn, time, onImageClick }) {
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2.5`}>
       <div
-        className={`max-w-[85%] sm:max-w-[70%] shadow-2xs ${
+        className={`max-w-[85%] sm:max-w-[70%] shadow-md ${
           hasImage && !hasText
             ? 'p-1'
             : hasImage && hasText
@@ -542,8 +549,8 @@ function MessageBubble({ message, isOwn, time, onImageClick }) {
             : 'px-4 py-2.5'
         } ${
           isOwn
-            ? 'bg-[#FFD3AC] text-[#1A1A1A] rounded-2xl rounded-br-xs'
-            : 'bg-white text-[#1A1A1A] border border-[#E7E2D9] rounded-2xl rounded-bl-xs'
+            ? 'bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl rounded-br-xs'
+            : 'bg-[#262626] text-white border border-white/15 rounded-2xl rounded-bl-xs'
         }`}
       >
         {hasImage && !hasText ? (
@@ -582,7 +589,7 @@ function MessageBubble({ message, isOwn, time, onImageClick }) {
               )}
               <p
                 className={`text-[10px] mt-1 font-medium ${
-                  isOwn ? 'text-[#8C827A] text-right' : 'text-[#8C827A]'
+                  isOwn ? 'text-black/60 text-right' : 'text-white/50 text-right'
                 }`}
               >
                 {time}

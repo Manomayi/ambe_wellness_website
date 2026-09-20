@@ -8,8 +8,9 @@ import VideoCall from '@/components/video/VideoCall';
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { classifyOutcome } from '@/lib/refundPolicy';
-import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 
 export default function DoctorAppointmentPage() {
   const router = useRouter();
@@ -275,128 +276,129 @@ export default function DoctorAppointmentPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <BackButton href="/doctor/consultations" label="Back to Consultations" />
-
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-[#1A1A1A] mb-6">
-            Video Consultation
-          </h1>
-
-          {/* User Info */}
-          <div className="bg-[#FAF8F5] rounded-lg p-6 mb-6">
-            <div className="flex items-center">
-              <div className="w-16 h-16 bg-[#F4F1EA] rounded-full flex items-center justify-center">
-                <UserIcon className="w-8 h-8 text-[#C8996A]" />
-              </div>
-              <div className="ml-4">
-                <h3 className="font-semibold text-lg">
-                  {appointment.user_name}
-                </h3>
-                <p className="text-[#6B6862]">User</p>
-              </div>
-            </div>
+      <WebLayoutWrapper>
+        <div className="space-y-6 pb-24">
+          <div className="flex items-center gap-4 pt-2">
+            <AmbeBackButton onClick={() => router.push('/doctor/consultations')} />
+            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+              Video Consultation
+            </h1>
           </div>
 
-          {/* Appointment Details */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center text-[#353535]">
-              <CalendarIcon className="w-5 h-5 mr-3" />
-              <span>{formatAppointmentTime(appointment.time)}</span>
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-xl">
+            {/* User Info */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 mb-6 flex items-center gap-4">
+              <div className="w-14 h-14 bg-black/30 border border-[#FFD3AC]/40 rounded-full flex items-center justify-center shrink-0">
+                <UserIcon className="w-7 h-7 text-[#FFD3AC]" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-lg text-white truncate">
+                  {appointment.user_name || 'Patient'}
+                </h3>
+                <p className="text-xs text-white/60">Patient Consultation</p>
+              </div>
             </div>
-            {appointment.duration && (
-              <div className="flex items-center text-[#353535]">
-                <ClockIcon className="w-5 h-5 mr-3" />
-                <span>Duration: {appointment.duration}</span>
+
+            {/* Appointment Details */}
+            <div className="space-y-3 mb-8">
+              <div className="flex items-center text-white/80 text-sm">
+                <CalendarIcon className="w-5 h-5 mr-3 text-[#FFD3AC] shrink-0" />
+                <span>{formatAppointmentTime(appointment.time)}</span>
+              </div>
+              {appointment.duration && (
+                <div className="flex items-center text-white/80 text-sm">
+                  <ClockIcon className="w-5 h-5 mr-3 text-[#FFD3AC] shrink-0" />
+                  <span>Duration: {appointment.duration}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Status Messages */}
+            {appointment.needsReport && (
+              <div className="bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 rounded-2xl p-5 mb-6">
+                <p className="text-[#FFD3AC] font-medium text-sm">
+                  This appointment has been completed. Please complete the consultation report.
+                </p>
+                <button
+                  onClick={() => {
+                    const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : Date.now();
+                    const query = new URLSearchParams({
+                      userUid: appointment.user_id || '',
+                      userName: appointment.user_name || '',
+                      time: String(timeMillis),
+                    });
+                    router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
+                  }}
+                  className="mt-3 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-5 py-2.5 rounded-full font-semibold text-sm transition shadow-md cursor-pointer"
+                >
+                  Complete Report
+                </button>
               </div>
             )}
-          </div>
 
-          {/* Status Messages */}
-          {appointment.needsReport && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-              <p className="text-amber-800">
-                This appointment has been completed. Please complete the consultation report.
-              </p>
-              <button
-                onClick={() => {
-                  const timeMillis = appointment.time?.toMillis ? appointment.time.toMillis() : Date.now();
-                  const query = new URLSearchParams({
-                    userUid: appointment.user_id || '',
-                    userName: appointment.user_name || '',
-                    time: String(timeMillis),
-                  });
-                  router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
-                }}
-                className="mt-3 bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition"
-              >
-                Complete Report
-              </button>
-            </div>
-          )}
-
-          {!appointment.needsReport && isAppointmentPast() && (
-            <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                  Pending / Past Due
-                </span>
-                <p className="text-[#1A1A1A] font-semibold text-sm">
-                  This consultation time has passed
+            {!appointment.needsReport && isAppointmentPast() && (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-amber-500/20 text-amber-300 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                    Pending / Past Due
+                  </span>
+                  <p className="text-white font-semibold text-sm">
+                    This consultation time has passed
+                  </p>
+                </div>
+                <p className="text-xs text-white/60 mt-1">
+                  If the appointment was missed, please contact the patient to reschedule or cancel.
                 </p>
               </div>
-              <p className="text-sm text-[#6B6862] mt-1">
-                If the appointment was missed, please contact the patient to reschedule or cancel.
-              </p>
+            )}
+
+            {!appointment.needsReport && !canJoinCall && !isAppointmentPast() && (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 mb-6">
+                <p className="text-sm text-white/80 leading-relaxed">
+                  Your appointment is scheduled for <span className="text-[#FFD3AC] font-medium">{formatAppointmentTime(appointment.time)}</span>.
+                  You can join the call 15 minutes before the scheduled time.
+                </p>
+              </div>
+            )}
+
+            {canJoinCall && (
+              <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-2xl p-5 mb-6">
+                <p className="text-emerald-400 font-semibold text-sm mb-1">
+                  Your appointment is happening now!
+                </p>
+                <p className="text-emerald-300/80 text-xs">
+                  Click the button below to start the video consultation with your patient.
+                </p>
+              </div>
+            )}
+
+            {/* Join Call Button */}
+            {canJoinCall && (
+              <button
+                onClick={() => setInCall(true)}
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold transition flex items-center justify-center text-base shadow-lg cursor-pointer"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Start Video Call
+              </button>
+            )}
+
+            {/* Instructions */}
+            <div className="mt-8 bg-black/20 border border-white/10 rounded-2xl p-5">
+              <h4 className="font-semibold text-white text-sm mb-2.5">Before the consultation:</h4>
+              <ul className="text-xs text-white/70 space-y-1.5 leading-relaxed">
+                <li>• Review patient's previous consultations and dosha profile</li>
+                <li>• Ensure you have a stable internet connection</li>
+                <li>• Test your camera and microphone</li>
+                <li>• Have patient file ready for reference</li>
+                <li>• Complete the consultation report immediately after the call</li>
+              </ul>
             </div>
-          )}
-
-          {!appointment.needsReport && !canJoinCall && !isAppointmentPast() && (
-            <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
-              <p className="text-[#1A1A1A]">
-                Your appointment is scheduled for {formatAppointmentTime(appointment.time)}.
-                You can join the call 15 minutes before the scheduled time.
-              </p>
-            </div>
-          )}
-
-          {canJoinCall && (
-            <div className="bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4 mb-6">
-              <p className="text-emerald-700 font-medium mb-2">
-                Your appointment is happening now!
-              </p>
-              <p className="text-emerald-700 text-sm">
-                Click the button below to start the video consultation with your user.
-              </p>
-            </div>
-          )}
-
-          {/* Join Call Button */}
-          {canJoinCall && (
-            <button
-              onClick={() => setInCall(true)}
-              className="w-full bg-[#FFD3AC] text-[#1A1A1A] hover:text-white py-4 rounded-lg hover:bg-[#1A1A1A] transition flex items-center justify-center text-lg font-medium"
-            >
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Start Video Call
-            </button>
-          )}
-
-          {/* Instructions */}
-          <div className="mt-8 bg-[#F4F1EA] border border-[#E7E2D9] rounded-lg p-4">
-            <h4 className="font-semibold text-[#1A1A1A] mb-2">Before the consultation:</h4>
-            <ul className="text-sm text-[#1A1A1A] space-y-1">
-              <li>• Review user's previous consultations if any</li>
-              <li>• Ensure you have a stable internet connection</li>
-              <li>• Test your camera and microphone</li>
-              <li>• Have user's file ready for reference</li>
-              <li>• Reuser to complete the consultation report after the call</li>
-            </ul>
           </div>
         </div>
-      </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

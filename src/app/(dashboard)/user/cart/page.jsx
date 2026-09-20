@@ -20,12 +20,14 @@ import {
   limit
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import { getItemUnitPrice } from '@/lib/cartUtils';
 import { 
   TrashIcon, 
   MinusIcon, 
   PlusIcon,
-  XMarkIcon 
+  ShoppingCartIcon
 } from '@heroicons/react/24/outline';
 
 export default function UserCartPage() {
@@ -118,28 +120,43 @@ export default function UserCartPage() {
     // Listen to cart items
     const cartQuery = query(collection(db, 'users', user.uid, 'cart'));
     
-    const unsubscribeCart = onSnapshot(cartQuery, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setCartItems(items);
-      setLoading(false);
-    });
+    const unsubscribeCart = onSnapshot(
+      cartQuery,
+      (snapshot) => {
+        const items = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setCartItems(items);
+        setLoading(false);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to cart:', err);
+        setLoading(false);
+      }
+    );
 
     // Listen to user subscription and referral info
-    const unsubscribeUser = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-      if (snapshot.exists()) {
-        const userData = snapshot.data();
-        setUserSubscription(userData.subscription);
-        setReferralInfo({
-          credits: userData.referral_credits || 0,
-          hasReferrer: !!userData.referred_by,
-          hasMadePurchase: userData.has_made_purchase || false,
-          isFirstTimeReferred: !!userData.referred_by && !userData.has_made_purchase
-        });
+    const unsubscribeUser = onSnapshot(
+      doc(db, 'users', user.uid),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const userData = snapshot.data();
+          setUserSubscription(userData.subscription);
+          setReferralInfo({
+            credits: userData.referral_credits || 0,
+            hasReferrer: !!userData.referred_by,
+            hasMadePurchase: userData.has_made_purchase || false,
+            isFirstTimeReferred: !!userData.referred_by && !userData.has_made_purchase
+          });
+        }
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to user profile:', err);
       }
-    });
+    );
 
     return () => {
       unsubscribeCart();
@@ -148,7 +165,7 @@ export default function UserCartPage() {
   }, [user]);
 
   const getTotalQuantity = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    return cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
   };
 
   const getSubtotal = () => {
@@ -210,8 +227,8 @@ export default function UserCartPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[#C8996A] border-t-transparent"></div>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -219,144 +236,168 @@ export default function UserCartPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">
-            {totalQuantity === 0 ? 'No Items' : `${totalQuantity} Item${totalQuantity > 1 ? 's' : ''}`}
-          </h1>
-        </div>
-
-        {/* Cart Items or Empty Message */}
-        {cartItems.length === 0 ? (
-          <div className="text-center py-12 bg-white border border-[#E7E2D9] rounded-xl">
-            <p className="text-xl text-[#1A1A1A] font-medium">Your cart is empty</p>
+      <WebLayoutWrapper>
+        <div className="space-y-6 pb-28">
+          {/* Header */}
+          <div className="flex items-center gap-4 pt-2">
+            <AmbeBackButton onClick={() => router.push('/user/store')} />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              {totalQuantity === 0 ? 'No Items' : `${totalQuantity} Item${totalQuantity > 1 ? 's' : ''}`}
+            </h1>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {cartItems.map((item) => {
-              const unitPrice = getItemUnitPrice(item);
-              const mrp = Number(item.mrp) || 0;
-              const hasDiscount = item.price != null && Number(item.price) > 0 && mrp > unitPrice;
 
-              return (
-                <div
-                  key={item.id}
-                  className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-lg text-[#1A1A1A]">{item.productName || item.product_name}</h3>
-                    {item.doctor_recommended && (
-                      <span className="text-[#C8996A] text-xs font-bold uppercase tracking-wider">RECOMMENDED</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap text-sm mb-3">
-                    <span className="text-[#6B6862]">Size: {item.size || item.variantName || 'Standard'}</span>
-                    <span className="text-[#E7E2D9]">•</span>
-                    <span className="font-semibold text-[#1A1A1A]">Price: ${unitPrice.toFixed(2)}</span>
-                    {hasDiscount && (
-                      <span className="text-xs text-[#8C827A] line-through">${mrp.toFixed(2)}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-full flex items-center">
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        className="p-2 text-[#1A1A1A] disabled:opacity-40"
-                      >
-                        <MinusIcon className="h-4 w-4" />
-                      </button>
-                      <span className="px-3 text-[#1A1A1A] font-medium text-sm">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-2 text-[#1A1A1A]"
-                      >
-                        <PlusIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-[#8C827A] hover:text-red-600 transition"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+          {/* Cart Items or Empty Message */}
+          {cartItems.length === 0 ? (
+            <div className="text-center py-16 bg-[#2D2D30]/85 border border-white/10 rounded-2xl shadow-xl backdrop-blur-md">
+              <ShoppingCartIcon className="w-16 h-16 text-white/30 mx-auto mb-3" />
+              <p className="text-lg text-white font-semibold mb-1">Your cart is empty</p>
+              <p className="text-xs text-white/60 mb-6">Explore our Ayurvedic store to add products to your cart.</p>
+              <button
+                onClick={() => router.push('/user/store')}
+                className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition cursor-pointer"
+              >
+                Browse Store
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {cartItems.map((item) => {
+                const unitPrice = getItemUnitPrice(item);
+                const mrp = Number(item.mrp) || 0;
+                const hasDiscount = item.price != null && Number(item.price) > 0 && mrp > unitPrice;
 
-        {/* Doctor recommendations are auto-added on report submission & synced on the report page */}
-
-        {/* Order Summary */}
-        {cartItems.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-lg font-bold mb-4 text-[#1A1A1A]">Estimated Order Summary</h2>
-            <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-[#6B6862] font-medium text-sm">Subtotal</span>
-                  <span className="text-[#1A1A1A] font-medium text-sm">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6862] font-medium text-sm">Tax</span>
-                  <span className="text-[#1A1A1A] font-medium text-sm">${tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#6B6862] font-medium text-sm">Shipping</span>
-                  <span className="text-[#1A1A1A] font-medium text-sm">${shipping.toFixed(2)}</span>
-                </div>
-                {subscriptionDiscount > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-[#C8996A] font-medium text-sm">Subscription Discount</span>
-                    <span className="text-[#C8996A] font-medium text-sm">-${subscriptionDiscount.toFixed(2)}</span>
-                  </div>
-                )}
-                {referralDiscount > 0 && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-[#C8996A] font-medium text-sm">
-                        {referralInfo.isFirstTimeReferred 
-                          ? "Referral Discount (20%)" 
-                          : "Referral Credit (20%)"}
-                      </span>
-                      <span className="text-[#C8996A] font-medium text-sm">-${referralDiscount.toFixed(2)}</span>
-                    </div>
-                    {referralInfo.credits > 0 && !referralInfo.isFirstTimeReferred && (
-                      <div className="text-center">
-                        <span className="text-xs text-[#8C827A] font-medium">
-                          ({referralInfo.credits} credit{referralInfo.credits > 1 ? 's' : ''} available)
+                return (
+                  <div
+                    key={item.id}
+                    className={`bg-[#2D2D30]/85 border ${
+                      item.doctor_recommended ? 'border-[#FFD3AC]/40' : 'border-white/10'
+                    } rounded-2xl p-5 shadow-xl backdrop-blur-md space-y-3 transition`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-bold text-base text-white leading-snug">
+                        {item.productName || item.product_name}
+                      </h3>
+                      {item.doctor_recommended && (
+                        <span className="bg-[#FFD3AC] text-[#1E1E1E] text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">
+                          PRESCRIPTION
                         </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap text-xs text-white/70">
+                      <span>Size: {item.size || item.variantName || 'Standard'}</span>
+                      <span className="text-white/30">•</span>
+                      <span className="font-semibold text-white">Price: ${unitPrice.toFixed(2)}</span>
+                      {hasDiscount && (
+                        <span className="text-white/40 line-through">${mrp.toFixed(2)}</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {/* Quantity pill control */}
+                      <div className="bg-[#FFD3AC] rounded-full flex items-center px-1.5 py-0.5 shadow-md">
+                        <button
+                          onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
+                          disabled={(item.quantity || 1) <= 1}
+                          className="p-1.5 text-[#1E1E1E] disabled:opacity-30 cursor-pointer"
+                          aria-label="Decrease quantity"
+                        >
+                          <MinusIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                        </button>
+                        <span className="px-3 text-[#1E1E1E] font-bold text-sm">
+                          {item.quantity || 1}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
+                          className="p-1.5 text-[#1E1E1E] cursor-pointer"
+                          aria-label="Increase quantity"
+                        >
+                          <PlusIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                        </button>
                       </div>
-                    )}
-                  </>
-                )}
-                <div className="border-t border-[#E7E2D9] pt-2 mt-2">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-[#1A1A1A] text-base">Total</span>
-                    <span className="text-[#1A1A1A] text-lg">${total.toFixed(2)}</span>
+
+                      {/* Remove item button */}
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="text-red-400 hover:text-red-300 p-2 transition cursor-pointer"
+                        aria-label="Remove item"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Order Summary */}
+          {cartItems.length > 0 && (
+            <div className="mt-8 space-y-3">
+              <h2 className="text-base font-bold text-white px-1">
+                Estimated Order Summary
+              </h2>
+              <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-md">
+                <div className="space-y-2.5">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-white/70">Subtotal</span>
+                    <span className="text-white font-medium">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-white/70">Tax</span>
+                    <span className="text-white font-medium">${tax.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-white/70">Shipping</span>
+                    <span className="text-white font-medium">${shipping.toFixed(2)}</span>
+                  </div>
+                  {subscriptionDiscount > 0 && (
+                    <div className="flex justify-between text-xs sm:text-sm text-[#FFD3AC]">
+                      <span>Subscription Discount</span>
+                      <span>-${subscriptionDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {referralDiscount > 0 && (
+                    <>
+                      <div className="flex justify-between text-xs sm:text-sm text-[#FFD3AC]">
+                        <span>
+                          {referralInfo.isFirstTimeReferred 
+                            ? "Referral Discount (20%)" 
+                            : "Referral Credit (20%)"}
+                        </span>
+                        <span>-${referralDiscount.toFixed(2)}</span>
+                      </div>
+                      {referralInfo.credits > 0 && !referralInfo.isFirstTimeReferred && (
+                        <div className="text-center">
+                          <span className="text-[11px] text-white/50">
+                            ({referralInfo.credits} credit{referralInfo.credits > 1 ? 's' : ''} available)
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  <div className="border-t border-white/10 pt-3 mt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-bold text-sm sm:text-base">Total</span>
+                      <span className="text-[#FFD3AC] font-bold text-lg sm:text-xl">${total.toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Checkout Button */}
+              <div className="pt-2">
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] font-bold py-4 rounded-full transition uppercase tracking-wider shadow-lg text-sm cursor-pointer"
+                >
+                  CHECKOUT
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* Checkout Button */}
-        {cartItems.length > 0 && (
-          <div className="mt-6">
-            <button
-              onClick={handleCheckout}
-              className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-lg font-medium text-base transition uppercase tracking-wider shadow-sm"
-            >
-              CHECKOUT
-            </button>
-          </div>
-        )}
-
-      </div>
+          )}
+        </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

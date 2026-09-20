@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import AmbeButton from '@/components/common/AmbeButton';
 import {
   IdentificationIcon,
   AcademicCapIcon,
-  BriefcaseIcon,
   LanguageIcon,
   CheckCircleIcon,
   InformationCircleIcon,
@@ -100,26 +100,28 @@ export default function DoctorProfessionalProfilePage() {
         .map((lang) => lang.trim())
         .filter(Boolean);
 
-      const yearsExp = yearsOfExperience.trim() !== '' ? parseInt(yearsOfExperience.trim(), 10) : null;
+      const parsedYears = parseInt(yearsOfExperience, 10);
 
+      const docRef = doc(db, 'doctors', user.uid);
       await setDoc(
-        doc(db, 'doctors', user.uid),
+        docRef,
         {
           professional_title: professionalTitle.trim(),
           bio: bio.trim(),
           education: education.trim(),
-          years_of_experience: isNaN(yearsExp) ? null : yearsExp,
+          years_of_experience: !isNaN(parsedYears) ? parsedYears : 0,
           certifications: certifications.trim(),
           languages: languagesList,
-          profile_updated_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
         },
         { merge: true }
       );
 
-      router.back();
-    } catch (e) {
-      console.error('Error saving professional profile:', e);
-      setError('Failed to save profile. Please try again.');
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 4000);
+    } catch (err) {
+      console.error('Failed to save professional profile:', err);
+      setError('Failed to save changes. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -127,61 +129,61 @@ export default function DoctorProfessionalProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-[#C8996A] border-t-transparent rounded-full" />
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="animate-spin h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
-      <BackButton href="/doctor/menu" label="Back to Menu" />
-
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A]">
+    <div className="max-w-xl mx-auto space-y-6">
+      <div className="flex items-center gap-4 pt-1">
+        <AmbeBackButton onClick={() => router.back()} />
+        <h1 className="text-white text-xl font-bold font-sans flex-1">
           Professional Profile
         </h1>
-        <p className="text-sm text-[#6B6862] mt-1">
-          Detailed profiles build trust and help patients choose the right healthcare provider.
-        </p>
       </div>
 
+      <p className="text-sm text-gray-400 font-sans px-1">
+        Detailed profiles build trust and help patients choose the right healthcare provider.
+      </p>
+
       {error && (
-        <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
-          {error}
+        <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center">
+          <p className="text-xs text-red-300 font-sans">{error}</p>
         </div>
       )}
 
       {savedSuccess && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl flex items-center gap-2">
-          <CheckCircleIcon className="h-5 w-5 text-emerald-600 shrink-0" />
-          <span>Professional profile updated successfully!</span>
+        <div className="bg-emerald-950/70 border border-emerald-500/50 rounded-2xl p-3 text-center flex items-center justify-center gap-2">
+          <CheckCircleIcon className="h-5 w-5 text-emerald-400 shrink-0" />
+          <p className="text-xs text-emerald-300 font-sans">Professional profile updated successfully!</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Basic Information Card */}
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-            <IdentificationIcon className="h-5 w-5 text-[#C8996A]" />
+        <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-5 sm:p-6 shadow-md space-y-4">
+          <h2 className="text-base font-semibold text-white font-sans flex items-center gap-2">
+            <IdentificationIcon className="h-5 w-5 text-[#FFD3AC]" />
             Basic Information
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1.5">
-              Professional Title <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-1 font-sans">
+              Professional Title <span className="text-[#FFD3AC]">*</span>
             </label>
             <input
               type="text"
               value={professionalTitle}
               onChange={(e) => setProfessionalTitle(e.target.value)}
               placeholder="e.g., MD, DO, PhD, RN, BAMS"
-              className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-sm text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:border-[#C8996A]"
+              className="w-full px-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] font-sans"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-1 font-sans">
               Professional Bio
             </label>
             <textarea
@@ -189,33 +191,33 @@ export default function DoctorProfessionalProfilePage() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell patients about your medical background, approach to care, and philosophy..."
-              className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-sm text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:border-[#C8996A]"
+              className="w-full px-4 py-3 bg-[#2D2D30] border border-white/10 rounded-2xl text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] font-sans"
             />
           </div>
         </div>
 
         {/* Education & Experience Card */}
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-            <AcademicCapIcon className="h-5 w-5 text-[#C8996A]" />
+        <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-5 sm:p-6 shadow-md space-y-4">
+          <h2 className="text-base font-semibold text-white font-sans flex items-center gap-2">
+            <AcademicCapIcon className="h-5 w-5 text-[#FFD3AC]" />
             Education & Experience
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1.5">
-              Education & Medical School <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-1 font-sans">
+              Education & Medical School <span className="text-[#FFD3AC]">*</span>
             </label>
             <input
               type="text"
               value={education}
               onChange={(e) => setEducation(e.target.value)}
               placeholder="e.g., Harvard Medical School, Johns Hopkins University"
-              className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-sm text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:border-[#C8996A]"
+              className="w-full px-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] font-sans"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-1 font-sans">
               Years of Experience
             </label>
             <input
@@ -225,12 +227,12 @@ export default function DoctorProfessionalProfilePage() {
               value={yearsOfExperience}
               onChange={(e) => setYearsOfExperience(e.target.value)}
               placeholder="e.g., 8"
-              className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-sm text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:border-[#C8996A]"
+              className="w-full px-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] font-sans"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-1 font-sans">
               Certifications & Fellowships
             </label>
             <input
@@ -238,55 +240,46 @@ export default function DoctorProfessionalProfilePage() {
               value={certifications}
               onChange={(e) => setCertifications(e.target.value)}
               placeholder="e.g., Board Certified in Internal Medicine, FACOG"
-              className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-sm text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:border-[#C8996A]"
+              className="w-full px-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] font-sans"
             />
           </div>
         </div>
 
         {/* Additional Details Card */}
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-            <LanguageIcon className="h-5 w-5 text-[#C8996A]" />
+        <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-5 sm:p-6 shadow-md space-y-4">
+          <h2 className="text-base font-semibold text-white font-sans flex items-center gap-2">
+            <LanguageIcon className="h-5 w-5 text-[#FFD3AC]" />
             Languages
           </h2>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#1A1A1A] mb-1.5">
-              Languages Spoken <span className="font-normal text-xs text-[#8C827A] lowercase">(comma separated)</span>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 px-1 font-sans">
+              Languages Spoken <span className="font-normal text-xs text-gray-500 lowercase">(comma separated)</span>
             </label>
             <input
               type="text"
               value={languages}
               onChange={(e) => setLanguages(e.target.value)}
               placeholder="e.g., English, Spanish, Hindi"
-              className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl text-sm text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:border-[#C8996A]"
+              className="w-full px-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] font-sans"
             />
           </div>
         </div>
 
         {/* Info Tip */}
-        <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-xl flex items-start gap-3">
-          <InformationCircleIcon className="h-5 w-5 text-[#C2691C] shrink-0 mt-0.5" />
-          <p className="text-xs text-[#6B6862] leading-relaxed">
+        <div className="p-4 bg-[#2D2D30]/80 border border-white/10 rounded-2xl flex items-start gap-3">
+          <InformationCircleIcon className="h-5 w-5 text-[#FFD3AC] shrink-0 mt-0.5" />
+          <p className="text-xs text-gray-300 leading-relaxed font-sans">
             Your professional profile details will be visible to patients browsing the practitioner directory and scheduling consultations.
           </p>
         </div>
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full py-3.5 rounded-xl font-semibold uppercase tracking-wider text-xs shadow transition bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#1A1A1A] border-t-transparent" />
-              Saving Profile...
-            </>
-          ) : (
-            'Save Profile'
-          )}
-        </button>
+        <div className="pt-2 flex justify-center">
+          <AmbeButton type="submit" loading={saving} className="w-full">
+            SAVE PROFILE
+          </AmbeButton>
+        </div>
       </form>
     </div>
   );

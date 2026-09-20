@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import AmbeBackButton from './AmbeBackButton';
 
 export default function BackButton({
-  label = 'Back to Menu',
+  label,
   href = '/user/menu',
   className = '',
   forceHref = false,
@@ -24,14 +24,15 @@ export default function BackButton({
     }
   };
 
+  if (!label || label === 'Back' || label === 'Back to Menu') {
+    return <AmbeBackButton onClick={handleBack} className={className} />;
+  }
+
   return (
-    <button
-      type="button"
-      onClick={handleBack}
-      className={`inline-flex items-center gap-2 text-sm font-medium text-[#6B6862] hover:text-[#1A1A1A] transition-colors py-2 px-3.5 -ml-2 rounded-xl hover:bg-black/[0.04] active:scale-95 group w-fit cursor-pointer ${className}`}
-    >
-      <ArrowLeftIcon className="h-4 w-4 text-[#6B6862] group-hover:text-[#1A1A1A] group-hover:-translate-x-0.5 transition-transform" />
-      <span>{label}</span>
-    </button>
+    <div className={`inline-flex items-center gap-3 ${className}`}>
+      <AmbeBackButton onClick={handleBack} />
+      <span className="text-white/80 text-sm font-medium">{label}</span>
+    </div>
   );
 }
+

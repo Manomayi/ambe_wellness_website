@@ -79,6 +79,7 @@ export default function DoctorFeedbackPage() {
           setLoading(false);
         },
         (err) => {
+          if (err?.code === 'permission-denied') return;
           console.error('Error listening to reviews:', err);
           setLoading(false);
         }

@@ -1,19 +1,385 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/common/ProtectedRoute';
+import { 
+  collection, 
+  doc, 
+  onSnapshot,
+  getDocs,
+  Timestamp 
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 export default function DoctorHomePage() {
   const router = useRouter();
+  const { user, profile, isVerifiedDoctor } = useAuth();
+
+  const [stats, setStats] = useState({
+    upcomingCount: 0,
+    patientCount: 0,
+    reportCount: 0,
+  });
+  const [reportsToFinish, setReportsToFinish] = useState([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Selected date for calendar strip
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Weekdays generator around today
+  const getCalendarDays = () => {
+    const days = [];
+    const today = new Date();
+    for (let i = -3; i <= 3; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  };
+
+  const calendarDays = getCalendarDays();
 
   useEffect(() => {
-    // Redirect to dashboard
-    router.push('/doctor/dashboard');
-  }, [router]);
+    if (!user) return;
+
+    // Upcoming appointments listener
+    const upcomingCol = collection(db, 'doctors', user.uid, 'appointments_upcoming');
+    const unsubUpcoming = onSnapshot(
+      upcomingCol,
+      (snapshot) => {
+        const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        list.sort((a, b) => {
+          const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
+          const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
+          return timeA - timeB;
+        });
+        const now = new Date();
+        const future = list.filter((apt) => {
+          const aptDate = apt.time?.toDate ? apt.time.toDate() : (apt.time ? new Date(apt.time) : null);
+          if (!aptDate) return true;
+          return (aptDate - now) / (1000 * 60) >= -60;
+        });
+        setUpcomingAppointments(future.slice(0, 4));
+        setStats((prev) => ({ ...prev, upcomingCount: future.length }));
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to doctor upcoming appointments:', err);
+      }
+    );
+
+    // Reports to finish listener
+    const reportsCol = collection(db, 'doctors', user.uid, 'appointments_reports_to_finish');
+    const unsubReports = onSnapshot(
+      reportsCol,
+      (snapshot) => {
+        const reports = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setReportsToFinish(reports);
+        setStats((prev) => ({ ...prev, reportCount: reports.length }));
+        setLoading(false);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to doctor reports to finish:', err);
+        setLoading(false);
+      }
+    );
+
+    // Patients count
+    getDocs(collection(db, 'doctors', user.uid, 'users'))
+      .then((snap) => {
+        setStats((prev) => ({ ...prev, patientCount: snap.size }));
+      })
+      .catch((e) => console.error(e));
+
+    return () => {
+      unsubUpcoming();
+      unsubReports();
+    };
+  }, [user]);
+
+  const lastName = profile?.last_name || user?.displayName?.split(' ').pop() || 'Doctor';
+  const photoUrl = profile?.profile_picture || user?.photoURL;
+  const isScheduleSet = profile?.is_schedule_set ?? false;
+
+  const formatAppointmentTime = (time) => {
+    if (!time) return '';
+    const date = time?.toDate ? time.toDate() : new Date(time);
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(date);
+  };
+
+  const isToday = (date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const isSelected = (date) => {
+    return (
+      date.getDate() === selectedDate.getDate() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getFullYear() === selectedDate.getFullYear()
+    );
+  };
 
   return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-[#C8996A] border-t-transparent" />
-    </div>
+    <ProtectedRoute userType="doctor">
+      <div className="space-y-6">
+        {/* Header Section matching Flutter DoctorHomePage */}
+        <div className="bg-[#2D2D30]/90 backdrop-blur-md border border-white/10 rounded-[28px] p-6 sm:p-7 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4">
+              {/* Doctor Avatar with peach circle border */}
+              <div className="w-[72px] h-[72px] rounded-full border-2 border-[#FFD3AC] overflow-hidden bg-[#1E1E1E] flex items-center justify-center flex-shrink-0 shadow-md">
+                {photoUrl ? (
+                  <img src={photoUrl} alt={lastName} className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-9 h-9 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                )}
+              </div>
+
+              {/* Greeting Text */}
+              <div>
+                <h1 className="font-heading text-2xl sm:text-3xl text-white font-normal tracking-tight">
+                  Hello, Dr. {lastName} !
+                </h1>
+                <p className="text-gray-400 font-sans text-sm mt-0.5">
+                  Ready to help your patients?
+                </p>
+              </div>
+            </div>
+
+            {/* Verified status badge */}
+            <div className="flex items-center gap-3">
+              {isVerifiedDoctor ? (
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FFD3AC]/20 text-[#FFD3AC] border border-[#FFD3AC]/40 text-xs font-semibold tracking-wide">
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Verified
+                </span>
+              ) : (
+                <Link
+                  href="/doctor/menu/verification"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-semibold tracking-wide hover:bg-amber-500/30 transition"
+                >
+                  Pending Verification
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Calendar Strip matching Flutter DoctorCalendarStrip */}
+        <div className="bg-[#1B1A18]/80 backdrop-blur-md border border-white/10 rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-1">
+            {calendarDays.map((d, i) => {
+              const selected = isSelected(d);
+              const today = isToday(d);
+              const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayNum = d.getDate();
+
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setSelectedDate(d)}
+                  className={`flex flex-col items-center justify-center min-w-[50px] sm:min-w-[62px] py-2.5 px-2 rounded-xl transition-all cursor-pointer ${
+                    selected
+                      ? 'bg-[#FFD3AC] text-[#1E1E1E] font-bold shadow-md'
+                      : today
+                      ? 'border border-[#FFD3AC] text-white hover:bg-white/5'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span className="text-[11px] uppercase tracking-wider font-semibold">
+                    {dayName}
+                  </span>
+                  <span className="text-base sm:text-lg font-bold mt-1">
+                    {dayNum}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Things To Do Section matching Flutter DoctorThingsToDoList */}
+        {(!isVerifiedDoctor || !isScheduleSet || reportsToFinish.length > 0) && (
+          <div className="space-y-3">
+            <h2 className="text-xl font-heading text-white font-normal">
+              Things To Do
+            </h2>
+
+            {/* Waiting to be approved prompt */}
+            {!isVerifiedDoctor && (
+              <Link
+                href="/doctor/menu/verification"
+                className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[20px] p-4 sm:p-5 hover:bg-[#ffe3c9] transition shadow-md group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold font-sans">
+                      Waiting to be approved
+                    </h3>
+                    <p className="text-sm text-black/75 mt-0.5 font-sans">
+                      Your account is currently under review.
+                    </p>
+                  </div>
+                  <svg className="w-6 h-6 text-black/80 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Link>
+            )}
+
+            {/* Set availability prompt */}
+            {!isScheduleSet && (
+              <Link
+                href="/doctor/schedule"
+                className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[20px] p-4 sm:p-5 hover:bg-[#ffe3c9] transition shadow-md group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold font-sans">
+                      Set your availability
+                    </h3>
+                    <p className="text-sm text-black/75 mt-0.5 font-sans">
+                      Set your schedule to start accepting consultations.
+                    </p>
+                  </div>
+                  <svg className="w-6 h-6 text-black/80 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Link>
+            )}
+
+            {/* Reports to finish prompt */}
+            {reportsToFinish.length > 0 && (
+              <Link
+                href="/doctor/consultations"
+                className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[20px] p-4 sm:p-5 hover:bg-[#ffe3c9] transition shadow-md group"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold font-sans">
+                      Reports to finish
+                    </h3>
+                    <p className="text-sm text-black/75 mt-0.5 font-sans">
+                      You have {reportsToFinish.length} {reportsToFinish.length > 1 ? 'reports' : 'report'} to finish.
+                    </p>
+                  </div>
+                  <svg className="w-6 h-6 text-black/80 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Link>
+            )}
+          </div>
+        )}
+
+        {/* Quick Stats Section matching Flutter DoctorQuickStatsCard */}
+        <div className="space-y-3">
+          <h2 className="text-xl font-heading text-white font-normal">
+            Quick Stats
+          </h2>
+
+          <div className="bg-white text-[#1E1E1E] rounded-[20px] p-5 shadow-lg">
+            <h3 className="text-base font-semibold font-sans mb-4">
+              Today's Overview
+            </h3>
+            <div className="grid grid-cols-3 gap-2 text-center divide-x divide-gray-100">
+              <div className="flex flex-col items-center">
+                <svg className="w-6 h-6 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-2xl font-bold font-sans mt-2">{stats.upcomingCount}</span>
+                <span className="text-xs text-gray-500 font-medium mt-0.5">Upcoming</span>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <svg className="w-6 h-6 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="text-2xl font-bold font-sans mt-2">{stats.patientCount}</span>
+                <span className="text-xs text-gray-500 font-medium mt-0.5">Patients</span>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <svg className="w-6 h-6 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span className="text-2xl font-bold font-sans mt-2">{stats.reportCount}</span>
+                <span className="text-xs text-gray-500 font-medium mt-0.5">Pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Upcoming Appointments Preview */}
+        {upcomingAppointments.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-heading text-white font-normal">
+                Upcoming Consultations
+              </h2>
+              <Link
+                href="/doctor/consultations"
+                className="text-sm font-sans font-semibold text-[#FFD3AC] hover:underline"
+              >
+                View All
+              </Link>
+            </div>
+
+            <div className="space-y-2.5">
+              {upcomingAppointments.map((apt) => (
+                <div
+                  key={apt.id}
+                  onClick={() => router.push('/doctor/consultations')}
+                  className="bg-[#1B1A18]/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex items-center justify-between hover:border-[#FFD3AC]/40 transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-full bg-[#2D2D30] border border-white/10 flex items-center justify-center text-[#FFD3AC] font-semibold text-sm">
+                      {(apt.user_name || 'P').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold text-sm font-sans">
+                        {apt.user_name || 'Patient'}
+                      </h4>
+                      <p className="text-gray-400 text-xs mt-0.5 font-sans">
+                        {formatAppointmentTime(apt.time)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="text-xs px-3 py-1 rounded-full bg-[#FFD3AC]/15 text-[#FFD3AC] border border-[#FFD3AC]/30 font-semibold font-sans">
+                    Upcoming
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </ProtectedRoute>
   );
 }

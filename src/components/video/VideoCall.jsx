@@ -212,6 +212,7 @@ export default function VideoCall({
         }
       },
       (err) => {
+        if (err?.code === 'permission-denied') return;
         console.error('[VideoCall] Consultation doc listener error:', err);
       }
     );

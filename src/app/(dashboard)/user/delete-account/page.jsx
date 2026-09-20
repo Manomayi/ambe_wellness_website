@@ -10,7 +10,8 @@ import {
   reauthenticateWithCredential,
 } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
-import BackButton from '@/components/common/BackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 import {
   EnvelopeIcon,
   LockClosedIcon,
@@ -58,12 +59,12 @@ export default function DeleteAccountPage() {
 
     const emailRegex = /^[^@]+@[^@]+\.[^@]+/;
     if (!emailRegex.test(trimmedEmail)) {
-      setError('Please enter a valid email address');
+      setError('Enter a valid email address');
       return;
     }
 
     if (currentUser?.email && trimmedEmail.toLowerCase() !== currentUser.email.toLowerCase()) {
-      setError('Email does not match the current logged-in user');
+      setError('Email does not match the current user');
       return;
     }
 
@@ -85,7 +86,7 @@ export default function DeleteAccountPage() {
       const cred = EmailAuthProvider.credential(email.trim(), password);
       await reauthenticateWithCredential(currentUser, cred);
 
-      // 2. Delete user and doctor documents from Firestore
+      // 2. Delete user, doctor, and verification documents from Firestore
       try {
         await deleteDoc(doc(db, 'users', currentUser.uid));
       } catch (err) {
@@ -120,7 +121,7 @@ export default function DeleteAccountPage() {
       ) {
         setError('Incorrect password. Please verify your credentials and try again.');
       } else if (err.code === 'auth/requires-recent-login') {
-        setError('For security reasons, please log out, log back in, and try again.');
+        setError('Please sign out and sign back in before deleting your account.');
       } else {
         setError(err.message || 'Failed to delete account. Please try again later.');
       }
@@ -131,40 +132,48 @@ export default function DeleteAccountPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-2 border-[#C8996A] border-t-transparent rounded-full" />
-      </div>
+      <WebLayoutWrapper>
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <div className="w-12 h-12 border-3 border-[#FFD3AC] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </WebLayoutWrapper>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
-      <BackButton />
+    <WebLayoutWrapper maxWidth="600px">
+      {/* Top Bar with AmbeBackButton */}
+      <div className="flex items-center gap-4 mb-6">
+        <AmbeBackButton />
+        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          Delete Account
+        </h1>
+      </div>
 
-      <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 shadow-sm space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Delete Account</h1>
-          <p className="text-sm font-medium text-red-600 mt-2">
+      <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-xl space-y-6">
+        <div className="space-y-2">
+          <p className="text-white text-base font-semibold">
             Once you delete your account, there is no going back.
           </p>
-          <p className="text-xs text-[#6B6862] mt-1">
+          <p className="text-white/60 text-sm leading-relaxed">
             Please enter your email and password to confirm that you want to delete your account.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-            {error}
+          <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400 flex items-start gap-2.5">
+            <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" />
+            <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleOpenConfirm} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-2">
               Email Address
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8C827A]">
+            <div className="relative flex items-center bg-white/5 border border-white/15 focus-within:border-[#FFD3AC] rounded-xl transition">
+              <div className="pl-3.5 flex items-center pointer-events-none text-white/40">
                 <EnvelopeIcon className="h-5 w-5" />
               </div>
               <input
@@ -172,17 +181,17 @@ export default function DeleteAccountPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full pl-10 pr-3 py-2.5 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#1A1A1A] rounded-lg focus:outline-none focus:border-[#C8996A]"
+                className="w-full bg-transparent px-3 py-3 text-sm text-white placeholder-white/40 focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#1A1A1A] mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-2">
               Password
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8C827A]">
+            <div className="relative flex items-center bg-white/5 border border-white/15 focus-within:border-[#FFD3AC] rounded-xl transition">
+              <div className="pl-3.5 flex items-center pointer-events-none text-white/40">
                 <LockClosedIcon className="h-5 w-5" />
               </div>
               <input
@@ -190,12 +199,12 @@ export default function DeleteAccountPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full pl-10 pr-10 py-2.5 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#1A1A1A] rounded-lg focus:outline-none focus:border-[#C8996A]"
+                className="w-full bg-transparent px-3 py-3 pr-10 text-sm text-white placeholder-white/40 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setObscurePassword(!obscurePassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A] hover:text-[#1A1A1A]"
+                className="absolute right-3 text-white/40 hover:text-white/80 transition cursor-pointer"
               >
                 {obscurePassword ? (
                   <EyeSlashIcon className="h-5 w-5" />
@@ -206,36 +215,45 @@ export default function DeleteAccountPage() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={deleting}
-            className="w-full mt-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <TrashIcon className="h-4 w-4" />
-            <span>DELETE ACCOUNT</span>
-          </button>
+          <div className="flex justify-end pt-1">
+            <button
+              type="button"
+              onClick={() => router.push('/forgot-password')}
+              className="text-sm font-semibold text-[#FFD3AC] hover:underline cursor-pointer"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={deleting}
+              className="w-full py-4 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white rounded-full font-bold text-sm tracking-wider uppercase transition shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <TrashIcon className="h-5 w-5" />
+              <span>DELETE ACCOUNT</span>
+            </button>
+          </div>
         </form>
       </div>
 
-      {/* Confirmation Dialog (Modal) matching app behavior */}
+      {/* Confirmation Dialog matching Flutter BackdropFilter AlertDialog */}
       {showConfirmDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white border border-red-200 rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
-            <div className="flex items-center gap-3 text-red-600">
-              <div className="p-2.5 bg-red-50 rounded-full">
-                <ExclamationTriangleIcon className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-bold text-[#1A1A1A]">Are you sure?</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#2D2D30] border border-red-600/80 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-lg font-bold text-white">Are you sure?</h2>
+              <p className="text-sm text-white/70 leading-relaxed">
+                Are you sure you want to delete your account? This action cannot be undone.
+              </p>
             </div>
-            <p className="text-sm text-[#6B6862] leading-relaxed">
-              Are you sure you want to delete your account? This action cannot be undone.
-            </p>
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-3">
               <button
                 type="button"
                 disabled={deleting}
                 onClick={() => setShowConfirmDialog(false)}
-                className="px-4 py-2 text-sm font-semibold text-[#6B6862] hover:text-[#1A1A1A] rounded-lg transition disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 text-sm font-bold text-white/60 hover:text-white rounded-lg transition disabled:opacity-50 cursor-pointer"
               >
                 CANCEL
               </button>
@@ -243,11 +261,11 @@ export default function DeleteAccountPage() {
                 type="button"
                 disabled={deleting}
                 onClick={handleDeleteAccount}
-                className="px-5 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition shadow-sm disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                className="px-5 py-2 text-sm font-bold text-red-500 hover:text-red-400 rounded-lg transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
               >
                 {deleting ? (
                   <>
-                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
                     <span>DELETING…</span>
                   </>
                 ) : (
@@ -258,6 +276,7 @@ export default function DeleteAccountPage() {
           </div>
         </div>
       )}
-    </div>
+    </WebLayoutWrapper>
   );
 }
+

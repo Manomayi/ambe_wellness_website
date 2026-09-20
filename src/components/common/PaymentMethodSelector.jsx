@@ -8,11 +8,12 @@ export default function PaymentMethodSelector({
   onSelectMethod,
   isTestMode = false,
   disabled = false,
+  labelClassName = "text-white",
 }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-semibold text-[#1A1A1A]">
+        <label className={`block text-sm font-semibold ${labelClassName}`}>
           Select Payment Method
         </label>
       </div>

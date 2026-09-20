@@ -8,9 +8,11 @@ import { auth, functions, db } from '@/lib/firebase/config';
 import { sendEmailVerification, updateProfile } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
-import { ArrowRightIcon, ArrowLeftIcon, PhoneIcon, CameraIcon, TrashIcon } from '@heroicons/react/24/outline';
 import PhoneInputWithCountry from '@/components/common/PhoneInputWithCountry';
 import Link from 'next/link';
+import AmbeButton from '@/components/common/AmbeButton';
+import AmbeTextField from '@/components/common/AmbeTextField';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -30,18 +32,12 @@ export default function SignUpPage() {
     password: '',
     confirmPassword: '',
     phone: '',
-    // Date of birth is optional, captured as three parts like the mobile app's
-    // sign-up flow and sent to createUser as a 'YYYY-MM-DD' string (or null).
     dobDay: '',
     dobMonth: '',
     dobYear: '',
-    // Sex assigned at birth. Only 'Male' narrows the extended questionnaire;
-    // every other value — including blank — leaves all questions in place.
     genderAtBirth: '',
     specializations: [],
     customSpecialization: '',
-    // Career information (doctor only) — mirrors the mobile app's
-    // step_doctor_career_info.dart fields.
     practiceStartYear: '',
     medicalSchool: '',
     professionalTitles: [],
@@ -56,8 +52,6 @@ export default function SignUpPage() {
   const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
   const years = Array.from({ length: 100 }, (_, i) => String(new Date().getFullYear() - i));
 
-  // 'YYYY-MM-DD' once all three parts are chosen, otherwise null. Never
-  // undefined: Firestore rejects undefined values, which fails createUser.
   const getDateOfBirth = () => {
     const { dobDay, dobMonth, dobYear } = formData;
     if (!dobDay || !dobMonth || !dobYear) return null;
@@ -93,13 +87,10 @@ export default function SignUpPage() {
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // The three date-of-birth selects share a single `dateOfBirth` error.
     const errorKey = field.startsWith('dob') ? 'dateOfBirth' : field;
     setErrors(prev => ({ ...prev, [errorKey]: '' }));
   };
 
-  // Same toggle pattern as GetMatched.jsx's toggleField: add if absent,
-  // remove if present.
   const toggleSpecialization = (value) => {
     setFormData(prev => ({
       ...prev,
@@ -138,13 +129,13 @@ export default function SignUpPage() {
     const newErrors = {};
 
     switch (step) {
-      case 1: // User type selection
+      case 1:
         if (!formData.userType) {
-          newErrors.userType = 'Please select user type';
+          newErrors.userType = 'Please select a role before continuing.';
         }
         break;
 
-      case 2: // Basic info
+      case 2:
         if (!formData.firstName.trim()) {
           newErrors.firstName = 'First name is required';
         }
@@ -153,80 +144,63 @@ export default function SignUpPage() {
         }
         if (!formData.email.trim()) {
           newErrors.email = 'Email is required';
-        } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
           newErrors.email = 'Invalid email address';
         }
+        break;
+
+      case 3:
+        if (!formData.phone.trim()) {
+          newErrors.phone = 'Phone number is required';
+        }
+        break;
+
+      case 4:
         if (!formData.password) {
           newErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-          newErrors.password = 'Password must be at least 6 characters';
+        } else if (formData.password.length < 8) {
+          newErrors.password = 'Password must be at least 8 characters';
         }
         if (formData.password !== formData.confirmPassword) {
           newErrors.confirmPassword = 'Passwords do not match';
         }
-        // Date of birth is optional, but a partial or impossible date (e.g.
-        // February 31) must not reach createUser.
-        {
-          const parts = [formData.dobDay, formData.dobMonth, formData.dobYear];
-          const filled = parts.filter(Boolean).length;
-          if (filled > 0 && filled < 3) {
-            newErrors.dateOfBirth = 'Please select month, day and year';
-          } else if (filled === 3) {
-            const monthIndex = months.indexOf(formData.dobMonth);
-            const date = new Date(Number(formData.dobYear), monthIndex, Number(formData.dobDay));
-            if (date.getDate() !== Number(formData.dobDay) || date.getMonth() !== monthIndex) {
-              newErrors.dateOfBirth = 'Please select a valid date';
-            } else if (date > new Date()) {
-              newErrors.dateOfBirth = 'Date of birth cannot be in the future';
-            }
-          }
-        }
         break;
 
-      case 3: // Phone number
-        if (!formData.phone.trim()) {
-          newErrors.phone = 'Phone number is required';
-        } else if (!/^\+\d{8,16}$/.test(formData.phone.replace(/[\s-]/g, ''))) {
-          newErrors.phone = 'Please enter a valid phone number with country code';
-        }
-        break;
-
-      case 4: // Doctor specialization (multi-select)
+      case 5:
         if (formData.userType === 'doctor') {
-          if (formData.specializations.length === 0) {
-            newErrors.specialization = 'Please select at least one specialization';
-          }
-          if (formData.specializations.includes('general_health') && !formData.customSpecialization.trim()) {
-            newErrors.customSpecialization = 'Please specify your specialization';
-          }
-        }
-        break;
-
-      case 5: // Doctor career information
-        if (formData.userType === 'doctor') {
-          const yearText = formData.practiceStartYear.trim();
-          if (!yearText) {
-            newErrors.practiceStartYear = 'Please enter a year';
-          } else if (!/^\d+$/.test(yearText)) {
-            newErrors.practiceStartYear = 'Please enter a valid year';
+          if (!formData.practiceStartYear) {
+            newErrors.practiceStartYear = 'Practice start year is required';
           } else {
-            const year = Number(yearText);
-            if (year < 1950 || year > currentYear) {
-              newErrors.practiceStartYear = `Please enter a year between 1950 and ${currentYear}`;
+            const year = Number(formData.practiceStartYear);
+            if (Number.isNaN(year) || year < 1950 || year > currentYear) {
+              newErrors.practiceStartYear = `Enter a valid year between 1950 and ${currentYear}`;
             }
           }
           if (!formData.medicalSchool.trim()) {
-            newErrors.medicalSchool = 'Please enter your medical school';
+            newErrors.medicalSchool = 'Medical school is required';
           }
           if (formData.professionalTitles.length === 0) {
-            newErrors.professionalTitles = 'Please select at least one professional title';
-          } else if (formData.professionalTitles.includes('Other') && !formData.customProfessionalTitle.trim()) {
-            newErrors.customProfessionalTitle = 'Please specify your professional title';
+            newErrors.professionalTitles = 'Select at least one professional title';
+          }
+          if (
+            formData.professionalTitles.includes('Other') &&
+            !formData.customProfessionalTitle.trim()
+          ) {
+            newErrors.customProfessionalTitle = 'Specify your professional title';
+          }
+          if (formData.specializations.length === 0) {
+            newErrors.specialization = 'Please select at least one area of focus';
+          }
+          if (
+            formData.specializations.includes('general_health') &&
+            !formData.customSpecialization.trim()
+          ) {
+            newErrors.customSpecialization = 'Please specify your other specialization';
           }
         }
         break;
 
-      case 6: // Doctor documents
+      case 6:
         if (formData.userType === 'doctor') {
           if (!documents.license) {
             newErrors.license = 'Medical license is required';
@@ -236,20 +210,34 @@ export default function SignUpPage() {
           }
         }
         break;
+
+      case 7:
+        break;
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const getStepCount = () => {
+    return formData.userType === 'doctor' ? 7 : 4;
+  };
+
   const handleNext = () => {
     if (validateStep()) {
-      setStep(prev => prev + 1);
+      if (step === 4 && formData.userType !== 'doctor') {
+        handleSubmit();
+      } else if (step === 7 && formData.userType === 'doctor') {
+        handleSubmit();
+      } else {
+        setStep(prev => prev + 1);
+      }
     }
   };
 
   const handleBack = () => {
-    setStep(prev => prev - 1);
+    setError('');
+    setStep(prev => Math.max(1, prev - 1));
   };
 
   const handleFileUpload = (type, file) => {
@@ -260,9 +248,13 @@ export default function SignUpPage() {
   const handleProfilePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({ ...prev, profilePhoto: 'Image must be under 5MB' }));
+        return;
+      }
       setProfilePhoto(file);
-      const url = URL.createObjectURL(file);
-      setProfilePhotoPreview(url);
+      setProfilePhotoPreview(URL.createObjectURL(file));
+      setErrors(prev => ({ ...prev, profilePhoto: '' }));
     }
   };
 
@@ -270,13 +262,10 @@ export default function SignUpPage() {
     setProfilePhoto(null);
     if (profilePhotoPreview) {
       URL.revokeObjectURL(profilePhotoPreview);
+      setProfilePhotoPreview(null);
     }
-    setProfilePhotoPreview(null);
   };
 
-  // Reads a File as base64 (stripping the `data:*/*;base64,` prefix) so it
-  // can be sent inline in the createUser payload, matching the shape the
-  // mobile app builds in step_confirmation.dart.
   const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -318,43 +307,23 @@ export default function SignUpPage() {
 
     try {
       const isDoctor = formData.userType === 'doctor';
-
-      // Documents must be part of the single createUser payload — the
-      // backend (and the mobile app's step_confirmation.dart) uploads them
-      // as part of account creation, not as a separate post-creation step.
       const documentsPayload = isDoctor ? await buildDocumentsPayload() : [];
 
-      // The Auth account is created by the cloud function, not here — same
-      // order as the mobile sign-up flow. Creating it client-side first left an
-      // orphaned Auth user whenever the profile write failed, and every retry
-      // then died on auth/email-already-in-use before reaching the function.
       const createUser = httpsCallable(functions, 'createUser');
-      // createUser requires `password` and `role`; without them it rejects with
-      // "Name and role are required" and no Firestore profile is ever written.
-      // `user_type` is kept for backwards compatibility with anything still
-      // reading it.
       const result = await createUser({
-        // Trimmed to match signIn below, which trims before authenticating.
         email: formData.email.trim(),
         password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-        // The doctor branch of createUser reads `phone_number`; `phone` alone
-        // would be dropped.
         phone_number: formData.phone,
         date_of_birth: getDateOfBirth(),
         gender_at_birth: formData.genderAtBirth || null,
+        genderAtBirth: formData.genderAtBirth || null,
         referral_code: formData.referralCode ? formData.referralCode.trim().toUpperCase() : null,
         role: formData.userType,
         user_type: formData.userType,
         customSpecialization: formData.customSpecialization,
-        // Doctor-only fields. Backend expects `doctor_fields` as an array —
-        // the old scalar `specialization` field has been fully replaced.
-        // `practice_start_year`, `medical_school`, and `professional_title`
-        // match the shape the mobile app's step_confirmation.dart sends and
-        // functions/index.js reads (professional_title is a single joined
-        // string, not an array).
         ...(isDoctor
           ? {
               doctor_fields: formData.specializations,
@@ -373,13 +342,9 @@ export default function SignUpPage() {
           : {}),
       });
 
-      // createUser resolves with { uid } — there is no `success` flag.
       if (result.data?.uid) {
-        // Sign in with the credentials the function just registered, so the
-        // user is authenticated.
         const userType = await signIn(formData.email, formData.password);
 
-        // Upload profile picture if chosen
         if (profilePhoto) {
           try {
             const storage = getStorage();
@@ -398,11 +363,10 @@ export default function SignUpPage() {
               { merge: true }
             );
           } catch (photoErr) {
-            console.warn("Profile photo upload warning during signup:", photoErr);
+            console.warn("Profile photo upload warning:", photoErr);
           }
         }
 
-        // Setup referral relationship if a referral code was entered
         if (!isDoctor && formData.referralCode && formData.referralCode.trim()) {
           try {
             const enteredCode = formData.referralCode.trim().toUpperCase();
@@ -427,11 +391,10 @@ export default function SignUpPage() {
               );
             }
           } catch (refErr) {
-            console.warn("Referral setup warning during signup:", refErr);
+            console.warn("Referral warning:", refErr);
           }
         }
 
-        // Send email verification with continueUrl pointing to web continue handler
         try {
           if (auth.currentUser) {
             const roleParam = userType || formData.userType;
@@ -445,82 +408,89 @@ export default function SignUpPage() {
             });
           }
         } catch (verifyErr) {
-          console.warn("Initial email verification error (may be rate-limited):", verifyErr);
+          console.warn("Email verification error:", verifyErr);
         }
 
-        // Navigate to email verification step
         router.push(`/verify-email?email=${encodeURIComponent(formData.email.trim())}&role=${userType || formData.userType}`);
       }
     } catch (err) {
       console.error('Signup error:', err);
-      setError(err.message || 'Failed to create account');
+      setError(err.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStepCount = () => {
-    return formData.userType === 'doctor' ? 7 : 3;
-  };
-
   const renderStep = () => {
     switch (step) {
       case 1:
+        // Flutter StepChooseProfileType
         return (
-          <div>
-            <h2
-              className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-            >
-              Join as a User or Doctor
+          <div className="py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-8 font-sans">
+              Who are you signing up as?
             </h2>
 
-            <div className="space-y-4">
-              {[
-                {
-                  type: "user",
-                  title: "I am a User",
-                  desc: "Book consultations and manage your wellness journey",
-                },
-                {
-                  type: "doctor",
-                  title: "I am a Healthcare Provider",
-                  desc: "Provide consultations and manage your practice",
-                },
-              ].map(({ type, title, desc }) => {
-                const isSelected = formData.userType === type;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => updateFormData("userType", type)}
-                    className={`w-full p-5 text-left rounded-2xl border-2 transition-all cursor-pointer ${isSelected
-                        ? "border-[#C2691C] bg-[#FFF8F2] shadow-sm"
-                        : "border-[#E7E2D9] hover:border-[#C8996A] bg-white"
-                      }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-semibold text-base sm:text-lg" style={{ color: "#1A1A1A" }}>
-                          {title}
-                        </h3>
-                        <p className="text-xs sm:text-sm mt-1 leading-relaxed" style={{ color: "#6B6862" }}>
-                          {desc}
-                        </p>
-                      </div>
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center mt-0.5 ${isSelected ? "border-[#C2691C]" : "border-[#D0D0D0]"
-                          }`}
-                      >
-                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#C2691C]" />}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-6">
+              {/* Patient Card */}
+              <div
+                onClick={() => updateFormData("userType", "user")}
+                className={`
+                  h-36 sm:h-40 rounded-[20px] p-3 sm:p-4 flex flex-col items-center justify-center
+                  cursor-pointer transition-all duration-200 select-none shadow-md
+                  ${
+                    formData.userType === "user"
+                      ? "bg-[#FFD3AC] text-black ring-2 ring-[#FFD3AC]"
+                      : "bg-white text-black hover:bg-gray-50"
+                  }
+                `}
+              >
+                <div
+                  className={`
+                    w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3
+                    ${formData.userType === "user" ? "bg-black/80 text-[#FFD3AC]" : "bg-black text-white"}
+                  `}
+                >
+                  <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+                <span className="font-semibold text-sm sm:text-base font-sans tracking-tight">
+                  I&apos;m a Patient
+                </span>
+              </div>
+
+              {/* Doctor Card */}
+              <div
+                onClick={() => updateFormData("userType", "doctor")}
+                className={`
+                  h-36 sm:h-40 rounded-[20px] p-3 sm:p-4 flex flex-col items-center justify-center
+                  cursor-pointer transition-all duration-200 select-none shadow-md
+                  ${
+                    formData.userType === "doctor"
+                      ? "bg-[#FFD3AC] text-black ring-2 ring-[#FFD3AC]"
+                      : "bg-white text-black hover:bg-gray-50"
+                  }
+                `}
+              >
+                <div
+                  className={`
+                    w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3
+                    ${formData.userType === "doctor" ? "bg-black/80 text-[#FFD3AC]" : "bg-black text-white"}
+                  `}
+                >
+                  <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8-2h4v2h-4V4zm8 16H4V8h16v12zm-9-2h2v-3h3v-2h-3V9h-2v3H8v2h3z" />
+                  </svg>
+                </div>
+                <span className="font-semibold text-sm sm:text-base font-sans tracking-tight">
+                  I&apos;m a Doctor
+                </span>
+              </div>
             </div>
+
             {errors.userType && (
-              <p className="text-xs mt-3 text-center" style={{ color: "#C0392B" }}>
+              <p className="text-red-400 text-sm text-center font-sans mb-4">
                 {errors.userType}
               </p>
             )}
@@ -529,655 +499,430 @@ export default function SignUpPage() {
 
       case 2:
         return (
-          <div>
-            <h2
-              className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-            >
-              Create Your Account
+          <div className="space-y-4 py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-6 font-sans">
+              Personal Information
             </h2>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    name="given-name"
-                    autoComplete="given-name"
-                    value={formData.firstName}
-                    onChange={(e) => updateFormData("firstName", e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="John"
-                  />
-                  {errors.firstName && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.firstName}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    name="family-name"
-                    autoComplete="family-name"
-                    value={formData.lastName}
-                    onChange={(e) => updateFormData("lastName", e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="Doe"
-                  />
-                  {errors.lastName && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.lastName}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={(e) => updateFormData("email", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="john@example.com"
-                />
-                {errors.email && (
-                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                    {errors.email}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="new-password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={(e) => updateFormData("password", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="At least 6 characters"
-                />
-                {errors.password && (
-                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                    {errors.password}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="new-password"
-                  autoComplete="new-password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => updateFormData("confirmPassword", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                  style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  placeholder="Confirm your password"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
-
-              {formData.userType !== "doctor" && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Date of Birth <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(optional)</span>
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                    <select
-                      value={formData.dobMonth}
-                      onChange={(e) => updateFormData("dobMonth", e.target.value)}
-                      className="w-full px-3 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                      style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    >
-                      <option value="">Month</option>
-                      {months.map((month) => (
-                        <option key={month} value={month}>{month}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={formData.dobDay}
-                      onChange={(e) => updateFormData("dobDay", e.target.value)}
-                      className="w-full px-3 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                      style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    >
-                      <option value="">Day</option>
-                      {days.map((day) => (
-                        <option key={day} value={day}>{day}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={formData.dobYear}
-                      onChange={(e) => updateFormData("dobYear", e.target.value)}
-                      className="w-full px-3 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                      style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    >
-                      <option value="">Year</option>
-                      {years.map((year) => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {errors.dateOfBirth && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.dateOfBirth}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {formData.userType !== "doctor" && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Sex at Birth <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(optional)</span>
-                  </label>
-                  <select
-                    value={formData.genderAtBirth}
-                    onChange={(e) => updateFormData("genderAtBirth", e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                  >
-                    <option value="">Select</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                  <p className="text-[11px] mt-1" style={{ color: "#9A948B" }}>
-                    Used only to skip health questions that do not apply to you.
-                  </p>
-                </div>
-              )}
-
-              {formData.userType !== "doctor" && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Referral Code <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(optional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.referralCode}
-                    onChange={(e) => updateFormData("referralCode", e.target.value.toUpperCase())}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C] uppercase"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="e.g. A1B2C3D4"
-                    maxLength={12}
-                  />
-                  <p className="text-[11px] mt-1" style={{ color: "#9A948B" }}>
-                    If a friend referred you, enter their referral code here.
-                  </p>
-                </div>
-              )}
+            <div className="grid grid-cols-2 gap-3">
+              <AmbeTextField
+                placeholder="First name"
+                value={formData.firstName}
+                onChange={(e) => updateFormData("firstName", e.target.value)}
+                error={errors.firstName}
+                required
+              />
+              <AmbeTextField
+                placeholder="Last name"
+                value={formData.lastName}
+                onChange={(e) => updateFormData("lastName", e.target.value)}
+                error={errors.lastName}
+                required
+              />
             </div>
+
+            <AmbeTextField
+              type="email"
+              placeholder="Email address"
+              value={formData.email}
+              onChange={(e) => updateFormData("email", e.target.value)}
+              error={errors.email}
+              required
+              autoComplete="email"
+              leadingIcon={
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
+              }
+            />
+
+            {/* Optional DOB & Sex Assigned at Birth */}
+            <div className="pt-2">
+              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
+                Date of Birth (Optional)
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <select
+                  value={formData.dobMonth}
+                  onChange={(e) => updateFormData("dobMonth", e.target.value)}
+                  className="bg-white text-[#1E1E1E] text-xs font-sans rounded-full px-3 py-3 outline-none border border-transparent focus:border-[#FFD3AC]"
+                >
+                  <option value="">Month</option>
+                  {months.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <select
+                  value={formData.dobDay}
+                  onChange={(e) => updateFormData("dobDay", e.target.value)}
+                  className="bg-white text-[#1E1E1E] text-xs font-sans rounded-full px-3 py-3 outline-none border border-transparent focus:border-[#FFD3AC]"
+                >
+                  <option value="">Day</option>
+                  {days.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <select
+                  value={formData.dobYear}
+                  onChange={(e) => updateFormData("dobYear", e.target.value)}
+                  className="bg-white text-[#1E1E1E] text-xs font-sans rounded-full px-3 py-3 outline-none border border-transparent focus:border-[#FFD3AC]"
+                >
+                  <option value="">Year</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-1">
+              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
+                Sex Assigned at Birth (Optional)
+              </label>
+              <div className="relative">
+                <select
+                  value={formData.genderAtBirth}
+                  onChange={(e) => updateFormData("genderAtBirth", e.target.value)}
+                  className="w-full bg-white text-[#1E1E1E] text-xs sm:text-sm font-sans rounded-full pl-4 pr-10 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm"
+                >
+                  <option value="">Select</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#1E1E1E]">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Referral Code - matches Flutter StepPersonalInfoUser placement */}
+            {formData.userType !== "doctor" && (
+              <div className="pt-2">
+                <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5">
+                  Referral Code (Optional)
+                </label>
+                <AmbeTextField
+                  placeholder="Enter referral code"
+                  value={formData.referralCode}
+                  onChange={(e) => updateFormData("referralCode", e.target.value.toUpperCase())}
+                  leadingIcon={
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 .5c1.38 0 2.5 1.12 2.5 2.5S13.38 11.5 12 11.5 9.5 10.38 9.5 9 10.62 6.5 12 6.5zM19 19H5v-1c0-2.33 4.33-3.5 7-3.5s7 1.17 7 3.5v1z" />
+                    </svg>
+                  }
+                />
+              </div>
+            )}
           </div>
         );
 
       case 3:
         return (
-          <div>
-            <h2
-              className="text-2xl sm:text-3xl font-medium mb-2 text-center select-none"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-            >
-              Add Your Phone Number
+          <div className="space-y-4 py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-6 font-sans">
+              Phone Number
             </h2>
-            <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-              We&apos;ll use this to send appointment reminders and important updates.
-            </p>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                Phone Number
-              </label>
+            <div className="bg-white rounded-[26px] p-2">
               <PhoneInputWithCountry
                 value={formData.phone}
-                onChange={(fullPhone) => updateFormData("phone", fullPhone)}
-                error={!!errors.phone}
-                defaultCountryCode="US"
-                placeholder="Phone number"
+                onChange={(phone) => updateFormData("phone", phone)}
+                error={errors.phone}
               />
-              {errors.phone && (
-                <p className="text-xs mt-1.5" style={{ color: "#C0392B" }}>
-                  {errors.phone}
-                </p>
+            </div>
+            {errors.phone && (
+              <p className="text-xs text-red-400 px-3">{errors.phone}</p>
+            )}
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-4 py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-6 font-sans">
+              Set Your Password
+            </h2>
+
+            <AmbeTextField
+              type="password"
+              placeholder="Password (min 8 characters)"
+              value={formData.password}
+              onChange={(e) => updateFormData("password", e.target.value)}
+              error={errors.password}
+              showPasswordToggle
+              required
+              leadingIcon={
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                </svg>
+              }
+            />
+
+            <AmbeTextField
+              type="password"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+              error={errors.confirmPassword}
+              showPasswordToggle
+              required
+              leadingIcon={
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+                </svg>
+              }
+            />
+          </div>
+        );
+
+      case 5:
+        // Doctor career & specializations
+        return (
+          <div className="space-y-4 py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-4 font-sans">
+              Career &amp; Specialty
+            </h2>
+
+            <div className="grid grid-cols-2 gap-3">
+              <AmbeTextField
+                placeholder="Practice Start Year (e.g. 2015)"
+                value={formData.practiceStartYear}
+                onChange={(e) => updateFormData("practiceStartYear", e.target.value)}
+                error={errors.practiceStartYear}
+              />
+              <AmbeTextField
+                placeholder="Medical School"
+                value={formData.medicalSchool}
+                onChange={(e) => updateFormData("medicalSchool", e.target.value)}
+                error={errors.medicalSchool}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
+                Professional Titles
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PROFESSIONAL_TITLES.map((t) => {
+                  const sel = formData.professionalTitles.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => toggleProfessionalTitle(t)}
+                      className={`
+                        px-4 py-2 rounded-full text-xs font-semibold transition cursor-pointer
+                        ${sel ? "bg-[#FFD3AC] text-[#1E1E1E]" : "bg-white/10 text-white hover:bg-white/20"}
+                      `}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.professionalTitles && (
+                <p className="text-xs text-red-400 mt-1">{errors.professionalTitles}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
+                Clinical Focus Areas
+              </label>
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                {specializations.map(({ value, label }) => {
+                  const sel = formData.specializations.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => toggleSpecialization(value)}
+                      className={`
+                        p-2.5 text-left rounded-xl text-xs font-medium transition cursor-pointer
+                        ${sel ? "bg-[#FFD3AC] text-[#1E1E1E] font-bold" : "bg-white/10 text-white hover:bg-white/20"}
+                      `}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.specialization && (
+                <p className="text-xs text-red-400 mt-1">{errors.specialization}</p>
               )}
             </div>
           </div>
         );
 
-      case 4:
-        if (formData.userType === "doctor") {
-          return (
-            <div>
-              <h2
-                className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
-                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-              >
-                Select Your Specialization
-              </h2>
-              <p className="text-sm text-center mb-4" style={{ color: "#6B6862" }}>
-                Select all fields of practice that apply.
-              </p>
-              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                {specializations.map((spec) => (
-                  <button
-                    key={spec.value}
-                    type="button"
-                    onClick={() => toggleSpecialization(spec.value)}
-                    className={`w-full p-3.5 text-left rounded-xl border transition-all text-sm ${formData.specializations.includes(spec.value)
-                        ? "border-[#C2691C] bg-[#FFF8F2] font-semibold text-[#1A1A1A]"
-                        : "border-[#E7E2D9] hover:border-[#C8996A] bg-white text-[#353535]"
-                      }`}
-                  >
-                    {spec.label}
-                  </button>
-                ))}
-              </div>
-              {errors.specialization && (
-                <p className="text-xs mt-2 text-center" style={{ color: "#C0392B" }}>
-                  {errors.specialization}
-                </p>
-              )}
-
-              {formData.specializations.includes("general_health") && (
-                <div className="mt-4">
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Please specify your specialization
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.customSpecialization}
-                    onChange={(e) => updateFormData("customSpecialization", e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="e.g., Dermatology, Cardiology, etc."
-                  />
-                  {errors.customSpecialization && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.customSpecialization}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        }
-        break;
-
-      case 5:
-        if (formData.userType === "doctor") {
-          return (
-            <div>
-              <h2
-                className="text-2xl sm:text-3xl font-medium mb-6 text-center select-none"
-                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-              >
-                Career Information
-              </h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Year Practice Started
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={formData.practiceStartYear}
-                    onChange={(e) => updateFormData("practiceStartYear", e.target.value.replace(/\D/g, ""))}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="Enter year (e.g., 2010)"
-                  />
-                  {errors.practiceStartYear && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.practiceStartYear}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                    Medical School
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.medicalSchool}
-                    onChange={(e) => updateFormData("medicalSchool", e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                    style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                    placeholder="Enter your medical school"
-                  />
-                  {errors.medicalSchool && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.medicalSchool}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#1A1A1A" }}>
-                    Professional Titles <span className="font-normal lowercase" style={{ color: "#9A948B" }}>(select all that apply)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {PROFESSIONAL_TITLES.map((title) => {
-                      const isSelected = formData.professionalTitles.includes(title);
-                      return (
-                        <button
-                          key={title}
-                          type="button"
-                          onClick={() => toggleProfessionalTitle(title)}
-                          className={`px-4 py-2 rounded-full border text-sm font-medium transition-all cursor-pointer ${isSelected
-                              ? "border-[#C2691C] bg-[#FFD3AC] text-[#1A1A1A]"
-                              : "border-[#E7E2D9] hover:border-[#C8996A] bg-white text-[#353535]"
-                            }`}
-                        >
-                          {title}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {errors.professionalTitles && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.professionalTitles}
-                    </p>
-                  )}
-
-                  {formData.professionalTitles.includes("Other") && (
-                    <div className="mt-4">
-                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#1A1A1A" }}>
-                        Please specify your professional title <span style={{ color: "#C0392B" }}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.customProfessionalTitle}
-                        onChange={(e) => updateFormData("customProfessionalTitle", e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors bg-white focus:border-[#C2691C]"
-                        style={{ borderColor: "#E7E2D9", color: "#1A1A1A" }}
-                        placeholder="e.g., MBBS, ND, PharmD, etc."
-                      />
-                      {errors.customProfessionalTitle && (
-                        <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                          {errors.customProfessionalTitle}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 rounded-xl border border-[#E7E2D9] bg-[#FAF8F5]">
-                  <p className="text-xs leading-relaxed" style={{ color: "#6B6862" }}>
-                    This information helps us verify your credentials and match you with appropriate patients.
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        }
-        break;
-
       case 6:
-        if (formData.userType === "doctor") {
-          return (
-            <div>
-              <h2
-                className="text-2xl sm:text-3xl font-medium mb-2 text-center select-none"
-                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-              >
-                Upload Required Documents
-              </h2>
-              <p className="text-sm text-center mb-6" style={{ color: "#6B6862" }}>
-                Please upload the following documents for verification. All documents will be securely stored.
-              </p>
+        // Doctor documents
+        return (
+          <div className="space-y-4 py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-4 font-sans">
+              Verification Documents
+            </h2>
 
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl border border-[#E7E2D9] bg-white">
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#1A1A1A" }}>
-                    Medical License <span style={{ color: "#C0392B" }}>*</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileUpload("license", e.target.files[0])}
-                    className="w-full text-xs text-[#6B6862]"
-                  />
-                  {documents.license && (
-                    <p className="text-xs mt-1 font-medium" style={{ color: "#2E7D32" }}>
-                      ✓ {documents.license.name}
-                    </p>
-                  )}
-                  {errors.license && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.license}
-                    </p>
-                  )}
-                </div>
+            <div className="space-y-3">
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/15">
+                <label className="block text-xs uppercase font-semibold text-[#FFD3AC] mb-1">
+                  Medical License *
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFileUpload("license", e.target.files?.[0])}
+                  className="w-full text-xs text-gray-300"
+                />
+                {documents.license && (
+                  <p className="text-xs text-emerald-400 mt-1">✓ {documents.license.name}</p>
+                )}
+                {errors.license && (
+                  <p className="text-xs text-red-400 mt-1">{errors.license}</p>
+                )}
+              </div>
 
-                <div className="p-4 rounded-xl border border-[#E7E2D9] bg-white">
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#1A1A1A" }}>
-                    Government ID <span style={{ color: "#C0392B" }}>*</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileUpload("id", e.target.files[0])}
-                    className="w-full text-xs text-[#6B6862]"
-                  />
-                  {documents.id && (
-                    <p className="text-xs mt-1 font-medium" style={{ color: "#2E7D32" }}>
-                      ✓ {documents.id.name}
-                    </p>
-                  )}
-                  {errors.id && (
-                    <p className="text-xs mt-1" style={{ color: "#C0392B" }}>
-                      {errors.id}
-                    </p>
-                  )}
-                </div>
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/15">
+                <label className="block text-xs uppercase font-semibold text-[#FFD3AC] mb-1">
+                  Government ID *
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFileUpload("id", e.target.files?.[0])}
+                  className="w-full text-xs text-gray-300"
+                />
+                {documents.id && (
+                  <p className="text-xs text-emerald-400 mt-1">✓ {documents.id.name}</p>
+                )}
+                {errors.id && (
+                  <p className="text-xs text-red-400 mt-1">{errors.id}</p>
+                )}
+              </div>
 
-                <div className="p-4 rounded-xl border border-[#E7E2D9] bg-white">
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#1A1A1A" }}>
-                    Certifications <span className="font-normal" style={{ color: "#9A948B" }}>(Optional)</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileUpload("certifications", e.target.files[0])}
-                    className="w-full text-xs text-[#6B6862]"
-                  />
-                  {documents.certifications && (
-                    <p className="text-xs mt-1 font-medium" style={{ color: "#2E7D32" }}>
-                      ✓ {documents.certifications.name}
-                    </p>
-                  )}
-                </div>
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/15">
+                <label className="block text-xs uppercase font-semibold text-[#FFD3AC] mb-1">
+                  Board Certifications (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFileUpload("certifications", e.target.files?.[0])}
+                  className="w-full text-xs text-gray-300"
+                />
+                {documents.certifications && (
+                  <p className="text-xs text-emerald-400 mt-1">✓ {documents.certifications.name}</p>
+                )}
               </div>
             </div>
-          );
-        }
-        break;
+          </div>
+        );
 
       case 7:
-        if (formData.userType === "doctor") {
-          return (
-            <div className="text-center">
-              <h2
-                className="text-2xl sm:text-3xl font-medium mb-2 select-none"
-                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
-              >
-                Upload Profile Picture
-              </h2>
-              <p className="text-sm mb-8" style={{ color: "#6B6862" }}>
-                Add a professional photo so patients can recognize you during consultations.
-              </p>
+        // Doctor photo
+        return (
+          <div className="text-center py-2">
+            <h2 className="text-white text-xl font-semibold mb-2 font-sans">
+              Profile Picture
+            </h2>
+            <p className="text-gray-400 text-xs mb-6">
+              Add a professional photo so patients can recognize you.
+            </p>
 
-              <div className="flex flex-col items-center justify-center space-y-5">
-                <div className="relative w-36 h-36 rounded-full border-2 border-dashed border-[#C8996A] bg-[#FAF8F5] flex items-center justify-center overflow-hidden shadow-sm">
-                  {profilePhotoPreview ? (
-                    <img
-                      src={profilePhotoPreview}
-                      alt="Profile Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-[#8C827A]">
-                      <CameraIcon className="w-12 h-12 text-[#C8996A] mb-1" />
-                      <span className="text-xs font-medium text-[#6B6862]">Add Photo</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <label className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white cursor-pointer transition shadow-sm">
-                    {profilePhotoPreview ? "Change Photo" : "Choose Photo"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleProfilePhotoChange}
-                      className="hidden"
-                    />
-                  </label>
-
-                  {profilePhotoPreview && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveProfilePhoto}
-                      className="px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <TrashIcon className="w-3.5 h-3.5" />
-                      Remove
-                    </button>
-                  )}
-                </div>
-
-                <p className="text-xs text-[#9A948B]">
-                  Optional • JPG, PNG, or WEBP
-                </p>
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="relative w-32 h-32 rounded-full border-2 border-[#FFD3AC] bg-white/10 flex items-center justify-center overflow-hidden">
+                {profilePhotoPreview ? (
+                  <img
+                    src={profilePhotoPreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                )}
               </div>
+
+              <label className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1E1E1E] cursor-pointer hover:bg-white transition shadow-sm">
+                {profilePhotoPreview ? "Change Photo" : "Choose Photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePhotoChange}
+                  className="hidden"
+                />
+              </label>
+
+              {profilePhotoPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveProfilePhoto}
+                  className="text-xs text-red-400 hover:text-red-300"
+                >
+                  Remove photo
+                </button>
+              )}
             </div>
-          );
-        }
-        break;
+          </div>
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F1EA] flex items-center justify-center px-4 py-12 sm:py-16">
-      <div className="max-w-lg w-full">
-        {/* Brand Header */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-block text-3xl sm:text-4xl font-normal tracking-wide transition-opacity hover:opacity-80 select-none"
-            style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: "#1A1A1A" }}
+    <div className="w-full flex flex-col justify-between px-2 sm:px-4">
+      {/* Top Bar matching Flutter RegistrationScaffold */}
+      <div>
+        <div className="flex items-center gap-4 pt-2 pb-4">
+          <AmbeBackButton onClick={step > 1 ? handleBack : () => router.push("/login")} />
+          <h1 className="text-white text-lg sm:text-xl font-semibold tracking-wide font-sans flex-1">
+            Register your profile ({step}/{getStepCount()})
+          </h1>
+        </div>
+
+        {/* Peach Progress Bar */}
+        <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mb-6">
+          <div
+            className="h-full bg-[#FFD3AC] rounded-full transition-all duration-300"
+            style={{ width: `${(step / getStepCount()) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col justify-center">
+        {error && (
+          <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center mb-4">
+            <p className="text-xs text-red-300 font-sans">{error}</p>
+          </div>
+        )}
+
+        {renderStep()}
+
+        {/* Bottom Button matching Flutter AmbeButton */}
+        <div className="pt-6 flex justify-center">
+          <AmbeButton
+            onClick={handleNext}
+            loading={loading}
+            className="w-full sm:w-[260px]"
           >
-            AMBE®
+            {step === getStepCount() ? (loading ? "CREATING ACCOUNT…" : "CREATE ACCOUNT") : "NEXT"}
+          </AmbeButton>
+        </div>
+      </div>
+
+      {/* Already have account */}
+      <div className="text-center pt-6 pb-2">
+        <p className="text-sm font-sans text-gray-200">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-[#FFD3AC] font-semibold hover:underline underline-offset-4 ml-1 inline-block"
+          >
+            Login here
           </Link>
-          <p className="text-xs uppercase tracking-[0.2em] mt-1.5 font-medium" style={{ color: "#C2691C" }}>
-            Join our wellness community
-          </p>
-        </div>
-
-        {/* Stepper Progress */}
-        <div className="mb-6 px-2">
-          <div className="flex gap-2 mb-2">
-            {Array.from({ length: getStepCount() }, (_, i) => (
-              <div
-                key={i}
-                className="flex-1 h-1.5 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: i + 1 <= step ? "#C2691C" : "#E7E2D9",
-                }}
-              />
-            ))}
-          </div>
-          <p className="text-center text-xs font-medium uppercase tracking-wider" style={{ color: "#6B6862" }}>
-            Step {step} of {getStepCount()}
-          </p>
-        </div>
-
-        {/* Form Card */}
-        <div className="bg-white p-7 sm:p-10 rounded-3xl shadow-xl border border-[#E7E2D9]">
-          {error && (
-            <div className="mb-6 p-3.5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl text-center">
-              {error}
-            </div>
-          )}
-
-          {renderStep()}
-
-          {/* Navigation buttons */}
-          <div className="flex justify-between items-center mt-8 pt-4 border-t border-[#F4F1EA]">
-            {step > 1 ? (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex items-center text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
-                style={{ color: "#6B6862" }}
-              >
-                <ArrowLeftIcon className="h-4 w-4 mr-1.5" />
-                Back
-              </button>
-            ) : (
-              <div />
-            )}
-
-            {step < getStepCount() ? (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="flex items-center px-7 py-3 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-sm cursor-pointer"
-              >
-                Next
-                <ArrowRightIcon className="h-4 w-4 ml-1.5" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading}
-                className="px-8 py-3.5 rounded-full text-xs font-medium uppercase tracking-[0.14em] transition-all bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-sm disabled:opacity-50 cursor-pointer"
-              >
-                {loading ? "Creating Account..." : "Create Account"}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Sign in link */}
-        <div className="text-center mt-6">
-          <p className="text-sm" style={{ color: "#6B6862" }}>
-            Already have an account?{" "}
-            <Link href="/login" className="font-semibold hover:underline" style={{ color: "#C2691C" }}>
-              Sign in
-            </Link>
-          </p>
-        </div>
+        </p>
       </div>
     </div>
   );

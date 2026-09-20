@@ -8,6 +8,7 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { UserIcon } from '@heroicons/react/24/outline';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 
 export default function DoctorChatPage() {
   const router = useRouter();
@@ -112,7 +113,7 @@ export default function DoctorChatPage() {
     return (
       <ProtectedRoute userType="doctor">
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -121,14 +122,16 @@ export default function DoctorChatPage() {
   if (!chatData) {
     return (
       <ProtectedRoute userType="doctor">
-        <div className="max-w-4xl mx-auto p-6 text-center">
-          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-4">Chat Not Found</h2>
-          <button
-            onClick={() => router.push('/doctor/messages')}
-            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg hover:bg-[#1A1A1A] transition"
-          >
-            Back to Messages
-          </button>
+        <div className="max-w-md mx-auto p-6 text-center mt-20">
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 backdrop-blur-md">
+            <h2 className="text-xl font-bold text-white mb-4">Chat Not Found</h2>
+            <button
+              onClick={() => router.push('/doctor/messages')}
+              className="bg-[#FFD3AC] text-[#1E1E1E] font-semibold px-6 py-2.5 rounded-full hover:bg-[#ffe0c4] transition"
+            >
+              Back to Messages
+            </button>
+          </div>
         </div>
       </ProtectedRoute>
     );
@@ -139,18 +142,12 @@ export default function DoctorChatPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="h-screen flex flex-col bg-[#FAF8F5]">
+      <div className="h-screen flex flex-col bg-transparent">
         {/* Header */}
-        <div className="bg-white border-b border-[#E7E2D9] px-6 py-4 flex items-center justify-between shadow-2xs">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push('/doctor/messages')}
-              className="p-2 -ml-2 text-[#6B6862] hover:text-[#1A1A1A] rounded-full hover:bg-[#F4F1EA] transition cursor-pointer"
-              aria-label="Back to messages"
-            >
-              ← Back
-            </button>
-            <div className="w-10 h-10 rounded-full overflow-hidden border border-[#FFD3AC]/50 bg-[#FAF8F5] flex items-center justify-center shrink-0">
+        <div className="bg-[#1E1E1E]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3.5">
+            <AmbeBackButton onClick={() => router.push('/doctor/messages')} />
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-[#FFD3AC]/60 bg-black/30 flex items-center justify-center shrink-0">
               {chatData.userPhotoUrl ? (
                 <img
                   src={chatData.userPhotoUrl}
@@ -162,14 +159,14 @@ export default function DoctorChatPage() {
                   }}
                 />
               ) : (
-                <UserIcon className="w-5 h-5 text-[#8C827A]" />
+                <UserIcon className="w-5 h-5 text-[#FFD3AC]" />
               )}
             </div>
             <div>
-              <h1 className="text-base font-semibold text-[#1A1A1A] leading-tight">
+              <h1 className="text-base font-semibold text-white leading-tight">
                 {chatData.userName}
               </h1>
-              <p className="text-xs text-[#8C827A]">
+              <p className="text-xs text-white/60">
                 {chatData.isFirstConsultationCompleted 
                   ? 'Active Patient' 
                   : 'Pending First Consultation'}

@@ -5,6 +5,8 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import {
   doc,
   getDoc,
@@ -344,158 +346,165 @@ export default function CompleteReportPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-3xl mx-auto p-6 space-y-6">
-        <BackButton href="/doctor/consultations" label="Back to Consultations" />
-
-        <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
-          <div className="text-center">
-            <div className="w-14 h-14 mx-auto rounded-full bg-[#F4F1EA] flex items-center justify-center mb-3">
-              <HeartIcon className="w-7 h-7 text-[#C8996A]" />
-            </div>
-            <h1 className="text-2xl font-bold text-[#1A1A1A]">
-              Consultation for {userName}
+      <WebLayoutWrapper>
+        <div className="space-y-6 pb-24">
+          <div className="flex items-center gap-4 pt-2">
+            <AmbeBackButton onClick={() => router.push('/doctor/consultations')} />
+            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+              Consultation Report
             </h1>
-            <p className="text-[#6B6862] mt-1">Please provide your recommendations</p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">
-              {error}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-xl space-y-6">
+            <div className="text-center pb-2 border-b border-white/10">
+              <div className="w-14 h-14 mx-auto rounded-full bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 flex items-center justify-center mb-3">
+                <HeartIcon className="w-7 h-7 text-[#FFD3AC]" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
+                Consultation for {userName}
+              </h2>
+              <p className="text-xs sm:text-sm text-white/60 mt-1">Please provide your medical recommendations</p>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {CATEGORIES.map(({ key, label, icon: Icon }) => (
-              <div key={key} className="bg-[#FAF8F5] rounded-lg p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#F4F1EA] flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-[#C8996A]" />
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/30 text-red-300 rounded-xl p-3.5 text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {CATEGORIES.map(({ key, label, icon: Icon }) => (
+                <div key={key} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-xl bg-[#FFD3AC]/15 border border-[#FFD3AC]/25 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-[#FFD3AC]" />
+                    </div>
+                    <h3 className="font-semibold text-white text-sm sm:text-base">{label}</h3>
                   </div>
-                  <h3 className="font-semibold text-[#1A1A1A]">{label}</h3>
+                  <textarea
+                    value={notesByCategory[key]}
+                    onChange={(e) => updateCategory(key, e.target.value)}
+                    rows={3}
+                    placeholder="Add your recommendations and notes here..."
+                    className="w-full rounded-xl bg-white/5 border border-white/15 p-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-sm leading-relaxed resize-none"
+                  />
                 </div>
+              ))}
+
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
+                <h3 className="font-semibold text-white text-sm sm:text-base mb-3">Additional Notes</h3>
                 <textarea
-                  value={notesByCategory[key]}
-                  onChange={(e) => updateCategory(key, e.target.value)}
-                  rows={3}
-                  placeholder="Add your recommendations and notes here..."
-                  className="w-full rounded-lg border border-[#E7E2D9] p-3 text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#C8996A]"
+                  value={overallNotes}
+                  onChange={(e) => setOverallNotes(e.target.value)}
+                  rows={4}
+                  placeholder="Any additional notes for this consultation..."
+                  className="w-full rounded-xl bg-white/5 border border-white/15 p-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-sm leading-relaxed resize-none"
                 />
               </div>
-            ))}
 
-            <div className="bg-[#FAF8F5] rounded-lg p-5">
-              <h3 className="font-semibold text-[#1A1A1A] mb-3">Notes</h3>
-              <textarea
-                value={overallNotes}
-                onChange={(e) => setOverallNotes(e.target.value)}
-                rows={4}
-                placeholder="Any additional notes for this consultation..."
-                className="w-full rounded-lg border border-[#E7E2D9] p-3 text-[#1A1A1A] focus:outline-none focus:ring-2 focus:ring-[#C8996A]"
-              />
-            </div>
-
-            {/* Recommended Products */}
-            <div className="bg-[#FAF8F5] rounded-lg p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-[#F4F1EA] flex items-center justify-center">
-                  <ShoppingBagIcon className="w-5 h-5 text-[#C8996A]" />
+              {/* Recommended Products */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#FFD3AC]/15 border border-[#FFD3AC]/25 flex items-center justify-center shrink-0">
+                    <ShoppingBagIcon className="w-5 h-5 text-[#FFD3AC]" />
+                  </div>
+                  <h3 className="font-semibold text-white text-sm sm:text-base">Recommended Products</h3>
                 </div>
-                <h3 className="font-semibold text-[#1A1A1A]">Recommended Products</h3>
-              </div>
 
-              {recommendedProducts.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  {recommendedProducts.map((item) => (
-                    <div
-                      key={item.item_id}
-                      className="flex items-center justify-between bg-white rounded-lg p-3 border border-[#E7E2D9]"
-                    >
-                      <div>
-                        <p className="font-medium text-[#1A1A1A]">{item.product_name}</p>
-                        <p className="text-sm text-[#6B6862]">
-                          {item.size} · Qty {item.quantity}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeRecommendedProduct(item.item_id)}
-                        className="text-[#6B6862] hover:text-red-600 p-1"
-                        aria-label={`Remove ${item.product_name}`}
-                      >
-                        <XMarkIcon className="w-5 h-5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <input
-                type="text"
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                placeholder="Search products..."
-                className="w-full rounded-lg border border-[#E7E2D9] p-2.5 text-[#1A1A1A] mb-3 focus:outline-none focus:ring-2 focus:ring-[#C8996A]"
-              />
-
-              {productsLoading ? (
-                <p className="text-sm text-[#6B6862]">Loading products...</p>
-              ) : filteredProducts.length === 0 ? (
-                <p className="text-sm text-[#6B6862]">No products found.</p>
-              ) : (
-                <div className="space-y-2 max-h-72 overflow-y-auto">
-                  {filteredProducts.map((product) => {
-                    const selection = pickerSelections[product.productKey] || {};
-                    return (
+                {recommendedProducts.length > 0 && (
+                  <div className="space-y-2 mb-4">
+                    {recommendedProducts.map((item) => (
                       <div
-                        key={product.productKey}
-                        className="bg-white rounded-lg p-3 border border-[#E7E2D9] flex items-center gap-3"
+                        key={item.item_id}
+                        className="flex items-center justify-between bg-black/30 rounded-xl p-3 border border-white/10"
                       >
-                        <span className="flex-1 text-[#1A1A1A] text-sm font-medium">
-                          {product.product_name}
-                        </span>
-                        <select
-                          value={selection.size || ''}
-                          onChange={(e) => setPickerSelection(product.productKey, 'size', e.target.value)}
-                          className="border border-[#E7E2D9] rounded-lg text-sm p-1.5 text-[#1A1A1A]"
-                        >
-                          <option value="">Size</option>
-                          {product.packs.map((pack) => (
-                            <option key={pack.size} value={pack.size}>{pack.size}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          min="0"
-                          value={selection.quantity || ''}
-                          onChange={(e) => setPickerSelection(product.productKey, 'quantity', Number(e.target.value))}
-                          placeholder="Qty"
-                          className="w-16 border border-[#E7E2D9] rounded-lg text-sm p-1.5 text-[#1A1A1A]"
-                        />
+                        <div>
+                          <p className="font-medium text-white text-sm">{item.product_name}</p>
+                          <p className="text-xs text-white/60">
+                            {item.size} · Qty {item.quantity}
+                          </p>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => addProductToRecommendations(product)}
-                          disabled={!selection.size || !selection.quantity}
-                          className="bg-[#FFD3AC] text-[#1A1A1A] text-sm font-medium px-3 py-1.5 rounded-lg disabled:opacity-40"
+                          onClick={() => removeRecommendedProduct(item.item_id)}
+                          className="text-white/60 hover:text-red-400 p-1.5 rounded-lg hover:bg-white/10 transition cursor-pointer"
+                          aria-label={`Remove ${item.product_name}`}
                         >
-                          Add
+                          <XMarkIcon className="w-5 h-5" />
                         </button>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-[#FFD3AC] text-[#1A1A1A] hover:text-white py-4 rounded-lg hover:bg-[#1A1A1A] transition font-medium disabled:opacity-60"
-            >
-              {submitting ? 'Submitting...' : 'Submit Report'}
-            </button>
-          </form>
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  placeholder="Search products to recommend..."
+                  className="w-full rounded-xl bg-black/30 border border-white/15 p-3 text-white placeholder-white/40 mb-3 focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-sm"
+                />
+
+                {productsLoading ? (
+                  <p className="text-xs text-white/60">Loading products...</p>
+                ) : filteredProducts.length === 0 ? (
+                  <p className="text-xs text-white/60">No products found.</p>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    {filteredProducts.map((product) => {
+                      const selection = pickerSelections[product.productKey] || {};
+                      return (
+                        <div
+                          key={product.productKey}
+                          className="bg-black/20 rounded-xl p-3 border border-white/10 flex items-center gap-3 flex-wrap sm:flex-nowrap"
+                        >
+                          <span className="flex-1 text-white text-sm font-medium min-w-[120px]">
+                            {product.product_name}
+                          </span>
+                          <select
+                            value={selection.size || ''}
+                            onChange={(e) => setPickerSelection(product.productKey, 'size', e.target.value)}
+                            className="border border-white/15 bg-[#2D2D30] rounded-lg text-xs p-2 text-white outline-none focus:border-[#FFD3AC]"
+                          >
+                            <option value="">Size</option>
+                            {product.packs.map((pack) => (
+                              <option key={pack.size} value={pack.size}>{pack.size}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="number"
+                            min="0"
+                            value={selection.quantity || ''}
+                            onChange={(e) => setPickerSelection(product.productKey, 'quantity', Number(e.target.value))}
+                            placeholder="Qty"
+                            className="w-16 border border-white/15 bg-[#2D2D30] rounded-lg text-xs p-2 text-white outline-none focus:border-[#FFD3AC]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addProductToRecommendations(product)}
+                            disabled={!selection.size || !selection.quantity}
+                            className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] text-xs font-semibold px-3.5 py-2 rounded-lg disabled:opacity-40 transition cursor-pointer"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold transition shadow-lg text-base disabled:opacity-60 cursor-pointer"
+              >
+                {submitting ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

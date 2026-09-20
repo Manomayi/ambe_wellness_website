@@ -110,8 +110,8 @@ export default function DoctorNotificationsSettingsPage() {
     <div className="max-w-lg mx-auto p-6 space-y-6">
       <BackButton href="/doctor/menu" label="Back to Menu" />
       <div>
-        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Notification Settings</h1>
-        <p className="text-sm text-[#6B6862] mt-1">
+        <h1 className="text-2xl font-bold text-white">Notification Settings</h1>
+        <p className="text-sm text-white/70 mt-1">
           Manage your email notification preferences.
         </p>
       </div>

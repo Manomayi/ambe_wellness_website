@@ -56,21 +56,28 @@ export default function UserCheckoutPage() {
     if (!user) return;
 
     // Listen to user data
-    const unsubscribeUser = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        setUserData(data);
-        
-        // Set delivery address
-        if (data.delivery_address) {
-          const addr = data.delivery_address;
-          setDeliveryAddress(
-            `${addr.streetNumber} ${addr.streetName}, ${addr.city}, ${addr.state}, ${addr.zipCode}, ${addr.country}`
-          );
-          setAddressForm(addr);
+    const unsubscribeUser = onSnapshot(
+      doc(db, 'users', user.uid),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setUserData(data);
+          
+          // Set delivery address
+          if (data.delivery_address) {
+            const addr = data.delivery_address;
+            setDeliveryAddress(
+              `${addr.streetNumber} ${addr.streetName}, ${addr.city}, ${addr.state}, ${addr.zipCode}, ${addr.country}`
+            );
+            setAddressForm(addr);
+          }
         }
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to user data:', err);
       }
-    });
+    );
 
     // Listen to cart items
     const unsubscribeCart = onSnapshot(
@@ -81,6 +88,11 @@ export default function UserCheckoutPage() {
           ...doc.data()
         }));
         setCartItems(items);
+        setLoading(false);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to cart items:', err);
         setLoading(false);
       }
     );
@@ -366,6 +378,7 @@ export default function UserCheckoutPage() {
             onSelectMethod={setPaymentMethod}
             isTestMode={isTestMode}
             disabled={processing}
+            labelClassName="text-[#1A1A1A]"
           />
         </div>
 

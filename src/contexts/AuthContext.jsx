@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { 
   User, 
   onAuthStateChanged, 
@@ -22,41 +22,43 @@ export function AuthProvider({ children }) {
   const [verification, setVerification] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const profileUnsubscribeRef = useRef(null);
+  const verificationUnsubscribeRef = useRef(null);
+
   useEffect(() => {
-    let profileUnsubscribe;
-    let verificationUnsubscribe;
-    
-    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      if (profileUnsubscribe) {
-        profileUnsubscribe();
-        profileUnsubscribe = undefined;
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      if (profileUnsubscribeRef.current) {
+        profileUnsubscribeRef.current();
+        profileUnsubscribeRef.current = null;
       }
-      if (verificationUnsubscribe) {
-        verificationUnsubscribe();
-        verificationUnsubscribe = undefined;
+      if (verificationUnsubscribeRef.current) {
+        verificationUnsubscribeRef.current();
+        verificationUnsubscribeRef.current = null;
       }
 
-      if (user) {
+      if (currentUser) {
         // Check if user is doctor
-        const doctorDoc = await getDoc(doc(db, 'doctors', user.uid));
-        const isDoctor = doctorDoc.exists();
+        const doctorDoc = await getDoc(doc(db, 'doctors', currentUser.uid)).catch(() => ({ exists: () => false }));
+        const isDoctor = doctorDoc && doctorDoc.exists && doctorDoc.exists();
         
-        setUser(user);
+        setUser(currentUser);
         setUserType(isDoctor ? 'doctor' : 'user');
         
         // Set up real-time profile listener
-        profileUnsubscribe = onSnapshot(
-          doc(db, isDoctor ? 'doctors' : 'users', user.uid),
+        profileUnsubscribeRef.current = onSnapshot(
+          doc(db, isDoctor ? 'doctors' : 'users', currentUser.uid),
           (doc) => {
             if (doc.exists()) {
               setProfile({ uid: doc.id, ...doc.data() });
             } else {
               setProfile(null);
             }
-            setLoading(false); // Set loading to false after profile is loaded
+            setLoading(false);
           },
           (error) => {
-            console.error('Error fetching profile:', error);
+            // Silently ignore permission-denied on logout
+            if (error?.code === 'permission-denied') return;
+            console.warn('Profile listener note:', error?.message || error);
             setProfile(null);
             setLoading(false);
           }
@@ -64,8 +66,8 @@ export function AuthProvider({ children }) {
 
         // Set up real-time verification listener for doctors
         if (isDoctor) {
-          verificationUnsubscribe = onSnapshot(
-            doc(db, 'verification', user.uid),
+          verificationUnsubscribeRef.current = onSnapshot(
+            doc(db, 'verification', currentUser.uid),
             (doc) => {
               if (doc.exists()) {
                 setVerification({ uid: doc.id, ...doc.data() });
@@ -74,7 +76,9 @@ export function AuthProvider({ children }) {
               }
             },
             (error) => {
-              console.error('Error fetching verification:', error);
+              // Silently ignore permission-denied on logout
+              if (error?.code === 'permission-denied') return;
+              console.warn('Verification listener note:', error?.message || error);
               setVerification(null);
             }
           );
@@ -90,11 +94,13 @@ export function AuthProvider({ children }) {
 
     return () => {
       unsubscribeAuth();
-      if (profileUnsubscribe) {
-        profileUnsubscribe();
+      if (profileUnsubscribeRef.current) {
+        profileUnsubscribeRef.current();
+        profileUnsubscribeRef.current = null;
       }
-      if (verificationUnsubscribe) {
-        verificationUnsubscribe();
+      if (verificationUnsubscribeRef.current) {
+        verificationUnsubscribeRef.current();
+        verificationUnsubscribeRef.current = null;
       }
     };
   }, []);
@@ -119,8 +125,22 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
+    // Proactively clean up snapshot listeners before Firebase destroys the auth token
+    if (profileUnsubscribeRef.current) {
+      profileUnsubscribeRef.current();
+      profileUnsubscribeRef.current = null;
+    }
+    if (verificationUnsubscribeRef.current) {
+      verificationUnsubscribeRef.current();
+      verificationUnsubscribeRef.current = null;
+    }
+    setUser(null);
+    setUserType(null);
+    setProfile(null);
+    setVerification(null);
     await firebaseSignOut(auth);
   };
+
 
   const resetPassword = async (email) => {
     await sendPasswordResetEmail(auth, email);

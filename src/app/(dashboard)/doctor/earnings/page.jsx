@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import EarningsPolicyStrip from '@/components/common/EarningsPolicyStrip';
 import {
   formatCents,
@@ -72,6 +73,7 @@ export default function DoctorEarningsPage() {
           setLoading(false);
         },
         (err) => {
+          if (err?.code === 'permission-denied') return;
           console.error('Error listening to doctor summary:', err);
           setLoading(false);
         }
@@ -159,419 +161,409 @@ export default function DoctorEarningsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      {/* Header */}
-      <div className="space-y-2">
-        <BackButton href="/doctor/menu" label="Back to Menu" />
-        <div className="flex items-center justify-between">
+    <WebLayoutWrapper>
+      <div className="space-y-6 pb-12">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <AmbeBackButton href="/doctor/menu" />
           <div>
-            <h1 className="text-3xl font-bold text-[#1A1A1A]">Doctor Earnings</h1>
-            <p className="text-[#6B6862] text-sm mt-1">
+            <h1 className="font-heading font-bold text-2xl sm:text-3xl text-white">
+              Earnings
+            </h1>
+            <p className="text-white/60 text-xs sm:text-sm mt-0.5">
               Live overview of your consultation revenue, deductions, and payout history.
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Summary Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Available / Pending Balance */}
-        <div className="bg-gradient-to-br from-[#FAF8F5] to-white rounded-2xl p-6 border-2 border-[#C8996A]/40 shadow-sm relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#C8996A]">
-              Available Balance
-            </span>
-            <div className="bg-[#FFD3AC]/40 p-2 rounded-xl text-[#C8996A]">
-              <BanknotesIcon className="h-5 w-5" />
+        {/* Headline Balance Card */}
+        <div className="bg-[#2D2D30]/85 border border-[#FFD3AC]/35 rounded-2xl p-6 shadow-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                Pending Balance
+              </span>
+              <div className="text-3xl sm:text-4xl font-bold text-[#FFD3AC] mt-1">
+                {formatCents(summary.pending_cents)}
+              </div>
+              <p className="text-xs text-white/50 mt-1">Pending payout transfer</p>
             </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-3xl font-extrabold text-[#1A1A1A]">
-              {formatCents(summary.pending_cents)}
+            <div className="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-white/10">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                Total Earned
+              </span>
+              <div className="text-xl sm:text-2xl font-bold text-white mt-1">
+                {formatCents(summary.gross_earned_cents)}
+              </div>
+              <p className="text-xs text-white/50 mt-1">Gross revenue</p>
             </div>
-            <p className="text-xs text-[#8C827A] mt-1">Pending payout transfer</p>
           </div>
         </div>
 
-        {/* Gross Earned */}
-        <div className="bg-white rounded-2xl p-6 border border-[#E7E2D9] shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6862]">
-              Gross Earned
-            </span>
-            <div className="bg-emerald-50 p-2 rounded-xl text-emerald-600">
-              <ArrowTrendingUpIcon className="h-5 w-5" />
+        {/* Summary Cards Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total Paid Out */}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/60">Total Paid</span>
+              <CheckCircleIcon className="h-4 w-4 text-emerald-400" />
             </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-3xl font-bold text-[#1A1A1A]">
-              {formatCents(summary.gross_earned_cents)}
-            </div>
-            <p className="text-xs text-[#8C827A] mt-1">Total revenue generated</p>
-          </div>
-        </div>
-
-        {/* Deductions */}
-        <div className="bg-white rounded-2xl p-6 border border-[#E7E2D9] shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6862]">
-              Deductions
-            </span>
-            <div className="bg-rose-50 p-2 rounded-xl text-rose-600">
-              <ArrowTrendingDownIcon className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-3xl font-bold text-rose-600">
-              {summary.deductions_cents > 0 ? `-${formatCents(summary.deductions_cents)}` : '$0.00'}
-            </div>
-            <p className="text-xs text-[#8C827A] mt-1">Late cancellation penalties</p>
-          </div>
-        </div>
-
-        {/* Total Paid Out */}
-        <div className="bg-white rounded-2xl p-6 border border-[#E7E2D9] shadow-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#6B6862]">
-              Total Paid Out
-            </span>
-            <div className="bg-blue-50 p-2 rounded-xl text-blue-600">
-              <CheckCircleIcon className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-3xl font-bold text-[#1A1A1A]">
+            <div className="text-xl sm:text-2xl font-bold text-emerald-400 mt-2">
               {formatCents(summary.paid_cents)}
             </div>
-            <p className="text-xs text-[#8C827A] mt-1">Paid to your bank account</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Consultation rates — compact strip, details on demand */}
-      <EarningsPolicyStrip />
-
-      {/* Activity Statistics Grid */}
-      <div className="bg-white rounded-2xl border border-[#E7E2D9] p-6 shadow-sm">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#6B6862] mb-4">
-          Consultation Activity Overview
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]/60">
-            <div className="flex items-center space-x-2 text-emerald-700">
-              <CheckCircleIcon className="h-4 w-4" />
-              <span className="text-xs font-medium">Completed Calls</span>
-            </div>
-            <p className="text-2xl font-bold text-[#1A1A1A] mt-2">
-              {summary.consultations_completed}
-            </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]/60">
-            <div className="flex items-center space-x-2 text-amber-700">
-              <UserGroupIcon className="h-4 w-4" />
-              <span className="text-xs font-medium">Patient No-Shows</span>
+          {/* Deductions */}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/60">Deductions</span>
+              <ArrowTrendingDownIcon className="h-4 w-4 text-[#FFD3AC]" />
             </div>
-            <p className="text-2xl font-bold text-[#1A1A1A] mt-2">
-              {summary.consultations_no_show}
-            </p>
+            <div className="text-xl sm:text-2xl font-bold text-[#FFD3AC] mt-2">
+              {summary.deductions_cents > 0 ? `-${formatCents(summary.deductions_cents)}` : '$0.00'}
+            </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]/60">
-            <div className="flex items-center space-x-2 text-rose-700">
-              <XCircleIcon className="h-4 w-4" />
-              <span className="text-xs font-medium">Doctor Cancellations</span>
+          {/* Worked Hours */}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/60">Worked Time</span>
+              <ClockIcon className="h-4 w-4 text-white/70" />
             </div>
-            <p className="text-2xl font-bold text-[#1A1A1A] mt-2">
-              {summary.cancellations_count}
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]/60">
-            <div className="flex items-center space-x-2 text-[#C8996A]">
-              <ClockIcon className="h-4 w-4" />
-              <span className="text-xs font-medium">Total Worked Time</span>
-            </div>
-            <p className="text-2xl font-bold text-[#1A1A1A] mt-2">
+            <div className="text-xl sm:text-2xl font-bold text-white mt-2">
               {formatWorkedSeconds(summary.worked_seconds) || '0m'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Ledger Section */}
-      <div className="bg-white rounded-2xl border border-[#E7E2D9] shadow-sm overflow-hidden">
-        {/* Header & Filter Tabs */}
-        <div className="p-4 sm:p-6 border-b border-[#E7E2D9] flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-[#1A1A1A]">Earnings Ledger</h2>
-            <p className="text-xs text-[#8C827A] mt-0.5">
-              Immutable ledger of all consultation credits, cancellation debits, and payouts.
-            </p>
+            </div>
           </div>
 
-          {/* Filter Pills */}
-          <div className="w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            <div className="inline-flex items-center space-x-1.5 bg-[#FAF8F5] p-1.5 rounded-xl border border-[#E7E2D9] min-w-max">
-              {LEDGER_FILTERS.map((f) => {
-                const active = f.key === activeFilter.key;
-                return (
-                  <button
-                    key={f.key}
-                    onClick={() => handleFilterChange(f)}
-                    className={`px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
-                      active
-                        ? 'bg-[#C8996A] text-white shadow-sm'
-                        : 'text-[#6B6862] hover:text-[#1A1A1A] hover:bg-white/60'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                );
-              })}
+          {/* Consultations */}
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/60">Consultations</span>
+              <UserGroupIcon className="h-4 w-4 text-white/70" />
+            </div>
+            <div className="text-xl sm:text-2xl font-bold text-white mt-2">
+              {summary.consultations_completed}
             </div>
           </div>
         </div>
 
-        {/* Ledger Table / List */}
-        {ledgerError && (
-          <div className="p-4 sm:p-6 text-center text-sm text-rose-600 bg-rose-50 border-b border-rose-100">
-            {ledgerError}
-          </div>
-        )}
+        {/* Consultation Rates & Policy Strip */}
+        <EarningsPolicyStrip />
 
-        {entries.length === 0 && !ledgerLoading ? (
-          <div className="p-10 sm:p-16 text-center">
-            <DocumentTextIcon className="h-10 w-10 sm:h-12 sm:w-12 text-[#8C827A]/40 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-[#1A1A1A]">No entries found</h3>
-            <p className="text-xs text-[#8C827A] mt-1 max-w-sm mx-auto">
-              No transactions match the selected filter. As you complete consultations, ledger entries will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-[#E7E2D9]">
-            {entries.map((entry) => {
-              const isCredit = entry.direction === 'credit';
-              const date = toDate(entry.created_at);
-              const badge = getEntryBadge(entry.type, entry.direction);
-              const metadata = entry.metadata || {};
-
-              return (
-                <div
-                  key={entry.id}
-                  onClick={() => setSelectedEntry(entry)}
-                  className="p-3.5 sm:p-5 flex items-start sm:items-center justify-between gap-3 sm:gap-4 hover:bg-[#FAF8F5] transition cursor-pointer group"
-                >
-                  <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
-                    <div
-                      className={`p-2 sm:p-2.5 rounded-xl flex-shrink-0 mt-0.5 ${
-                        isCredit
-                          ? 'bg-emerald-50 text-emerald-600'
-                          : 'bg-rose-50 text-rose-600'
-                      }`}
-                    >
-                      {isCredit ? (
-                        <ArrowTrendingUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                      ) : (
-                        <ArrowTrendingDownIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <span className="font-semibold text-sm text-[#1A1A1A] group-hover:text-[#C8996A] transition">
-                          {LEDGER_TYPE_LABELS[entry.type] || entry.type}
-                        </span>
-                        <span
-                          className={`text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${badge.bg}`}
-                        >
-                          {badge.label}
-                        </span>
-                      </div>
-
-                      {/* Subtitle / Details */}
-                      <p className="text-xs text-[#6B6862] mt-1 break-words">
-                        {metadata.patient_name
-                          ? `Patient: ${metadata.patient_name}`
-                          : metadata.reason || entry.notes || 'Transaction record'}
-                        {metadata.duration_seconds ? (
-                          <span className="inline-block sm:inline ml-0 sm:ml-2 text-[#8C827A]">
-                            • Duration: {formatWorkedSeconds(metadata.duration_seconds)}
-                          </span>
-                        ) : null}
-                      </p>
-
-                      <p className="text-[11px] text-[#8C827A] mt-0.5">
-                        {date ? date.toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        }) : '—'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <div
-                      className={`text-sm sm:text-base font-bold whitespace-nowrap tabular-nums ${
-                        isCredit ? 'text-emerald-600' : 'text-rose-600'
-                      }`}
-                    >
-                      {isCredit ? '+' : '-'}{formatCents(entry.amount_cents)}
-                    </div>
-                    <span className="text-[11px] text-[#8C827A] group-hover:underline whitespace-nowrap hidden sm:inline-block">
-                      View details →
-                    </span>
-                    <span className="text-[10px] text-[#8C827A] group-hover:underline whitespace-nowrap sm:hidden block mt-0.5">
-                      Details →
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Load More Button */}
-        {hasMore && (
-          <div className="p-4 border-t border-[#E7E2D9] text-center bg-[#FAF8F5]/50">
-            <button
-              onClick={() => loadLedger(false)}
-              disabled={ledgerLoading}
-              className="px-6 py-2 text-xs font-semibold text-[#C8996A] hover:text-[#B38356] bg-white border border-[#C8996A]/40 rounded-xl hover:shadow-sm transition disabled:opacity-50"
-            >
-              {ledgerLoading ? 'Loading...' : 'Load More Transactions'}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Transaction Detail Modal */}
-      {selectedEntry && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E7E2D9] relative space-y-6 animate-scale-up">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#E7E2D9] pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-[#1A1A1A]">Transaction Details</h3>
-                <p className="text-xs text-[#8C827A] font-mono mt-0.5">
-                  ID: {selectedEntry.id}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedEntry(null)}
-                className="p-2 text-[#8C827A] hover:text-[#1A1A1A] rounded-lg hover:bg-[#FAF8F5] transition"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Amount Banner */}
-            <div
-              className={`p-5 rounded-xl border text-center ${
-                selectedEntry.direction === 'credit'
-                  ? 'bg-emerald-50/70 border-emerald-200 text-emerald-800'
-                  : 'bg-rose-50/70 border-rose-200 text-rose-800'
-              }`}
-            >
-              <div className="text-3xl font-extrabold">
-                {selectedEntry.direction === 'credit' ? '+' : '-'}
-                {formatCents(selectedEntry.amount_cents)}
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wider mt-1 opacity-80">
-                {LEDGER_TYPE_LABELS[selectedEntry.type] || selectedEntry.type}
+        {/* Activity Statistics Grid */}
+        <div className="bg-[#2D2D30]/60 border border-white/10 rounded-2xl p-5 shadow-sm">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-white/60 mb-4">
+            Consultation Activity Breakdown
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+              <span className="text-xs text-white/60 font-medium">Completed</span>
+              <p className="text-xl font-bold text-white mt-1">
+                {summary.consultations_completed}
               </p>
             </div>
 
-            {/* Details List */}
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                <span className="text-[#6B6862]">Date & Time</span>
-                <span className="font-medium text-[#1A1A1A]">
-                  {toDate(selectedEntry.created_at)?.toLocaleString() || '—'}
-                </span>
-              </div>
-
-              <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                <span className="text-[#6B6862]">Direction</span>
-                <span className="font-medium capitalize text-[#1A1A1A]">
-                  {selectedEntry.direction}
-                </span>
-              </div>
-
-              {selectedEntry.metadata?.patient_name && (
-                <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                  <span className="text-[#6B6862]">Patient</span>
-                  <span className="font-medium text-[#1A1A1A]">
-                    {selectedEntry.metadata.patient_name}
-                  </span>
-                </div>
-              )}
-
-              {selectedEntry.metadata?.duration_seconds ? (
-                <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                  <span className="text-[#6B6862]">Call Duration</span>
-                  <span className="font-medium text-[#1A1A1A]">
-                    {formatWorkedSeconds(selectedEntry.metadata.duration_seconds)}
-                  </span>
-                </div>
-              ) : null}
-
-              {selectedEntry.metadata?.consultation_id && (
-                <div className="flex justify-between items-center py-2 border-b border-[#E7E2D9]/60 gap-2">
-                  <span className="text-[#6B6862] shrink-0">Consultation ID</span>
-                  <span className="font-mono text-xs text-[#1A1A1A] break-all text-right">
-                    {selectedEntry.metadata.consultation_id}
-                  </span>
-                </div>
-              )}
-
-              {selectedEntry.metadata?.appointment_id && (
-                <div className="flex justify-between items-center py-2 border-b border-[#E7E2D9]/60 gap-2">
-                  <span className="text-[#6B6862] shrink-0">Appointment ID</span>
-                  <span className="font-mono text-xs text-[#1A1A1A] break-all text-right">
-                    {selectedEntry.metadata.appointment_id}
-                  </span>
-                </div>
-              )}
-
-              {selectedEntry.metadata?.reason && (
-                <div className="flex justify-between py-2 border-b border-[#E7E2D9]/60">
-                  <span className="text-[#6B6862]">Reason / Notes</span>
-                  <span className="font-medium text-[#1A1A1A]">
-                    {selectedEntry.metadata.reason}
-                  </span>
-                </div>
-              )}
-
-              {selectedEntry.metadata?.receipt_url && (
-                <div className="pt-2">
-                  <a
-                    href={selectedEntry.metadata.receipt_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-xs font-semibold text-[#C8996A] hover:underline"
-                  >
-                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                    <span>View Payout Receipt Attachment</span>
-                  </a>
-                </div>
-              )}
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+              <span className="text-xs text-white/60 font-medium">Patient No-Shows</span>
+              <p className="text-xl font-bold text-white mt-1">
+                {summary.consultations_no_show}
+              </p>
             </div>
 
-            {/* Modal Footer */}
-            <div className="pt-2">
-              <button
-                onClick={() => setSelectedEntry(null)}
-                className="w-full py-2.5 bg-[#C8996A] hover:bg-[#B38356] text-white rounded-xl text-sm font-semibold transition"
-              >
-                Close
-              </button>
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+              <span className="text-xs text-white/60 font-medium">Cancellations</span>
+              <p className="text-xl font-bold text-white mt-1">
+                {summary.cancellations_count}
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+              <span className="text-xs text-white/60 font-medium">Total Worked</span>
+              <p className="text-xl font-bold text-[#FFD3AC] mt-1">
+                {formatWorkedSeconds(summary.worked_seconds) || '0m'}
+              </p>
             </div>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Ledger Section */}
+        <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl shadow-sm overflow-hidden">
+          {/* Header & Filter Tabs */}
+          <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+            <div>
+              <h2 className="font-heading font-bold text-xl sm:text-2xl text-white">Earnings Ledger</h2>
+              <p className="text-xs text-white/60 mt-0.5">
+                Immutable ledger of all consultation credits, cancellation debits, and payouts.
+              </p>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+              <div className="inline-flex items-center space-x-1.5 bg-white/5 p-1 rounded-full border border-white/10 min-w-max">
+                {LEDGER_FILTERS.map((f) => {
+                  const active = f.key === activeFilter.key;
+                  return (
+                    <button
+                      key={f.key}
+                      onClick={() => handleFilterChange(f)}
+                      className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition whitespace-nowrap cursor-pointer ${
+                        active
+                          ? 'bg-[#FFD3AC] text-[#1E1E1E] shadow-sm'
+                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Ledger Table / List */}
+          {ledgerError && (
+            <div className="p-4 text-center text-sm text-rose-400 bg-rose-500/10 border-b border-rose-500/20">
+              {ledgerError}
+            </div>
+          )}
+
+          {entries.length === 0 && !ledgerLoading ? (
+            <div className="p-10 sm:p-16 text-center">
+              <DocumentTextIcon className="h-10 w-10 sm:h-12 sm:w-12 text-white/20 mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-white">No entries found</h3>
+              <p className="text-xs text-white/50 mt-1 max-w-sm mx-auto">
+                No transactions match the selected filter. As you complete consultations, ledger entries will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/10">
+              {entries.map((entry) => {
+                const isCredit = entry.direction === 'credit';
+                const date = toDate(entry.created_at);
+                const badge = getEntryBadge(entry.type, entry.direction);
+                const metadata = entry.metadata || {};
+
+                return (
+                  <div
+                    key={entry.id}
+                    onClick={() => setSelectedEntry(entry)}
+                    className="p-3.5 sm:p-5 flex items-start sm:items-center justify-between gap-3 sm:gap-4 hover:bg-white/5 transition cursor-pointer group"
+                  >
+                    <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
+                      <div
+                        className={`p-2 sm:p-2.5 rounded-full flex-shrink-0 mt-0.5 ${
+                          isCredit
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-rose-500/20 text-rose-400'
+                        }`}
+                      >
+                        {isCredit ? (
+                          <ArrowTrendingUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        ) : (
+                          <ArrowTrendingDownIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <span className="font-semibold text-sm text-white group-hover:text-[#FFD3AC] transition">
+                            {LEDGER_TYPE_LABELS[entry.type] || entry.type}
+                          </span>
+                          <span
+                            className={`text-[10px] sm:text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                              isCredit
+                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                                : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                            }`}
+                          >
+                            {badge.label}
+                          </span>
+                        </div>
+
+                        {/* Subtitle / Details */}
+                        <p className="text-xs text-white/60 mt-1 break-words">
+                          {metadata.patient_name
+                            ? `Patient: ${metadata.patient_name}`
+                            : metadata.reason || entry.notes || 'Transaction record'}
+                          {metadata.duration_seconds ? (
+                            <span className="inline-block sm:inline ml-0 sm:ml-2 text-white/40">
+                              • Duration: {formatWorkedSeconds(metadata.duration_seconds)}
+                            </span>
+                          ) : null}
+                        </p>
+
+                        <p className="text-[11px] text-white/40 mt-0.5">
+                          {date ? date.toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          }) : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <div
+                        className={`text-sm sm:text-base font-bold whitespace-nowrap tabular-nums ${
+                          isCredit ? 'text-emerald-400' : 'text-rose-400'
+                        }`}
+                      >
+                        {isCredit ? '+' : '-'}{formatCents(entry.amount_cents)}
+                      </div>
+                      <span className="text-[11px] text-white/50 group-hover:text-[#FFD3AC] whitespace-nowrap hidden sm:inline-block">
+                        View details →
+                      </span>
+                      <span className="text-[10px] text-white/50 group-hover:text-[#FFD3AC] whitespace-nowrap sm:hidden block mt-0.5">
+                        Details →
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="p-4 border-t border-white/10 text-center bg-white/5">
+              <button
+                onClick={() => loadLedger(false)}
+                disabled={ledgerLoading}
+                className="px-6 py-2 text-xs font-semibold text-[#FFD3AC] hover:text-white bg-white/10 hover:bg-white/20 border border-white/10 rounded-full transition disabled:opacity-50 cursor-pointer"
+              >
+                {ledgerLoading ? 'Loading...' : 'Load More Transactions'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Transaction Detail Modal */}
+        {selectedEntry && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-[#1E1E1E] rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-white/20 relative space-y-6 animate-scale-up text-white">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-white">Transaction Details</h3>
+                  <p className="text-xs text-white/50 font-mono mt-0.5">
+                    ID: {selectedEntry.id}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedEntry(null)}
+                  className="p-2 text-white/60 hover:text-white rounded-full hover:bg-white/10 transition cursor-pointer"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Amount Banner */}
+              <div
+                className={`p-5 rounded-xl border text-center ${
+                  selectedEntry.direction === 'credit'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                    : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                }`}
+              >
+                <div className="text-3xl font-extrabold">
+                  {selectedEntry.direction === 'credit' ? '+' : '-'}
+                  {formatCents(selectedEntry.amount_cents)}
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider mt-1 opacity-80">
+                  {LEDGER_TYPE_LABELS[selectedEntry.type] || selectedEntry.type}
+                </p>
+              </div>
+
+              {/* Details List */}
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between py-2 border-b border-white/10">
+                  <span className="text-white/60">Date & Time</span>
+                  <span className="font-medium text-white">
+                    {toDate(selectedEntry.created_at)?.toLocaleString() || '—'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between py-2 border-b border-white/10">
+                  <span className="text-white/60">Direction</span>
+                  <span className="font-medium capitalize text-white">
+                    {selectedEntry.direction}
+                  </span>
+                </div>
+
+                {selectedEntry.metadata?.patient_name && (
+                  <div className="flex justify-between py-2 border-b border-white/10">
+                    <span className="text-white/60">Patient</span>
+                    <span className="font-medium text-white">
+                      {selectedEntry.metadata.patient_name}
+                    </span>
+                  </div>
+                )}
+
+                {selectedEntry.metadata?.duration_seconds ? (
+                  <div className="flex justify-between py-2 border-b border-white/10">
+                    <span className="text-white/60">Call Duration</span>
+                    <span className="font-medium text-white">
+                      {formatWorkedSeconds(selectedEntry.metadata.duration_seconds)}
+                    </span>
+                  </div>
+                ) : null}
+
+                {selectedEntry.metadata?.consultation_id && (
+                  <div className="flex justify-between items-center py-2 border-b border-white/10 gap-2">
+                    <span className="text-white/60 shrink-0">Consultation ID</span>
+                    <span className="font-mono text-xs text-white/80 break-all text-right">
+                      {selectedEntry.metadata.consultation_id}
+                    </span>
+                  </div>
+                )}
+
+                {selectedEntry.metadata?.appointment_id && (
+                  <div className="flex justify-between items-center py-2 border-b border-white/10 gap-2">
+                    <span className="text-white/60 shrink-0">Appointment ID</span>
+                    <span className="font-mono text-xs text-white/80 break-all text-right">
+                      {selectedEntry.metadata.appointment_id}
+                    </span>
+                  </div>
+                )}
+
+                {selectedEntry.metadata?.reason && (
+                  <div className="flex justify-between py-2 border-b border-white/10">
+                    <span className="text-white/60">Reason / Notes</span>
+                    <span className="font-medium text-white">
+                      {selectedEntry.metadata.reason}
+                    </span>
+                  </div>
+                )}
+
+                {selectedEntry.metadata?.receipt_url && (
+                  <div className="pt-2">
+                    <a
+                      href={selectedEntry.metadata.receipt_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-2 text-xs font-semibold text-[#FFD3AC] hover:underline"
+                    >
+                      <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                      <span>View Payout Receipt Attachment</span>
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="pt-2">
+                <button
+                  onClick={() => setSelectedEntry(null)}
+                  className="w-full py-3 bg-[#FFD3AC] hover:bg-[#FFD3AC]/90 text-[#1E1E1E] rounded-full text-sm font-bold transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </WebLayoutWrapper>
   );
 }

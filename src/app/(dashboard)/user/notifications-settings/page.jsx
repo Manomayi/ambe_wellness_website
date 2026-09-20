@@ -115,8 +115,8 @@ export default function UserNotificationsSettingsPage() {
       </div>
 
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-[#1A1A1A]">Notification Settings</h1>
-        <p className="text-sm text-[#7A746B] mt-1">
+        <h1 className="text-2xl font-bold text-white">Notification Settings</h1>
+        <p className="text-sm text-white/70 mt-1">
           Manage your email notification preferences.
         </p>
       </div>

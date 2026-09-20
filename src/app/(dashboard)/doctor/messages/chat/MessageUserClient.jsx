@@ -18,6 +18,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { auth, db, storage } from '@/lib/firebase/config'
 import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
+import AmbeBackButton from '@/components/common/AmbeBackButton'
 
 export default function MessageUserClient() {
   const router = useRouter()
@@ -58,14 +59,21 @@ export default function MessageUserClient() {
 
       const col = collection(db, 'chats', chatId, 'messages')
       const q0 = query(col, orderBy('timestamp', 'desc'), limit(BATCH))
-      const unsubSnap = onSnapshot(q0, snap => {
-        const docs = snap.docs
-        if (!docs.length) return
-        const batch = docs.map(d => ({ id: d.id, ...d.data() })).reverse()
-        setMessages(batch)
-        setLastVisible(docs[docs.length - 1])
-        setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'auto' }), 50)
-      })
+      const unsubSnap = onSnapshot(
+        q0,
+        snap => {
+          const docs = snap.docs
+          if (!docs.length) return
+          const batch = docs.map(d => ({ id: d.id, ...d.data() })).reverse()
+          setMessages(batch)
+          setLastVisible(docs[docs.length - 1])
+          setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'auto' }), 50)
+        },
+        err => {
+          if (err?.code === 'permission-denied') return
+          console.error('Error listening to chat messages:', err)
+        }
+      )
       return () => unsubSnap()
     })
     return () => unsubAuth()
@@ -213,17 +221,15 @@ export default function MessageUserClient() {
   if (!chatId) return null
 
   return (
-    <div className="flex flex-col h-screen bg-[#FAF8F5]">
+    <div className="flex flex-col h-screen bg-transparent">
       {/* Header */}
-      <div className="flex items-center p-4 bg-white shadow-xs border-b border-[#E7E2D9]">
-        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-[#F4F1EA] cursor-pointer">
-          <ArrowLeftIcon className="h-6 w-6 text-[#6B6862]" />
-        </button>
+      <div className="flex items-center px-4 py-3.5 bg-[#1E1E1E]/90 backdrop-blur-md shadow-md border-b border-white/10 z-10">
+        <AmbeBackButton onClick={() => router.back()} />
         {userPhotoUrl && (
           <img src={userPhotoUrl} alt={userName||''}
-               className="h-10 w-10 rounded-full mx-3 object-cover border border-[#E7E2D9]" />
+               className="h-10 w-10 rounded-full mx-3 object-cover border border-[#FFD3AC]/60 bg-black/30" />
         )}
-        <h1 className="text-lg font-medium text-[#1A1A1A]">{userName}</h1>
+        <h1 className="text-base font-semibold text-white ml-2">{userName}</h1>
       </div>
 
       {/* Messages */}
@@ -232,7 +238,7 @@ export default function MessageUserClient() {
            onScroll={onScroll}>
         {loadingMore && (
           <div className="flex justify-center mb-2">
-            <svg className="animate-spin h-6 w-6 text-[#8C827A]" viewBox="0 0 24 24">
+            <svg className="animate-spin h-6 w-6 text-[#FFD3AC]" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
               <path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
             </svg>
@@ -248,9 +254,9 @@ export default function MessageUserClient() {
           return (
             <div key={msg.id} className={`mb-2 flex ${isUser?'justify-end':'justify-start'}`}>
               <div className={`max-w-xs sm:max-w-md ${
-                hasImage && !hasText ? 'p-1' : hasImage && hasText ? 'p-1' : 'p-3'
+                hasImage && !hasText ? 'p-1' : hasImage && hasText ? 'p-1' : 'px-4 py-2.5'
               } rounded-2xl ${
-                isUser?'bg-[#FFD3AC] text-[#1A1A1A] rounded-br-xs':'bg-white border border-[#E7E2D9] text-[#1A1A1A] rounded-bl-xs'
+                isUser?'bg-[#FFD3AC] text-[#1E1E1E] rounded-br-xs':'bg-[#262626] text-white border border-white/15 rounded-bl-xs'
               }`}>
                 {hasImage && !hasText ? (
                   <div className="relative overflow-hidden rounded-xl">
@@ -282,7 +288,7 @@ export default function MessageUserClient() {
                     )}
                     <div className={hasImage ? 'px-2.5 pt-2 pb-1' : ''}>
                       {hasText && <p className="break-words text-sm leading-relaxed">{msg.text}</p>}
-                      <p className="text-[10px] mt-1 text-[#8C827A] text-right">{time}</p>
+                      <p className={`text-[10px] mt-1 ${isUser ? 'text-black/60' : 'text-white/50'} text-right`}>{time}</p>
                     </div>
                   </>
                 )}
@@ -294,7 +300,7 @@ export default function MessageUserClient() {
         {/* Optimistic uploading image bubble */}
         {uploadingImage && (
           <div className="mb-2 flex justify-end">
-            <div className="max-w-xs sm:max-w-md p-1 rounded-2xl bg-[#FFD3AC] text-[#1A1A1A] rounded-br-xs shadow-2xs">
+            <div className="max-w-xs sm:max-w-md p-1 rounded-2xl bg-[#FFD3AC] text-[#1E1E1E] rounded-br-xs shadow-lg">
               <div className="relative overflow-hidden rounded-xl">
                 <img
                   src={uploadingImage.url}
@@ -326,29 +332,29 @@ export default function MessageUserClient() {
 
       {/* Selected Image Preview */}
       {selectedImage && (
-        <div className="px-4 py-2 bg-[#F4F1EA] border-t border-[#E7E2D9] flex items-center justify-between">
+        <div className="px-4 py-2 bg-[#1E1E1E]/95 backdrop-blur-md border-t border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <img src={imagePreviewUrl} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-[#E7E2D9]" />
+            <img src={imagePreviewUrl} alt="Preview" className="w-12 h-12 object-cover rounded-xl border border-white/20" />
             <div className="min-w-0">
-              <p className="text-xs font-semibold truncate text-[#1A1A1A]">{selectedImage.name}</p>
-              <p className="text-[10px] text-[#6B6862]">{(selectedImage.size / 1024).toFixed(0)} KB • Photo attached</p>
+              <p className="text-xs font-semibold truncate text-white">{selectedImage.name}</p>
+              <p className="text-[10px] text-[#FFD3AC]">{(selectedImage.size / 1024).toFixed(0)} KB • Photo attached • Ready to send</p>
             </div>
           </div>
-          <button type="button" onClick={removeSelectedImage} className="p-1 text-[#6B6862] hover:text-[#1A1A1A] cursor-pointer">
+          <button type="button" onClick={removeSelectedImage} className="p-1 text-white/70 hover:text-white cursor-pointer">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
       )}
 
       {convertingHeic && (
-        <div className="px-4 py-2 bg-[#FFF8E7] text-xs text-[#8A5800] border-t border-[#FFE2A9] flex items-center gap-2">
-          <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#8A5800]" />
+        <div className="px-4 py-2 bg-black/60 backdrop-blur-md text-xs text-[#FFD3AC] border-t border-[#FFD3AC]/30 flex items-center gap-2">
+          <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-[#FFD3AC]" />
           Processing Apple photo...
         </div>
       )}
 
       {/* Input */}
-      <div className="p-3 sm:p-4 bg-white border-t border-[#E7E2D9] flex items-center gap-2">
+      <div className="p-3 sm:p-4 bg-black/40 backdrop-blur-md border-t border-white/10 flex items-center gap-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -360,10 +366,10 @@ export default function MessageUserClient() {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={sending || convertingHeic}
-          className="p-3 bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E2D9] text-[#6B6862] hover:text-[#1A1A1A] rounded-2xl transition cursor-pointer flex-shrink-0"
+          className="w-11 h-11 bg-white/10 hover:bg-white/15 border border-white/15 text-[#FFD3AC] rounded-full transition cursor-pointer flex-shrink-0 flex items-center justify-center"
           title="Attach image"
         >
-          <PhotoIcon className="w-5 h-5 text-[#8C827A]" />
+          <PhotoIcon className="w-5 h-5 text-[#FFD3AC]" />
         </button>
         <textarea rows={1}
                   value={text}
@@ -374,13 +380,13 @@ export default function MessageUserClient() {
                       handleSend()
                     }
                   }}
-                  className="flex-1 resize-none p-3 text-sm bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#C8996A]"
+                  className="flex-1 resize-none px-4 py-2.5 text-sm bg-white/10 border border-white/15 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-white placeholder-white/50"
                   placeholder={selectedImage ? "Add a caption…" : "Type a message…"}/>
         <button onClick={handleSend} disabled={(!text.trim() && !selectedImage) || sending || convertingHeic}
-                className={`p-3.5 rounded-2xl transition flex items-center justify-center flex-shrink-0 cursor-pointer ${
-                  sending?'bg-[#8C827A] text-white':'bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'
+                className={`w-11 h-11 rounded-full transition flex items-center justify-center flex-shrink-0 cursor-pointer ${
+                  sending?'bg-white/20 text-white':'bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe0c4]'
                 }`}>
-          <PaperAirplaneIcon className="h-5 w-5"/>
+          <PaperAirplaneIcon className="h-5 w-5 ml-0.5"/>
         </button>
       </div>
 

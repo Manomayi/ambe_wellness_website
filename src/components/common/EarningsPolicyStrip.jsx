@@ -37,7 +37,7 @@ export default function EarningsPolicyStrip() {
       key: 'consultation',
       label: 'Consultation',
       amount: `+${formatCents(policy.consultationEarningCents)}`,
-      tone: 'text-emerald-700',
+      tone: 'text-emerald-400',
       detail:
         'Paid for each consultation where you and the patient both join and complete the video call.',
     },
@@ -45,7 +45,7 @@ export default function EarningsPolicyStrip() {
       key: 'no-show',
       label: 'Patient no-show',
       amount: `+${formatCents(policy.noShowEarningCents)}`,
-      tone: 'text-blue-700',
+      tone: 'text-sky-400',
       detail:
         'Paid when you join on time but the patient does not attend. If you do not join, nothing is earned.',
     },
@@ -53,20 +53,20 @@ export default function EarningsPolicyStrip() {
       key: 'late-cancel',
       label: 'Late cancellation',
       amount: `-${formatCents(policy.lateCancellationFineCents)}`,
-      tone: 'text-amber-700',
+      tone: 'text-amber-400',
       detail: `Charged when you cancel with less than ${policy.lateCancellationWindowHours} hours notice (${policy.lateCancellationFinePercent}% of the ${formatCents(policy.hourlyRateCents)} base rate). Cancelling ${policy.lateCancellationWindowHours} hours or more ahead carries no fine.`,
     },
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E7E2D9] shadow-sm p-3.5 sm:px-4 sm:py-3">
+    <div className="bg-[#2D2D30]/85 rounded-2xl border border-[#FFD3AC]/35 shadow-sm p-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-x-5">
         {/* Title & Mobile Details Toggle */}
-        <div className="flex items-center justify-between sm:justify-start gap-2 text-[#6B6862] shrink-0">
+        <div className="flex items-center justify-between sm:justify-start gap-2 text-white/70 shrink-0">
           <div className="flex items-center gap-2">
-            <ScaleIcon className="h-4 w-4 text-[#C8996A]" />
-            <span className="text-xs font-semibold uppercase tracking-wider">
-              Consultation Rates
+            <ScaleIcon className="h-4 w-4 text-[#FFD3AC]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-white">
+              Consultation Rates & Policy
             </span>
           </div>
 
@@ -75,7 +75,7 @@ export default function EarningsPolicyStrip() {
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            className="sm:hidden flex items-center gap-1 text-xs font-medium text-[#6B6862] hover:text-[#1A1A1A] transition-colors shrink-0"
+            className="sm:hidden flex items-center gap-1 text-xs font-medium text-white/70 hover:text-white transition-colors shrink-0"
           >
             Details
             <ChevronDownIcon
@@ -89,12 +89,12 @@ export default function EarningsPolicyStrip() {
           {items.map((item) => (
             <div
               key={item.key}
-              className="flex items-baseline gap-1.5 bg-[#FAF8F5] sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-lg sm:rounded-none border border-[#E7E2D9]/60 sm:border-0"
+              className="flex items-baseline gap-1.5 bg-white/5 sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-lg sm:rounded-none border border-white/10 sm:border-0"
             >
               <span className={`text-xs sm:text-sm font-bold tabular-nums ${item.tone}`}>
                 {item.amount}
               </span>
-              <span className="text-[11px] sm:text-xs text-[#8C827A] whitespace-nowrap">
+              <span className="text-[11px] sm:text-xs text-white/60 whitespace-nowrap">
                 {item.label}
               </span>
             </div>
@@ -106,7 +106,7 @@ export default function EarningsPolicyStrip() {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="hidden sm:flex items-center gap-1 text-xs font-medium text-[#6B6862] hover:text-[#1A1A1A] transition-colors shrink-0"
+          className="hidden sm:flex items-center gap-1 text-xs font-medium text-white/70 hover:text-white transition-colors shrink-0 cursor-pointer"
         >
           Details
           <ChevronDownIcon
@@ -116,9 +116,9 @@ export default function EarningsPolicyStrip() {
       </div>
 
       {open && (
-        <ul className="mt-3 pt-3 border-t border-[#E7E2D9]/70 space-y-2">
+        <ul className="mt-3 pt-3 border-t border-white/10 space-y-2">
           {items.map((item) => (
-            <li key={item.key} className="text-xs leading-relaxed text-[#6B6862]">
+            <li key={item.key} className="text-xs leading-relaxed text-white/70">
               <span className={`font-semibold ${item.tone}`}>
                 {item.amount} {item.label}
               </span>

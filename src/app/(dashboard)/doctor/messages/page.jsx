@@ -103,6 +103,7 @@ export default function DoctorMessagesPage() {
         }
       },
       (error) => {
+        if (error?.code === 'permission-denied') return;
         console.error('Error fetching doctor chats:', error);
         setLoading(false);
       }
@@ -148,8 +149,8 @@ export default function DoctorMessagesPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="doctor">
-        <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-2 border-[#FFD3AC] border-t-transparent"></div>
         </div>
       </ProtectedRoute>
     );
@@ -157,26 +158,26 @@ export default function DoctorMessagesPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-serif font-bold text-[#1A1A1A]">Messages</h1>
-            <p className="text-sm text-[#6B6862] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">Messages</h1>
+            <p className="text-sm text-gray-400 mt-1 font-sans">
               Patient conversations and consultation message channels
             </p>
           </div>
           {chats.length > 0 && (
-            <span className="text-xs bg-[#F4F1EA] text-[#6B6862] px-3 py-1.5 rounded-full font-medium border border-[#E7E2D9]">
+            <span className="text-xs bg-[#2D2D30] text-[#FFD3AC] px-3.5 py-1.5 rounded-full font-semibold border border-white/10 font-sans">
               {chats.length} {chats.length === 1 ? 'patient' : 'patients'}
             </span>
           )}
         </div>
 
         {chats.length === 0 ? (
-          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-12 text-center shadow-xs">
-            <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#8C827A] mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-[#353535] mb-2">No Messages Yet</h3>
-            <p className="text-[#6B6862] max-w-sm mx-auto text-sm">
+          <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-12 text-center shadow-lg">
+            <ChatBubbleLeftRightIcon className="h-14 w-14 text-gray-500 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-white mb-1 font-sans">No Messages Yet</h3>
+            <p className="text-gray-400 max-w-sm mx-auto text-sm font-sans">
               Your patient conversations will appear here once you start messaging with them.
             </p>
           </div>
@@ -194,16 +195,16 @@ export default function DoctorMessagesPage() {
                 <div
                   key={chat.id}
                   onClick={() => handleChatClick(chat)}
-                  className={`group relative bg-white border ${
+                  className={`group relative bg-[#1B1A18]/80 border ${
                     isUnread
-                      ? 'border-[#FFD3AC] ring-1 ring-[#FFD3AC]/50'
-                      : 'border-[#E7E2D9] hover:border-[#C8996A]/40'
-                  } rounded-2xl p-4 sm:p-5 transition-all duration-150 hover:shadow-md cursor-pointer`}
+                      ? 'border-[#FFD3AC] ring-1 ring-[#FFD3AC]/40'
+                      : 'border-white/10 hover:border-[#FFD3AC]/40'
+                  } rounded-2xl p-4 sm:p-5 transition-all duration-150 hover:shadow-lg cursor-pointer`}
                 >
                   <div className="flex items-center gap-4">
                     {/* User Avatar */}
                     <div className="relative shrink-0">
-                      <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-[#FFD3AC]/40 bg-[#FAF8F5] flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#FFD3AC] bg-[#2D2D30] flex items-center justify-center">
                         {chat.user_photo_url ? (
                           <img
                             src={chat.user_photo_url}
@@ -215,33 +216,33 @@ export default function DoctorMessagesPage() {
                             }}
                           />
                         ) : (
-                          <UserIcon className="w-6 h-6 text-[#8C827A]" />
+                          <UserIcon className="w-6 h-6 text-[#FFD3AC]" />
                         )}
                       </div>
                       {isUnread && (
-                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#FFD3AC] border-2 border-white rounded-full shadow-xs"></span>
+                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#FFD3AC] border-2 border-[#1E1E1E] rounded-full shadow-xs"></span>
                       )}
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline justify-between gap-2">
-                        <h3 className={`text-base truncate ${
-                          isUnread ? 'font-bold text-[#1A1A1A]' : 'font-semibold text-[#1A1A1A]'
+                        <h3 className={`text-base truncate font-sans ${
+                          isUnread ? 'font-bold text-white' : 'font-semibold text-white'
                         }`}>
                           {chat.user_name}
                         </h3>
-                        <span className="text-xs text-[#8C827A] shrink-0 font-medium">
+                        <span className="text-xs text-gray-400 shrink-0 font-medium font-sans">
                           {formatTimestamp(lastTimestamp)}
                         </span>
                       </div>
 
                       {/* Message preview */}
                       <div className="flex items-center justify-between gap-2 mt-1">
-                        <p className={`text-sm truncate ${
-                          isUnread ? 'text-[#1A1A1A] font-medium' : 'text-[#6B6862]'
+                        <p className={`text-sm truncate font-sans ${
+                          isUnread ? 'text-white font-medium' : 'text-gray-400'
                         }`}>
-                          {isYou && <span className="text-[#8C827A] font-normal">You: </span>}
+                          {isYou && <span className="text-[#FFD3AC] font-normal">You: </span>}
                           {chat.last_message || 'New patient matched'}
                         </p>
 
@@ -252,15 +253,15 @@ export default function DoctorMessagesPage() {
                       </div>
 
                       {/* Status subtitle */}
-                      <div className="flex items-center gap-2 mt-1.5 text-xs text-[#8C827A]">
+                      <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400 font-sans">
                         {chat.is_first_consultation_completed ? (
-                          <span className="inline-flex items-center text-[11px] text-[#4A6B4A] font-medium">
-                            <span className="w-1.5 h-1.5 bg-[#4A6B4A] rounded-full mr-1.5"></span>
+                          <span className="inline-flex items-center text-[11px] text-emerald-400 font-medium">
+                            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1.5"></span>
                             Active Patient
                           </span>
                         ) : (
-                          <span className="inline-flex items-center text-[11px] text-[#A67C52] font-medium">
-                            <ExclamationCircleIcon className="w-3 h-3 mr-1 text-[#A67C52]" />
+                          <span className="inline-flex items-center text-[11px] text-[#FFD3AC] font-medium">
+                            <ExclamationCircleIcon className="w-3.5 h-3.5 mr-1 text-[#FFD3AC]" />
                             Pending First Consultation
                           </span>
                         )}

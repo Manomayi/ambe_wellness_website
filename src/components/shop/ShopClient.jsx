@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
-import { fetchShopProductsFromFirestore, getCategoriesFromProducts, sortShopProducts } from "@/lib/shop/firestore-products";
+import { fetchShopProductsFromFirestore, sortShopProducts } from "@/lib/shop/firestore-products";
 import { useFavorites } from "@/lib/shop/favorites";
 import { CONSULT_HREF } from "@/lib/site-config";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
 
 const ALL = "All Products";
 const MOST_POPULAR = "Most Popular";
@@ -16,7 +18,10 @@ export default function ShopClient({ products: initialProducts = [] }) {
   const { favorites } = useFavorites();
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(initialProducts.length === 0);
+  const [categories, setCategories] = useState([]);
+  const [expandedCategoryId, setExpandedCategoryId] = useState(null);
   const [activeFilter, setActiveFilter] = useState(MOST_POPULAR);
+  const [activeSubcategory, setActiveSubcategory] = useState(null);
   const [sort, setSort] = useState(SORTS[0]);
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
@@ -44,15 +49,39 @@ export default function ShopClient({ products: initialProducts = [] }) {
     };
   }, []);
 
+  // Listen to Firestore categories (1:1 with Flutter app)
+  useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, "categories"),
+      (snapshot) => {
+        const firestoreCats = snapshot.docs
+          .map((doc) => {
+            const d = doc.data();
+            const subs = Array.isArray(d.subcategories)
+              ? d.subcategories.map((s) => String(s || "").trim()).filter(Boolean)
+              : [];
+            return {
+              id: doc.id,
+              name: d.name || "",
+              subcategories: subs
+            };
+          })
+          .filter((c) => c.name.length > 0);
+
+        setCategories(firestoreCats);
+      },
+      () => {}
+    );
+
+    return () => unsub();
+  }, []);
+
   const catalog = useMemo(() => products, [products]);
 
-  const filters = useMemo(() => {
-    const rawCategories = getCategoriesFromProducts(catalog);
-    const setWithoutSpecial = rawCategories.filter(
-      (c) => c !== ALL && c !== MOST_POPULAR && c !== FAVORITES
-    );
-    return [MOST_POPULAR, FAVORITES, ALL, ...setWithoutSpecial];
-  }, [catalog]);
+  const activeExpandedCategory = useMemo(() => {
+    if (!expandedCategoryId) return null;
+    return categories.find(c => c.id === expandedCategoryId) || null;
+  }, [categories, expandedCategoryId]);
 
   const visible = useMemo(() => {
     let list = catalog;
@@ -66,12 +95,27 @@ export default function ShopClient({ products: initialProducts = [] }) {
       return sortShopProducts(list, "Popularity");
     }
 
+    if (activeSubcategory) {
+      const sub = activeSubcategory.toLowerCase().trim();
+      list = catalog.filter((p) => {
+        const cat = (p.category || "").toLowerCase().trim();
+        const pSub = (p.subcategory || "").toLowerCase().trim();
+        return cat === sub || pSub === sub || cat.includes(sub) || pSub.includes(sub);
+      });
+      return sortShopProducts(list, sort);
+    }
+
     if (activeFilter !== ALL) {
-      list = catalog.filter((p) => p.category === activeFilter || p.subcategory === activeFilter);
+      const filterLower = activeFilter.toLowerCase().trim();
+      list = catalog.filter((p) => {
+        const cat = (p.category || "").toLowerCase().trim();
+        const sub = (p.subcategory || "").toLowerCase().trim();
+        return cat === filterLower || sub === filterLower || cat.includes(filterLower) || sub.includes(filterLower);
+      });
     }
 
     return sortShopProducts(list, sort);
-  }, [catalog, activeFilter, sort, favorites]);
+  }, [catalog, activeFilter, activeSubcategory, sort, favorites]);
 
   // Reset loading state when navigating back to the page from Stripe checkout (BFCache / back button)
   useEffect(() => {
@@ -122,23 +166,81 @@ export default function ShopClient({ products: initialProducts = [] }) {
       <div className="shop-filter-bar">
         <div className="shop-wrap">
           <div className="shop-filter-inner">
-            {filters.map((f) => {
-              const label =
-                f === FAVORITES && favorites.length > 0
-                  ? `Favorites (${favorites.length})`
-                  : f;
+            {/* Standard Filters */}
+            <button
+              type="button"
+              className={`shop-filter-pill${activeFilter === MOST_POPULAR && !activeSubcategory ? " active" : ""}`}
+              onClick={() => {
+                setActiveFilter(MOST_POPULAR);
+                setActiveSubcategory(null);
+                setExpandedCategoryId(null);
+              }}
+              disabled={loading}
+            >
+              {MOST_POPULAR}
+            </button>
+
+            <button
+              type="button"
+              className={`shop-filter-pill${activeFilter === ALL && !activeSubcategory ? " active" : ""}`}
+              onClick={() => {
+                setActiveFilter(ALL);
+                setActiveSubcategory(null);
+                setExpandedCategoryId(null);
+              }}
+              disabled={loading}
+            >
+              {ALL}
+            </button>
+
+            {/* Categories: Shop By Needs, Shop to Categories */}
+            {categories.map((cat) => {
+              const subs = cat.subcategories || [];
+              const hasSubs = subs.length > 0;
+              const isOpen = expandedCategoryId === cat.id;
+              const isSubSelected = hasSubs && subs.includes(activeSubcategory);
+              const isActive = (activeFilter === cat.name && !activeSubcategory) || isSubSelected || isOpen;
+
               return (
                 <button
-                  key={f}
+                  key={cat.id || cat.name}
                   type="button"
-                  className={`shop-filter-pill${f === activeFilter ? " active" : ""}`}
-                  onClick={() => setActiveFilter(f)}
+                  className={`shop-filter-pill${isActive ? " active" : ""}`}
+                  onClick={() => {
+                    if (!hasSubs) {
+                      setActiveFilter(cat.name);
+                      setActiveSubcategory(null);
+                      setExpandedCategoryId(null);
+                      return;
+                    }
+                    setExpandedCategoryId(isOpen ? null : cat.id);
+                  }}
                   disabled={loading}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  {label}
+                  <span>{cat.name}</span>
+                  {hasSubs && (
+                    <span style={{ fontSize: "10px" }}>{isOpen ? "▲" : "▼"}</span>
+                  )}
                 </button>
               );
             })}
+
+            {/* Favorites Filter */}
+            <button
+              type="button"
+              className={`shop-filter-pill${activeFilter === FAVORITES ? " active" : ""}`}
+              onClick={() => {
+                setActiveFilter(FAVORITES);
+                setActiveSubcategory(null);
+                setExpandedCategoryId(null);
+              }}
+              disabled={loading}
+            >
+              {favorites.length > 0 ? `Favorites (${favorites.length})` : FAVORITES}
+            </button>
+
+            {/* Sort Dropdown */}
             <div className="shop-filter-sort">
               <span>Sort by</span>
               <select
@@ -152,6 +254,52 @@ export default function ShopClient({ products: initialProducts = [] }) {
               </select>
             </div>
           </div>
+
+          {/* Subcategories Row */}
+          {activeExpandedCategory && activeExpandedCategory.subcategories.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "8px",
+                marginTop: "12px",
+                paddingTop: "12px",
+                borderTop: "1px solid var(--hairline)"
+              }}
+            >
+              {activeExpandedCategory.subcategories.map((sub) => {
+                const isSelected = activeSubcategory === sub;
+                return (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) {
+                        setActiveSubcategory(null);
+                        setActiveFilter(activeExpandedCategory.name);
+                      } else {
+                        setActiveSubcategory(sub);
+                        setActiveFilter(activeExpandedCategory.name);
+                      }
+                    }}
+                    style={{
+                      borderRadius: "100px",
+                      padding: "6px 14px",
+                      fontSize: "12px",
+                      fontWeight: 500,
+                      cursor: "pointer",
+                      border: "1px solid var(--hairline)",
+                      background: isSelected ? "var(--near-black)" : "#f4f1ea",
+                      color: isSelected ? "#fff" : "var(--charcoal)",
+                      transition: "all 0.15s ease"
+                    }}
+                  >
+                    {sub}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

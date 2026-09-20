@@ -5,11 +5,10 @@ import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import AmbeButton from '@/components/common/AmbeButton';
 
 // Same set of health fields used by the patient-facing GetMatched flow
-// (src/components/user/GetMatched.jsx), since doctors are matched against
-// these exact values via `doctors/{uid}.field` (array-contains queries).
 const HEALTH_FIELDS = [
   { value: 'general_health', label: 'General Health', icon: '🏥' },
   { value: 'womens_health', label: "Women's Health", icon: '👩‍⚕️' },
@@ -77,7 +76,7 @@ export default function DoctorSpecialtyPage() {
       router.back();
     } catch (e) {
       console.error(e);
-      setError('Update failed');
+      setError('Update failed. Please try again.');
     } finally {
       setUpdating(false);
     }
@@ -85,20 +84,31 @@ export default function DoctorSpecialtyPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-[#C8996A] border-t-transparent rounded-full" />
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="animate-spin h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-6">
-      <BackButton href="/doctor/menu" label="Back to Menu" />
-      <h1 className="text-2xl font-semibold text-[#1A1A1A]">Specialty</h1>
-      <p className="text-sm text-[#6B6862]">
+    <div className="max-w-lg mx-auto space-y-6">
+      <div className="flex items-center gap-4 pt-1">
+        <AmbeBackButton onClick={() => router.back()} />
+        <h1 className="text-white text-xl font-bold font-sans flex-1">
+          Specialty
+        </h1>
+      </div>
+
+      <p className="text-sm text-gray-400 font-sans px-1">
         Select all health fields you practice in. Patients are matched to you based on these.
       </p>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+
+      {error && (
+        <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center">
+          <p className="text-xs text-red-300 font-sans">{error}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {HEALTH_FIELDS.map((field) => {
@@ -108,29 +118,24 @@ export default function DoctorSpecialtyPage() {
                 key={field.value}
                 type="button"
                 onClick={() => toggleField(field.value)}
-                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                   isSelected
-                    ? 'border-[#1A1A1A] bg-[#FAF8F5] ring-2 ring-[#FFD3AC]'
-                    : 'border-[#E7E2D9] hover:border-[#C8996A] bg-white'
+                    ? 'border-[#FFD3AC] bg-[#FFD3AC] text-[#1E1E1E] shadow-md'
+                    : 'border-white/10 hover:border-white/20 bg-[#1B1A18]/80 text-white'
                 }`}
               >
                 <div className="text-2xl mb-1">{field.icon}</div>
-                <div className="font-medium text-sm text-[#1A1A1A]">{field.label}</div>
+                <div className="font-semibold text-sm font-sans">{field.label}</div>
               </button>
             );
           })}
         </div>
-        <button
-          type="submit"
-          disabled={updating}
-          className={`w-full py-3 rounded-lg font-semibold shadow transition ${
-            updating
-              ? 'bg-[#8C827A] text-white cursor-not-allowed'
-              : 'bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'
-          }`}
-        >
-          {updating ? 'Updating…' : 'Update'}
-        </button>
+
+        <div className="pt-2 flex justify-center">
+          <AmbeButton type="submit" loading={updating} className="w-full">
+            SAVE SPECIALTIES
+          </AmbeButton>
+        </div>
       </form>
     </div>
   );

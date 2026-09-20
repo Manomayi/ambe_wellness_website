@@ -1,26 +1,30 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebase/config';
-import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
-import BackButton from '@/components/common/BackButton';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase/config";
+import {
+  onAuthStateChanged,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
+import AmbeBackButton from "@/components/common/AmbeBackButton";
+import AmbeButton from "@/components/common/AmbeButton";
+import AmbeTextField from "@/components/common/AmbeTextField";
 
-export default function EditPasswordPage() {
+export default function DoctorEditPasswordPage() {
   const router = useRouter();
-  const [currentPwd, setCurrentPwd] = useState('');
-  const [newPwd, setNewPwd] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, user => {
-      if (!user) router.push('/login');
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (!user) router.push("/login");
       else setLoading(false);
     });
     return () => unsub();
@@ -28,16 +32,18 @@ export default function EditPasswordPage() {
 
   const validate = () => {
     if (!currentPwd || !newPwd || !confirmPwd) {
-      setError('All fields are required');
+      setError("All fields are required");
       return false;
     }
     const pwdRegex = /^(?=.*[A-Za-z])(?=.*[^A-Za-z0-9]).{8,}$/;
     if (!pwdRegex.test(newPwd)) {
-      setError('Password must be at least 8 characters, include a letter, and a special character.');
+      setError(
+        "Password must be at least 8 characters, include a letter, and a special character."
+      );
       return false;
     }
     if (newPwd !== confirmPwd) {
-      setError('Passwords do not match');
+      setError("New passwords do not match");
       return false;
     }
     return true;
@@ -45,22 +51,24 @@ export default function EditPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     if (!validate()) return;
     setSubmitting(true);
     try {
       const user = auth.currentUser;
-      if (!user) throw new Error('Not authenticated');
-      // Reauthenticate
+      if (!user) throw new Error("Not authenticated");
       const cred = EmailAuthProvider.credential(user.email, currentPwd);
       await reauthenticateWithCredential(user, cred);
-      // Update
       await updatePassword(user, newPwd);
-      alert('Password updated successfully');
+      alert("Password updated successfully!");
       router.back();
     } catch (e) {
       console.error(e);
-      setError(e.code === 'auth/wrong-password' ? 'Current password is incorrect' : 'Failed to update password');
+      setError(
+        e.code === "auth/wrong-password"
+          ? "Current password is incorrect"
+          : "Failed to update password. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -68,82 +76,79 @@ export default function EditPasswordPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-4 border-t-4 border-[#C8996A] border-t-transparent rounded-full" />
+      <div className="flex items-center justify-center min-h-[300px]">
+        <div className="animate-spin h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-6">
-      <BackButton href="/doctor/menu" label="Back to Menu" />
-      <h1 className="text-2xl font-semibold text-[#1A1A1A]">Change Password</h1>
-      <p className="text-sm text-[#6B6862]">
+    <div className="max-w-md mx-auto space-y-6">
+      {/* Top Bar */}
+      <div className="flex items-center gap-4 pt-1">
+        <AmbeBackButton onClick={() => router.back()} />
+        <h1 className="text-white text-xl font-bold font-sans flex-1">
+          Change Password
+        </h1>
+      </div>
+
+      {/* Info Card */}
+      <div className="bg-[#2D2D30]/80 border border-white/10 rounded-2xl p-4 text-xs text-gray-300 font-sans leading-relaxed">
         Password must be at least 8 characters, include a letter, and a special character.
-      </p>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-[#353535] mb-1">Current Password</label>
-          <div className="relative">
-            <input
-              type={showCurrent ? 'text' : 'password'}
-              value={currentPwd}
-              onChange={e => setCurrentPwd(e.target.value)}
-              className="w-full p-2 border text-black border-[#E7E2D9] bg-white rounded-lg focus:outline-none focus:border-[#C8996A]"
-            />
-            <button
-              type="button"
-              onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A]"
-            >
-              {showCurrent ? 'Hide' : 'Show'}
-            </button>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+        {error && (
+          <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center">
+            <p className="text-xs text-red-300 font-sans">{error}</p>
           </div>
+        )}
+
+        <div className="space-y-1">
+          <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 px-4">
+            Current Password
+          </label>
+          <AmbeTextField
+            type="password"
+            value={currentPwd}
+            onChange={(e) => setCurrentPwd(e.target.value)}
+            placeholder="Enter current password"
+            required
+          />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-[#353535] mb-1">New Password</label>
-          <div className="relative">
-            <input
-              type={showNew ? 'text' : 'password'}
-              value={newPwd}
-              onChange={e => setNewPwd(e.target.value)}
-              className="w-full p-2 border text-black border-[#E7E2D9] bg-white rounded-lg focus:outline-none focus:border-[#C8996A]"
-            />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A]"
-            >
-              {showNew ? 'Hide' : 'Show'}
-            </button>
-          </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 px-4">
+            New Password
+          </label>
+          <AmbeTextField
+            type="password"
+            value={newPwd}
+            onChange={(e) => setNewPwd(e.target.value)}
+            placeholder="Enter new password"
+            required
+          />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-[#353535] mb-1">Confirm New Password</label>
-          <div className="relative">
-            <input
-              type={showConfirm ? 'text' : 'password'}
-              value={confirmPwd}
-              onChange={e => setConfirmPwd(e.target.value)}
-              className="w-full p-2 border text-black border-[#E7E2D9] bg-white rounded-lg focus:outline-none focus:border-[#C8996A]"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8C827A]"
-            >
-              {showConfirm ? 'Hide' : 'Show'}
-            </button>
-          </div>
+
+        <div className="space-y-1">
+          <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 px-4">
+            Confirm New Password
+          </label>
+          <AmbeTextField
+            type="password"
+            value={confirmPwd}
+            onChange={(e) => setConfirmPwd(e.target.value)}
+            placeholder="Confirm new password"
+            required
+          />
         </div>
-        <button
-          type="submit"
-          disabled={submitting}
-          className={`w-full py-3 rounded-lg font-semibold shadow transition ${submitting ? 'bg-[#8C827A] text-white cursor-not-allowed' : 'bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'}`}
-        >
-          {submitting ? 'Updating…' : 'Update'}
-        </button>
+
+        <div className="pt-6 flex justify-center">
+          <AmbeButton type="submit" loading={submitting} className="w-full">
+            UPDATE PASSWORD
+          </AmbeButton>
+        </div>
       </form>
     </div>
   );

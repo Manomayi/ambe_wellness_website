@@ -82,6 +82,7 @@ export default function SupportPage() {
         setTicketLoading(false);
       },
       (error) => {
+        if (error?.code === 'permission-denied') return;
         console.error('Error fetching ticket:', error);
         setTicketLoading(false);
       }
@@ -292,13 +293,20 @@ function SupportChatView({ ticket, user }) {
       orderBy('timestamp', 'asc')
     );
 
-    const unsub = onSnapshot(msgsQuery, (snapshot) => {
-      const msgs = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
-      setMessages(msgs);
-    });
+    const unsub = onSnapshot(
+      msgsQuery,
+      (snapshot) => {
+        const msgs = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        setMessages(msgs);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error fetching ticket messages:', err);
+      }
+    );
 
     return () => unsub();
   }, [ticket?.id]);

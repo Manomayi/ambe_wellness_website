@@ -1,114 +1,166 @@
 "use client";
 
-import { useState } from 'react';
-import ProtectedRoute from '@/components/common/ProtectedRoute';
-import BackButton from '@/components/common/BackButton';
+import { useState } from "react";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
+import WebLayoutWrapper from "@/components/common/WebLayoutWrapper";
+import AmbeBackButton from "@/components/common/AmbeBackButton";
 
 export default function UserMembershipPage() {
-  const [notified, setNotified] = useState(false);
-
-  const handleNotify = () => {
-    setNotified(true);
-  };
+  const [showModal, setShowModal] = useState(false);
 
   return (
-    <ProtectedRoute userType="user">
-      <div className="max-w-3xl mx-auto space-y-6 pb-12">
-        <BackButton label="Back" href="/user/menu" />
-
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 sm:p-10 shadow-sm space-y-8">
-          {/* Coming Soon Pill */}
-          <div className="flex justify-center">
-            <span className="inline-flex items-center justify-center px-6 py-2 rounded-full border border-[#C8996A] bg-[#FAF8F5] text-[#C8996A] text-xs font-bold tracking-widest uppercase">
-              Coming Soon
-            </span>
-          </div>
-
-          {/* Heading */}
-          <div className="text-center space-y-3">
-            <p className="text-xs font-semibold text-[#8C827A] uppercase tracking-widest">
-              Personalized · Proven · Powerful
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#1A1A1A]">
-              Care that&apos;s <span className="italic text-[#C2691C]">for everyone</span>
+    <ProtectedRoute allowedRoles={["user"]}>
+      <WebLayoutWrapper maxWidth="680px">
+        <div className="space-y-6 pb-16">
+          {/* Top Bar with Back Button */}
+          <div className="flex items-center gap-3">
+            <AmbeBackButton />
+            <h1
+              className="text-2xl sm:text-3xl font-extrabold text-white"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Membership
             </h1>
           </div>
 
-          {/* Quote Card */}
-          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-6 sm:p-8 text-center space-y-4">
-            <p className="font-serif italic text-lg sm:text-xl text-[#1A1A1A] leading-relaxed">
+          {/* Coming Soon Pill Badge */}
+          <div className="w-full py-2.5 rounded-full border-2 border-[#FFD3AC] bg-[#FFD3AC]/10 text-center">
+            <span className="text-[#FFD3AC] text-sm font-extrabold tracking-widest uppercase font-sans">
+              COMING SOON
+            </span>
+          </div>
+
+          {/* Subtitle & Headline matching Flutter 1:1 */}
+          <div className="text-center space-y-2 pt-2">
+            <p className="text-xs sm:text-sm font-semibold text-white tracking-widest uppercase font-sans">
+              PERSONALIZED · PROVEN · POWERFUL
+            </p>
+            <h2
+              className="text-3xl sm:text-4xl font-extrabold leading-tight text-white"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Care that&apos;s{" "}
+              <span className="text-[#FFD3AC] italic font-extrabold">
+                for everyone
+              </span>
+            </h2>
+          </div>
+
+          {/* Quote Card matching Flutter 1:1 */}
+          <div className="p-6 sm:p-8 rounded-[20px] bg-[#1B1A18]/65 border border-white/20 text-center space-y-4">
+            <p
+              className="text-xl sm:text-2xl font-extrabold italic text-white leading-relaxed"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
               &ldquo;Quality holistic care shouldn&apos;t be a luxury — it should be within reach of everyone.&rdquo;
             </p>
-            <p className="text-xs sm:text-sm text-[#6B6862] leading-relaxed max-w-xl mx-auto">
+            <p className="text-xs sm:text-sm text-white/80 leading-relaxed max-w-xl mx-auto font-sans">
               We&apos;re building a membership that makes doctor-led, deeply personal wellness affordable and accessible, no matter your budget. Everyone deserves care that sees the whole person.
             </p>
           </div>
 
           {/* What Membership Will Include */}
-          <div className="space-y-6">
-            <h3 className="text-xs font-bold text-[#8C827A] uppercase tracking-wider text-center sm:text-left">
-              What Membership Will Include
+          <div className="space-y-4 pt-2">
+            <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-widest uppercase font-sans">
+              WHAT MEMBERSHIP WILL INCLUDE
             </h3>
 
-            <div className="grid gap-4">
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]">
-                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/40 flex items-center justify-center text-[#1A1A1A] flex-shrink-0 font-bold">
+            <div className="space-y-4">
+              {/* Feature 1 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/25 flex items-center justify-center text-[#FFD3AC] text-sm font-extrabold flex-shrink-0 mt-0.5">
                   ✦
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-[#1A1A1A]">Everything included, one price</h4>
-                  <p className="text-xs text-[#6B6862] mt-0.5">
-                    Consultations, custom remedies, and unlimited messaging with your doctor.
+                  <h4 className="font-extrabold text-sm sm:text-base text-white font-sans">
+                    Everything included, one price
+                  </h4>
+                  <p className="text-xs sm:text-sm text-white/70 font-sans mt-0.5">
+                    Consultations, remedies, and unlimited messaging with your doctor.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]">
-                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/40 flex items-center justify-center text-[#1A1A1A] flex-shrink-0 font-bold">
+              {/* Feature 2 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/25 flex items-center justify-center text-[#FFD3AC] text-sm font-extrabold flex-shrink-0 mt-0.5">
                   ♡
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-[#1A1A1A]">Member pricing on remedies</h4>
-                  <p className="text-xs text-[#6B6862] mt-0.5">
-                    Exclusive discounts on all wellness products your doctor recommends for you.
+                  <h4 className="font-extrabold text-sm sm:text-base text-white font-sans">
+                    Member pricing on remedies
+                  </h4>
+                  <p className="text-xs sm:text-sm text-white/70 font-sans mt-0.5">
+                    Save on the products your doctor recommends for you.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E2D9]">
-                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/40 flex items-center justify-center text-[#1A1A1A] flex-shrink-0 font-bold">
+              {/* Feature 3 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/25 flex items-center justify-center text-[#FFD3AC] text-sm font-extrabold flex-shrink-0 mt-0.5">
                   ∞
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-[#1A1A1A]">Care on your terms</h4>
-                  <p className="text-xs text-[#6B6862] mt-0.5">
-                    Ongoing support between visits — you are never left without doctor guidance.
+                  <h4 className="font-extrabold text-sm sm:text-base text-white font-sans">
+                    Care on your terms
+                  </h4>
+                  <p className="text-xs sm:text-sm text-white/70 font-sans mt-0.5">
+                    Ongoing support between visits — never left without guidance.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="pt-2 text-center space-y-3">
-            {notified ? (
-              <div className="p-4 bg-[#2E7D32]/10 border border-[#2E7D32]/30 rounded-xl text-xs text-[#2E7D32] font-semibold">
-                ✓ You&apos;re on the list! We will notify you as soon as membership opens.
-              </div>
-            ) : (
-              <button
-                onClick={handleNotify}
-                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-sm"
-              >
-                Notify me when it&apos;s ready
-              </button>
-            )}
-            <p className="text-xs text-[#8C827A]">
+          {/* Action Button & Caption */}
+          <div className="pt-4 space-y-3 text-center">
+            <button
+              onClick={() => setShowModal(true)}
+              className="w-full py-4 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase transition shadow-lg active:scale-[0.99] cursor-pointer"
+            >
+              NOTIFY ME WHEN IT&apos;S READY
+            </button>
+            <p className="text-xs sm:text-sm text-white/70 font-sans">
               We&apos;ll let you know the moment membership opens.
             </p>
           </div>
+
+          {/* Modal */}
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+              <div className="bg-[#252422] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-4 text-center">
+                <h3
+                  className="text-2xl font-bold text-white"
+                  style={{
+                    fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                  }}
+                >
+                  Coming Soon
+                </h3>
+                <p className="text-sm text-[#B5AFA8] leading-relaxed font-sans">
+                  We&apos;ll notify you as soon as this feature becomes available.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="px-6 py-2.5 bg-[#FFD3AC] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider hover:bg-[#ffe0c4] transition cursor-pointer"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }
+

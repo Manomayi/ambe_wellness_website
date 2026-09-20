@@ -17,6 +17,7 @@ import {
   ExclamationCircleIcon,
   XMarkIcon
 } from "@heroicons/react/24/outline";
+import BackgroundVideo from "@/components/common/BackgroundVideo";
 
 // ============================================================================
 // 1. DOSHA QUESTIONS (48 CONSTITUTIONAL QUESTIONS)
@@ -564,12 +565,24 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
   const router = useRouter();
   const { user, profile } = useAuth();
 
-  const [loadingDraft, setLoadingDraft] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSpecialtyAlert, setShowSpecialtyAlert] = useState(false);
 
   // 1. Dosha Answers state [0..47] -> option index (0, 1, 2)
-  const [doshaAnswers, setDoshaAnswers] = useState(Array(DOSHA_QUESTIONS.length).fill(null));
+  const [doshaAnswers, setDoshaAnswers] = useState(() => {
+    if (typeof window !== "undefined" && user?.uid) {
+      try {
+        const local = localStorage.getItem(`dosha_answers_${user.uid}`);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed) && parsed.length >= DOSHA_QUESTIONS.length) {
+            return parsed.slice(0, DOSHA_QUESTIONS.length);
+          }
+        }
+      } catch (e) {}
+    }
+    return Array(DOSHA_QUESTIONS.length).fill(null);
+  });
 
   // 2. Specialty selection state
   const [hasInitialSpecialty, setHasInitialSpecialty] = useState(Boolean(profile?.preferred_health));
@@ -583,11 +596,45 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
   }, [profile?.preferred_health]);
 
   // 3. Extended conditions state
-  const [selectedConditions, setSelectedConditions] = useState(new Set());
-  const [noneConditions, setNoneConditions] = useState(false);
+  const [selectedConditions, setSelectedConditions] = useState(() => {
+    if (typeof window !== "undefined" && user?.uid) {
+      try {
+        const local = localStorage.getItem(`extended_conditions_${user.uid}`);
+        if (local) {
+          const arr = JSON.parse(local);
+          if (Array.isArray(arr) && !arr.includes("None")) {
+            return new Set(arr);
+          }
+        }
+      } catch (e) {}
+    }
+    return new Set();
+  });
+  const [noneConditions, setNoneConditions] = useState(() => {
+    if (typeof window !== "undefined" && user?.uid) {
+      try {
+        const local = localStorage.getItem(`extended_conditions_${user.uid}`);
+        if (local) {
+          const arr = JSON.parse(local);
+          if (Array.isArray(arr) && arr.includes("None")) {
+            return true;
+          }
+        }
+      } catch (e) {}
+    }
+    return false;
+  });
 
   // 4. Extended single choice answers state { [id]: optionString }
-  const [extendedAnswers, setExtendedAnswers] = useState({});
+  const [extendedAnswers, setExtendedAnswers] = useState(() => {
+    if (typeof window !== "undefined" && user?.uid) {
+      try {
+        const local = localStorage.getItem(`extended_answers_${user.uid}`);
+        if (local) return JSON.parse(local) || {};
+      } catch (e) {}
+    }
+    return {};
+  });
 
   const specialtyRef = useRef(null);
   const hasLoadedDraftRef = useRef(false);
@@ -648,43 +695,76 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         console.warn("Could not read draft from localStorage:", e);
       }
 
-      // 2. Fallback to Firestore
+      // 2. Check profile in memory first, then fallback to Firestore with timeout
       try {
-        const userSnap = await getDoc(doc(db, "users", user.uid));
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          if (data.preferred_health) {
-            restoredSpecialty = data.preferred_health;
-          }
+        const profileData = profile || {};
+        if (profileData.preferred_health) {
+          restoredSpecialty = profileData.preferred_health;
+        }
 
-          // Restore Dosha draft answers
-          if (!restoredDosha && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
-            const arr = Array(DOSHA_QUESTIONS.length).fill(null);
-            Object.entries(data.dosha_draft_answers).forEach(([idxStr, val]) => {
-              const idx = parseInt(idxStr, 10);
-              if (!isNaN(idx) && idx >= 0 && idx < arr.length) {
-                arr[idx] = val;
-              }
-            });
-            restoredDosha = arr;
-          }
-
-          // Restore Extended draft answers
-          if (Object.keys(restoredExtended).length === 0 && data.extended_draft_answers) {
-            if (data.extended_draft_answers.answers) {
-              restoredExtended = data.extended_draft_answers.answers;
+        // Restore Dosha draft answers from profile
+        if (!restoredDosha && profileData.dosha_draft_answers && typeof profileData.dosha_draft_answers === "object") {
+          const arr = Array(DOSHA_QUESTIONS.length).fill(null);
+          Object.entries(profileData.dosha_draft_answers).forEach(([idxStr, val]) => {
+            const idx = parseInt(idxStr, 10);
+            if (!isNaN(idx) && idx >= 0 && idx < arr.length) {
+              arr[idx] = val;
             }
-            if (Array.isArray(data.extended_draft_answers.conditions)) {
-              if (data.extended_draft_answers.conditions.includes("None")) {
-                restoredNoneConditions = true;
-              } else {
-                restoredConditions = new Set(data.extended_draft_answers.conditions);
+          });
+          restoredDosha = arr;
+        }
+
+        // Restore Extended draft answers from profile
+        if (Object.keys(restoredExtended).length === 0 && profileData.extended_draft_answers) {
+          if (profileData.extended_draft_answers.answers) {
+            restoredExtended = profileData.extended_draft_answers.answers;
+          }
+          if (Array.isArray(profileData.extended_draft_answers.conditions)) {
+            if (profileData.extended_draft_answers.conditions.includes("None")) {
+              restoredNoneConditions = true;
+            } else {
+              restoredConditions = new Set(profileData.extended_draft_answers.conditions);
+            }
+          }
+        }
+
+        // Quick fallback to Firestore if needed (max 1.5s timeout)
+        if (!restoredDosha || Object.keys(restoredExtended).length === 0) {
+          const userSnap = await Promise.race([
+            getDoc(doc(db, "users", user.uid)),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500))
+          ]);
+          if (userSnap && userSnap.exists()) {
+            const data = userSnap.data();
+            if (data.preferred_health && !restoredSpecialty) {
+              restoredSpecialty = data.preferred_health;
+            }
+            if (!restoredDosha && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
+              const arr = Array(DOSHA_QUESTIONS.length).fill(null);
+              Object.entries(data.dosha_draft_answers).forEach(([idxStr, val]) => {
+                const idx = parseInt(idxStr, 10);
+                if (!isNaN(idx) && idx >= 0 && idx < arr.length) {
+                  arr[idx] = val;
+                }
+              });
+              restoredDosha = arr;
+            }
+            if (Object.keys(restoredExtended).length === 0 && data.extended_draft_answers) {
+              if (data.extended_draft_answers.answers) {
+                restoredExtended = data.extended_draft_answers.answers;
+              }
+              if (Array.isArray(data.extended_draft_answers.conditions)) {
+                if (data.extended_draft_answers.conditions.includes("None")) {
+                  restoredNoneConditions = true;
+                } else {
+                  restoredConditions = new Set(data.extended_draft_answers.conditions);
+                }
               }
             }
           }
         }
       } catch (e) {
-        console.warn("Could not load draft answers from Firestore:", e);
+        // Non-blocking fallback
       }
 
       if (!isMounted) return;
@@ -697,8 +777,6 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
       if (Object.keys(restoredExtended).length > 0) setExtendedAnswers(restoredExtended);
       if (restoredConditions.size > 0) setSelectedConditions(restoredConditions);
       if (restoredNoneConditions) setNoneConditions(true);
-
-      setLoadingDraft(false);
     };
 
     loadDraftData();
@@ -706,7 +784,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
     return () => {
       isMounted = false;
     };
-  }, [user]);
+  }, [user, profile]);
 
   // Handlers for Dosha questions
   const handleSelectDosha = (index, optionIndex) => {
@@ -935,15 +1013,6 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
     }
   };
 
-  if (loadingDraft) {
-    return (
-      <div className="fixed inset-0 z-50 bg-[#FAF8F5] flex flex-col items-center justify-center p-4">
-        <div className="w-10 h-10 border-3 border-[#C2691C] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-medium text-[#1A1A1A]">Loading assessment & health profile...</p>
-      </div>
-    );
-  }
-
   // Group Dosha questions by category
   const categories = [
     "Physical Constitution & Body Frame",
@@ -953,30 +1022,32 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#FAF8F5] overflow-y-auto flex flex-col justify-between">
+    <div className="fixed inset-0 z-50 bg-[#1E1E1E] overflow-y-auto flex flex-col justify-between text-white font-sans">
+      <BackgroundVideo opacity={0.25} />
+
       {/* Sticky Top Header */}
-      <div className="sticky top-0 z-30 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#E7E2D9] px-4 sm:px-8 py-3.5 shadow-xs">
+      <div className="sticky top-0 z-30 bg-[#1B1A18]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span
-              className="text-2xl font-normal text-[#1A1A1A]"
+              className="text-2xl font-normal text-white"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
               AMBÉ®
             </span>
-            <span className="text-xs uppercase tracking-widest font-semibold text-[#C2691C] hidden sm:inline">
-              Intake Assessment & Health Profile
+            <span className="text-xs uppercase tracking-widest font-semibold text-[#FFD3AC] hidden sm:inline">
+              Intake Assessment &amp; Health Profile
             </span>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end text-right">
-              <span className="text-xs font-semibold text-[#1A1A1A]">
+              <span className="text-xs font-semibold text-gray-200">
                 {totalAnsweredCount} of {totalQuestionsCount} completed
               </span>
-              <div className="w-32 h-1.5 bg-[#E7E2D9] rounded-full overflow-hidden mt-1">
+              <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
                 <div
-                  className="h-full bg-[#C2691C] transition-all duration-300 rounded-full"
+                  className="h-full bg-[#FFD3AC] transition-all duration-300 rounded-full"
                   style={{ width: `${percentComplete}%` }}
                 />
               </div>
@@ -986,7 +1057,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               type="button"
               onClick={handleSkip}
               disabled={isSaving}
-              className="text-xs font-semibold uppercase tracking-wider text-[#8C827A] hover:text-[#1A1A1A] transition-colors py-1.5 px-4 rounded-full bg-white border border-[#E7E2D9] shadow-xs cursor-pointer hover:border-[#1A1A1A]"
+              className="text-xs font-semibold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-1.5 px-4 rounded-full bg-white/10 border border-white/20 shadow-xs cursor-pointer hover:bg-white/20"
             >
               {(hasInitialSpecialty || selectedHealthField) ? "Skip & Finish" : "Skip"}
             </button>
@@ -996,7 +1067,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                 type="button"
                 onClick={onClose}
                 disabled={isSaving}
-                className="p-1 text-[#8C827A] hover:text-[#1A1A1A] transition-colors rounded-full hover:bg-[#E7E2D9]/40 cursor-pointer"
+                className="p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 cursor-pointer"
                 title="Close"
               >
                 <XMarkIcon className="w-5 h-5" />
@@ -1007,19 +1078,19 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
       </div>
 
       {/* Main Form Container */}
-      <main className="max-w-4xl w-full mx-auto px-4 sm:px-8 py-8 space-y-12">
+      <main className="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-8 py-8 space-y-12">
         {/* Intro Hero Banner */}
-        <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-10 shadow-sm text-center space-y-3">
-          <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+        <div className="bg-[#1B1A18]/80 border border-white/15 rounded-3xl p-6 sm:p-10 shadow-sm text-center space-y-3">
+          <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
             Holistic Intake Profile
           </span>
           <h1
-            className="text-3xl sm:text-4xl font-normal text-[#1A1A1A]"
+            className="text-3xl sm:text-4xl font-normal text-white"
             style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
           >
-            Wellness Assessment & Medical History
+            Wellness Assessment &amp; Medical History
           </h1>
-          <p className="text-sm text-[#6B6862] max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm text-gray-300 max-w-xl mx-auto leading-relaxed">
             Please complete your holistic profile below. All answers are kept strictly confidential and reviewed with your doctor to deliver personalized care.
           </p>
         </div>
@@ -1028,17 +1099,17 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         {/* SECTION 1: CONSTITUTION & DOSHA ASSESSMENT (48 QUESTIONS)        */}
         {/* ================================================================ */}
         <section className="space-y-8">
-          <div className="border-b border-[#E7E2D9] pb-4">
-            <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+          <div className="border-b border-white/15 pb-4">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
               Part 1 of {hasInitialSpecialty ? 3 : 4}
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+              className="text-2xl sm:text-3xl font-medium text-white mt-1"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              Constitution & Dosha Profile
+              Constitution &amp; Dosha Profile
             </h2>
-            <p className="text-sm text-[#6B6862] mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               Select the option that most closely describes your lifelong baseline tendencies.
             </p>
           </div>
@@ -1049,7 +1120,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
 
             return (
               <div key={catName} className="space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#8C827A] px-1">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFD3AC] px-1">
                   {catName}
                 </h3>
                 <div className="space-y-4">
@@ -1058,13 +1129,13 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     return (
                       <div
                         key={originalIdx}
-                        className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 space-y-3 hover:border-[#D1C9BE] transition shadow-xs"
+                        className="bg-[#1B1A18]/80 border border-white/15 rounded-2xl p-5 sm:p-6 space-y-3 shadow-xs"
                       >
                         <div className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] text-[#1A1A1A] text-xs font-bold flex items-center justify-center shrink-0">
+                          <span className="w-6 h-6 rounded-full bg-white/10 border border-white/15 text-[#FFD3AC] text-xs font-bold flex items-center justify-center shrink-0">
                             {originalIdx + 1}
                           </span>
-                          <h4 className="font-semibold text-[#1A1A1A] text-base sm:text-lg">{question}</h4>
+                          <h4 className="font-semibold text-white text-base sm:text-lg font-sans">{question}</h4>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
@@ -1077,12 +1148,12 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                                 onClick={() => handleSelectDosha(originalIdx, optIdx)}
                                 className={`p-3.5 rounded-xl text-left border transition text-sm sm:text-base font-medium cursor-pointer flex items-center justify-between ${
                                   isSelected
-                                    ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-xs font-semibold"
-                                    : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                                    ? "border-transparent bg-[#FFD3AC] text-[#1E1E1E] shadow-xs font-semibold"
+                                    : "border-white/10 bg-white/10 text-gray-200 hover:bg-white/15 hover:text-white"
                                 }`}
                               >
                                 <span>{optText}</span>
-                                {isSelected && <CheckIcon className="w-4 h-4 text-[#1A1A1A] shrink-0 ml-2" />}
+                                {isSelected && <CheckIcon className="w-4 h-4 text-[#1E1E1E] shrink-0 ml-2" />}
                               </button>
                             );
                           })}
@@ -1103,34 +1174,34 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
           <section
             ref={specialtyRef}
             id="specialty-section"
-            className={`space-y-6 bg-white border-2 rounded-3xl p-6 sm:p-8 transition-all ${
-              showSpecialtyAlert ? "border-[#C2691C] shadow-lg ring-2 ring-[#FFD3AC]" : "border-[#E7E2D9] shadow-sm"
+            className={`space-y-6 bg-[#1B1A18]/80 border rounded-3xl p-6 sm:p-8 transition-all ${
+              showSpecialtyAlert ? "border-[#FFD3AC] shadow-lg ring-2 ring-[#FFD3AC]" : "border-white/15 shadow-sm"
             }`}
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E7E2D9] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/15 pb-4">
               <div>
-                <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+                <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
                   Part 2 of 4 (Required)
                 </span>
                 <h2
-                  className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+                  className="text-2xl sm:text-3xl font-medium text-white mt-1"
                   style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
                 >
                   Which area are you looking to improve?
                 </h2>
-                <p className="text-sm text-[#6B6862] mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   Your primary health specialty matches you with the ideal licensed practitioner for your consultation.
                 </p>
               </div>
               {selectedHealthField && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950 border border-emerald-500/50 text-emerald-300 shrink-0">
                   <CheckIcon className="w-3.5 h-3.5" /> Selected
                 </span>
               )}
             </div>
 
             {showSpecialtyAlert && (
-              <div className="bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl p-4 flex items-center gap-3 text-xs font-medium text-[#C2691C] animate-pulse">
+              <div className="bg-amber-950/70 border border-amber-500/50 rounded-2xl p-4 flex items-center gap-3 text-xs font-medium text-amber-200 animate-pulse">
                 <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
                 <span>Please select your health specialty to continue. This is required to match you with a doctor.</span>
               </div>
@@ -1146,21 +1217,21 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     onClick={() => handleSelectSpecialty(hf.key)}
                     className={`p-4 rounded-2xl text-left border transition cursor-pointer flex flex-col justify-between space-y-2 ${
                       isSelected
-                        ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-xs"
-                        : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                        ? "border-transparent bg-[#FFD3AC] text-[#1E1E1E] shadow-sm"
+                        : "border-white/10 bg-white/10 text-white hover:bg-white/15 hover:border-white/20"
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="font-bold text-base sm:text-lg text-[#1A1A1A]">{hf.label}</span>
+                      <span className={`font-bold text-base sm:text-lg ${isSelected ? "text-[#1E1E1E]" : "text-white"}`}>{hf.label}</span>
                       <span
                         className={`w-5 h-5 rounded-full flex items-center justify-center border text-xs ${
-                          isSelected ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "border-[#C5BCAD] bg-white text-transparent"
+                          isSelected ? "bg-[#1E1E1E] text-[#FFD3AC] border-[#1E1E1E]" : "border-white/30 bg-transparent text-transparent"
                         }`}
                       >
                         ✓
                       </span>
                     </div>
-                    <p className="text-xs sm:text-sm text-[#6B6862] leading-snug">{hf.desc}</p>
+                    <p className={`text-xs sm:text-sm leading-snug ${isSelected ? "text-[#1E1E1E]/80" : "text-gray-300"}`}>{hf.desc}</p>
                   </button>
                 );
               })}
@@ -1172,22 +1243,22 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         {/* SECTION 3: MEDICAL CONDITIONS CHECKLIST (33 CONDITIONS)          */}
         {/* ================================================================ */}
         <section className="space-y-6">
-          <div className="border-b border-[#E7E2D9] pb-4">
-            <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+          <div className="border-b border-white/15 pb-4">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
               Part {hasInitialSpecialty ? 2 : 3} of {hasInitialSpecialty ? 3 : 4}
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+              className="text-2xl sm:text-3xl font-medium text-white mt-1"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              Medical History & Existing Conditions
+              Medical History &amp; Existing Conditions
             </h2>
-            <p className="text-sm text-[#6B6862] mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               Select all conditions that currently apply or that you have been diagnosed with, or choose &ldquo;None of the above&rdquo;.
             </p>
           </div>
 
-          <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+          <div className="bg-[#1B1A18]/80 border border-white/15 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
             <div className="flex flex-wrap gap-2.5">
               {MEDICAL_CONDITIONS_LIST.map((condition) => {
                 const isSelected = selectedConditions.has(condition);
@@ -1198,15 +1269,15 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     onClick={() => handleToggleCondition(condition)}
                     className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer text-left ${
                       isSelected
-                        ? "bg-[#FFF3E8] border-2 border-[#1A1A1A] text-[#1A1A1A] font-semibold shadow-xs"
-                        : "bg-[#FAF8F5] border border-[#E7E2D9] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                        ? "bg-[#FFD3AC] text-[#1E1E1E] font-semibold border-transparent shadow-xs"
+                        : "bg-white/10 border border-white/10 text-gray-200 hover:bg-white/15 hover:text-white"
                     }`}
                   >
                     <span
                       className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
                         isSelected
-                          ? "bg-[#1A1A1A] border-[#1A1A1A] text-white"
-                          : "border-[#C5BCAD] text-transparent bg-white"
+                          ? "bg-[#1E1E1E] border-[#1E1E1E] text-white"
+                          : "border-white/30 text-transparent bg-transparent"
                       }`}
                     >
                       ✓
@@ -1221,15 +1292,15 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                 onClick={handleToggleNoneConditions}
                 className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
                   noneConditions
-                    ? "bg-[#1A1A1A] text-white border-2 border-[#1A1A1A] shadow-xs"
-                    : "bg-[#FAF8F5] border border-[#E7E2D9] text-[#6B6862] hover:text-[#1A1A1A] hover:bg-[#F4F1EA]"
+                    ? "bg-[#FFD3AC] text-[#1E1E1E] border-transparent shadow-xs"
+                    : "bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/15"
                 }`}
               >
                 <span
                   className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
                     noneConditions
-                      ? "bg-white border-white text-[#1A1A1A]"
-                      : "border-[#C5BCAD] text-transparent bg-white"
+                      ? "bg-[#1E1E1E] border-[#1E1E1E] text-white"
+                      : "border-white/30 text-transparent bg-transparent"
                   }`}
                 >
                   ✓
@@ -1244,17 +1315,17 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         {/* SECTION 4: CLINICAL & LIFESTYLE ASSESSMENT                       */}
         {/* ================================================================ */}
         <section className="space-y-6">
-          <div className="border-b border-[#E7E2D9] pb-4">
-            <span className="text-xs uppercase tracking-widest font-bold text-[#C2691C]">
+          <div className="border-b border-white/15 pb-4">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
               Part {hasInitialSpecialty ? 3 : 4} of {hasInitialSpecialty ? 3 : 4}
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-medium text-[#1A1A1A] mt-1"
+              className="text-2xl sm:text-3xl font-medium text-white mt-1"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              Lifestyle, Habits & Clinical Symptoms
+              Lifestyle, Habits &amp; Clinical Symptoms
             </h2>
-            <p className="text-sm text-[#6B6862] mt-1">
+            <p className="text-sm text-gray-400 mt-1">
               Physical activity, digestive patterns, energy and daily habits.
             </p>
           </div>
@@ -1265,13 +1336,13 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               return (
                 <div
                   key={q.id}
-                  className="bg-white border border-[#E7E2D9] rounded-2xl p-5 sm:p-6 space-y-3 hover:border-[#D1C9BE] transition shadow-xs"
+                  className="bg-[#1B1A18]/80 border border-white/15 rounded-2xl p-5 sm:p-6 space-y-3 shadow-xs"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] text-[#1A1A1A] text-xs font-bold flex items-center justify-center shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-white/10 border border-white/15 text-[#FFD3AC] text-xs font-bold flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
-                    <h4 className="font-semibold text-[#1A1A1A] text-base sm:text-lg">{q.question}</h4>
+                    <h4 className="font-semibold text-white text-base sm:text-lg font-sans">{q.question}</h4>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
@@ -1284,12 +1355,12 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                           onClick={() => handleSelectExtendedSingle(q.id, optText)}
                           className={`p-3.5 rounded-xl text-left border transition text-sm sm:text-base font-medium cursor-pointer flex items-center justify-between ${
                             isSelected
-                              ? "border-[#1A1A1A] bg-[#FFD3AC] text-[#1A1A1A] shadow-xs font-semibold"
-                              : "border-[#E7E2D9] bg-[#FAF8F5] text-[#353535] hover:bg-[#F4F1EA] hover:border-[#D1C9BE]"
+                              ? "border-transparent bg-[#FFD3AC] text-[#1E1E1E] shadow-xs font-semibold"
+                              : "border-white/10 bg-white/10 text-gray-200 hover:bg-white/15 hover:text-white"
                           }`}
                         >
                           <span>{optText}</span>
-                          {isSelected && <CheckIcon className="w-4 h-4 text-[#1A1A1A] shrink-0 ml-2" />}
+                          {isSelected && <CheckIcon className="w-4 h-4 text-[#1E1E1E] shrink-0 ml-2" />}
                         </button>
                       );
                     })}
@@ -1301,18 +1372,18 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         </section>
 
         {/* Bottom Submission & Action Card */}
-        <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#F4F1EA] pb-6">
+        <div className="bg-[#1B1A18]/90 border border-white/15 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
             <div>
-              <h3 className="font-semibold text-lg text-[#1A1A1A]">Ready to submit?</h3>
-              <p className="text-xs text-[#8C827A] mt-1">
+              <h3 className="font-semibold text-lg text-white">Ready to submit?</h3>
+              <p className="text-xs text-gray-400 mt-1">
                 {isFullyCompleted
                   ? "All sections are answered. Submitting unlocks your personalized Dosha constitution report."
                   : "You can submit now, or choose Skip & Finish to proceed with booking your consultation."}
               </p>
             </div>
             <div className="text-right shrink-0">
-              <span className="text-xs font-bold text-[#C2691C] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#FFD3AC] uppercase tracking-wider">
                 {percentComplete}% Completed
               </span>
             </div>
@@ -1323,7 +1394,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               type="button"
               onClick={handleSkip}
               disabled={isSaving}
-              className="w-full sm:w-auto px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-wider text-[#6B6862] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] border border-[#E7E2D9] transition cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-wider text-gray-300 hover:text-white hover:bg-white/10 border border-white/20 transition cursor-pointer"
             >
               {(hasInitialSpecialty || selectedHealthField) ? "Skip & Finish" : "Skip to Specialty"}
             </button>
@@ -1332,7 +1403,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               type="button"
               onClick={() => saveAssessment(isFullyCompleted)}
               disabled={isSaving || (!hasInitialSpecialty && !selectedHealthField)}
-              className="w-full sm:w-auto px-10 py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full sm:w-auto px-10 py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSaving
                 ? "Saving..."
@@ -1343,7 +1414,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
           </div>
         </div>
 
-        <p className="text-center text-xs text-[#8C827A] pb-8">
+        <p className="text-center text-xs text-gray-400 pb-8">
           Your answers are private and encrypted. They will only be reviewed with your licensed specialist during your clinical consultation.
         </p>
       </main>

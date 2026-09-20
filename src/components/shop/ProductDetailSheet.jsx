@@ -53,6 +53,31 @@ export default function ProductDetailSheet({ product, open, onClose, onBuy, load
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shop-sheet-handle" aria-hidden="true" />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close product details"
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 14,
+            width: 30,
+            height: 30,
+            borderRadius: "50%",
+            backgroundColor: "rgba(255, 255, 255, 0.12)",
+            border: "none",
+            color: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 10,
+            fontSize: 16,
+            lineHeight: 1
+          }}
+        >
+          ✕
+        </button>
 
         <div className="shop-sheet-image-wrap" style={{ position: "relative" }}>
           <img src={image} alt={name} className="shop-sheet-image" />

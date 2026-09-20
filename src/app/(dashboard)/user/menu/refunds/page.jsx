@@ -25,7 +25,8 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from 'firebase/storage';
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import {
   ReceiptRefundIcon,
   ClockIcon,
@@ -118,20 +119,35 @@ export default function UserRefundsPage() {
       collection(db, 'consultations'),
       where('user_id', '==', uid)
     );
-    const unsubConsult = onSnapshot(consultQ, (snap) => {
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setConsultations(list);
-    });
+    const unsubConsult = onSnapshot(
+      consultQ,
+      (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setConsultations(list);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to consultations:', err);
+      }
+    );
 
     const refundQ = query(
       collection(db, 'refundRequests'),
       where('userId', '==', uid)
     );
-    const unsubRefunds = onSnapshot(refundQ, (snap) => {
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setRefundRequests(list);
-      setLoading(false);
-    });
+    const unsubRefunds = onSnapshot(
+      refundQ,
+      (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setRefundRequests(list);
+        setLoading(false);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to refund requests:', err);
+        setLoading(false);
+      }
+    );
 
     return () => {
       unsubConsult();
@@ -457,20 +473,20 @@ export default function UserRefundsPage() {
     if (!item?.refundRequest) {
       if (item?.isUpcoming) {
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
             <ClockIcon className="w-3.5 h-3.5 mr-1" /> Upcoming
           </span>
         );
       }
       if (item && !item.isWithin30Days) {
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
             <XCircleIcon className="w-3.5 h-3.5 mr-1" /> Expired
           </span>
         );
       }
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FFD3AC]/30 text-[#1A1A1A] border border-[#FFD3AC]">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FFD3AC]/20 text-[#FFD3AC] border border-[#FFD3AC]/40">
           Eligible for Refund
         </span>
       );
@@ -479,31 +495,31 @@ export default function UserRefundsPage() {
     switch (status) {
       case 'waiting_for_approval':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
             <ClockIcon className="w-3.5 h-3.5 mr-1" /> Waiting for Approval
           </span>
         );
       case 'approved':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
             <CheckCircleIcon className="w-3.5 h-3.5 mr-1" /> Approved
           </span>
         );
       case 'declined':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
             <XCircleIcon className="w-3.5 h-3.5 mr-1" /> Declined
           </span>
         );
       case 'refunded':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
             <CheckCircleIcon className="w-3.5 h-3.5 mr-1" /> Refunded
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-300">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-white/70 border border-white/10">
             Pending
           </span>
         );
@@ -512,463 +528,466 @@ export default function UserRefundsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 rounded-full border-2 border-[#C8996A] border-t-transparent" />
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-12 w-12 rounded-full border-b-2 border-[#FFD3AC]" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <BackButton />
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Refund Management</h1>
-          <p className="text-sm text-[#6B6862]">
-            View consultation deposit payment history, check refund eligibility, and track refund requests.
-          </p>
-        </div>
-      </div>
-
-      {/* Consultation Tracking Summary KPI Card */}
-      <div className="bg-white border border-[#E7E2D9] rounded-2xl p-5 shadow-xs">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#8C827A] mb-3">
-          Consultation & Payment Summary
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
-            <p className="text-xl font-bold text-[#1A1A1A]">{stats.total}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">Total</p>
-          </div>
-          <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
-            <p className="text-xl font-bold text-blue-600">{stats.completed}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">Completed</p>
-          </div>
-          <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
-            <p className="text-xl font-bold text-[#C8996A]">{stats.upcoming}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">Upcoming</p>
-          </div>
-          <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E7E2D9]">
-            <p className="text-xl font-bold text-amber-600">{stats.noShow}</p>
-            <p className="text-[11px] font-medium text-[#6B6862]">Missed</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Consultation Deposits List */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-[#1A1A1A]">Consultation Deposits</h2>
-
-        {depositItems.length === 0 ? (
-          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-10 text-center shadow-xs">
-            <ReceiptRefundIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-base font-semibold text-[#1A1A1A]">
-              No consultation payments found
-            </p>
-            <p className="text-xs text-[#6B6862] mt-1">
-              When you pay a deposit to schedule a consultation, your records and refund options will appear here.
+    <WebLayoutWrapper>
+      <div className="space-y-6 pb-24">
+        <div className="flex items-center gap-4 pt-2">
+          <AmbeBackButton onClick={() => router.push('/user/menu')} />
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-serif">
+              Refund Management
+            </h1>
+            <p className="text-xs sm:text-sm text-white/60 mt-0.5">
+              View consultation deposit payment history, check refund eligibility, and track refund requests.
             </p>
           </div>
-        ) : (
-          depositItems.map((item, idx) => {
-            const req = item.refundRequest;
-            const currentStatus = req ? req.status : 'pending';
-            const canRequest =
-              item.isWithin30Days &&
-              !item.isUpcoming &&
-              !req;
+        </div>
 
-            return (
-              <div
-                key={item.consultationId || `${item.paymentId}_${idx}`}
-                className="bg-white border border-[#E7E2D9] rounded-2xl p-6 shadow-xs hover:shadow-md transition space-y-4"
-              >
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#E7E2D9] gap-2">
-                  <div>
-                    <span className="text-xs font-mono text-gray-500">
-                      ID: #{item.consultationId}
-                    </span>
-                    <h3 className="text-base font-bold text-[#1A1A1A] mt-0.5">
-                      {item.doctorName}
-                    </h3>
+        {/* Consultation Tracking Summary KPI Card */}
+        <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 shadow-xl backdrop-blur-md">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFD3AC] mb-3">
+            Consultation & Payment Summary
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+              <p className="text-xl font-bold text-white">{stats.total}</p>
+              <p className="text-[11px] font-medium text-white/60">Total</p>
+            </div>
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+              <p className="text-xl font-bold text-blue-400">{stats.completed}</p>
+              <p className="text-[11px] font-medium text-white/60">Completed</p>
+            </div>
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+              <p className="text-xl font-bold text-[#FFD3AC]">{stats.upcoming}</p>
+              <p className="text-[11px] font-medium text-white/60">Upcoming</p>
+            </div>
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+              <p className="text-xl font-bold text-amber-400">{stats.noShow}</p>
+              <p className="text-[11px] font-medium text-white/60">Missed</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Consultation Deposits List */}
+        <div className="space-y-4">
+          <h2 className="text-base font-bold text-white px-1">Consultation Deposits</h2>
+
+          {depositItems.length === 0 ? (
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-10 text-center shadow-xl backdrop-blur-md">
+              <ReceiptRefundIcon className="w-12 h-12 text-white/30 mx-auto mb-3" />
+              <p className="text-base font-semibold text-white">
+                No consultation payments found
+              </p>
+              <p className="text-xs text-white/60 mt-1">
+                When you pay a deposit to schedule a consultation, your records and refund options will appear here.
+              </p>
+            </div>
+          ) : (
+            depositItems.map((item, idx) => {
+              const req = item.refundRequest;
+              const currentStatus = req ? req.status : 'pending';
+              const canRequest =
+                item.isWithin30Days &&
+                !item.isUpcoming &&
+                !req;
+
+              return (
+                <div
+                  key={item.consultationId || `${item.paymentId}_${idx}`}
+                  className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md hover:border-white/20 transition space-y-4"
+                >
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/10 gap-2">
+                    <div>
+                      <span className="text-xs font-mono text-white/50">
+                        ID: #{item.consultationId}
+                      </span>
+                      <h3 className="text-base font-bold text-white mt-0.5">
+                        {item.doctorName}
+                      </h3>
+                    </div>
+                    <div>{getStatusBadge(currentStatus, item)}</div>
                   </div>
-                  <div>{getStatusBadge(currentStatus, item)}</div>
-                </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#353535]">
-                  {item.consultationDate && (
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-white/80">
+                    {item.consultationDate && (
+                      <p>
+                        <span className="text-white/50 font-medium">Consultation Date:</span>{' '}
+                        {formatConsultationDate(item.consultationDate)}
+                      </p>
+                    )}
                     <p>
-                      <span className="text-[#8C827A] font-medium">Consultation Date:</span>{' '}
-                      {formatConsultationDate(item.consultationDate)}
+                      <span className="text-white/50 font-medium">Payment Date:</span>{' '}
+                      {item.paymentDate.toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
                     </p>
-                  )}
-                  <p>
-                    <span className="text-[#8C827A] font-medium">Payment Date:</span>{' '}
-                    {item.paymentDate.toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </p>
-                  <p>
-                    <span className="text-[#8C827A] font-medium">Deposit Paid:</span>{' '}
-                    <span className="font-bold text-[#1A1A1A]">
-                      ${item.depositAmount.toFixed(2)} USD
-                    </span>
-                  </p>
-                  <p>
-                    <span className="text-[#8C827A] font-medium">Calculated Refund:</span>{' '}
-                    <span className="font-bold text-[#C8996A]">
-                      {item.isUpcoming && !req
-                        ? '$0.00 (Locked)'
-                        : `$${item.calculatedRefund.toFixed(2)} USD`}
-                    </span>
-                  </p>
-                  {item.isCancelled ? (
-                    <p className="text-orange-700 font-medium sm:col-span-2">
-                      <span className="text-[#8C827A] font-medium">Consultation Status:</span>{' '}
-                      Cancelled by {item.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
-                      {item.cancelledAt && (
-                        <span className="text-[#8C827A] font-normal ml-1">
-                          (on {formatConsultationDate(item.cancelledAt)})
-                        </span>
-                      )}
+                    <p>
+                      <span className="text-white/50 font-medium">Deposit Paid:</span>{' '}
+                      <span className="font-bold text-white">
+                        ${item.depositAmount.toFixed(2)} USD
+                      </span>
                     </p>
-                  ) : item.userJoined && item.doctorJoined && item.callDuration ? (
-                    <p className="text-emerald-700 font-semibold sm:col-span-2">
-                      <span className="text-[#8C827A] font-medium">Video Call Duration:</span>{' '}
-                      Both Attended ({item.callDuration})
+                    <p>
+                      <span className="text-white/50 font-medium">Calculated Refund:</span>{' '}
+                      <span className="font-bold text-[#FFD3AC]">
+                        {item.isUpcoming && !req
+                          ? '$0.00 (Locked)'
+                          : `$${item.calculatedRefund.toFixed(2)} USD`}
+                      </span>
                     </p>
-                  ) : item.consultationStatus === 'completed' || item.callEndedAt ? (
-                    <p className="text-emerald-700 font-semibold sm:col-span-2">
-                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
-                      {item.callDuration ? `Completed (${item.callDuration})` : 'Completed'}
-                    </p>
-                  ) : item.userJoined && !item.doctorJoined && !item.isUpcoming ? (
-                    <p className="text-amber-700 font-medium sm:col-span-2">
-                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
-                      Doctor Absent
-                    </p>
+                    {item.isCancelled ? (
+                      <p className="text-orange-400 font-medium sm:col-span-2">
+                        <span className="text-white/50 font-medium">Consultation Status:</span>{' '}
+                        Cancelled by {item.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
+                        {item.cancelledAt && (
+                          <span className="text-white/50 font-normal ml-1">
+                            (on {formatConsultationDate(item.cancelledAt)})
+                          </span>
+                        )}
+                      </p>
+                    ) : item.userJoined && item.doctorJoined && item.callDuration ? (
+                      <p className="text-emerald-400 font-semibold sm:col-span-2">
+                        <span className="text-white/50 font-medium">Video Call Duration:</span>{' '}
+                        Both Attended ({item.callDuration})
+                      </p>
+                    ) : item.consultationStatus === 'completed' || item.callEndedAt ? (
+                      <p className="text-emerald-400 font-semibold sm:col-span-2">
+                        <span className="text-white/50 font-medium">Video Call Attendance:</span>{' '}
+                        {item.callDuration ? `Completed (${item.callDuration})` : 'Completed'}
+                      </p>
+                    ) : item.userJoined && !item.doctorJoined && !item.isUpcoming ? (
+                      <p className="text-amber-400 font-medium sm:col-span-2">
+                        <span className="text-white/50 font-medium">Video Call Attendance:</span>{' '}
+                        Doctor Absent
+                      </p>
+                    ) : item.isNoShow ? (
+                      <p className="text-amber-400 font-medium sm:col-span-2">
+                        <span className="text-white/50 font-medium">Video Call Attendance:</span>{' '}
+                        Missed
+                      </p>
+                    ) : item.isUpcoming ? (
+                      <p className="text-white/60 font-medium sm:col-span-2">
+                        <span className="text-white/50 font-medium">Video Call Attendance:</span>{' '}
+                        Upcoming
+                      </p>
+                    ) : null}
+                  </div>
+
+                  {/* Upcoming or No-show notice */}
+                  {item.isUpcoming && !req ? (
+                    <div className="flex items-center space-x-2 text-xs text-amber-300 bg-amber-500/15 p-3 rounded-xl border border-amber-500/30">
+                      <InformationCircleIcon className="w-4 h-4 shrink-0" />
+                      <span>Consultation scheduled. You must complete or cancel your consultation before requesting a refund.</span>
+                    </div>
                   ) : item.isNoShow ? (
-                    <p className="text-amber-700 font-medium sm:col-span-2">
-                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
-                      Missed
-                    </p>
-                  ) : item.isUpcoming ? (
-                    <p className="text-[#8C827A] font-medium sm:col-span-2">
-                      <span className="text-[#8C827A] font-medium">Video Call Attendance:</span>{' '}
-                      Upcoming
-                    </p>
+                    <div className="flex items-center space-x-2 text-xs text-amber-300 bg-amber-500/15 p-3 rounded-xl border border-amber-500/30">
+                      <InformationCircleIcon className="w-4 h-4 shrink-0" />
+                      <span>{item.policyText}</span>
+                    </div>
                   ) : null}
-                </div>
 
-                {/* Upcoming or No-show notice */}
-                {item.isUpcoming && !req ? (
-                  <div className="flex items-center space-x-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-                    <InformationCircleIcon className="w-4 h-4 shrink-0" />
-                    <span>Consultation scheduled. You must complete or cancel your consultation before requesting a refund.</span>
-                  </div>
-                ) : item.isNoShow ? (
-                  <div className="flex items-center space-x-2 text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-                    <InformationCircleIcon className="w-4 h-4 shrink-0" />
-                    <span>{item.policyText}</span>
-                  </div>
-                ) : null}
-
-                {/* 30-Day deadline status */}
-                <div className="text-xs flex items-center justify-between text-[#8C827A] pt-1">
-                  {item.isWithin30Days ? (
-                    <p>
-                      Refund available until:{' '}
-                      <span className="font-semibold text-gray-700">
-                        {item.deadline.toLocaleDateString()}
-                      </span>{' '}
-                      ({item.daysRemaining} days left)
-                    </p>
-                  ) : (
-                    <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                      Refund Period Expired (30 days exceeded)
-                    </span>
-                  )}
-                </div>
-
-                {/* Waiting for Approval Box */}
-                {currentStatus === 'waiting_for_approval' && req && (
-                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs space-y-1">
-                    <p className="font-bold text-amber-800 flex items-center space-x-1.5">
-                      <ClockIcon className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>Refund Request Submitted</span>
-                    </p>
-                    <p className="text-amber-700">
-                      Your refund request was submitted and is waiting for admin approval.
-                    </p>
-                    {req.patientMessage && (
-                      <p className="text-gray-600">Reason: {req.patientMessage}</p>
+                  {/* 30-Day deadline status */}
+                  <div className="text-xs flex items-center justify-between text-white/60 pt-1">
+                    {item.isWithin30Days ? (
+                      <p>
+                        Refund available until:{' '}
+                        <span className="font-semibold text-white">
+                          {item.deadline.toLocaleDateString()}
+                        </span>{' '}
+                        ({item.daysRemaining} days left)
+                      </p>
+                    ) : (
+                      <span className="text-xs font-semibold text-red-400 bg-red-500/20 px-2.5 py-0.5 rounded-full border border-red-500/30">
+                        Refund Period Expired (30 days exceeded)
+                      </span>
                     )}
                   </div>
-                )}
 
-                {/* Approved / Processing Box */}
-                {currentStatus === 'approved' && req && (
-                  <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-xs space-y-1">
-                    <p className="font-bold text-blue-800 flex items-center space-x-1.5">
-                      <CheckCircleIcon className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span>Refund Approved</span>
-                    </p>
-                    <p className="text-blue-700">
-                      Your refund request has been approved by admin and is being processed.
-                    </p>
-                  </div>
-                )}
+                  {/* Waiting for Approval Box */}
+                  {currentStatus === 'waiting_for_approval' && req && (
+                    <div className="p-3 bg-amber-500/15 rounded-xl border border-amber-500/30 text-xs space-y-1">
+                      <p className="font-bold text-amber-300 flex items-center space-x-1.5">
+                        <ClockIcon className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>Refund Request Submitted</span>
+                      </p>
+                      <p className="text-amber-200/90">
+                        Your refund request was submitted and is waiting for admin approval.
+                      </p>
+                      {req.patientMessage && (
+                        <p className="text-white/70">Reason: {req.patientMessage}</p>
+                      )}
+                    </div>
+                  )}
 
-                {/* Decline Box */}
-                {currentStatus === 'declined' && req && req.declineReason && (
-                  <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-xs">
-                    <p className="font-bold text-red-800 flex items-center space-x-1 mb-1">
-                      <XCircleIcon className="w-4 h-4 text-red-600" />
-                      <span>Decline Reason</span>
-                    </p>
-                    <p className="text-red-700">{req.declineReason}</p>
-                  </div>
-                )}
+                  {/* Approved / Processing Box */}
+                  {currentStatus === 'approved' && req && (
+                    <div className="p-3 bg-blue-500/15 rounded-xl border border-blue-500/30 text-xs space-y-1">
+                      <p className="font-bold text-blue-300 flex items-center space-x-1.5">
+                        <CheckCircleIcon className="w-4 h-4 text-blue-400 shrink-0" />
+                        <span>Refund Approved</span>
+                      </p>
+                      <p className="text-blue-200/90">
+                        Your refund request has been approved by admin and is being processed.
+                      </p>
+                    </div>
+                  )}
 
-                {/* Refunded Box */}
-                {currentStatus === 'refunded' && req && (
-                  <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs">
-                    <p className="font-bold text-emerald-800 flex items-center space-x-1 mb-0.5">
-                      <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
-                      <span>Refund Completed</span>
-                    </p>
-                    <p className="text-emerald-700">
-                      Amount: ${(Number(req.refundableAmount) || 50.0).toFixed(2)} was refunded.
-                    </p>
-                  </div>
-                )}
+                  {/* Decline Box */}
+                  {currentStatus === 'declined' && req && req.declineReason && (
+                    <div className="p-3 bg-red-500/15 rounded-xl border border-red-500/30 text-xs">
+                      <p className="font-bold text-red-300 flex items-center space-x-1 mb-1">
+                        <XCircleIcon className="w-4 h-4 text-red-400" />
+                        <span>Decline Reason</span>
+                      </p>
+                      <p className="text-red-200/90">{req.declineReason}</p>
+                    </div>
+                  )}
 
-                {/* Action button */}
-                {canRequest && (
-                  <div className="pt-2">
+                  {/* Refunded Box */}
+                  {currentStatus === 'refunded' && req && (
+                    <div className="p-3 bg-emerald-500/15 rounded-xl border border-emerald-500/30 text-xs">
+                      <p className="font-bold text-emerald-300 flex items-center space-x-1 mb-0.5">
+                        <CheckCircleIcon className="w-4 h-4 text-emerald-400" />
+                        <span>Refund Completed</span>
+                      </p>
+                      <p className="text-emerald-200/90">
+                        Amount: ${(Number(req.refundableAmount) || 50.0).toFixed(2)} was refunded.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action button */}
+                  {canRequest && (
+                    <div className="pt-2">
+                      <button
+                        onClick={() => handleOpenRefundModal(item)}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition shadow-md cursor-pointer"
+                      >
+                        Request Refund
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* ======================================================================= */}
+        {/* SUBMIT REFUND REQUEST MODAL */}
+        {/* ======================================================================= */}
+        {selectedItem && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-[#2D2D30] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-white/15 space-y-5 my-auto text-white">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-white">
+                    Request Consultation Refund
+                  </h3>
+                  <p className="text-xs text-white/60 mt-0.5">
+                    Consultation #{selectedItem.consultationId}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Refund Amount Card */}
+              <div className="bg-white/5 p-4 rounded-2xl border border-white/10 space-y-2">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#FFD3AC]">
+                    Refundable Amount
+                  </span>
+                </div>
+                <p className="text-3xl font-extrabold text-[#FFD3AC]">
+                  ${selectedItem.calculatedRefund.toFixed(2)} USD
+                </p>
+                <p className="text-xs text-white/70 flex items-center space-x-1">
+                  <InformationCircleIcon className="w-4 h-4 text-[#FFD3AC] shrink-0" />
+                  <span>{selectedItem.policyText}</span>
+                </p>
+              </div>
+
+              {/* Consultation Details */}
+              <div className="text-xs text-white/80 space-y-1.5 bg-black/20 p-4 rounded-xl border border-white/10">
+                <p>
+                  <span className="font-semibold text-white">Doctor:</span>{' '}
+                  {selectedItem.doctorName}
+                </p>
+                {selectedItem.consultationDate && (
+                  <p>
+                    <span className="font-semibold text-white">Consultation Date:</span>{' '}
+                    {formatConsultationDate(selectedItem.consultationDate)}
+                  </p>
+                )}
+                {selectedItem.isCancelled && (
+                  <p className="text-orange-400 font-medium">
+                    <span className="font-semibold text-white">Status:</span>{' '}
+                    Cancelled by {selectedItem.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
+                    {selectedItem.cancelledAt && (
+                      <span className="text-white/50 font-normal ml-1">
+                        (on {formatConsultationDate(selectedItem.cancelledAt)})
+                      </span>
+                    )}
+                  </p>
+                )}
+                <p>
+                  <span className="font-semibold text-white">Deposit Paid:</span> $
+                  {selectedItem.depositAmount.toFixed(2)}
+                </p>
+                <p>
+                  <span className="font-semibold text-white">Payment Date:</span>{' '}
+                  {selectedItem.paymentDate.toLocaleDateString()}
+                </p>
+                <p>
+                  <span className="font-semibold text-white">Deadline:</span>{' '}
+                  {selectedItem.deadline.toLocaleDateString()} (
+                  {selectedItem.daysRemaining} days remaining)
+                </p>
+              </div>
+
+              {/* Patient Message */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-white/80">
+                  Message / Reason *
+                </label>
+                <textarea
+                  rows={3}
+                  value={patientMessage}
+                  onChange={(e) => setPatientMessage(e.target.value)}
+                  placeholder="Explain the reason for your refund request..."
+                  className="w-full p-3 text-xs border border-white/15 bg-white/5 rounded-xl focus:border-[#FFD3AC] text-white placeholder:text-white/40 focus:outline-none resize-none"
+                />
+              </div>
+
+              {/* Receipt / Proof Upload */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-white/80">
+                  Deposit Receipt / Payment Proof
+                </label>
+                <p className="text-[11px] text-white/60">
+                  Attach receipt screenshot or statement proof (JPG, PNG, PDF up to 10MB)
+                </p>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {!receiptFile ? (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full py-3 px-4 border border-dashed border-[#FFD3AC]/50 hover:border-[#FFD3AC] rounded-xl text-xs font-semibold text-[#FFD3AC] hover:bg-white/5 transition flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <PaperClipIcon className="w-4 h-4" />
+                    <span>Choose Receipt File</span>
+                  </button>
+                ) : (
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-2 truncate">
+                      <PaperClipIcon className="w-4 h-4 text-[#FFD3AC] shrink-0" />
+                      <span className="font-medium text-white truncate">
+                        {receiptFile.name}
+                      </span>
+                      <span className="text-white/50 shrink-0">
+                        ({(receiptFile.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
                     <button
-                      onClick={() => handleOpenRefundModal(item)}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-colors shadow-xs"
+                      type="button"
+                      onClick={() => setReceiptFile(null)}
+                      className="text-red-400 hover:text-red-300 text-xs font-semibold ml-2 shrink-0 cursor-pointer"
                     >
-                      Request Refund
+                      Remove
                     </button>
                   </div>
                 )}
-              </div>
-            );
-          })
-        )}
-      </div>
 
-      {/* ======================================================================= */}
-      {/* SUBMIT REFUND REQUEST MODAL */}
-      {/* ======================================================================= */}
-      {selectedItem && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#E7E2D9] space-y-5 my-auto">
-            <div className="flex items-center justify-between border-b border-[#E7E2D9] pb-4">
-              <div>
-                <h3 className="text-xl font-bold text-[#1A1A1A]">
-                  Request Consultation Refund
-                </h3>
-                <p className="text-xs text-[#8C827A] mt-0.5">
-                  Consultation #{selectedItem.consultationId}
-                </p>
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden mt-2">
+                    <div
+                      className="bg-[#FFD3AC] h-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-            </div>
 
-            {/* Refund Amount Card */}
-            <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-[#E7E2D9] space-y-2">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#8C827A]">
-                  Refundable Amount
-                </span>
-              </div>
-              <p className="text-3xl font-extrabold text-[#C8996A]">
-                ${selectedItem.calculatedRefund.toFixed(2)} USD
-              </p>
-              <p className="text-xs text-[#6B6862] flex items-center space-x-1">
-                <InformationCircleIcon className="w-4 h-4 text-[#C8996A] shrink-0" />
-                <span>{selectedItem.policyText}</span>
-              </p>
-            </div>
-
-            {/* Consultation Details */}
-            <div className="text-xs text-[#353535] space-y-1 bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-              <p>
-                <span className="font-semibold text-gray-700">Doctor:</span>{' '}
-                {selectedItem.doctorName}
-              </p>
-              {selectedItem.consultationDate && (
-                <p>
-                  <span className="font-semibold text-gray-700">Consultation Date:</span>{' '}
-                  {formatConsultationDate(selectedItem.consultationDate)}
-                </p>
+              {submitError && (
+                <div className="p-3 bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-xl flex items-center space-x-2">
+                  <ExclamationTriangleIcon className="w-4 h-4 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
               )}
-              {selectedItem.isCancelled && (
-                <p className="text-orange-700 font-medium">
-                  <span className="font-semibold text-gray-700">Status:</span>{' '}
-                  Cancelled by {selectedItem.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
-                  {selectedItem.cancelledAt && (
-                    <span className="text-gray-500 font-normal ml-1">
-                      (on {formatConsultationDate(selectedItem.cancelledAt)})
-                    </span>
-                  )}
-                </p>
-              )}
-              <p>
-                <span className="font-semibold text-gray-700">Deposit Paid:</span> $
-                {selectedItem.depositAmount.toFixed(2)}
-              </p>
-              <p>
-                <span className="font-semibold text-gray-700">Payment Date:</span>{' '}
-                {selectedItem.paymentDate.toLocaleDateString()}
-              </p>
-              <p>
-                <span className="font-semibold text-gray-700">Deadline:</span>{' '}
-                {selectedItem.deadline.toLocaleDateString()} (
-                {selectedItem.daysRemaining} days remaining)
-              </p>
-            </div>
 
-            {/* Patient Message */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#6B6862]">
-                Message / Reason *
-              </label>
-              <textarea
-                rows={3}
-                value={patientMessage}
-                onChange={(e) => setPatientMessage(e.target.value)}
-                placeholder="Explain the reason for your refund request..."
-                className="w-full p-3 text-xs border border-[#E7E2D9] rounded-xl focus:border-[#C8996A] focus:ring-1 focus:ring-[#C8996A] focus:outline-hidden"
-              />
-            </div>
-
-            {/* Receipt / Proof Upload */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#6B6862]">
-                Deposit Receipt / Payment Proof
-              </label>
-              <p className="text-[11px] text-[#8C827A]">
-                Attach receipt screenshot or statement proof (JPG, PNG, PDF up to 10MB)
-              </p>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".jpg,.jpeg,.png,.pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {!receiptFile ? (
+              {/* Actions */}
+              <div className="flex items-center justify-end space-x-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-3 px-4 border border-dashed border-[#C8996A] rounded-xl text-xs font-semibold text-[#C8996A] hover:bg-[#FAF8F5] transition flex items-center justify-center space-x-2"
+                  onClick={() => setSelectedItem(null)}
+                  className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white/70 hover:text-white rounded-full transition cursor-pointer"
                 >
-                  <PaperClipIcon className="w-4 h-4" />
-                  <span>Choose Receipt File</span>
+                  Cancel
                 </button>
-              ) : (
-                <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-2 truncate">
-                    <PaperClipIcon className="w-4 h-4 text-[#C8996A] shrink-0" />
-                    <span className="font-medium text-gray-800 truncate">
-                      {receiptFile.name}
-                    </span>
-                    <span className="text-gray-500 shrink-0">
-                      ({(receiptFile.size / 1024).toFixed(1)} KB)
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setReceiptFile(null)}
-                    className="text-red-500 hover:text-red-700 text-xs font-semibold ml-2 shrink-0"
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-
-              {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mt-2">
-                  <div
-                    className="bg-[#C8996A] h-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {submitError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center space-x-2">
-                <ExclamationTriangleIcon className="w-4 h-4 shrink-0" />
-                <span>{submitError}</span>
+                <button
+                  type="button"
+                  onClick={handleSubmitRefund}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition disabled:opacity-50 shadow-md cursor-pointer"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                </button>
               </div>
-            )}
+            </div>
+          </div>
+        )}
 
-            {/* Actions */}
-            <div className="flex items-center justify-end space-x-3 pt-2">
+        {/* ======================================================================= */}
+        {/* SUCCESS CONFIRMATION MODAL */}
+        {/* ======================================================================= */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[#2D2D30] rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-white/15 space-y-4 text-white">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-xl font-bold">
+                <CheckCircleIcon className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-white">
+                Refund Request Submitted
+              </h3>
+              <p className="text-xs text-white/70 leading-relaxed">
+                Your refund request was submitted successfully and is waiting for admin approval. Our team will review your payment and process the refund.
+              </p>
               <button
-                type="button"
-                onClick={() => setSelectedItem(null)}
-                className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-600 hover:bg-gray-100 rounded-full transition"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setSelectedItem(null);
+                }}
+                className="w-full py-3 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition shadow-md cursor-pointer"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmitRefund}
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-xs"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                Close
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* ======================================================================= */}
-      {/* SUCCESS CONFIRMATION MODAL */}
-      {/* ======================================================================= */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-[#E7E2D9] space-y-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircleIcon className="w-7 h-7" />
-            </div>
-            <h3 className="text-xl font-bold text-[#1A1A1A]">
-              Refund Request Submitted
-            </h3>
-            <p className="text-xs text-[#6B6862] leading-relaxed">
-              Your refund request was submitted successfully and is waiting for admin approval. Our team will review your payment and process the refund.
-            </p>
-            <button
-              onClick={() => {
-                setShowSuccessModal(false);
-                setSelectedItem(null);
-              }}
-              className="w-full py-2.5 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </WebLayoutWrapper>
   );
 }

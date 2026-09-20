@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import UserNav from "@/components/navigation/UserNav";
+import UserBottomNav from "@/components/navigation/UserBottomNav";
+import BackgroundVideo from "@/components/common/BackgroundVideo";
 import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -13,8 +15,17 @@ export default function UserLayout({ children }) {
   const [questionnaireDismissed, setQuestionnaireDismissed] = useState(false);
 
   // If user is loaded and questionnaire is not completed yet AND has no specialty chosen:
-  const isQuestionnairePage = pathname?.startsWith("/user/menu/questionnaire") || pathname?.startsWith("/user/delete-account");
-  const needsQuestionnaire = !questionnaireDismissed && !isQuestionnairePage && !loading && user && profile && profile.is_free_questionnaire_completed !== true && !profile.preferred_health;
+  const isQuestionnairePage =
+    pathname?.startsWith("/user/menu/questionnaire") ||
+    pathname?.startsWith("/user/delete-account");
+  const needsQuestionnaire =
+    !questionnaireDismissed &&
+    !isQuestionnairePage &&
+    !loading &&
+    user &&
+    profile &&
+    profile.is_free_questionnaire_completed !== true &&
+    !profile.preferred_health;
 
   if (needsQuestionnaire) {
     return (
@@ -34,16 +45,24 @@ export default function UserLayout({ children }) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAF8F5] text-[#353535] font-sans antialiased">
-      <UserNav currentPath={pathname} />
-      <main className="flex-1 w-full px-4 sm:px-6 md:px-8 lg:px-12 py-8 sm:py-10">
-        <div className="max-w-5xl mx-auto">
+    <div className="relative min-h-screen bg-[#1E1E1E] text-white font-sans antialiased flex flex-col selection:bg-[#FFD3AC] selection:text-[#1E1E1E]">
+      {/* Background Video matching Flutter App */}
+      <BackgroundVideo opacity={0.3} />
+
+      {/* Top Header */}
+      <UserNav />
+
+      {/* Main Content Area */}
+      <main className="relative z-10 flex-1 w-full pb-24 md:pb-12">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 md:px-8 py-4 sm:py-6">
           {children}
         </div>
       </main>
-      <footer className="text-center text-[#8C827A] text-xs sm:text-sm py-6 border-t border-[#E7E2D9]/60">
-        © {new Date().getFullYear()} Ambé Wellness. All rights reserved.
-      </footer>
+
+      {/* Mobile Bottom Navigation (Flutter NavigationBar) */}
+      <div className="md:hidden">
+        <UserBottomNav />
+      </div>
     </div>
   );
 }

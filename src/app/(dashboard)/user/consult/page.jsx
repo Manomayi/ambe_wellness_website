@@ -29,8 +29,10 @@ import {
   DocumentTextIcon,
   ExclamationCircleIcon,
   XMarkIcon,
-  XCircleIcon
+  XCircleIcon,
+  ChevronRightIcon
 } from "@heroicons/react/24/outline";
+import WebLayoutWrapper from "@/components/common/WebLayoutWrapper";
 
 // Health field mapping
 const HEALTH_FIELD_LABELS = {
@@ -271,58 +273,73 @@ export default function UserConsultPage() {
     // (matching Flutter app so active & in-progress appointments show immediately)
     const upcomingQuery = collection(db, 'users', user.uid, 'appointments_upcoming');
 
-    const unsubscribeUpcoming = onSnapshot(upcomingQuery, (snapshot) => {
-      const now = new Date();
-      const validUpcoming = [];
+    const unsubscribeUpcoming = onSnapshot(
+      upcomingQuery,
+      (snapshot) => {
+        const now = new Date();
+        const validUpcoming = [];
 
-      snapshot.docs.forEach(docSnap => {
-        const data = { id: docSnap.id, ...docSnap.data() };
-        const apptDate = data.time?.toDate ? data.time.toDate() : (data.time ? new Date(data.time) : null);
-        if (apptDate) {
-          const diffMinutes = (apptDate.getTime() - now.getTime()) / (1000 * 60);
-          if (diffMinutes < -60) {
-            // Expired! Auto-resolve to appointments_history and omit from upcoming
-            autoResolveExpiredConsultation(data, docSnap.id);
-            return;
+        snapshot.docs.forEach(docSnap => {
+          const data = { id: docSnap.id, ...docSnap.data() };
+          const apptDate = data.time?.toDate ? data.time.toDate() : (data.time ? new Date(data.time) : null);
+          if (apptDate) {
+            const diffMinutes = (apptDate.getTime() - now.getTime()) / (1000 * 60);
+            if (diffMinutes < -60) {
+              // Expired! Auto-resolve to appointments_history and omit from upcoming
+              autoResolveExpiredConsultation(data, docSnap.id);
+              return;
+            }
           }
-        }
-        validUpcoming.push(data);
-      });
+          validUpcoming.push(data);
+        });
 
-      validUpcoming.sort((a, b) => {
-        const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
-        const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
-        return timeA - timeB;
-      });
-      setUpcomingAppointments(validUpcoming);
-    });
+        validUpcoming.sort((a, b) => {
+          const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
+          const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
+          return timeA - timeB;
+        });
+        setUpcomingAppointments(validUpcoming);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to upcoming appointments:', err);
+      }
+    );
 
     // Listen to past appointments
     const pastQuery = collection(db, 'users', user.uid, 'appointments_history');
 
-    const unsubscribePast = onSnapshot(pastQuery, (snapshot) => {
-      const rawAppointments = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      rawAppointments.sort((a, b) => {
-        const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
-        const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
-        return timeB - timeA;
-      });
+    const unsubscribePast = onSnapshot(
+      pastQuery,
+      (snapshot) => {
+        const rawAppointments = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        rawAppointments.sort((a, b) => {
+          const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
+          const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
+          return timeB - timeA;
+        });
 
-      // Deduplicate by canonical appointment ID
-      const uniqueMap = {};
-      rawAppointments.forEach((item) => {
-        const canonicalId = item.appointment_id || item.consultation_id || item.id;
-        if (!uniqueMap[canonicalId]) {
-          uniqueMap[canonicalId] = item;
-        }
-      });
+        // Deduplicate by canonical appointment ID
+        const uniqueMap = {};
+        rawAppointments.forEach((item) => {
+          const canonicalId = item.appointment_id || item.consultation_id || item.id;
+          if (!uniqueMap[canonicalId]) {
+            uniqueMap[canonicalId] = item;
+          }
+        });
 
-      setPastAppointments(Object.values(uniqueMap));
-      setLoading(false);
-    });
+        setPastAppointments(Object.values(uniqueMap));
+        setLoading(false);
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to past appointments:', err);
+        setLoading(false);
+      }
+    );
 
     return () => {
       unsubscribeUpcoming();
@@ -482,509 +499,516 @@ export default function UserConsultPage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold text-[#1A1A1A] mb-8">Consultations</h1>
-
-        {/* Questionnaire Modal */}
-        {showQuestionnaireModal && (
-          <UserQuestionnaireModal
-            onComplete={(redirectUrl) => {
-              setShowQuestionnaireModal(false);
-              if (redirectUrl) {
-                router.push(redirectUrl);
-              }
-            }}
-          />
-        )}
-
-        {/* Extended Questionnaire Modal */}
-        {showExtendedQuestionnaireModal && (
-          <ExtendedQuestionnaireModal
-            onComplete={() => {
-              setShowExtendedQuestionnaireModal(false);
-              router.push('/user/consult/schedule');
-            }}
-            onClose={() => setShowExtendedQuestionnaireModal(false)}
-          />
-        )}
-
-        {/* Active Consultation Modal (Hold On) */}
-        {showActiveAppointmentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative text-center">
-              <button
-                onClick={() => setShowActiveAppointmentModal(false)}
-                className="absolute top-4 right-4 p-2 text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] rounded-full transition cursor-pointer"
-                aria-label="Close"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-
-              <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm">
-                ⏳
-              </div>
-
-              <div className="space-y-2">
-                <h3 
-                  className="text-2xl font-bold text-[#1A1A1A]"
-                  style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
-                >
-                  Hold On
-                </h3>
-                <p className="text-sm text-[#6B6862] leading-relaxed">
-                  You already have an active consultation scheduled. You cannot book a second appointment until your current consultation is completed.
-                </p>
-              </div>
-
-              {activeAppointment && (
-                <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-4 text-left space-y-2.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#8C827A] uppercase tracking-wider font-medium">Doctor</span>
-                    <span className="font-semibold text-[#1A1A1A]">
-                      {activeAppointment.doctor_name || doctorDisplayName}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#8C827A] uppercase tracking-wider font-medium">Scheduled Time</span>
-                    <span className="font-semibold text-[#C2691C]">
-                      {formatAppointmentTime(activeAppointment.time)}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button
-                  onClick={() => {
-                    setShowActiveAppointmentModal(false);
-                    const el = document.getElementById('upcoming-appointments');
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm"
-                >
-                  View Existing Appointment
-                </button>
-              </div>
-
-            </div>
+      <WebLayoutWrapper>
+        <div className="space-y-6 pb-24">
+          <div className="flex items-center justify-between pt-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Consultations
+            </h1>
           </div>
-        )}
 
-        {/* Cancel Appointment Confirmation Modal */}
-        {appointmentToCancel && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white border border-[#E7E2D9] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative text-center">
-              <button
-                onClick={() => setAppointmentToCancel(null)}
-                disabled={Boolean(cancellingId)}
-                className="absolute top-4 right-4 p-2 text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] rounded-full transition cursor-pointer disabled:opacity-50"
-                aria-label="Close"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
+          {/* Questionnaire Modal */}
+          {showQuestionnaireModal && (
+            <UserQuestionnaireModal
+              onComplete={(redirectUrl) => {
+                setShowQuestionnaireModal(false);
+                if (redirectUrl) {
+                  router.push(redirectUrl);
+                }
+              }}
+            />
+          )}
 
-              <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto text-2xl text-red-600 shadow-sm">
-                <XCircleIcon className="w-8 h-8" />
-              </div>
+          {/* Extended Questionnaire Modal */}
+          {showExtendedQuestionnaireModal && (
+            <ExtendedQuestionnaireModal
+              onComplete={() => {
+                setShowExtendedQuestionnaireModal(false);
+                router.push('/user/consult/schedule');
+              }}
+              onClose={() => setShowExtendedQuestionnaireModal(false)}
+            />
+          )}
 
-              <div className="space-y-2">
-                <h3 
-                  className="text-2xl font-bold text-[#1A1A1A]"
-                  style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+          {/* Active Consultation Modal (Hold On) */}
+          {showActiveAppointmentModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+              <div className="bg-[#2D2D30]/95 border border-white/10 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative text-center text-white backdrop-blur-md">
+                <button
+                  onClick={() => setShowActiveAppointmentModal(false)}
+                  className="absolute top-4 right-4 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer"
+                  aria-label="Close"
                 >
-                  Cancel Appointment?
-                </h3>
-                <p className="text-sm text-[#6B6862] leading-relaxed">
-                  Are you sure you want to cancel? You cannot cancel within 2 hours of the appointment.
-                </p>
-              </div>
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
 
-              <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-4 text-left space-y-2.5 text-xs text-[#1A1A1A]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Doctor</span>
-                  <span className="font-semibold">
-                    {appointmentToCancel.doctor_name?.startsWith('Dr.') 
-                      ? appointmentToCancel.doctor_name 
-                      : `Dr. ${appointmentToCancel.doctor_name || 'Assigned Doctor'}`}
-                  </span>
+                <div className="w-16 h-16 bg-[#FFD3AC]/15 border border-[#FFD3AC]/40 rounded-full flex items-center justify-center mx-auto text-3xl shadow-sm">
+                  ⏳
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Scheduled Time</span>
-                  <span className="font-semibold text-[#C2691C]">
-                    {formatAppointmentTime(appointmentToCancel.time)}
-                  </span>
+
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-bold text-white">
+                    Hold On
+                  </h3>
+                  <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+                    You already have an active consultation scheduled. You cannot book a second appointment until your current consultation is completed.
+                  </p>
+                </div>
+
+                {activeAppointment && (
+                  <div className="bg-black/30 border border-white/10 rounded-2xl p-4 text-left space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-white/60 uppercase tracking-wider font-medium">Doctor</span>
+                      <span className="font-semibold text-white">
+                        {activeAppointment.doctor_name || doctorDisplayName}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-white/60 uppercase tracking-wider font-medium">Scheduled Time</span>
+                      <span className="font-semibold text-[#FFD3AC]">
+                        {formatAppointmentTime(activeAppointment.time)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setShowActiveAppointmentModal(false);
+                      const el = document.getElementById('upcoming-appointments');
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 px-6 rounded-full text-sm font-semibold transition cursor-pointer shadow-md"
+                  >
+                    View Existing Appointment
+                  </button>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="p-3 bg-[#FFF9F2] border border-[#FFD3AC] rounded-xl text-xs text-[#1A1A1A] text-left leading-relaxed">
-                <strong>Refund Policy:</strong> You can request a full refund for your $50 deposit by emailing{' '}
-                <a href="mailto:info@ambewellness.com" className="font-semibold text-[#C2691C] underline hover:text-[#1A1A1A]">
-                  info@ambewellness.com
-                </a>{' '}
-                within 30 days of the appointment. If missed without joining, only 50% ($25) of the deposit is refunded.
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+          {/* Cancel Appointment Confirmation Modal */}
+          {appointmentToCancel && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+              <div className="bg-[#2D2D30]/95 border border-white/10 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 relative text-center text-white backdrop-blur-md">
                 <button
                   onClick={() => setAppointmentToCancel(null)}
                   disabled={Boolean(cancellingId)}
-                  className="w-full py-3.5 px-4 border border-[#E7E2D9] text-[#1A1A1A] rounded-xl font-medium text-sm hover:bg-[#FAF8F5] transition cursor-pointer disabled:opacity-50"
+                  className="absolute top-4 right-4 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition cursor-pointer disabled:opacity-50"
+                  aria-label="Close"
                 >
-                  No, Keep It
+                  <XMarkIcon className="w-5 h-5" />
                 </button>
-                <button
-                  onClick={() => handleCancelAppointment(appointmentToCancel)}
-                  disabled={Boolean(cancellingId)}
-                  className="w-full py-3.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
-                >
-                  {cancellingId === appointmentToCancel.id ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Cancelling...
-                    </>
-                  ) : (
-                    'Yes, Cancel'
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* 1. Direct Specialty Selection if Doctor Not Assigned AND Specialty is Pending */}
-        {!hasDoctor && !profile?.preferred_health && (
-          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 sm:p-8 mb-8 shadow-sm max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 bg-[#FFF3E8] border border-[#FFD3AC] rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                🩺
-              </div>
-              <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-                  Select Your Specialty
-                </h3>
-                <p className="text-sm text-[#6B6862]">
-                  Choose an area of care for your consult
-                </p>
-              </div>
-            </div>
+                <div className="w-16 h-16 bg-red-500/20 border border-red-500/30 rounded-full flex items-center justify-center mx-auto text-2xl text-red-400 shadow-sm">
+                  <XCircleIcon className="w-8 h-8" />
+                </div>
 
-            <div className="h-px bg-[#E7E2D9]" />
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-bold text-white">
+                    Cancel Appointment?
+                  </h3>
+                  <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+                    Are you sure you want to cancel? You cannot cancel within 2 hours of the appointment.
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {CLINICAL_SPECIALTIES.map((spec) => {
-                const isSelected = selectedSpecialty === spec.value;
-                return (
+                <div className="bg-black/30 border border-white/10 rounded-2xl p-4 text-left space-y-2.5 text-xs text-white">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 uppercase tracking-wider font-medium">Doctor</span>
+                    <span className="font-semibold">
+                      {appointmentToCancel.doctor_name?.startsWith('Dr.') 
+                        ? appointmentToCancel.doctor_name 
+                        : `Dr. ${appointmentToCancel.doctor_name || 'Assigned Doctor'}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/60 uppercase tracking-wider font-medium">Scheduled Time</span>
+                    <span className="font-semibold text-[#FFD3AC]">
+                      {formatAppointmentTime(appointmentToCancel.time)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-black/20 border border-white/10 rounded-xl text-xs text-white/80 text-left leading-relaxed">
+                  <strong className="text-[#FFD3AC]">Refund Policy:</strong> You can request a full refund for your $50 deposit by emailing{' '}
+                  <a href="mailto:info@ambewellness.com" className="font-semibold text-[#FFD3AC] underline hover:text-white">
+                    info@ambewellness.com
+                  </a>{' '}
+                  within 30 days of the appointment. If missed without joining, only 50% ($25) of the deposit is refunded.
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row gap-3">
                   <button
-                    key={spec.value}
-                    type="button"
-                    onClick={() => setSelectedSpecialty(spec.value)}
-                    disabled={matchingSpecialty}
-                    className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-[#FFF3E8] border-[#C2691C] text-[#9E4E0A] font-semibold ring-1 ring-[#C2691C]"
-                        : "bg-[#FAF8F5] border-[#E7E2D9] text-[#1A1A1A] hover:border-[#C2691C]/50 hover:bg-white"
-                    }`}
+                    onClick={() => setAppointmentToCancel(null)}
+                    disabled={Boolean(cancellingId)}
+                    className="w-full py-3 px-4 border border-white/15 text-white rounded-full font-medium text-sm hover:bg-white/10 transition cursor-pointer disabled:opacity-50"
                   >
-                    <span className="text-xl flex-shrink-0">{spec.icon}</span>
-                    <span className="text-sm sm:text-base flex-1">{spec.label}</span>
-                    <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                    No, Keep It
+                  </button>
+                  <button
+                    onClick={() => handleCancelAppointment(appointmentToCancel)}
+                    disabled={Boolean(cancellingId)}
+                    className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold text-sm transition cursor-pointer disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                  >
+                    {cancellingId === appointmentToCancel.id ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Cancelling...
+                      </>
+                    ) : (
+                      'Yes, Cancel'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 1. Direct Specialty Selection if Doctor Not Assigned AND Specialty is Pending */}
+          {!hasDoctor && !profile?.preferred_health && (
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 mb-8 shadow-xl backdrop-blur-md space-y-6">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  🩺
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">
+                    Select Your Specialty
+                  </h3>
+                  <p className="text-xs sm:text-sm text-white/60">
+                    Choose an area of care for your consult
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-px bg-white/10" />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {CLINICAL_SPECIALTIES.map((spec) => {
+                  const isSelected = selectedSpecialty === spec.value;
+                  return (
+                    <button
+                      key={spec.value}
+                      type="button"
+                      onClick={() => setSelectedSpecialty(spec.value)}
+                      disabled={matchingSpecialty}
+                      className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                         isSelected
-                          ? "border-[#C2691C] bg-[#C2691C] text-white"
-                          : "border-[#D1C9BF] bg-white"
+                          ? "bg-[#FFD3AC]/15 border-[#FFD3AC] text-[#FFD3AC] font-semibold"
+                          : "bg-white/5 border-white/10 text-white hover:border-white/20 hover:bg-white/10"
                       }`}
                     >
-                      {isSelected && (
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                      <span className="text-xl flex-shrink-0">{spec.icon}</span>
+                      <span className="text-sm sm:text-base flex-1">{spec.label}</span>
+                      <div
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                          isSelected
+                            ? "border-[#FFD3AC] bg-[#FFD3AC] text-[#1E1E1E]"
+                            : "border-white/30 bg-transparent"
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="w-2 h-2 rounded-full bg-[#1E1E1E]" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {specialtyError && (
-              <p className="text-xs sm:text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
-                {specialtyError}
-              </p>
-            )}
+              {specialtyError && (
+                <p className="text-xs sm:text-sm text-red-300 bg-red-500/20 p-3 rounded-xl border border-red-500/30">
+                  {specialtyError}
+                </p>
+              )}
 
-            <div className="space-y-3 pt-2">
-              <button
-                type="button"
-                onClick={handleConfirmSpecialty}
-                disabled={matchingSpecialty}
-                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm sm:text-base font-bold transition cursor-pointer shadow-sm disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2"
-              >
-                {matchingSpecialty ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-[#1A1A1A] border-t-transparent rounded-full animate-spin" />
-                    Matching Specialist...
-                  </>
-                ) : selectedSpecialty ? (
-                  "Confirm & Match Specialist"
-                ) : (
-                  "Select a Specialty Above"
-                )}
-              </button>
-
-              <div className="text-center pt-1">
+              <div className="space-y-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowQuestionnaireModal(true)}
+                  onClick={handleConfirmSpecialty}
                   disabled={matchingSpecialty}
-                  className="text-xs sm:text-sm text-[#9E4E0A] hover:text-[#1A1A1A] underline transition cursor-pointer font-medium"
+                  className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 px-6 rounded-full text-sm sm:text-base font-bold transition cursor-pointer shadow-md disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2"
                 >
-                  Or complete the full health questionnaire (48 questions)
+                  {matchingSpecialty ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                      Matching Specialist...
+                    </>
+                  ) : selectedSpecialty ? (
+                    "Confirm & Match Specialist"
+                  ) : (
+                    "Select a Specialty Above"
+                  )}
+                </button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowQuestionnaireModal(true)}
+                    disabled={matchingSpecialty}
+                    className="text-xs sm:text-sm text-[#FFD3AC] hover:text-white underline transition cursor-pointer font-medium"
+                  >
+                    Or complete the full health questionnaire (48 questions)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. If Doctor Not Yet Assigned but specialty chosen */}
+          {!hasDoctor && Boolean(profile?.preferred_health) && (
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 mb-8 shadow-xl backdrop-blur-md max-w-md mx-auto text-center space-y-6">
+              <div className="w-16 h-16 bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
+                ⏳
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-white">Finding your perfect match</h3>
+                <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+                  We are currently looking for the best doctor specializing in your selected topic for you.
+                </p>
+                <p className="text-xs text-white/50 pt-1">
+                  You will be notified as soon as a doctor is assigned.
+                </p>
+              </div>
+              <div className="space-y-3 pt-2">
+                <button 
+                  onClick={handleCheckInstantAvailability}
+                  disabled={checkingInstant}
+                  className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 px-6 rounded-full text-sm font-semibold transition cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {checkingInstant ? "Checking..." : "Check for Instant Availability"}
+                </button>
+                <button 
+                  onClick={() => router.push('/user/get-matched')}
+                  className="text-xs text-white/60 hover:text-white underline transition block mx-auto"
+                >
+                  Select different health areas
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* 2. If Doctor Not Yet Assigned but specialty chosen */}
-        {!hasDoctor && Boolean(profile?.preferred_health) && (
-          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 mb-8 shadow-sm max-w-md mx-auto text-center space-y-6">
-            <div className="w-16 h-16 bg-[#FFF3E8] border border-[#FFD3AC] rounded-2xl flex items-center justify-center mx-auto text-3xl shadow-sm">
-              ⏳
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-[#1A1A1A]">Finding your perfect match</h3>
-              <p className="text-sm text-[#6B6862] leading-relaxed">
-                We are currently looking for the best doctor specializing in your selected topic for you.
-              </p>
-              <p className="text-xs text-[#8C827A] pt-1">
-                You will be notified as soon as a doctor is assigned.
-              </p>
-            </div>
-            <div className="space-y-3 pt-2">
-              <button 
-                onClick={handleCheckInstantAvailability}
-                disabled={checkingInstant}
-                className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl text-sm font-semibold transition cursor-pointer shadow-sm disabled:opacity-50"
-              >
-                {checkingInstant ? "Checking..." : "Check for Instant Availability"}
-              </button>
-              <button 
-                onClick={() => router.push('/user/get-matched')}
-                className="text-xs text-[#8C827A] hover:text-[#1A1A1A] underline transition"
-              >
-                Select different health areas
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Doctor Info Card */}
-        {hasDoctor && (
-          <>
-            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">MY DOCTOR</h2>
-            <div className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-6 mb-8">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center">
-                  <div className="w-16 h-16 bg-[#FAF8F5] border border-[#E7E2D9] rounded-full overflow-hidden flex-shrink-0">
-                    {doctorInfo?.profile_picture ? (
-                      <img 
-                        src={doctorInfo.profile_picture} 
-                        alt={doctorDisplayName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#1A1A1A] font-bold text-xl bg-[#FFD3AC]/40">
-                        {doctorDisplayName.replace('Dr. ', '').charAt(0) || '👨‍⚕️'}
-                      </div>
-                    )}
+          {/* Doctor Info Card */}
+          {hasDoctor && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                My Doctor
+              </h2>
+              <div className="bg-[#1B1A18]/65 border border-white/20 rounded-[22px] shadow-lg p-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-14 h-14 rounded-full border-2 border-[#FFD3AC] bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center">
+                      {doctorInfo?.profile_picture ? (
+                        <img 
+                          src={doctorInfo.profile_picture} 
+                          alt={doctorDisplayName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-[#FFD3AC] font-bold text-xl">
+                          {doctorDisplayName.replace('Dr. ', '').charAt(0) || '👨‍⚕️'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg text-white leading-tight truncate">
+                        {doctorDisplayName}
+                      </h3>
+                      {doctorInfo?.title && (
+                        <p className="text-xs text-[#FFD3AC] font-semibold mt-0.5">{doctorInfo.title}</p>
+                      )}
+                      {doctorInfo?.field && doctorInfo.field.length > 0 && (
+                        <p className="text-xs text-white/60 mt-0.5 line-clamp-1">
+                          {getHealthFieldLabels(doctorInfo.field).join(', ')}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-semibold text-lg text-[#1A1A1A]">
-                      {doctorDisplayName}
-                    </h3>
-                    {doctorInfo?.title && (
-                      <p className="text-sm text-[#C8996A] font-medium">{doctorInfo.title}</p>
-                    )}
-                    {doctorInfo?.field && doctorInfo.field.length > 0 && (
-                      <p className="text-sm text-[#6B6862] mt-1 line-clamp-2">
-                        {getHealthFieldLabels(doctorInfo.field).join(', ')}
-                      </p>
-                    )}
+                  <div className="flex gap-2.5 w-full sm:w-auto shrink-0">
+                    <button
+                      onClick={() => router.push('/user/consult/message_doctor')}
+                      disabled={!canMessage}
+                      className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
+                        canMessage 
+                          ? 'bg-white/10 text-white hover:bg-white/20 border border-white/20' 
+                          : 'bg-white/5 text-white/40 cursor-not-allowed border border-white/10'
+                      }`}
+                    >
+                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1.5 text-[#FFD3AC]" />
+                      Message
+                    </button>
+                    <button
+                      onClick={handleScheduleClick}
+                      className="flex-1 sm:flex-initial flex items-center justify-center bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-xs"
+                    >
+                      <CalendarIcon className="h-4 w-4 mr-1.5" />
+                      Schedule
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={() => router.push('/user/consult/message_doctor')}
-                    disabled={!canMessage}
-                    className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium transition cursor-pointer ${
-                      canMessage 
-                        ? 'bg-[#1A1A1A] text-white hover:bg-[#353535]' 
-                        : 'bg-[#FAF8F5] text-[#8C827A] cursor-not-allowed border border-[#E7E2D9]'
-                    }`}
-                  >
-                    <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                    Message
-                  </button>
-                  <button
-                    onClick={handleScheduleClick}
-                    className="flex-1 sm:flex-initial flex items-center justify-center bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-4 py-2.5 rounded-lg text-sm font-medium transition cursor-pointer shadow-sm"
-                  >
-                    <CalendarIcon className="h-5 w-5 mr-2" />
-                    Schedule
-                  </button>
-                </div>
+                {!canMessage && (
+                  <p className="text-[11px] text-white/50 mt-2.5 pt-2 border-t border-white/10">
+                    Complete your first consultation to enable direct messaging
+                  </p>
+                )}
               </div>
-              {!canMessage && (
-                <p className="text-xs text-[#8C827A] mt-3">
-                  Complete your first consultation to enable direct messaging
-                </p>
-              )}
             </div>
-          </>
-        )}
+          )}
 
-        {/* Upcoming / Current Appointments */}
-        {upcomingAppointments.length > 0 && (
-          <div id="upcoming-appointments" className="mb-8">
-            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">
-              {upcomingAppointments.some(a => isAppointmentNow(a)) 
-                ? 'HAPPENING NOW' 
-                : 'UPCOMING APPOINTMENTS'}
-            </h2>
-            <div className="space-y-4">
-              {upcomingAppointments.map((appointment) => {
-                const isNow = isAppointmentNow(appointment);
-                const apptDocName = appointment.doctor_name 
-                  ? (appointment.doctor_name.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name}`)
-                  : doctorDisplayName;
+          {/* Upcoming / Current Appointments */}
+          {upcomingAppointments.length > 0 && (
+            <div id="upcoming-appointments" className="space-y-3 pt-2">
+              <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                {upcomingAppointments.some(a => isAppointmentNow(a)) 
+                  ? 'Happening Now' 
+                  : 'Upcoming Appointment'}
+              </h2>
+              <div className="space-y-3">
+                {upcomingAppointments.map((appointment) => {
+                  const isNow = isAppointmentNow(appointment);
+                  const apptDocName = appointment.doctor_name 
+                    ? (appointment.doctor_name.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name}`)
+                    : doctorDisplayName;
 
-                return (
-                  <div key={appointment.id}>
-                    <div className={`bg-white border rounded-xl shadow-sm p-6 ${
-                      isNow ? 'border-[#C8996A] ring-2 ring-[#FFD3AC]' : 'border-[#E7E2D9]'
-                    }`}>
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  return (
+                    <div key={appointment.id}>
+                      <div className={`rounded-[22px] p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                        isNow ? 'bg-[#FFD3AC] text-[#1E1E1E]' : 'bg-[#1B1A18]/65 border border-white/20 text-white'
+                      }`}>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             {isNow && (
-                              <span className="bg-[#2E7D32] text-white text-xs font-semibold px-2.5 py-0.5 rounded-full animate-pulse">
+                              <span className="bg-[#2E7D32] text-white text-[11px] font-bold px-2 py-0.5 rounded-full animate-pulse">
                                 Live
                               </span>
                             )}
-                            <h3 className="font-semibold text-lg text-[#1A1A1A]">
+                            <h3 className={`font-bold text-lg ${isNow ? 'text-[#1E1E1E]' : 'text-white'}`}>
                               {apptDocName}
                             </h3>
                           </div>
-                          <p className="text-sm text-[#6B6862] flex items-center mt-1">
-                            <ClockIcon className="h-4 w-4 mr-1.5 text-[#C8996A]" />
+                          <p className={`text-xs flex items-center mt-1 font-medium ${
+                            isNow ? 'text-[#1E1E1E]/75' : 'text-white/60'
+                          }`}>
+                            <ClockIcon className="h-4 w-4 mr-1.5" />
                             {formatAppointmentTime(appointment.time)}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          {isNow && (
+                        <div className="flex items-center gap-2.5">
+                          {isNow ? (
                             <button
                               onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
-                              className="flex items-center justify-center px-6 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer shadow-sm bg-[#1A1A1A] hover:bg-[#353535] text-[#FFD3AC]"
+                              className="flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md bg-black text-white hover:bg-neutral-800"
                             >
-                              <VideoCameraIcon className="h-5 w-5 mr-2" />
-                              Join Call
+                              <VideoCameraIcon className="h-4 w-4 mr-1.5" />
+                              Join
                             </button>
-                          )}
-                          
-                          {!isNow && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
-                              <button
-                                onClick={() => handleRescheduleClick(appointment)}
-                                className="px-4 py-2 border border-[#E7E2D9] rounded-lg text-sm font-medium text-[#1A1A1A] hover:bg-[#FAF8F5] transition cursor-pointer shadow-sm text-center"
-                              >
-                                Reschedule
-                              </button>
-                              <button
-                                onClick={() => setAppointmentToCancel(appointment)}
-                                disabled={cancellingId === appointment.id}
-                                className="px-3.5 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
-                              >
-                                <XCircleIcon className="h-4 w-4" />
-                                Cancel Appointment
-                              </button>
-                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleRescheduleClick(appointment)}
+                              className="px-6 py-2.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-xs"
+                            >
+                              Edit
+                            </button>
                           )}
                         </div>
                       </div>
+
+                      {!isNow && (
+                        <div className="text-right pt-2 pr-2">
+                          <button
+                            onClick={() => setAppointmentToCancel(appointment)}
+                            disabled={cancellingId === appointment.id}
+                            className="text-xs text-white/70 hover:text-white transition cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <XCircleIcon className="h-3.5 w-3.5" />
+                            Cancel Appointment
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* No Upcoming Appointments */}
-        {hasDoctor && upcomingAppointments.length === 0 && !loading && (
-          <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 text-center mb-8 shadow-sm">
-            <CalendarIcon className="h-12 w-12 text-[#C8996A] mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-[#1A1A1A] mb-2">
-              No Upcoming Appointments
-            </h3>
-            <p className="text-sm text-[#6B6862] mb-4">
-              Schedule a consultation with your healthcare provider
-            </p>
-            <button
-              onClick={handleScheduleClick}
-              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition shadow-sm cursor-pointer"
-            >
-              Schedule Consultation
-            </button>
-          </div>
-        )}
+          {/* No Upcoming Appointments */}
+          {hasDoctor && upcomingAppointments.length === 0 && !loading && (
+            <div className="bg-[#1B1A18]/65 border border-white/15 rounded-[22px] p-8 text-center">
+              <CalendarIcon className="h-10 w-10 text-[#FFD3AC] mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-white mb-1">
+                No appointment set
+              </h3>
+              <p className="text-xs text-white/60 mb-4">
+                Schedule a consultation with your healthcare provider
+              </p>
+              <button
+                onClick={handleScheduleClick}
+                className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition shadow-md cursor-pointer"
+              >
+                Schedule Consultation
+              </button>
+            </div>
+          )}
 
-        {/* Past Appointments */}
-        {pastAppointments.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">Consultation History</h2>
-            <div className="space-y-3">
-              {pastAppointments.map((appointment) => {
-                const statusInfo = getConsultationStatusInfo(appointment);
-                return (
-                  <div 
-                    key={appointment.id}
-                    className="bg-white border border-[#E7E2D9] rounded-xl shadow-sm p-4 hover:shadow-md transition cursor-pointer"
-                    onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                          <h4 className="font-medium text-base text-[#1A1A1A]">
+          {/* Past Appointments / History */}
+          {pastAppointments.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                  History
+                </h2>
+                <button
+                  onClick={() => router.push('/user/consult/history')}
+                  className="text-xs font-semibold text-[#FFD3AC] hover:underline cursor-pointer"
+                >
+                  See All
+                </button>
+              </div>
+              <div className="space-y-2.5">
+                {pastAppointments.slice(0, 5).map((appointment) => {
+                  const statusInfo = getConsultationStatusInfo(appointment);
+                  return (
+                    <div 
+                      key={appointment.id}
+                      className="bg-[#1B1A18]/65 border border-white/15 rounded-[20px] p-4 sm:p-5 hover:border-[#FFD3AC]/50 transition cursor-pointer flex items-center justify-between"
+                      onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
+                    >
+                      <div className="min-w-0 pr-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-sm text-white truncate">
                             {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name || 'Assigned Doctor'}`}
                           </h4>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.badgeClass}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`} />
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusInfo.badgeClass}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full mr-1 ${statusInfo.dotClass}`} />
                             {statusInfo.label}
                           </span>
                         </div>
-                        <p className="text-sm text-[#6B6862] mt-1">
+                        <p className="text-xs text-white/55 mt-1">
                           {formatAppointmentTime(appointment.time)}
                         </p>
                       </div>
-                      <div className="flex items-center text-[#C8996A] font-medium text-sm ml-4 shrink-0">
-                        <DocumentTextIcon className="h-5 w-5 mr-1" />
-                        <span>{statusInfo.actionText}</span>
-                      </div>
+                      <ChevronRightIcon className="w-5 h-5 text-white/40 shrink-0" />
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
-          </div>
-        )}
-      </div>
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#FFD3AC] border-t-transparent"></div>
+            </div>
+          )}
+        </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }

@@ -116,6 +116,10 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
             router.push('/user/checkout/success');
           }
         }
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to purchase confirmation:', err);
       }
     );
 

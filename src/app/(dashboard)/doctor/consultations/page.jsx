@@ -166,6 +166,7 @@ export default function DoctorConsultationsPage() {
         setUpcomingAppointments(upcoming);
       },
       (error) => {
+        if (error?.code === 'permission-denied') return;
         console.error('Error listening to upcoming appointments:', error);
       }
     );
@@ -189,6 +190,7 @@ export default function DoctorConsultationsPage() {
         setLoading(false);
       },
       (error) => {
+        if (error?.code === 'permission-denied') return;
         console.error('Error listening to reports to finish:', error);
         setLoading(false);
       }
@@ -245,143 +247,155 @@ export default function DoctorConsultationsPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-[#1A1A1A]">Consultations</h1>
+      <div className="space-y-6">
+        {/* Top bar */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
+            Consultations
+          </h1>
           <button
             onClick={() => router.push('/doctor/consultations/history')}
-            className="bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-4 py-2 rounded-lg hover:bg-[#1A1A1A] transition cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FFD3AC] text-[#1E1E1E] font-sans font-semibold text-xs uppercase tracking-wider hover:bg-[#ffe3c9] transition shadow-md cursor-pointer"
           >
-            View History
+            <ClockIcon className="w-4 h-4" />
+            History
           </button>
         </div>
 
         {/* Status Message Toast */}
         {statusMessage && (
-          <div className="mb-6 bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm animate-in fade-in duration-200">
-            <CheckCircleIcon className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-            <span className="text-sm font-medium">{statusMessage}</span>
+          <div className="bg-emerald-950/80 border border-emerald-500/30 text-emerald-200 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-lg animate-in fade-in duration-200">
+            <CheckCircleIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+            <span className="text-sm font-sans font-medium">{statusMessage}</span>
           </div>
         )}
 
-        {/* Reports to Finish Alert */}
+        {/* Reports to Finish Alert matching Flutter */}
         {reportsToFinish.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-            <div className="flex items-start">
-              <ExclamationCircleIcon className="h-6 w-6 text-red-600 mr-3 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-red-800">Reports to Complete</h3>
-                <p className="text-red-700 text-sm mt-1">
-                  You have {reportsToFinish.length} consultation report{reportsToFinish.length > 1 ? 's' : ''} to complete.
-                </p>
-                <div className="mt-4 space-y-2">
-                  {reportsToFinish.map((report) => {
-                    const userUid = report.user_id || report.user_uid || report.userId || '';
-                    const userName = report.user_name || report.userName || '';
-                    const timeMillis = report.time?.toMillis ? report.time.toMillis() : (report.time ? new Date(report.time).getTime() : Date.now());
-                    const params = new URLSearchParams({
-                      userUid,
-                      userName,
-                      time: String(timeMillis),
-                    }).toString();
+          <div className="space-y-2.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-white font-sans">
+              REPORTS TO FINISH
+            </h2>
+            <div className="bg-[#1B1A18]/90 border border-red-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white font-sans text-base">
+                    Reports to finish
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-0.5 font-sans">
+                    You have {reportsToFinish.length} {reportsToFinish.length > 1 ? 'reports' : 'report'} to complete
+                  </p>
+                  <div className="mt-3.5 space-y-2">
+                    {reportsToFinish.map((report) => {
+                      const userUid = report.user_id || report.user_uid || report.userId || '';
+                      const userName = report.user_name || report.userName || '';
+                      const timeMillis = report.time?.toMillis ? report.time.toMillis() : (report.time ? new Date(report.time).getTime() : Date.now());
+                      const params = new URLSearchParams({
+                        userUid,
+                        userName,
+                        time: String(timeMillis),
+                      }).toString();
 
-                    return (
-                      <div
-                        key={report.id}
-                        className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm"
-                      >
-                        <div>
-                          <p className="font-medium text-[#1A1A1A]">{userName || 'Patient'}</p>
-                          <p className="text-sm text-[#6B6862]">
-                            {formatAppointmentTime(report.time)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => router.push(`/doctor/consultations/complete-report/${report.id}?${params}`)}
-                          className="text-red-600 hover:text-red-700 font-medium text-sm cursor-pointer"
+                      return (
+                        <div
+                          key={report.id}
+                          className="flex items-center justify-between bg-[#2D2D30]/70 border border-white/5 p-3 rounded-xl hover:border-white/20 transition"
                         >
-                          Complete Report →
-                        </button>
-                      </div>
-                    );
-                  })}
+                          <div>
+                            <p className="font-semibold text-white text-sm font-sans">{userName || 'Patient'}</p>
+                            <p className="text-xs text-gray-400 font-sans mt-0.5">
+                              {formatAppointmentTime(report.time)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => router.push(`/doctor/consultations/complete-report/${report.id}?${params}`)}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 transition cursor-pointer"
+                          >
+                            Complete Report →
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Current Appointment (Happening Now) */}
+        {/* Current Appointment (Happening Now) matching Flutter */}
         {currentAppointment && (
-          <div className="bg-[#F4F1EA] border-2 border-[#C8996A] rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold text-[#1A1A1A] mb-4">Happening Now</h2>
-            <div className="bg-white rounded-lg p-4">
-              <div className="flex items-center justify-between">
+          <div className="space-y-2.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#FFD3AC] font-sans">
+              HAPPENING NOW
+            </h2>
+            <div className="bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl p-5 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{currentAppointment.user_name}</h3>
-                  <p className="text-[#6B6862] flex items-center mt-1">
-                    <ClockIcon className="h-4 w-4 mr-1" />
+                  <h3 className="font-semibold text-lg font-sans">{currentAppointment.user_name || 'Patient'}</h3>
+                  <p className="text-black/75 flex items-center mt-1 text-sm font-sans">
+                    <ClockIcon className="h-4 w-4 mr-1 text-[#1E1E1E]" />
                     {formatAppointmentTime(currentAppointment.time)}
                   </p>
                 </div>
                 <button
                   onClick={() => router.push(`/doctor/consultations/appointment/${currentAppointment.id}`)}
-                  className="flex items-center bg-[#FFD3AC] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-lg hover:bg-[#1A1A1A] transition"
+                  className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm hover:bg-black transition shadow cursor-pointer"
                 >
-                  <VideoCameraIcon className="h-5 w-5 mr-2" />
-                  Join Call
+                  <VideoCameraIcon className="h-4 w-4" />
+                  JOIN CALL
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Pending Appointments (Missed / Past Due) */}
+        {/* Pending Appointments */}
         {pendingAppointments.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-[#1A1A1A]">Pending Appointments</h2>
-              <span className="bg-[#FFF3E8] text-[#C8996A] border border-[#FFD3AC] text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white font-sans">
+                PENDING APPOINTMENTS
+              </h2>
+              <span className="bg-[#FFD3AC]/20 text-[#FFD3AC] border border-[#FFD3AC]/40 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Pending
               </span>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {pendingAppointments.map((appointment) => (
-                <div key={appointment.id} className="bg-white rounded-lg shadow border border-[#E7E2D9] p-6">
+                <div key={appointment.id} className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div 
                       className="cursor-pointer"
                       onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-lg hover:text-[#C8996A] transition text-[#1A1A1A]">
-                          {appointment.user_name || 'Patient'}
-                        </h3>
-                        <span className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-medium px-2 py-0.5 rounded">
-                          Past Due
-                        </span>
-                      </div>
-                      <p className="text-[#6B6862] flex items-center mt-1 text-sm">
-                        <ClockIcon className="h-4 w-4 mr-1 text-[#C8996A]" />
+                      <h3 className="font-semibold text-base text-white hover:text-[#FFD3AC] transition font-sans">
+                        {appointment.user_name || 'Patient'}
+                      </h3>
+                      <p className="text-gray-400 flex items-center mt-1 text-xs font-sans">
+                        <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC]" />
                         {formatAppointmentTime(appointment.time)}
                       </p>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
-                        className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                        className="px-4 py-1.5 bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe3c9] rounded-full transition cursor-pointer font-semibold text-xs"
                       >
-                        View Details
+                        Details
                       </button>
                       <button
                         onClick={() => handleReschedule(appointment)}
-                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
+                        className="px-4 py-1.5 bg-[#2D2D30] text-white border border-white/10 hover:bg-[#3D3D42] rounded-full transition cursor-pointer text-xs"
                       >
                         Reschedule
                       </button>
                       <button
                         onClick={() => handleCancel(appointment)}
-                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
+                        className="px-4 py-1.5 bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 rounded-full transition cursor-pointer text-xs"
                       >
                         Cancel
                       </button>
@@ -395,40 +409,42 @@ export default function DoctorConsultationsPage() {
 
         {/* Upcoming Appointments */}
         {upcomingAppointments.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-[#1A1A1A]">Upcoming Appointments</h2>
-            <div className="space-y-4">
+          <div className="space-y-2.5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-white font-sans">
+              UPCOMING
+            </h2>
+            <div className="space-y-3">
               {upcomingAppointments.map((appointment) => (
-                <div key={appointment.id} className="bg-white rounded-lg shadow p-6">
+                <div key={appointment.id} className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-4 sm:p-5 hover:border-white/20 transition">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div 
                       className="cursor-pointer"
                       onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
                     >
-                      <h3 className="font-semibold text-lg hover:text-[#C8996A] transition text-[#1A1A1A]">
+                      <h3 className="font-semibold text-base text-white hover:text-[#FFD3AC] transition font-sans">
                         {appointment.user_name || 'Patient'}
                       </h3>
-                      <p className="text-[#6B6862] flex items-center mt-1 text-sm">
-                        <ClockIcon className="h-4 w-4 mr-1 text-[#C8996A]" />
+                      <p className="text-gray-400 flex items-center mt-1 text-xs font-sans">
+                        <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC]" />
                         {formatAppointmentTime(appointment.time)}
                       </p>
                     </div>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
-                        className="px-4 py-2 bg-[#FFD3AC] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-lg transition cursor-pointer font-medium text-sm"
+                        className="px-4 py-1.5 bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe3c9] rounded-full transition cursor-pointer font-semibold text-xs"
                       >
-                        View Details
+                        Details
                       </button>
                       <button
                         onClick={() => handleReschedule(appointment)}
-                        className="px-4 py-2 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] transition cursor-pointer text-sm"
+                        className="px-4 py-1.5 bg-[#2D2D30] text-white border border-white/10 hover:bg-[#3D3D42] rounded-full transition cursor-pointer text-xs"
                       >
                         Reschedule
                       </button>
                       <button
                         onClick={() => handleCancel(appointment)}
-                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer text-sm"
+                        className="px-4 py-1.5 bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 rounded-full transition cursor-pointer text-xs"
                       >
                         Cancel
                       </button>
@@ -442,10 +458,10 @@ export default function DoctorConsultationsPage() {
 
         {/* Empty State */}
         {!currentAppointment && upcomingAppointments.length === 0 && pendingAppointments.length === 0 && reportsToFinish.length === 0 && !loading && (
-          <div className="bg-[#FAF8F5] rounded-lg p-12 text-center">
-            <CalendarIcon className="h-16 w-16 text-[#8C827A] mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-[#353535] mb-2">No Consultations Scheduled</h3>
-            <p className="text-[#6B6862]">
+          <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-12 text-center">
+            <CalendarIcon className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-white mb-2 font-heading">No Consultations Scheduled</h3>
+            <p className="text-gray-400 text-sm font-sans max-w-sm mx-auto">
               Your users can book consultations through their dashboard.
             </p>
           </div>
@@ -454,7 +470,7 @@ export default function DoctorConsultationsPage() {
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-2 border-[#FFD3AC] border-t-transparent"></div>
           </div>
         )}
 

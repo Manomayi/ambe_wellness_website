@@ -16,6 +16,8 @@ import {
   setDoc,
 } from "firebase/firestore";
 import BackButton from "@/components/common/BackButton";
+import AmbeBackButton from "@/components/common/AmbeBackButton";
+import WebLayoutWrapper from "@/components/common/WebLayoutWrapper";
 import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 
 export default function DoctorConsultationReportPage() {
@@ -315,27 +317,63 @@ export default function DoctorConsultationReportPage() {
     Object.keys(recommendations).length > 0;
 
   return (
-    <div className="space-y-6 p-4 max-w-4xl mx-auto">
-      <BackButton href="/doctor/consultations/history" label="Back to History" />
-      {/* Title */}
-      <div>
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">
-          {userName ? `${userName.split(" ")[0]}'s Consultation Report` : "Consultation Report"}
-        </h1>
-        <p className="text-sm text-[#6B6862] mt-1">
-          Review clinical observations and personalized wellness protocols.
-        </p>
-      </div>
+    <WebLayoutWrapper>
+      <div className="space-y-6 pb-24">
+        {/* Header */}
+        <div className="flex items-center gap-4 pt-2">
+          <AmbeBackButton onClick={() => router.push('/doctor/consultations/history')} />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+              {userName ? `${userName.split(" ")[0]}'s Report` : "Consultation Report"}
+            </h1>
+            <p className="text-xs text-white/60 mt-0.5">
+              Clinical observations & personalized protocols
+            </p>
+          </div>
+        </div>
 
-      {/* Cancellation Banner */}
-      {statusInfo.isCancelled && (
-        <div className="bg-white border border-red-200 rounded-xl p-5 shadow-sm space-y-2">
-          <p className="text-xs uppercase font-semibold text-gray-500 tracking-wider">
-            Consultation Status
-          </p>
-          <div className="flex items-center gap-2">
+        {/* Cancellation Banner */}
+        {statusInfo.isCancelled && (
+          <div className="bg-red-500/15 border border-red-500/30 rounded-2xl p-5 shadow-md space-y-2 backdrop-blur-md">
+            <p className="text-xs uppercase font-semibold text-red-300 tracking-wider">
+              Consultation Status
+            </p>
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full font-medium ${statusInfo.badgeClass}`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`}
+                />
+                {statusInfo.label}
+              </span>
+            </div>
+            {cancelDate && (
+              <p className="text-xs text-red-200/80">
+                Cancelled on: {formatTime(cancelDate)}
+              </p>
+            )}
+            {reason && (
+              <p className="text-xs text-red-200/70 italic">
+                Reason: {reason}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Date & Status */}
+        {effectiveTime && (
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-md flex items-center justify-between backdrop-blur-md">
+            <div>
+              <p className="text-xs uppercase font-semibold text-white/60 tracking-wider">
+                Consultation Date & Time
+              </p>
+              <p className="text-sm sm:text-base font-bold text-white mt-1">
+                {formatTime(effectiveTime)}
+              </p>
+            </div>
             <span
-              className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full font-medium ${statusInfo.badgeClass}`}
+              className={`inline-flex items-center text-xs px-3 py-1 rounded-full font-medium ${statusInfo.badgeClass}`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`}
@@ -343,155 +381,123 @@ export default function DoctorConsultationReportPage() {
               {statusInfo.label}
             </span>
           </div>
-          {cancelDate && (
-            <p className="text-sm text-gray-700">
-              Cancelled on: {formatTime(cancelDate)}
-            </p>
-          )}
-          {reason && (
-            <p className="text-sm text-gray-600 italic">
-              Reason: {reason}
-            </p>
-          )}
-        </div>
-      )}
+        )}
 
-      {/* Date */}
-      {effectiveTime && (
-        <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase font-semibold text-[#8C827A] tracking-wider">
-              Consultation Date & Time
+        {/* Doctor Summary / Notes */}
+        {notes && (
+          <div className="space-y-2.5">
+            <p className="text-xs uppercase font-bold text-[#FFD3AC] tracking-wider">
+              Clinical Notes & Observations
             </p>
-            <p className="text-base font-semibold text-[#1A1A1A] mt-1">
-              {formatTime(effectiveTime)}
-            </p>
-          </div>
-          <span
-            className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full font-medium ${statusInfo.badgeClass}`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`}
-            />
-            {statusInfo.label}
-          </span>
-        </div>
-      )}
-
-      {/* Doctor Summary / Notes */}
-      {notes && (
-        <div className="space-y-2">
-          <p className="text-xs uppercase font-bold text-[#8C827A] tracking-wider">
-            Clinical Notes & Observations
-          </p>
-          <div className="bg-white border border-[#E7E2D9] border-l-4 border-l-[#C8996A] rounded-xl p-5 shadow-sm">
-            <p className="text-sm text-[#2A2A2A] leading-relaxed whitespace-pre-wrap">
-              {notes}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Recommendations */}
-      {hasRecommendations && (
-        <div className="space-y-3">
-          <p className="text-xs uppercase font-bold text-[#8C827A] tracking-wider">
-            Protocol & Recommendations
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(recommendations).map(([cat, rec]) => {
-              if (!rec) return null;
-              const selectedOption =
-                typeof rec === "object"
-                  ? rec.selectedOption || rec.selected_option || ""
-                  : "";
-              const categoryNotes =
-                typeof rec === "object" ? rec.notes || "" : String(rec);
-
-              if (!selectedOption && !categoryNotes) return null;
-
-              return (
-                <div
-                  key={cat}
-                  className="bg-white border border-[#E7E2D9] rounded-xl p-5 shadow-sm space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-[#1A1A1A]">
-                      {formatCategoryTitle(cat)}
-                    </h3>
-                    <span className="w-2 h-2 rounded-full bg-[#C8996A]" />
-                  </div>
-                  {selectedOption && (
-                    <p className="text-xs font-semibold text-[#C8996A]">
-                      {selectedOption}
-                    </p>
-                  )}
-                  {categoryNotes && (
-                    <p className="text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-wrap">
-                      {categoryNotes}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Recommended Products */}
-      {Array.isArray(store_recommendations) &&
-        store_recommendations.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-xs uppercase font-bold text-[#8C827A] tracking-wider">
-              Recommended Products
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {store_recommendations.map((item, i) => (
-                <div
-                  key={i}
-                  className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm flex justify-between items-center"
-                >
-                  <div>
-                    <h4 className="font-bold text-[#1A1A1A] text-sm">
-                      {item.product_name || item.productName || "Product"}
-                    </h4>
-                    {item.size && (
-                      <p className="text-xs text-[#8C827A] mt-0.5">
-                        Size: {item.size}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-[#8C827A]">Qty</p>
-                    <p className="font-semibold text-[#1A1A1A] text-sm">
-                      {item.quantity || item.qty || 1}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="bg-[#2D2D30]/85 border border-white/10 border-l-4 border-l-[#FFD3AC] rounded-2xl p-5 shadow-md backdrop-blur-md">
+              <p className="text-sm text-white/90 leading-relaxed whitespace-pre-wrap">
+                {notes}
+              </p>
             </div>
           </div>
         )}
 
-      {/* Referral */}
-      {report.referral && (
-        <div className="space-y-2">
-          <p className="text-xs uppercase font-bold text-[#8C827A] tracking-wider">
-            Referral
-          </p>
-          <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
-            <p className="text-sm text-[#1A1A1A]">
-              <strong>Specialty / Doctor:</strong>{" "}
-              {report.referral.doctor_name || report.referral.specialty || "Referral requested"}
+        {/* Recommendations */}
+        {hasRecommendations && (
+          <div className="space-y-3">
+            <p className="text-xs uppercase font-bold text-[#FFD3AC] tracking-wider">
+              Protocol & Recommendations
             </p>
-            {report.referral.notes && (
-              <p className="text-xs text-[#6B6862] mt-1">
-                {report.referral.notes}
-              </p>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(recommendations).map(([cat, rec]) => {
+                if (!rec) return null;
+                const selectedOption =
+                  typeof rec === "object"
+                    ? rec.selectedOption || rec.selected_option || ""
+                    : "";
+                const categoryNotes =
+                  typeof rec === "object" ? rec.notes || "" : String(rec);
+
+                if (!selectedOption && !categoryNotes) return null;
+
+                return (
+                  <div
+                    key={cat}
+                    className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 shadow-md space-y-2 backdrop-blur-md"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-bold text-white">
+                        {formatCategoryTitle(cat)}
+                      </h3>
+                      <span className="w-2 h-2 rounded-full bg-[#FFD3AC]" />
+                    </div>
+                    {selectedOption && (
+                      <p className="text-xs font-semibold text-[#FFD3AC]">
+                        {selectedOption}
+                      </p>
+                    )}
+                    {categoryNotes && (
+                      <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                        {categoryNotes}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {/* Recommended Products */}
+        {Array.isArray(store_recommendations) &&
+          store_recommendations.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs uppercase font-bold text-[#FFD3AC] tracking-wider">
+                Recommended Products
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {store_recommendations.map((item, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 shadow-md flex justify-between items-center backdrop-blur-md"
+                  >
+                    <div>
+                      <h4 className="font-bold text-white text-sm">
+                        {item.product_name || item.productName || "Product"}
+                      </h4>
+                      {item.size && (
+                        <p className="text-xs text-white/60 mt-0.5">
+                          Size: {item.size}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-white/60">Qty</p>
+                      <p className="font-bold text-[#FFD3AC] text-sm">
+                        {item.quantity || item.qty || 1}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {/* Referral */}
+        {report.referral && (
+          <div className="space-y-2">
+            <p className="text-xs uppercase font-bold text-[#FFD3AC] tracking-wider">
+              Referral
+            </p>
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 shadow-md backdrop-blur-md">
+              <p className="text-sm text-white">
+                <strong>Specialty / Doctor:</strong>{" "}
+                {report.referral.doctor_name || report.referral.specialty || "Referral requested"}
+              </p>
+              {report.referral.notes && (
+                <p className="text-xs text-white/70 mt-1">
+                  {report.referral.notes}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </WebLayoutWrapper>
   );
 }

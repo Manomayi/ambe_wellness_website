@@ -6,8 +6,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import ChatWindow from '@/components/chat/ChatWindow';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { ChatBubbleLeftRightIcon, ArrowLeftIcon, UserIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, UserIcon } from '@heroicons/react/24/outline';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 
 export default function MessageDoctorClient() {
   const router = useRouter();
@@ -141,7 +142,7 @@ export default function MessageDoctorClient() {
     return (
       <ProtectedRoute userType="user">
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
         </div>
       </ProtectedRoute>
     );
@@ -151,15 +152,15 @@ export default function MessageDoctorClient() {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-4xl mx-auto p-8 text-center h-[calc(100vh-120px)] flex items-center justify-center">
-          <div className="bg-white border border-[#E7E2D9] rounded-2xl p-10 shadow-sm max-w-md w-full">
-            <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#8C827A]/60 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-[#1A1A1A] mb-2">No Doctor Assigned</h2>
-            <p className="text-sm text-[#6B6862] mb-6 leading-relaxed">
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 sm:p-10 shadow-xl max-w-md w-full backdrop-blur-md">
+            <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#FFD3AC]/60 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">No Doctor Assigned</h2>
+            <p className="text-sm text-white/70 mb-6 leading-relaxed">
               You need to be matched with an integrative doctor before you can send messages.
             </p>
             <button
               onClick={() => router.push('/user/get-matched')}
-              className="bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-full text-sm font-semibold transition shadow-sm cursor-pointer"
+              className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-6 py-3 rounded-full text-sm font-semibold transition shadow-md cursor-pointer"
             >
               Get Matched Now
             </button>
@@ -171,46 +172,39 @@ export default function MessageDoctorClient() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAF8F5]">
+      <div className="h-[calc(100vh-64px)] flex flex-col bg-transparent">
         {/* Modern Doctor Chat Header */}
-        <div className="bg-white border-b border-[#E7E2D9] px-6 py-3.5 flex items-center justify-between shadow-xs">
+        <div className="bg-[#1E1E1E]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between z-10">
           <div className="flex items-center gap-3.5">
-            <button
-              type="button"
-              onClick={() => router.push('/user/consult')}
-              className="p-2 -ml-2 rounded-full text-[#6B6862] hover:text-[#1A1A1A] hover:bg-[#FAF8F5] transition cursor-pointer"
-              aria-label="Back to Consult"
-            >
-              <ArrowLeftIcon className="w-5 h-5" />
-            </button>
+            <AmbeBackButton onClick={() => router.push('/user/consult')} />
 
             <div className="relative">
               {doctorInfo.photoUrl ? (
                 <img
                   src={doctorInfo.photoUrl}
                   alt={doctorInfo.name}
-                  className="w-10 h-10 rounded-full object-cover border border-[#E7E2D9]"
+                  className="w-10 h-10 rounded-full object-cover border border-[#FFD3AC]/60"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/40 border border-[#C8996A]/30 flex items-center justify-center text-[#1A1A1A] font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/20 border border-[#FFD3AC]/40 flex items-center justify-center text-[#FFD3AC] font-bold text-sm">
                   {doctorInfo.name.replace('Dr. ', '').charAt(0) || 'D'}
                 </div>
               )}
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#2E7D32] ring-2 ring-white" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[#1E1E1E]" />
             </div>
 
             <div>
-              <h1 className="text-base font-bold text-[#1A1A1A] leading-tight">
+              <h1 className="text-base font-semibold text-white leading-tight">
                 {doctorInfo.name}
               </h1>
-              <p className="text-xs text-[#8C827A]">
+              <p className="text-xs text-white/60">
                 {doctorInfo.title || 'Assigned Integrative Doctor'}
               </p>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-2">
-            <span className="text-xs text-[#8C827A] bg-[#FAF8F5] border border-[#E7E2D9] px-3 py-1 rounded-full font-medium">
+            <span className="text-xs text-[#FFD3AC] bg-white/5 border border-white/10 px-3 py-1 rounded-full font-medium">
               Direct Care Thread
             </span>
           </div>

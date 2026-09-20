@@ -7,7 +7,7 @@ import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs, where, doc, setDoc } from "firebase/firestore";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 
 export default function DoctorConsultationHistoryPage() {
@@ -98,96 +98,74 @@ export default function DoctorConsultationHistoryPage() {
               ...newItem,
               // Retain clinical report fields if existing has them
               recommendations:
-                existing.recommendations || newItem.recommendations,
-              store_recommendations:
-                existing.store_recommendations || newItem.store_recommendations,
-              notes: existing.notes || newItem.notes,
-              referral: existing.referral || newItem.referral,
-              // Retain cancellation fields if either has them
-              status: isCancelled
-                ? (newItem.status && newItem.status.includes("cancel")
-                    ? newItem.status
-                    : existing.status)
-                : (existing.status || newItem.status),
-              cancelled_by: newItem.cancelled_by || existing.cancelled_by,
-              cancelled_at: newItem.cancelled_at || existing.cancelled_at,
-              cancellation_reason:
-                newItem.cancellation_reason ||
-                existing.cancellation_reason ||
-                newItem.note ||
-                existing.note,
-              // Prefer ID with clinical report data, or history_appointment_id
-              id: (existing.recommendations || existing.notes)
-                ? existing.id
-                : (newItem.recommendations || newItem.notes)
-                ? newItem.id
-                : (existing.history_appointment_id || newItem.history_appointment_id || existing.id || newItem.id),
-              history_appointment_id:
-                existing.history_appointment_id || newItem.history_appointment_id || null,
-              appointment_id:
-                existing.appointment_id || newItem.appointment_id || null,
-              document_id:
-                existing.document_id || newItem.document_id || null,
-              user_id: existing.user_id || newItem.user_id,
-              user_name: existing.user_name || newItem.user_name,
-              doctor_name: existing.doctor_name || newItem.doctor_name,
-              time:
-                existing.time ||
-                newItem.time ||
-                existing.scheduled_at ||
-                newItem.scheduled_at,
+                newItem.recommendations || existing.recommendations,
+              dietPlan: newItem.dietPlan || existing.dietPlan,
+              lifestyleNotes:
+                newItem.lifestyleNotes || existing.lifestyleNotes,
+              cleansePlan: newItem.cleansePlan || existing.cleansePlan,
+              dosha_dominant:
+                newItem.dosha_dominant || existing.dosha_dominant,
+              status: isCancelled ? "cancelled" : (newItem.status || existing.status),
             };
           } else {
             items.push(newItem);
           }
         };
 
-        // 1. Fetch from doctors/{user.uid}/appointments_history
+        // 1. Fetch from root consultations collection
         try {
-          const histQuery = query(
-            collection(db, "doctors", user.uid, "appointments_history"),
+          const rootRef = collection(db, "consultations");
+          const qRoot = query(
+            rootRef,
+            where("doctor_id", "==", user.uid),
             orderBy("time", "desc")
           );
-          const snap = await getDocs(histQuery);
-          snap.docs.forEach((d) => {
-            addOrMerge({ id: d.id, ...d.data() });
+          const rootSnap = await getDocs(qRoot);
+          rootSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            addOrMerge({
+              id: docSnap.id,
+              document_id: docSnap.id,
+              ...data,
+            });
           });
-        } catch (hErr) {
-          console.error("Error fetching doctors appointments_history:", hErr);
+        } catch (err) {
+          console.warn("Could not query root consultations:", err);
         }
 
-        // 2. Fetch from master consultations collection where doctor_id == user.uid
+        // 2. Fetch from doctor's appointments_history
         try {
-          const consultQ = query(
-            collection(db, "consultations"),
-            where("doctor_id", "==", user.uid)
+          const docHistRef = collection(
+            db,
+            "doctors",
+            user.uid,
+            "appointments_history"
           );
-          const consultSnap = await getDocs(consultQ);
-          consultSnap.docs.forEach((d) => {
-            const data = d.data();
-            const status = (data.status || "").toLowerCase();
-            // Skip active upcoming consultations
-            if (
-              status === "upcoming" ||
-              status === "scheduled" ||
-              status === "in_progress"
-            ) {
-              return;
-            }
-            addOrMerge({ id: d.id, ...data });
+          const qHist = query(docHistRef, orderBy("time", "desc"));
+          const histSnap = await getDocs(qHist);
+          histSnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            addOrMerge({
+              id: docSnap.id,
+              document_id: docSnap.id,
+              history_appointment_id: docSnap.id,
+              ...data,
+            });
           });
-        } catch (cErr) {
-          console.warn("Error fetching doctor consultations:", cErr);
+        } catch (err) {
+          console.warn("Could not query doctor appointments_history:", err);
         }
 
+        // Sort desc
         items.sort((a, b) => getMillis(b) - getMillis(a));
         setHistory(items);
       } catch (e) {
-        console.error("Error fetching history:", e);
+        console.error("Error fetching doctor consultation history:", e);
       } finally {
         setLoading(false);
       }
     });
+
     return () => unsub();
   }, [router]);
 
@@ -206,21 +184,27 @@ export default function DoctorConsultationHistoryPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-[#C8996A] border-t-transparent" />
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-2 border-[#FFD3AC] border-t-transparent" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <BackButton href="/doctor/consultations" label="Back to Consultations" />
-      <h1 className="text-2xl font-semibold text-[#1A1A1A]">History</h1>
+      <div className="flex items-center gap-3">
+        <AmbeBackButton href="/doctor/consultations" />
+        <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
+          Consultation History
+        </h1>
+      </div>
 
       {history.length === 0 ? (
-        <p className="text-[#6B6862]">No history yet.</p>
+        <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-10 text-center">
+          <p className="text-gray-400 font-sans">No consultation history yet.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {history.map((appt) => {
             const statusInfo = getConsultationStatusInfo(appt, "doctor");
             const timeVal =
@@ -244,14 +228,14 @@ export default function DoctorConsultationHistoryPage() {
                     `/doctor/consultations/report/${appt.id}?${params}`
                   );
                 }}
-                className="w-full bg-white shadow rounded-lg border-l-4 border-[#C8996A] p-4 flex justify-between items-center hover:bg-[#FAF8F5] transition text-left"
+                className="w-full bg-[#1B1A18]/80 border border-white/10 hover:border-[#FFD3AC]/40 rounded-2xl p-4 sm:p-5 flex justify-between items-center transition text-left cursor-pointer group"
               >
                 <div>
-                  <p className="text-[#1A1A1A] font-semibold text-left">
+                  <p className="text-white font-semibold font-sans text-base">
                     {appt.user_name || "Patient"}
                   </p>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <p className="text-[#6B6862] text-sm">
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <p className="text-gray-400 text-xs font-sans">
                       {formatTime(timeVal)}
                     </p>
                     <span
@@ -264,7 +248,7 @@ export default function DoctorConsultationHistoryPage() {
                     </span>
                   </div>
                 </div>
-                <ChevronRightIcon className="h-5 w-5 text-[#8C827A] shrink-0 ml-2" />
+                <ChevronRightIcon className="h-5 w-5 text-[#FFD3AC] shrink-0 ml-2 group-hover:translate-x-1 transition-transform" />
               </button>
             );
           })}

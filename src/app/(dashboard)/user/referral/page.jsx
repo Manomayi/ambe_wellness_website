@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
+import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import {
   doc,
   getDoc,
@@ -12,7 +13,6 @@ import {
   query,
   where,
   getDocs,
-  increment,
   limit
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
@@ -46,7 +46,6 @@ export default function ReferFriendPage() {
       if (!userSnap.exists()) return;
       const userData = userSnap.data();
 
-      // 1. If this user registered with a referral code, ensure referred_by is linked
       if (!userData.referred_by && userData.referral_code_used) {
         const code = String(userData.referral_code_used).trim().toUpperCase();
         const refQuery = query(collection(db, 'users'), where('referral_code', '==', code), limit(1));
@@ -61,7 +60,6 @@ export default function ReferFriendPage() {
         }
       }
 
-      // 2. Reconcile completed referrals
       const q = query(collection(db, 'users'), where('referred_by', '==', user.uid));
       const snap = await getDocs(q);
       let validReferredFriendsCount = 0;
@@ -84,7 +82,6 @@ export default function ReferFriendPage() {
         }
       }
 
-      // 2. Calculate spent credits
       const spentOrders = Array.isArray(userData.referral_credit_orders) ? userData.referral_credit_orders : [];
       let spentCount = spentOrders.length;
       const myPurchasesSnap = await getDocs(collection(db, 'users', user.uid, 'purchases'));
@@ -130,13 +127,11 @@ export default function ReferFriendPage() {
         title: 'Join Ambe Wellness',
         text: message,
       }).catch((error) => {
-        // Only handle actual errors, not user cancellation
         if (error.name !== 'AbortError') {
           console.error('Share failed:', error);
         }
       });
     } else {
-      // Fallback - copy to clipboard
       navigator.clipboard.writeText(message);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -146,100 +141,114 @@ export default function ReferFriendPage() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
-        </div>
+        <WebLayoutWrapper>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
+          </div>
+        </WebLayoutWrapper>
       </ProtectedRoute>
     );
   }
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <BackButton />
-        <h1 className="text-3xl font-bold text-[#1A1A1A]">Refer a Friend</h1>
+      <WebLayoutWrapper>
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+          <BackButton />
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Refer a Friend</h1>
 
-        {/* Main Offer Card */}
-        <div className="bg-white rounded-2xl p-8 sm:p-10 text-center border border-[#E7E2D9] shadow-sm">
-          <GiftIcon className="h-16 w-16 mx-auto text-[#C8996A] mb-4" />
-          <div className="mb-4">
-            <h2 className="font-heading font-serif text-3xl sm:text-4xl text-[#1A1A1A] mb-1">
+          {/* Hero Promo Card — peach bg matching Flutter */}
+          <div className="bg-[#FFD3AC] rounded-3xl p-6 sm:p-8 text-center shadow-[0_8px_20px_rgba(255,211,172,0.25)]">
+            {/* Badge */}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-black/10 text-black/80 mb-4">
+              <GiftIcon className="w-4 h-4" />
+              GIVE 20% · GET 20%
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl font-bold text-black leading-tight mb-1">
               Get 20% OFF
             </h2>
-            <p className="text-2xl text-[#1A1A1A] font-normal">
+            <p className="text-lg text-black/80 font-medium">
               Your Next Order
             </p>
+            <p className="text-sm text-black/60 max-w-md mx-auto leading-relaxed mt-3">
+              Share your referral code with friends and both of you will receive 20% off your order!
+            </p>
           </div>
-          <p className="text-base text-[#6B6862] max-w-md mx-auto leading-relaxed">
-            Share your referral code with friends and both of you will receive 20% off your next order!
-          </p>
-        </div>
 
-        {/* Referral Code Section */}
-        <div className="bg-white rounded-xl p-6 border border-[#E7E2D9] shadow-sm">
-          <h3 className="text-lg font-bold text-[#1A1A1A] text-center mb-4">Your Referral Code</h3>
-          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-lg p-4 flex items-center justify-center gap-4">
-            <span className="text-2xl font-bold tracking-widest text-[#1A1A1A]">{referralCode}</span>
+          {/* Referral Code Card — frosted glass matching Flutter */}
+          <div className="bg-white/8 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-white/12">
+            <h3 className="text-sm font-semibold text-white/70 text-center tracking-wider uppercase mb-4">
+              Your Referral Code
+            </h3>
+            <div className="bg-black/40 border-[1.5px] border-[#FFD3AC]/40 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-4">
+              <span className="flex-1 text-center text-xl sm:text-2xl font-extrabold tracking-[3px] text-[#FFD3AC]">
+                {referralCode}
+              </span>
+              <button
+                onClick={copyToClipboard}
+                className="p-2.5 bg-[#FFD3AC]/15 rounded-xl hover:bg-[#FFD3AC]/25 transition cursor-pointer"
+                title="Copy code"
+              >
+                {copied ? (
+                  <CheckIcon className="h-5 w-5 text-[#FFD3AC]" />
+                ) : (
+                  <DocumentDuplicateIcon className="h-5 w-5 text-[#FFD3AC]" />
+                )}
+              </button>
+            </div>
             <button
-              onClick={copyToClipboard}
-              className="p-2 hover:bg-[#E7E2D9] rounded-lg transition"
-              title="Copy code"
+              onClick={shareReferralCode}
+              className="w-full mt-4 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1A1A1A] py-3.5 px-6 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-md uppercase tracking-wider cursor-pointer"
             >
-              {copied ? (
-                <CheckIcon className="h-6 w-6 text-[#C8996A]" />
-              ) : (
-                <DocumentDuplicateIcon className="h-6 w-6 text-[#8C827A]" />
-              )}
+              <ShareIcon className="h-5 w-5" />
+              Share Code
             </button>
           </div>
-          <button
-            onClick={shareReferralCode}
-            className="w-full mt-4 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 px-6 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2 shadow-sm uppercase tracking-wider"
-          >
-            <ShareIcon className="h-5 w-5" />
-            Share Code
-          </button>
-        </div>
 
-        {/* Referral Stats */}
-        {(referralCount > 0 || referralCredits > 0) && (
-          <div className="bg-white rounded-xl p-6 border border-[#E7E2D9] shadow-sm">
-            <h3 className="text-lg font-bold text-[#1A1A1A] text-center mb-6">Your Referral Stats</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl">
-                <p className="text-3xl font-bold text-[#C8996A]">{referralCount}</p>
-                <p className="text-xs font-medium text-[#6B6862] uppercase tracking-wider mt-1">Friends Referred</p>
-              </div>
-              <div className="text-center p-4 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl">
-                <p className="text-3xl font-bold text-[#C8996A]">{referralCredits}</p>
-                <p className="text-xs font-medium text-[#6B6862] uppercase tracking-wider mt-1">Discounts Available</p>
+          {/* Referral Stats — frosted glass matching Flutter */}
+          {(referralCount > 0 || referralCredits > 0) && (
+            <div className="bg-white/8 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-[#FFD3AC]/30">
+              <h3 className="text-xl sm:text-2xl font-bold text-white text-center mb-5">
+                Your Referral Stats
+              </h3>
+              <div className="flex items-center justify-around">
+                <div className="text-center">
+                  <p className="text-3xl sm:text-4xl font-extrabold text-[#FFD3AC]">{referralCount}</p>
+                  <p className="text-xs sm:text-sm font-medium text-white/70 mt-1">Friends Referred</p>
+                </div>
+                <div className="w-px h-10 bg-white/20" />
+                <div className="text-center">
+                  <p className="text-3xl sm:text-4xl font-extrabold text-[#FFD3AC]">{referralCredits}</p>
+                  <p className="text-xs sm:text-sm font-medium text-white/70 mt-1">Discounts Available</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* How it Works */}
-        <div className="bg-white rounded-xl p-6 border border-[#E7E2D9] shadow-sm">
-          <h3 className="text-lg font-bold text-[#1A1A1A] mb-4">How it works:</h3>
-          <div className="space-y-4">
-            <StepWidget number="1" text="Share your unique referral code with friends" />
-            <StepWidget number="2" text="Your friend signs up using your code" />
-            <StepWidget number="3" text="Both of you get 20% off your next order" />
-            <StepWidget number="4" text="No limit on referrals - share with everyone!" />
+          {/* How It Works — frosted glass matching Flutter */}
+          <div className="bg-white/6 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-white/10">
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-5">How It Works</h3>
+            <div className="space-y-4">
+              <StepWidget number="1" text="Share your unique referral code with friends." />
+              <StepWidget number="2" text="Your friend signs up and gets 20% off their first order." />
+              <StepWidget number="3" text="You receive a 20% discount credit for your next order!" />
+              <StepWidget number="4" text="Refer 3 friends and you get 20% off each of your next 3 orders — one credit per order, no limit on earnings!" />
+            </div>
           </div>
         </div>
-      </div>
+      </WebLayoutWrapper>
     </ProtectedRoute>
   );
 }
 
 function StepWidget({ number, text }) {
   return (
-    <div className="flex items-center gap-4">
-      <div className="w-8 h-8 bg-[#FAF8F5] border border-[#E7E2D9] text-[#C8996A] rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm">
+    <div className="flex items-start gap-3 sm:gap-4">
+      <div className="w-7 h-7 bg-[#FFD3AC]/20 border border-[#FFD3AC] text-[#FFD3AC] rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm">
         {number}
       </div>
-      <p className="text-sm text-[#353535]">{text}</p>
+      <p className="text-sm text-white/85 leading-relaxed">{text}</p>
     </div>
   );
 }

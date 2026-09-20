@@ -5,10 +5,14 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
-import Link from 'next/link'
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
-import BackButton from '@/components/common/BackButton'
-import { getConsultationStatusInfo } from "@/lib/consultationStatus"
+import Link from "next/link";
+import {
+  ChevronRightIcon,
+  VideoCameraIcon,
+} from "@heroicons/react/24/outline";
+import WebLayoutWrapper from "@/components/common/WebLayoutWrapper";
+import AmbeBackButton from "@/components/common/AmbeBackButton";
+import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 
 export default function ConsultationHistoryPage() {
   const router = useRouter();
@@ -43,70 +47,103 @@ export default function ConsultationHistoryPage() {
   }, [router]);
 
   const formatTime = (ts) => {
-    const d = ts.toDate ? ts.toDate() : ts;
-    return d.toLocaleString(undefined, {
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
+      year: "numeric",
       hour: "numeric",
-      minute: "numeric",
+      minute: "2-digit",
     });
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#C8996A] border-t-transparent" />
-      </div>
+      <WebLayoutWrapper maxWidth="760px">
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <div className="w-12 h-12 border-3 border-[#FFD3AC] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </WebLayoutWrapper>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <BackButton />
-      <h1 className="text-2xl font-bold text-[#1A1A1A]">
-        Consultation History
-      </h1>
-      {history.length === 0 ? (
-        <div className="bg-white border border-[#E7E2D9] rounded-xl p-8 text-center shadow-sm">
-          <p className="text-sm text-[#6B6862]">No appointment history found.</p>
+    <WebLayoutWrapper maxWidth="760px">
+      <div className="space-y-6 pb-16">
+        {/* Top Header matching Flutter UnifiedHistoryPage */}
+        <div className="flex items-center gap-4 mb-2">
+          <AmbeBackButton />
+          <h1
+            className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
+            style={{
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            }}
+          >
+            Consultation History
+          </h1>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {history.map((appt) => {
-            const statusInfo = getConsultationStatusInfo(appt);
-            return (
-              <div key={appt.id} className="bg-white shadow rounded-lg border border-[#E7E2D9]">
+
+        {history.length === 0 ? (
+          <div className="bg-[#1B1A18]/65 border border-white/15 rounded-[22px] p-10 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 flex items-center justify-center text-[#FFD3AC] mx-auto">
+              <VideoCameraIcon className="w-6 h-6" />
+            </div>
+            <p className="text-white/70 text-base font-sans">
+              No history available.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3.5">
+            {history.map((appt) => {
+              const statusInfo = getConsultationStatusInfo(appt);
+              const doctorName = appt.doctor_name?.startsWith("Dr.")
+                ? appt.doctor_name
+                : `Dr. ${appt.doctor_name || "Assigned Doctor"}`;
+
+              return (
                 <Link
+                  key={appt.id}
                   href={
                     `/user/consult/report/${appt.id}` +
-                    `?doctorName=${encodeURIComponent(appt.doctor_name || '')}`
+                    `?doctorName=${encodeURIComponent(appt.doctor_name || "")}`
                   }
-                  className="w-full block text-left flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition rounded-lg"
+                  className="
+                    block bg-[#1B1A18]/65 border border-white/15 rounded-[20px] p-4 sm:p-5
+                    hover:border-[#FFD3AC]/50 hover:bg-[#1B1A18]/80 transition-all duration-200 group
+                  "
                 >
-                  <div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <p className="font-medium text-gray-800">
-                        {appt.doctor_name?.startsWith('Dr.') ? appt.doctor_name : `Dr. ${appt.doctor_name || 'Assigned Doctor'}`}
-                      </p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.badgeClass}`}>
+                  <div className="flex items-center justify-between gap-3.5">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-11 h-11 rounded-xl bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 flex items-center justify-center text-[#FFD3AC] flex-shrink-0">
+                        <VideoCameraIcon className="w-5 h-5" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-white text-base truncate font-sans">
+                          Consultation with {doctorName}
+                        </h3>
+                        <p className="text-white/55 text-xs sm:text-sm mt-0.5 font-sans">
+                          {formatTime(appt.time)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 flex-shrink-0">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusInfo.badgeClass}`}>
                         <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`} />
                         {statusInfo.label}
                       </span>
+                      <ChevronRightIcon className="h-5 w-5 text-white/40 group-hover:text-white transition" />
                     </div>
-                    <p className="text-gray-600 text-sm mt-1">
-                      {formatTime(appt.time)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#C8996A] font-medium ml-4 shrink-0">
-                    <span>{statusInfo.actionText}</span>
-                    <ChevronRightIcon className="h-5 w-5 text-gray-400" />
                   </div>
                 </Link>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </WebLayoutWrapper>
   );
 }
+
