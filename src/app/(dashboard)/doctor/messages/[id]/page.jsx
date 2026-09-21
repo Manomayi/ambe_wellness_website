@@ -166,11 +166,6 @@ export default function DoctorChatPage() {
               <h1 className="text-base font-semibold text-white leading-tight">
                 {chatData.userName}
               </h1>
-              <p className="text-xs text-white/60">
-                {chatData.isFirstConsultationCompleted 
-                  ? 'Active Patient' 
-                  : 'Pending First Consultation'}
-              </p>
             </div>
           </div>
         </div>

@@ -125,6 +125,7 @@ export default function PurchaseHistoryPage() {
             items: Array.isArray(data.items) ? data.items : [],
             time: date,
             shipDate: data.ship_date || data.shipped_at || null,
+            trackingNumber: data.tracking_number || data.trackingNumber || '',
             consultationId: data.consultation_id || data.appointment_id || null,
             paymentIntentId: data.payment_intent_id || data.payment_id || null,
           };
@@ -238,7 +239,7 @@ export default function PurchaseHistoryPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {purchases.map(({ id, amount, currency, status, type, description, items, time, shipDate }) => {
+            {purchases.map(({ id, amount, currency, status, type, description, items, time, shipDate, trackingNumber }) => {
               const diffMs = now - time;
               const daysElapsed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
               const canReview = daysElapsed >= 14;
@@ -267,9 +268,19 @@ export default function PurchaseHistoryPage() {
                           })}
                         </p>
                         {type === 'store' && (
-                          <p>
-                            <strong className="text-white">Ship Date:</strong> {shipDateStr}
-                          </p>
+                          <>
+                            <p>
+                              <strong className="text-white">Ship Date:</strong> {shipDateStr}
+                            </p>
+                            {trackingNumber && (
+                              <p>
+                                <strong className="text-white">Tracking Number:</strong>{' '}
+                                <span className="text-[#FFD3AC] font-mono select-all bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                                  {trackingNumber}
+                                </span>
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -288,7 +299,7 @@ export default function PurchaseHistoryPage() {
                   </div>
 
                   {/* Shipping notice banner for store orders */}
-                  {type === 'store' && (
+                  {type === 'store' && status?.toLowerCase() !== 'shipped' && status?.toLowerCase() !== 'delivered' && (
                     <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white/80">
                       <TruckIcon className="w-4 h-4 text-[#FFD3AC] shrink-0 mt-0.5" />
                       <span className="leading-relaxed">
@@ -313,6 +324,14 @@ export default function PurchaseHistoryPage() {
                           const price = Number(item.price) || 0;
                           const hasProduct = Boolean(item.product_id || item.productId || item.item_id || item.id || item.product_name || item.name);
 
+                          const rawSize = (item.size || item.variantName || item.pack_size || '').toString().trim();
+                          const hasMultipleSizes = Boolean(
+                            item.has_multiple_sizes ||
+                            item.hasMultipleSizes ||
+                            (rawSize && !['standard', 'default', 'n/a', 'none', '1', 'regular'].includes(rawSize.toLowerCase()))
+                          );
+                          const sizeDisplay = (hasMultipleSizes && rawSize) ? ` (${rawSize})` : '';
+
                           return (
                             <div
                               key={idx}
@@ -322,7 +341,7 @@ export default function PurchaseHistoryPage() {
                                 <div>
                                   <span className="font-semibold text-white">
                                     {productName}
-                                    {item.size ? ` (${item.size})` : ''} × {qty}
+                                    {sizeDisplay} × {qty}
                                   </span>
                                   <span className="ml-2 font-medium text-white/60">
                                     ${(price * qty).toFixed(2)}

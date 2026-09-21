@@ -31,9 +31,12 @@ export async function POST(request) {
       metadata: {
         type: type || "consultation_deposit",
         userId: userId || "",
+        uid: userId || "",
         doctorId: doctorId || "",
         doctorName: doctorName || "",
         appointmentTime: appointmentTime ? String(appointmentTime) : "",
+        tax_amount: body.tax_amount !== undefined && body.tax_amount !== null ? String(body.tax_amount) : "",
+        shipping_amount: body.shipping_amount !== undefined && body.shipping_amount !== null ? String(body.shipping_amount) : "",
       },
     });
 

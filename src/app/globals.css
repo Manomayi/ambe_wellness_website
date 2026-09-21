@@ -53,31 +53,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Jost — body, nav, buttons, labels, footer */
-input,
-textarea,
-select {
-  font-family: var(--font-jost), "Jost", sans-serif;
-}
+@layer base {
+  /* Jost — body, nav, buttons, labels, footer */
+  input,
+  textarea,
+  select {
+    font-family: var(--font-jost), "Jost", sans-serif;
+    color: var(--ambe-charcoal);
+    background-color: var(--ambe-cream);
+    border-color: color-mix(in srgb, var(--ambe-charcoal) 20%, transparent);
+  }
 
-input,
-textarea,
-select {
-  color: var(--ambe-charcoal);
-  background-color: var(--ambe-cream);
-  border-color: color-mix(in srgb, var(--ambe-charcoal) 20%, transparent);
-}
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--ambe-gold);
+  }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--ambe-gold);
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: color-mix(in srgb, var(--ambe-charcoal) 45%, transparent);
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--ambe-charcoal) 45%, transparent);
+  }
 }
 
 /* Links */
@@ -159,7 +156,6 @@ a:hover {
   .h2,
   .h3 {
     font-family: var(--font-cormorant), "Cormorant Garamond", serif;
-    color: var(--ambe-charcoal);
     font-weight: 400;
   }
 
@@ -231,5 +227,14 @@ a:hover {
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
     animation: none;
+  }
+}
+
+/* Prevent Next.js dev overlay button from obstructing bottom navigation bar on mobile */
+@media (max-width: 768px) {
+  nextjs-portal,
+  [data-nextjs-dev-tools-button],
+  [data-nextjs-toast] {
+    display: none !important;
   }
 }

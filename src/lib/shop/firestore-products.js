@@ -82,6 +82,7 @@ function mapProduct(docId, data, parentCategory) {
   return {
     id: docId,
     name,
+    shop_id: data.shop_id || data.shopId || null,
     category: data.category || parentCategory || "Wellness",
     subcategory: data.subcategory || null,
     price,
@@ -120,7 +121,10 @@ function mapPackProduct(storeDocId, prod, index, parentCategory) {
     prod.id ||
     `${storeDocId}_${slugify(name)}_${index}`;
 
-  return mapProduct(id, prod, parentCategory);
+  const mapped = mapProduct(id, prod, parentCategory);
+  mapped.shop_id = storeDocId;
+  mapped.shopId = storeDocId;
+  return mapped;
 }
 
 function dedupeProducts(items) {

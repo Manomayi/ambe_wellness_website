@@ -27,12 +27,13 @@ export default function DoctorBottomNav() {
       href: "/doctor/consultations",
       iconActive: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
         </svg>
       ),
       iconInactive: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12l3 3 5-5" />
         </svg>
       ),
     },
@@ -46,7 +47,7 @@ export default function DoctorBottomNav() {
       ),
       iconInactive: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 9h8M8 13h5m7-1c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       ),
     },
@@ -60,7 +61,7 @@ export default function DoctorBottomNav() {
       ),
       iconInactive: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       ),
     },
@@ -85,7 +86,7 @@ export default function DoctorBottomNav() {
       aria-label="Doctor Mobile Navigation"
       className="fixed bottom-0 left-0 right-0 z-50 bg-[#000000] border-t border-white/10 shadow-2xl safe-area-pb"
     >
-      <div className="max-w-lg mx-auto flex items-center justify-around h-16 px-2">
+      <div className="max-w-lg mx-auto flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -95,20 +96,20 @@ export default function DoctorBottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none"
+              className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none outline-none focus:outline-none focus:ring-0 [-webkit-tap-highlight-color:transparent]"
             >
               <div
-                className={`flex items-center justify-center w-12 h-8 rounded-full transition-all duration-200 ${
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${
                   isActive
                     ? "bg-[#FFD3AC] text-[#1E1E1E]"
-                    : "text-[#9E9E9E] group-hover:text-white"
+                    : "text-gray-400 group-hover:text-white"
                 }`}
               >
                 {isActive ? item.iconActive : item.iconInactive}
               </div>
               <span
-                className={`text-[9.5px] font-sans font-semibold tracking-wider mt-0.5 transition-colors ${
-                  isActive ? "text-[#FFD3AC]" : "text-[#9E9E9E]"
+                className={`text-[10px] font-sans font-semibold tracking-wider mt-0.5 transition-colors ${
+                  isActive ? "text-[#FFD3AC]" : "text-gray-400"
                 }`}
               >
                 {item.label}

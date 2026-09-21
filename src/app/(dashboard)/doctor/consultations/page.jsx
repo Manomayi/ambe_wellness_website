@@ -12,6 +12,8 @@ import {
   onSnapshot,
   Timestamp,
   doc,
+  getDoc,
+  deleteDoc,
   writeBatch,
   serverTimestamp,
 } from "firebase/firestore";
@@ -181,12 +183,44 @@ export default function DoctorConsultationsPage() {
 
     const unsubscribeReports = onSnapshot(
       reportsCol,
-      (snapshot) => {
-        const reports = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setReportsToFinish(reports);
+      async (snapshot) => {
+        const activeReports = [];
+        for (const docSnap of snapshot.docs) {
+          const repData = docSnap.data();
+          const repId = docSnap.id;
+          const candidateHistoryIds = [
+            repId,
+            decodeURIComponent(repId),
+            repData.appointment_id,
+            repData.original_appointment_id,
+            repData.consultation_id,
+            repData.document_id,
+          ].filter(Boolean);
+
+          let alreadyInHistory = repData.status === 'completed' || repData.consultation_outcome === 'completed';
+          if (!alreadyInHistory) {
+            for (const hId of candidateHistoryIds) {
+              try {
+                const hSnap = await getDoc(doc(db, 'doctors', user.uid, 'appointments_history', String(hId)));
+                if (hSnap.exists()) {
+                  alreadyInHistory = true;
+                  break;
+                }
+              } catch (_) {}
+            }
+          }
+
+          if (alreadyInHistory) {
+            // Self-healing: remove completed report left behind in appointments_reports_to_finish
+            console.log(`Auto-cleaning already completed report ${repId} from appointments_reports_to_finish`);
+            try {
+              await deleteDoc(doc(db, 'doctors', user.uid, 'appointments_reports_to_finish', repId));
+            } catch (_) {}
+          } else {
+            activeReports.push({ id: repId, ...repData });
+          }
+        }
+        setReportsToFinish(activeReports);
         setLoading(false);
       },
       (error) => {
@@ -247,18 +281,20 @@ export default function DoctorConsultationsPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="space-y-6">
-        {/* Top bar */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
+      <div className="space-y-6 select-none">
+        {/* Top bar matching Flutter ConsultationsPage */}
+        <div className="flex items-center justify-between pt-1 pb-1">
+          <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal tracking-tight">
             Consultations
           </h1>
           <button
             onClick={() => router.push('/doctor/consultations/history')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FFD3AC] text-[#1E1E1E] font-sans font-semibold text-xs uppercase tracking-wider hover:bg-[#ffe3c9] transition shadow-md cursor-pointer"
+            className="text-[#FFD3AC] hover:opacity-80 transition p-1 cursor-pointer"
+            aria-label="Consultation History"
           >
-            <ClockIcon className="w-4 h-4" />
-            History
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+            </svg>
           </button>
         </div>
 
@@ -270,58 +306,45 @@ export default function DoctorConsultationsPage() {
           </div>
         )}
 
-        {/* Reports to Finish Alert matching Flutter */}
+        {/* Reports to Finish Alert matching Flutter Image 2 */}
         {reportsToFinish.length > 0 && (
           <div className="space-y-2.5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-white font-sans">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 font-sans">
               REPORTS TO FINISH
             </h2>
-            <div className="bg-[#1B1A18]/90 border border-red-500/30 rounded-2xl p-4 sm:p-5 shadow-lg">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-400" />
+            <div
+              onClick={() => {
+                const r = reportsToFinish[0];
+                const userUid = r.user_id || r.user_uid || r.userId || '';
+                const userName = r.user_name || r.userName || '';
+                const timeMillis = r.time?.toMillis ? r.time.toMillis() : (r.time ? new Date(r.time).getTime() : Date.now());
+                const params = new URLSearchParams({
+                  userUid,
+                  userName,
+                  time: String(timeMillis),
+                }).toString();
+                router.push(`/doctor/consultations/complete-report/${encodeURIComponent(r.id)}?${params}`);
+              }}
+              className="bg-[#2D2D30] border border-red-500/30 rounded-[20px] p-4 sm:p-5 flex items-center justify-between hover:bg-[#353539] transition shadow-md cursor-pointer group"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-[14px] bg-red-950/40 border border-red-500/30 flex items-center justify-center shrink-0">
+                  <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                  </svg>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white font-sans text-base">
+                <div>
+                  <h3 className="font-semibold text-white font-sans text-base sm:text-lg">
                     Reports to finish
                   </h3>
-                  <p className="text-gray-400 text-xs mt-0.5 font-sans">
-                    You have {reportsToFinish.length} {reportsToFinish.length > 1 ? 'reports' : 'report'} to complete
+                  <p className="text-gray-400 text-sm font-sans mt-0.5">
+                    {reportsToFinish.length} {reportsToFinish.length > 1 ? 'reports' : 'report'}
                   </p>
-                  <div className="mt-3.5 space-y-2">
-                    {reportsToFinish.map((report) => {
-                      const userUid = report.user_id || report.user_uid || report.userId || '';
-                      const userName = report.user_name || report.userName || '';
-                      const timeMillis = report.time?.toMillis ? report.time.toMillis() : (report.time ? new Date(report.time).getTime() : Date.now());
-                      const params = new URLSearchParams({
-                        userUid,
-                        userName,
-                        time: String(timeMillis),
-                      }).toString();
-
-                      return (
-                        <div
-                          key={report.id}
-                          className="flex items-center justify-between bg-[#2D2D30]/70 border border-white/5 p-3 rounded-xl hover:border-white/20 transition"
-                        >
-                          <div>
-                            <p className="font-semibold text-white text-sm font-sans">{userName || 'Patient'}</p>
-                            <p className="text-xs text-gray-400 font-sans mt-0.5">
-                              {formatAppointmentTime(report.time)}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => router.push(`/doctor/consultations/complete-report/${report.id}?${params}`)}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 transition cursor-pointer"
-                          >
-                            Complete Report →
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
                 </div>
               </div>
+              <svg className="w-6 h-6 text-gray-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </div>
           </div>
         )}
@@ -456,13 +479,25 @@ export default function DoctorConsultationsPage() {
           </div>
         )}
 
-        {/* Empty State */}
-        {!currentAppointment && upcomingAppointments.length === 0 && pendingAppointments.length === 0 && reportsToFinish.length === 0 && !loading && (
-          <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-12 text-center">
-            <CalendarIcon className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-white mb-2 font-heading">No Consultations Scheduled</h3>
-            <p className="text-gray-400 text-sm font-sans max-w-sm mx-auto">
-              Your users can book consultations through their dashboard.
+        {/* Empty State matching Flutter Image 2 */}
+        {!currentAppointment && upcomingAppointments.length === 0 && pendingAppointments.length === 0 && !loading && (
+          <div className="py-16 sm:py-24 text-center">
+            <svg
+              className="w-20 h-20 text-white/30 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <h3 className="text-xl sm:text-2xl font-bold text-white font-sans mt-6">
+              No Consultations Scheduled
+            </h3>
+            <p className="text-gray-400 text-sm sm:text-base font-sans mt-3 max-w-sm mx-auto leading-relaxed">
+              You don&apos;t have any consultations scheduled yet.
+              <br />
+              They will appear here once patients book appointments.
             </p>
           </div>
         )}

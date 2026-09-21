@@ -18,7 +18,7 @@ export default function DoctorLayout({ children }) {
 
       {/* Main Content Area */}
       <main className="relative z-10 flex-1 w-full pb-24 md:pb-12">
-        <div className="max-w-4xl mx-auto px-3 sm:px-6 md:px-8 py-4 sm:py-6">
+        <div className={`max-w-4xl mx-auto ${pathname === '/doctor/home' ? 'px-0 sm:px-6 md:px-8 py-0 sm:py-6' : 'px-3 sm:px-6 md:px-8 py-4 sm:py-6'}`}>
           {children}
         </div>
       </main>

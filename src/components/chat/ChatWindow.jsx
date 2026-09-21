@@ -87,29 +87,18 @@ export default function ChatWindow({
 
   const markMessagesAsRead = async (messagesToMark) => {
     try {
-      const batch = writeBatch(db);
-      let hasUnreadMessages = false;
-      
-      // Update unread messages
-      messagesToMark
-        .filter(msg => msg.sender_uid !== user?.uid && !msg.read)
-        .forEach(msg => {
-          const msgRef = doc(db, 'chats', chatId, 'messages', msg.id);
-          batch.update(msgRef, { read: true });
-          hasUnreadMessages = true;
-        });
-      
-      // Reset unread count in chat metadata for doctor
-      if (hasUnreadMessages && isDoctor) {
+      if (isDoctor && user?.uid && chatId) {
         const chatRef = doc(db, 'doctors', user.uid, 'chats', chatId);
-        batch.set(chatRef, { 
+        await setDoc(chatRef, { 
           unread_count: 0,
           last_message_read_by_doctor: true 
         }, { merge: true });
-      }
-      
-      if (hasUnreadMessages) {
-        await batch.commit();
+      } else if (!isDoctor && user?.uid && chatId) {
+        const chatRef = doc(db, 'users', user.uid, 'chats', chatId);
+        await setDoc(chatRef, { 
+          unread_count: 0,
+          last_message_read_by_user: true 
+        }, { merge: true });
       }
     } catch (error) {
       console.error('Error marking messages as read:', error);

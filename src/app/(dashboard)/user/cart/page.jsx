@@ -285,8 +285,17 @@ export default function UserCartPage() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap text-xs text-white/70">
-                      <span>Size: {item.size || item.variantName || 'Standard'}</span>
-                      <span className="text-white/30">•</span>
+                      {Boolean(
+                        (item.has_multiple_sizes ||
+                          (item.size && !['standard', 'default', 'n/a', 'none', '1', 'regular'].includes(item.size.trim().toLowerCase()))) &&
+                        item.size &&
+                        item.size.trim()
+                      ) && (
+                        <>
+                          <span>Size: {item.size}</span>
+                          <span className="text-white/30">•</span>
+                        </>
+                      )}
                       <span className="font-semibold text-white">Price: ${unitPrice.toFixed(2)}</span>
                       {hasDiscount && (
                         <span className="text-white/40 line-through">${mrp.toFixed(2)}</span>

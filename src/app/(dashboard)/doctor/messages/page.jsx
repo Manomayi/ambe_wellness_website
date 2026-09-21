@@ -11,7 +11,7 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { ChatBubbleLeftRightIcon, UserIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, UserIcon } from '@heroicons/react/24/outline';
 
 export default function DoctorMessagesPage() {
   const router = useRouter();
@@ -158,23 +158,16 @@ export default function DoctorMessagesPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">Messages</h1>
-            <p className="text-sm text-gray-400 mt-1 font-sans">
-              Patient conversations and consultation message channels
-            </p>
-          </div>
-          {chats.length > 0 && (
-            <span className="text-xs bg-[#2D2D30] text-[#FFD3AC] px-3.5 py-1.5 rounded-full font-semibold border border-white/10 font-sans">
-              {chats.length} {chats.length === 1 ? 'patient' : 'patients'}
-            </span>
-          )}
+      <div className="space-y-4 max-w-4xl mx-auto select-none">
+        {/* Top Header matching Flutter MessagesPage */}
+        <div className="pt-1 pb-1">
+          <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal tracking-tight">
+            Messages
+          </h1>
         </div>
 
         {chats.length === 0 ? (
-          <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-12 text-center shadow-lg">
+          <div className="bg-[#2D2D30] border border-white/10 rounded-[20px] p-12 text-center shadow-lg">
             <ChatBubbleLeftRightIcon className="h-14 w-14 text-gray-500 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-white mb-1 font-sans">No Messages Yet</h3>
             <p className="text-gray-400 max-w-sm mx-auto text-sm font-sans">
@@ -195,77 +188,51 @@ export default function DoctorMessagesPage() {
                 <div
                   key={chat.id}
                   onClick={() => handleChatClick(chat)}
-                  className={`group relative bg-[#1B1A18]/80 border ${
+                  className={`bg-[#2D2D30] border ${
                     isUnread
-                      ? 'border-[#FFD3AC] ring-1 ring-[#FFD3AC]/40'
-                      : 'border-white/10 hover:border-[#FFD3AC]/40'
-                  } rounded-2xl p-4 sm:p-5 transition-all duration-150 hover:shadow-lg cursor-pointer`}
+                      ? 'border-[#FFD3AC]/30'
+                      : 'border-white/5'
+                  } rounded-[20px] p-4 sm:p-4.5 transition-all duration-150 hover:bg-[#353539] cursor-pointer shadow-md`}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* User Avatar */}
-                    <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#FFD3AC] bg-[#2D2D30] flex items-center justify-center">
-                        {chat.user_photo_url ? (
-                          <img
-                            src={chat.user_photo_url}
-                            alt={chat.user_name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.parentElement.innerHTML = '<span class="text-xl">👤</span>';
-                            }}
-                          />
-                        ) : (
-                          <UserIcon className="w-6 h-6 text-[#FFD3AC]" />
-                        )}
-                      </div>
-                      {isUnread && (
-                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#FFD3AC] border-2 border-[#1E1E1E] rounded-full shadow-xs"></span>
+                  <div className="flex items-center gap-3.5">
+                    {/* User Avatar matching Flutter */}
+                    <div className="w-[52px] h-[52px] rounded-full overflow-hidden border-2 border-[#FFD3AC]/30 bg-[#3D3D42] flex items-center justify-center shrink-0">
+                      {chat.user_photo_url ? (
+                        <img
+                          src={chat.user_photo_url}
+                          alt={chat.user_name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement.innerHTML = '<svg class="w-6 h-6 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+                          }}
+                        />
+                      ) : (
+                        <UserIcon className="w-6 h-6 text-[#FFD3AC]" />
                       )}
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <h3 className={`text-base truncate font-sans ${
-                          isUnread ? 'font-bold text-white' : 'font-semibold text-white'
-                        }`}>
-                          {chat.user_name}
-                        </h3>
-                        <span className="text-xs text-gray-400 shrink-0 font-medium font-sans">
-                          {formatTimestamp(lastTimestamp)}
-                        </span>
-                      </div>
+                      <h3 className="text-base text-white font-semibold font-sans truncate">
+                        {chat.user_name}
+                      </h3>
+                      <p className="text-sm text-gray-400 font-sans truncate mt-0.5">
+                        {isYou && <span className="text-[#FFD3AC]">You: </span>}
+                        {chat.last_message || 'New patient matched'}
+                      </p>
+                    </div>
 
-                      {/* Message preview */}
-                      <div className="flex items-center justify-between gap-2 mt-1">
-                        <p className={`text-sm truncate font-sans ${
-                          isUnread ? 'text-white font-medium' : 'text-gray-400'
-                        }`}>
-                          {isYou && <span className="text-[#FFD3AC] font-normal">You: </span>}
-                          {chat.last_message || 'New patient matched'}
-                        </p>
-
-                        {/* Unread indicator dot matching mobile app */}
-                        {isUnread && (
-                          <span className="w-2.5 h-2.5 bg-[#FFD3AC] rounded-full shrink-0 shadow-xs"></span>
-                        )}
-                      </div>
-
-                      {/* Status subtitle */}
-                      <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400 font-sans">
-                        {chat.is_first_consultation_completed ? (
-                          <span className="inline-flex items-center text-[11px] text-emerald-400 font-medium">
-                            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1.5"></span>
-                            Active Patient
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center text-[11px] text-[#FFD3AC] font-medium">
-                            <ExclamationCircleIcon className="w-3.5 h-3.5 mr-1 text-[#FFD3AC]" />
-                            Pending First Consultation
-                          </span>
-                        )}
-                      </div>
+                    {/* Right column: Timestamp & Bottom-aligned Unread Dot */}
+                    <div className="flex flex-col items-end justify-center shrink-0 pl-2">
+                      <span className="text-xs text-gray-400 font-medium font-sans">
+                        {formatTimestamp(lastTimestamp)}
+                      </span>
+                      {isUnread ? (
+                        <span className="w-2 h-2 bg-[#FFD3AC] rounded-full mt-2 self-end shadow-[0_0_6px_rgba(255,211,172,0.6)]"></span>
+                      ) : (
+                        <span className="w-2 h-2 mt-2"></span>
+                      )}
                     </div>
                   </div>
                 </div>

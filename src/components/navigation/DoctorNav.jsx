@@ -73,7 +73,7 @@ export default function DoctorNav() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#1B1A18]/80 backdrop-blur-md border-b border-white/10 select-none">
+    <header className="hidden md:block sticky top-0 z-40 bg-[#1B1A18]/80 backdrop-blur-md border-b border-white/10 select-none">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
         {/* App Logo */}
         <Link href="/doctor/home" className="flex items-center gap-2.5">
@@ -116,7 +116,7 @@ export default function DoctorNav() {
         {/* Right actions: Notification bell & Doctor profile avatar */}
         <div className="flex items-center gap-3">
           <Link
-            href="/doctor/notifications-settings"
+            href="/doctor/notifications"
             className="w-9 h-9 rounded-full bg-[#2D2D30]/80 border border-white/10 flex items-center justify-center text-[#FFD3AC] hover:bg-[#3D3D42] transition"
             aria-label="Notifications"
           >

@@ -530,6 +530,22 @@ export default function ConsultationReportPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(recommendations).map(([category, rec]) => {
                 if (!rec) return null;
+                const normalizedKey = category.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if ([
+                  'useruid',
+                  'userid',
+                  'uid',
+                  'appointmentid',
+                  'doctoruid',
+                  'doctorid',
+                  'historyid',
+                  'documentid',
+                  'createdat',
+                  'updatedat',
+                  'timestamp',
+                  'referral',
+                ].includes(normalizedKey)) return null;
+
                 const selectedOption = rec.selectedOption || rec.selected_option || '';
                 const categoryNotes = rec.notes || '';
 

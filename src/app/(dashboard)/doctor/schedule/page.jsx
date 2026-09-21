@@ -581,13 +581,15 @@ export default function DoctorSchedulePage() {
             )}
           </div>
 
-          {/* Save Action */}
-          <div className="pt-4">
+          {/* Save Action matching Flutter full-width bottom button */}
+          <div className="pt-6 pb-12">
             <AmbeButton
-              label={saved ? "SAVED!" : loading ? "SAVING..." : "SAVE SCHEDULE"}
               onClick={handleSave}
               disabled={loading || !hasSelectedDay}
-            />
+              className="w-full py-4 text-base sm:text-lg font-bold shadow-md tracking-wider"
+            >
+              {saved ? "SAVED!" : loading ? "SAVING..." : "SAVE SCHEDULE"}
+            </AmbeButton>
           </div>
         </div>
       </WebLayoutWrapper>

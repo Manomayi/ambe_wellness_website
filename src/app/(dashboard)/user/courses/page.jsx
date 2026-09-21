@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import WebLayoutWrapper from "@/components/common/WebLayoutWrapper";
-import AmbeBackButton from "@/components/common/AmbeBackButton";
 
 export default function UserCoursesPage() {
   const router = useRouter();
@@ -14,11 +13,6 @@ export default function UserCoursesPage() {
     <ProtectedRoute allowedRoles={["user"]}>
       <WebLayoutWrapper maxWidth="720px">
         <div className="space-y-6 pb-16">
-          {/* Top Bar with Back button */}
-          <div className="flex items-center gap-3">
-            <AmbeBackButton />
-          </div>
-
           {/* Coming Soon Pill Badge */}
           <div>
             <span className="inline-block px-3.5 py-1.5 rounded-full border border-[#FFD3AC]/70 text-[#FFD3AC] text-[11px] font-bold tracking-widest uppercase font-sans">

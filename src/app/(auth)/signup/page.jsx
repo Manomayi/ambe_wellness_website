@@ -920,7 +920,7 @@ export default function SignUpPage() {
             href="/login"
             className="text-[#FFD3AC] font-semibold hover:underline underline-offset-4 ml-1 inline-block"
           >
-            Login here
+            Sign In
           </Link>
         </p>
       </div>

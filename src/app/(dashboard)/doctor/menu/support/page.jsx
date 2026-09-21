@@ -17,7 +17,7 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
-import BackButton from '@/components/common/BackButton';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 import {
   PaperAirplaneIcon,
   ChatBubbleLeftRightIcon,
@@ -195,56 +195,59 @@ export default function DoctorSupportPage() {
   if (loading || ticketLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-10 w-10 border-2 border-[#C8996A] border-t-transparent rounded-full" />
+        <div className="animate-spin h-10 w-10 border-2 border-[#FFD3AC] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
-      <BackButton href="/doctor/menu" label="Back to Menu" />
+    <div className="min-h-screen text-white pb-24 md:pb-8 pt-4 px-4 sm:px-6 max-w-3xl mx-auto space-y-4">
+      <div className="flex items-center gap-3.5 mb-2">
+        <AmbeBackButton onClick={() => router.push('/doctor/menu')} />
+        <h1 className="text-xl font-bold tracking-tight text-white">Support Chat</h1>
+      </div>
 
       {openTicket ? (
         <SupportChatView ticket={openTicket} user={user} />
       ) : (
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 sm:p-10 shadow-sm">
+        <div className="bg-[#2D2D30] border border-white/10 rounded-2xl p-6 sm:p-10 shadow-sm">
           <div className="text-center max-w-lg mx-auto mb-8">
-            <div className="w-12 h-12 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] flex items-center justify-center mx-auto mb-4 text-[#C8996A]">
+            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-[#FFD3AC]">
               <ChatBubbleLeftRightIcon className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               How can we help you?
             </h1>
-            <p className="text-sm text-[#6B6862]">
+            <p className="text-sm text-white/60">
               Create a support ticket and our team will respond as soon as possible.
             </p>
           </div>
 
           <form onSubmit={handleCreateTicket} className="space-y-6 max-w-lg mx-auto">
             {formError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+              <div className="p-3 bg-red-900/30 border border-red-500/30 rounded-xl text-xs text-red-200">
                 {formError}
               </div>
             )}
 
             {/* Topic Dropdown */}
             <div>
-              <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+              <label className="block text-sm font-semibold text-white/90 mb-2">
                 Select Topic
               </label>
               <div className="relative">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl px-4 py-3 text-sm text-[#1A1A1A] font-medium focus:outline-none focus:border-[#C8996A] pr-10 cursor-pointer"
+                  className="w-full appearance-none bg-[#1E1E1E] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-[#FFD3AC] pr-10 cursor-pointer"
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
+                    <option key={cat} value={cat} className="bg-[#1E1E1E] text-white">
                       {cat}
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#8C827A]">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#FFD3AC]">
                   <ChevronDownIcon className="h-5 w-5" />
                 </div>
               </div>
@@ -253,10 +256,10 @@ export default function DoctorSupportPage() {
             {/* Description */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-semibold text-[#1A1A1A]">
+                <label className="block text-sm font-semibold text-white/90">
                   Description
                 </label>
-                <span className="text-xs text-[#8C827A]">
+                <span className="text-xs text-white/40">
                   {description.length}/120
                 </span>
               </div>
@@ -266,7 +269,7 @@ export default function DoctorSupportPage() {
                 placeholder="Describe your issue..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-4 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#C8996A] placeholder-[#8C827A] resize-none"
+                className="w-full p-4 border border-white/10 bg-[#1E1E1E] text-sm text-white rounded-xl focus:outline-none focus:border-[#FFD3AC] placeholder-white/30 resize-none"
               />
             </div>
 
@@ -274,7 +277,7 @@ export default function DoctorSupportPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? 'Submitting Ticket…' : 'SUBMIT TICKET'}
             </button>
@@ -357,26 +360,21 @@ function SupportChatView({ ticket, user }) {
   };
 
   return (
-    <div className="bg-white border border-[#E7E2D9] rounded-2xl shadow-sm overflow-hidden flex flex-col h-[700px]">
-      {/* Header */}
-      <div className="bg-[#FAF8F5] border-b border-[#E7E2D9] px-6 py-4 flex items-center justify-between flex-shrink-0">
-        <div>
-          <h2 className="font-bold text-base text-[#1A1A1A]">
-            {ticket.category || 'Support'}
-          </h2>
-          <p className="text-xs text-[#8C827A] mt-0.5">
-            Ticket #{ticket.id.substring(0, 6)}
-          </p>
-        </div>
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#FFD3AC]/40 text-[#8C5E2D] border border-[#FFD3AC]">
-          OPEN
-        </span>
+    <div className="bg-[#2D2D30] border border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[700px]">
+      {/* Header matching Flutter app */}
+      <div className="bg-[#1E1E1E] border-b border-white/10 px-6 py-4 flex-shrink-0">
+        <h2 className="font-serif text-2xl font-normal text-white">
+          {ticket.category || 'General Question'}
+        </h2>
+        <p className="text-xs text-white/50 mt-1">
+          Ticket #{ticket.id.substring(0, 6)}
+        </p>
       </div>
 
       {/* Messages Thread */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-[#FAF8F5]/50">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-[#1E1E1E]/40">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-xs text-[#8C827A]">
+          <div className="flex items-center justify-center h-full text-xs text-white/50">
             No messages yet
           </div>
         ) : (
@@ -391,21 +389,12 @@ function SupportChatView({ ticket, user }) {
                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] sm:max-w-[70%] rounded-2xl p-4 text-sm shadow-sm ${
+                  className={`max-w-[80%] sm:max-w-[75%] px-4 py-3 text-sm shadow-sm ${
                     isMe
-                      ? 'bg-[#FFD3AC] text-[#1A1A1A] rounded-br-sm'
-                      : isBot
-                      ? 'bg-[#353535] text-white rounded-bl-sm'
-                      : 'bg-[#353535] text-white rounded-bl-sm'
+                      ? 'bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl rounded-br-none font-medium'
+                      : 'bg-[#2D2D30] text-white rounded-2xl rounded-bl-none'
                   }`}
                 >
-                  {/* Sender Tag if Bot / Admin */}
-                  {!isMe && (
-                    <div className="flex items-center gap-1.5 mb-1.5 pb-1 border-b border-white/10 text-[11px] font-semibold text-[#FFD3AC]">
-                      <span>{isBot ? '🤖 Support Bot' : '🛡️ Ambé Support Agent'}</span>
-                    </div>
-                  )}
-
                   {/* Attachment if present */}
                   {msg.attachmentUrl && (
                     <div className="mb-2">
@@ -414,7 +403,7 @@ function SupportChatView({ ticket, user }) {
                           href={msg.attachmentUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="block rounded-lg overflow-hidden border border-black/10"
+                          className="block rounded-lg overflow-hidden border border-white/10"
                         >
                           <img
                             src={msg.attachmentUrl}
@@ -427,7 +416,7 @@ function SupportChatView({ ticket, user }) {
                           href={msg.attachmentUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 text-xs underline font-medium text-white/90"
+                          className="inline-flex items-center gap-2 text-xs underline font-medium text-[#FFD3AC]"
                         >
                           <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                           <span>View Attachment</span>
@@ -442,20 +431,6 @@ function SupportChatView({ ticket, user }) {
                       {msg.content}
                     </p>
                   )}
-
-                  {/* Timestamp */}
-                  <div
-                    className={`text-[10px] mt-1.5 text-right ${
-                      isMe ? 'text-[#6B6862]' : 'text-white/60'
-                    }`}
-                  >
-                    {msg.timestamp?.toDate
-                      ? msg.timestamp.toDate().toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : ''}
-                  </div>
                 </div>
               </div>
             );
@@ -467,7 +442,7 @@ function SupportChatView({ ticket, user }) {
       {/* Input Area */}
       <form
         onSubmit={handleSendMessage}
-        className="bg-white border-t border-[#E7E2D9] p-3 sm:p-4 flex items-center gap-2 flex-shrink-0"
+        className="bg-[#1E1E1E] border-t border-white/10 p-3 sm:p-4 flex items-center gap-3 flex-shrink-0"
       >
         <div className="relative flex-1">
           <input
@@ -476,16 +451,18 @@ function SupportChatView({ ticket, user }) {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="w-full bg-[#FAF8F5] border border-[#E7E2D9] rounded-full px-5 py-3 text-sm text-[#1A1A1A] focus:outline-none focus:border-[#C8996A] placeholder-[#8C827A]"
+            className="w-full bg-[#2D2D30] border-none rounded-full px-5 py-3 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-[#FFD3AC]"
           />
         </div>
         <button
           type="submit"
           disabled={sending || newMessage.trim().length < 5}
-          className="w-11 h-11 rounded-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex-shrink-0 cursor-pointer"
+          className="w-10 h-10 rounded-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-white flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex-shrink-0 cursor-pointer"
           title="Send message"
         >
-          <PaperAirplaneIcon className="h-5 w-5" />
+          <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+          </svg>
         </button>
       </form>
     </div>

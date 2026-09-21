@@ -5,6 +5,8 @@ import React from "react";
 export default function AmbeButton({
   children,
   text,
+  label,
+  title,
   onClick,
   type = "button",
   disabled = false,
@@ -14,7 +16,7 @@ export default function AmbeButton({
   width,
   style = {},
 }) {
-  const content = children || text;
+  const content = children || text || label || title;
 
   return (
     <button
