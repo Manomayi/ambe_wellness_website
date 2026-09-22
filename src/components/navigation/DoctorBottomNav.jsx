@@ -7,6 +7,10 @@ import { usePathname } from "next/navigation";
 export default function DoctorBottomNav() {
   const pathname = usePathname() || "";
 
+  if (pathname.includes("/consultations/appointment/")) {
+    return null;
+  }
+
   const navItems = [
     {
       label: "HOME",

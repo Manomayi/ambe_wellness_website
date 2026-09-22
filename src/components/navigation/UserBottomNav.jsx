@@ -7,6 +7,10 @@ import { usePathname } from "next/navigation";
 export default function UserBottomNav() {
   const pathname = usePathname() || "";
 
+  if (pathname.includes("/consult/appointment/")) {
+    return null;
+  }
+
   const navItems = [
     {
       label: "HOME",

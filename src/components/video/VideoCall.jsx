@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import { doc, setDoc, onSnapshot, serverTimestamp, deleteField } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/config';
@@ -14,6 +16,7 @@ import {
   SlashIcon,
   VideoCameraSlashIcon,
 } from '@heroicons/react/24/outline';
+import AmbeBackButton from '@/components/common/AmbeBackButton';
 
 // Agora requires a numeric UID, but Firebase Auth UIDs are strings — this
 // deterministically derives a stable positive integer from a UID string
@@ -34,8 +37,10 @@ export default function VideoCall({
   userId,
   otherPartyUid,
   isDoctor,
-  onCallEnd
+  onCallEnd,
+  onBack,
 }) {
+  const router = useRouter();
   const clientRef = useRef(null);
   const onCallEndRef = useRef(onCallEnd);
   const hadRemoteJoinedRef = useRef(false);
@@ -48,6 +53,7 @@ export default function VideoCall({
     onCallEndRef.current = onCallEnd;
   }, [onCallEnd]);
 
+  const [mounted, setMounted] = useState(false);
   const [localAudioTrack, setLocalAudioTrack] = useState(null);
   const [localVideoTrack, setLocalVideoTrack] = useState(null);
   const [remoteUsers, setRemoteUsers] = useState([]);
@@ -55,6 +61,15 @@ export default function VideoCall({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -146,6 +161,14 @@ export default function VideoCall({
 
     await releaseLocalResources();
     onCallEndRef.current?.({ endedByDoctor: isDoctor });
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
   };
 
   useEffect(() => {
@@ -366,11 +389,11 @@ export default function VideoCall({
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+  const callContent = (
+    <div className="fixed inset-0 bg-black z-[9999] flex flex-col overflow-hidden select-none">
       {/* Error Message */}
       {error && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg z-30 shadow-lg">
           {error}
         </div>
       )}
@@ -393,7 +416,7 @@ export default function VideoCall({
         </div>
 
         {/* Local Video - Picture in Picture */}
-        <div className="absolute top-4 right-4 w-48 h-36 bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+        <div className="absolute top-4 right-4 w-40 sm:w-48 h-32 sm:h-36 bg-gray-800 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-20">
           {/* relative wrapper: Agora plays the local video track directly
               into this div and leaves the last frame frozen (not removed)
               when the track is disabled, so the "camera is off" placeholder
@@ -414,15 +437,22 @@ export default function VideoCall({
       </div>
 
       {/* Controls */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8">
-        <div className="flex items-center justify-center gap-4">
+      <div 
+        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-12 px-4 z-30 pointer-events-auto"
+        style={{
+          paddingBottom: 'max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 2rem))'
+        }}
+      >
+        <div className="flex items-center justify-center gap-6">
           {/* Mute/Unmute */}
           <button
+            type="button"
             onClick={toggleMute}
-            className={`p-4 rounded-full transition-all ${
+            aria-label={isMuted ? "Unmute Microphone" : "Mute Microphone"}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-xl cursor-pointer active:scale-95 ${
               isMuted 
-                ? 'bg-red-600 hover:bg-red-700' 
-                : 'bg-gray-700 hover:bg-gray-600'
+                ? 'bg-red-600 hover:bg-red-700 ring-2 ring-red-400/50' 
+                : 'bg-gray-700/90 hover:bg-gray-600 ring-1 ring-white/15'
             }`}
           >
             {isMuted ? (
@@ -437,11 +467,13 @@ export default function VideoCall({
 
           {/* Video On/Off */}
           <button
+            type="button"
             onClick={toggleVideo}
-            className={`p-4 rounded-full transition-all ${
+            aria-label={isVideoOff ? "Turn Video On" : "Turn Video Off"}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-xl cursor-pointer active:scale-95 ${
               isVideoOff
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-gray-700 hover:bg-gray-600'
+                ? 'bg-red-600 hover:bg-red-700 ring-2 ring-red-400/50'
+                : 'bg-gray-700/90 hover:bg-gray-600 ring-1 ring-white/15'
             }`}
           >
             {isVideoOff ? (
@@ -453,19 +485,30 @@ export default function VideoCall({
 
           {/* End Call */}
           <button
+            type="button"
             onClick={endCall}
-            className="p-4 bg-red-600 hover:bg-red-700 rounded-full transition-all"
+            aria-label="End Video Call"
+            className="w-14 h-14 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-xl cursor-pointer active:scale-95 ring-2 ring-red-400/50"
           >
             <PhoneXMarkIcon className="w-6 h-6 text-white" />
           </button>
         </div>
       </div>
 
-      {/* Call Info */}
-      <div className="absolute top-4 left-4 text-white">
-        <p className="text-lg font-medium">Video Consultation</p>
-        <p className="text-sm opacity-75">Appointment ID: {appointmentId}</p>
+      {/* Call Info & Back Button */}
+      <div className="absolute top-4 left-4 flex items-center gap-3 z-30 pointer-events-auto">
+        <AmbeBackButton 
+          onClick={handleBack} 
+          className="!bg-black/60 hover:!bg-black/80 !border-white/20 !text-[#FFD3AC] shadow-lg shrink-0" 
+        />
+        <div className="text-white drop-shadow-md">
+          <p className="text-sm sm:text-base font-semibold leading-tight">Video Consultation</p>
+          <p className="text-[11px] sm:text-xs text-white/70">Appointment ID: {appointmentId}</p>
+        </div>
       </div>
     </div>
   );
+
+  if (!mounted) return null;
+  return typeof document !== 'undefined' ? createPortal(callContent, document.body) : null;
 }

@@ -253,6 +253,7 @@ export default function DoctorAppointmentPage() {
         otherPartyUid={appointment.user_id}
         isDoctor={true}
         onCallEnd={handleCallEnd}
+        onBack={() => setInCall(false)}
       />
     );
   }
