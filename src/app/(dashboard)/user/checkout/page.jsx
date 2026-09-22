@@ -23,6 +23,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useRemotePaymentConfig } from '@/lib/remoteConfig';
 import { startPayPalCheckout } from '@/lib/paypal';
 import { getItemUnitPrice } from '@/lib/cartUtils';
+import { calculateOrderTax } from '@/lib/taxService';
 
 export default function UserCheckoutPage() {
   const router = useRouter();
@@ -45,6 +46,10 @@ export default function UserCheckoutPage() {
   // Order calculation values
   const [subtotal, setSubtotal] = useState(0);
   const [tax, setTax] = useState(0);
+  const [taxRate, setTaxRate] = useState(0.10);
+  const [taxMode, setTaxMode] = useState('dynamic');
+  const [taxCalculationId, setTaxCalculationId] = useState(null);
+  const [isTaxCalculating, setIsTaxCalculating] = useState(false);
   const [shipping, setShipping] = useState(10);
   const [subscriptionDiscount, setMembershipDiscount] = useState(0);
   const [referralDiscount, setReferralDiscount] = useState(0);
@@ -199,7 +204,7 @@ export default function UserCheckoutPage() {
     };
   }, [user]);
 
-  // Calculate order totals whenever cart items or user data changes
+  // Calculate order subtotal, discounts, and shipping whenever cart items or user data changes
   useEffect(() => {
     if (!userData || !cartItems) return;
 
@@ -208,10 +213,6 @@ export default function UserCheckoutPage() {
       return sum + (getItemUnitPrice(item) * (item.quantity || 1));
     }, 0);
     setSubtotal(sub);
-
-    // Calculate tax (10%)
-    const calculatedTax = sub * 0.10;
-    setTax(calculatedTax);
 
     // Set shipping (fixed $10 if cart has items)
     setShipping(sub > 0 ? 10 : 0);
@@ -237,11 +238,54 @@ export default function UserCheckoutPage() {
     
     setReferralDiscount(refDiscount);
     setReferralCreditsToUse(creditsToUse);
-
-    // Calculate total
-    const totalAmount = sub + calculatedTax + shipping - subscriptionDiscount - refDiscount;
-    setTotal(Math.max(0, totalAmount));
   }, [userData, cartItems]);
+
+  // Dynamic or static tax calculation based on delivery jurisdiction
+  useEffect(() => {
+    if (subtotal <= 0) {
+      setTax(0);
+      setTaxRate(0);
+      return;
+    }
+
+    const addr = userData?.delivery_address || addressForm;
+    let isMounted = true;
+    setIsTaxCalculating(true);
+
+    calculateOrderTax({
+      address: addr,
+      items: cartItems.map(item => ({
+        id: item.id || item.productId,
+        name: item.name || '',
+        price: getItemUnitPrice(item),
+        quantity: item.quantity || 1,
+      })),
+      subtotal,
+      shippingAmount: shipping,
+      isTestMode: Boolean(isTestMode),
+    }).then(res => {
+      if (!isMounted) return;
+      setTax(res.taxAmount);
+      setTaxRate(res.taxRate);
+      setTaxMode(res.mode);
+      setTaxCalculationId(res.calculationId);
+      setIsTaxCalculating(false);
+    }).catch(err => {
+      if (!isMounted) return;
+      console.warn('Tax calculation error:', err);
+      setIsTaxCalculating(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [subtotal, shipping, userData?.delivery_address, addressForm?.state, addressForm?.zipCode, isTestMode]);
+
+  // Recalculate grand total
+  useEffect(() => {
+    const totalAmount = subtotal + tax + shipping - subscriptionDiscount - referralDiscount;
+    setTotal(Math.max(0, totalAmount));
+  }, [subtotal, tax, shipping, subscriptionDiscount, referralDiscount]);
 
   const updateDeliveryAddress = async () => {
     if (!addressForm.streetNumber?.trim() && !addressForm.streetName?.trim()) {
@@ -339,6 +383,9 @@ export default function UserCheckoutPage() {
           referral_credits_to_use: referralCreditsToUse,
           tax_amount: Number(tax.toFixed(2)),
           shipping_amount: Number(shipping.toFixed(2)),
+          tax_mode: taxMode,
+          tax_rate: taxRate,
+          tax_calculation_id: taxCalculationId,
           isTestMode: Boolean(isTestMode),
         });
 
@@ -363,6 +410,9 @@ export default function UserCheckoutPage() {
             userId: user.uid,
             tax_amount: Number(tax.toFixed(2)),
             shipping_amount: Number(shipping.toFixed(2)),
+            tax_mode: taxMode,
+            tax_rate: taxRate,
+            tax_calculation_id: taxCalculationId,
             description: "Store Product Purchase",
             isTestMode: Boolean(isTestMode),
           }),
@@ -463,9 +513,23 @@ export default function UserCheckoutPage() {
                 </div>
               )}
               
-              <div className="flex justify-between">
-                <span className="text-[#6B6862]">Tax</span>
-                <span className="text-[#1A1A1A] font-medium">${tax.toFixed(2)}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[#6B6862]">
+                  {isTaxCalculating
+                    ? 'Tax (Calculating...)'
+                    : taxMode === 'static'
+                    ? `Tax (${(taxRate * 100).toFixed(0)}% Flat)`
+                    : taxRate > 0
+                    ? `Tax (${(taxRate * 100).toFixed(2)}%)`
+                    : 'Tax'}
+                </span>
+                <span className="text-[#1A1A1A] font-medium">
+                  {isTaxCalculating ? (
+                    <span className="text-xs text-[#C8996A] animate-pulse">Calculating...</span>
+                  ) : (
+                    `$${tax.toFixed(2)}`
+                  )}
+                </span>
               </div>
               
               <div className="flex justify-between">
@@ -489,7 +553,7 @@ export default function UserCheckoutPage() {
             selectedMethod={paymentMethod}
             onSelectMethod={setPaymentMethod}
             isTestMode={isTestMode}
-            disabled={processing}
+            disabled={processing || isTaxCalculating}
             labelClassName="text-[#1A1A1A]"
           />
         </div>
@@ -497,7 +561,7 @@ export default function UserCheckoutPage() {
         {/* Place Order Button */}
         <button
           onClick={handlePlaceOrder}
-          disabled={processing || cartItems.length === 0}
+          disabled={processing || isTaxCalculating || cartItems.length === 0}
           className={`w-full py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider cursor-pointer ${
             paymentMethod === 'paypal'
               ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
@@ -506,6 +570,8 @@ export default function UserCheckoutPage() {
         >
           {processing
             ? 'Processing...'
+            : isTaxCalculating
+            ? 'CALCULATING TAX...'
             : paymentMethod === 'paypal'
             ? 'PAY WITH PAYPAL'
             : 'PROCEED TO CARD PAYMENT'}

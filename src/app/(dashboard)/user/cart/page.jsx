@@ -217,12 +217,11 @@ export default function UserCartPage() {
 
   const totalQuantity = getTotalQuantity();
   const subtotal = getSubtotal();
-  const tax = getTax(subtotal);
   const shipping = getShipping();
   const subscriptionDiscount = getSubscriptionDiscount();
   const referralDiscount = getReferralDiscount(subtotal);
   const totalDiscount = subscriptionDiscount + referralDiscount;
-  const total = subtotal + tax + shipping - totalDiscount;
+  const total = subtotal + shipping - totalDiscount;
 
   if (loading) {
     return (
@@ -354,7 +353,7 @@ export default function UserCartPage() {
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">Tax</span>
-                    <span className="text-white font-medium">${tax.toFixed(2)}</span>
+                    <span className="text-[#FFD3AC] font-medium">Calculated at checkout</span>
                   </div>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-white/70">Shipping</span>
@@ -389,6 +388,9 @@ export default function UserCartPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-white font-bold text-sm sm:text-base">Total</span>
                       <span className="text-[#FFD3AC] font-bold text-lg sm:text-xl">${total.toFixed(2)}</span>
+                    </div>
+                    <div className="text-right text-[11px] text-white/50 pt-1">
+                      *Taxes calculated at checkout based on destination
                     </div>
                   </div>
                 </div>

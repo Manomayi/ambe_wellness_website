@@ -23,6 +23,7 @@ export default function DoctorHomePage() {
     upcomingCount: 0,
     patientCount: 0,
     reportCount: 0,
+    unreadMessagesCount: 0,
   });
   const [reportsToFinish, setReportsToFinish] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
@@ -63,13 +64,25 @@ export default function DoctorHomePage() {
           return timeA - timeB;
         });
         const now = new Date();
+        const startThreshold = new Date(now.getTime() - 65 * 60 * 1000);
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+        // Filter for TODAY'S active/upcoming appointments only
+        const todayUpcoming = list.filter((apt) => {
+          const aptDate = apt.time?.toDate ? apt.time.toDate() : (apt.time ? new Date(apt.time) : null);
+          if (!aptDate) return false;
+          return aptDate >= startThreshold && aptDate <= endOfToday;
+        });
+
+        // For the "Upcoming Consultations" preview section below, show future appointments
         const future = list.filter((apt) => {
           const aptDate = apt.time?.toDate ? apt.time.toDate() : (apt.time ? new Date(apt.time) : null);
           if (!aptDate) return true;
           return (aptDate - now) / (1000 * 60) >= -60;
         });
+
         setUpcomingAppointments(future.slice(0, 4));
-        setStats((prev) => ({ ...prev, upcomingCount: future.length }));
+        setStats((prev) => ({ ...prev, upcomingCount: todayUpcoming.length }));
       },
       (err) => {
         if (err?.code === 'permission-denied') return;
@@ -94,16 +107,46 @@ export default function DoctorHomePage() {
       }
     );
 
-    // Patients count
-    getDocs(collection(db, 'doctors', user.uid, 'users'))
-      .then((snap) => {
-        setStats((prev) => ({ ...prev, patientCount: snap.size }));
-      })
-      .catch((e) => console.error(e));
+    // Patients real-time listener
+    const patientsCol = collection(db, 'doctors', user.uid, 'users');
+    const unsubPatients = onSnapshot(
+      patientsCol,
+      (snapshot) => {
+        setStats((prev) => ({ ...prev, patientCount: snapshot.size }));
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to doctor patients:', err);
+      }
+    );
+
+    // Messages real-time listener for unread count
+    const chatsCol = collection(db, 'doctors', user.uid, 'chats');
+    const unsubChats = onSnapshot(
+      chatsCol,
+      (snapshot) => {
+        let unreadCount = 0;
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          const readByDoctor = data.last_message_read_by_doctor ?? true;
+          const senderUid = data.last_message_sender_uid;
+          if (readByDoctor === false && senderUid !== user.uid) {
+            unreadCount++;
+          }
+        });
+        setStats((prev) => ({ ...prev, unreadMessagesCount: unreadCount }));
+      },
+      (err) => {
+        if (err?.code === 'permission-denied') return;
+        console.error('Error listening to doctor chats:', err);
+      }
+    );
 
     return () => {
       unsubUpcoming();
       unsubReports();
+      unsubPatients();
+      unsubChats();
     };
   }, [user]);
 
@@ -337,7 +380,7 @@ export default function DoctorHomePage() {
                   <svg className="w-6 h-6 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  <span className="text-2xl font-bold font-sans mt-2">{stats.todayPatients ?? 0}</span>
+                  <span className="text-2xl font-bold font-sans mt-2">{stats.patientCount ?? 0}</span>
                   <span className="text-xs text-gray-500 font-medium mt-0.5">Patients</span>
                 </div>
 
@@ -345,7 +388,7 @@ export default function DoctorHomePage() {
                   <svg className="w-6 h-6 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
-                  <span className="text-2xl font-bold font-sans mt-2">{stats.todayMessages ?? 0}</span>
+                  <span className="text-2xl font-bold font-sans mt-2">{stats.unreadMessagesCount ?? 0}</span>
                   <span className="text-xs text-gray-500 font-medium mt-0.5">Messages</span>
                 </div>
               </div>

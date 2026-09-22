@@ -178,6 +178,21 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
       matched_at: serverTimestamp(),
     }, { merge: true }).catch(() => {});
 
+    // Create chat record under doctor's chats subcollection (matching Flutter app 1:1)
+    const chatId = `${userId}_${doctorId}`;
+    await setDoc(doc(db, "doctors", doctorId, "chats", chatId), {
+      chat_id: chatId,
+      user_name: userFullName,
+      user_photo_url: uData.profile_picture || "",
+      user_id: userId,
+      is_first_consultation_completed: uData.is_first_consultation_completed || false,
+      last_message: "New patient connected",
+      last_message_timestamp: serverTimestamp(),
+      last_message_sender_uid: "system",
+      last_message_read_by_doctor: false,
+      created_at: serverTimestamp(),
+    }, { merge: true }).catch(() => {});
+
     return {
       matched: true,
       doctor: doctorObject,

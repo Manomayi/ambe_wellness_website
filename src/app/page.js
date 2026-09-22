@@ -272,13 +272,13 @@ export default function Home() {
             <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
               <div className="max-w-xl lg:max-w-2xl">
                 <div className="inline-flex items-center gap-2 border border-ambe-cream/30 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
-                  <span className="w-1.5 h-1.5 rounded-full bg-ambe-gold shrink-0" />
-                  <span className="text-[10px] sm:text-xs tracking-[0.2em] text-ambe-gold uppercase font-medium">
+                  <span className="w-2 h-2 rounded-full bg-ambe-gold shrink-0" />
+                  <span className="text-xs sm:text-xs tracking-[0.2em] text-ambe-gold uppercase font-semibold">
                     Instant Care
                   </span>
                 </div>
 
-                <h1 className="font-heading !text-2xl sm:!text-3xl md:!text-4xl lg:!text-[2.75rem] !text-ambe-cream font-normal leading-[1.15] mb-4 sm:mb-5 not-italic">
+                <h1 className="font-heading !text-3xl sm:!text-4xl md:!text-4xl lg:!text-[2.75rem] !text-ambe-cream font-normal leading-[1.2] mb-4 sm:mb-5 not-italic">
                   Holistic-Doctor{" "}
                   <em className="italic !text-ambe-cream font-normal">led care.</em>
                   <br />
@@ -288,15 +288,15 @@ export default function Home() {
                   </span>
                 </h1>
 
-                <p className="text-white/70 text-base sm:text-lg lg:text-xl font-medium tracking-wide mb-2">
+                <p className="text-white/80 text-lg sm:text-xl lg:text-xl font-medium tracking-wide mb-2">
                   Tele-Wellness
                 </p>
 
-                <p className="text-ambe-gold font-semibold text-sm sm:text-base mb-6 sm:mb-8">
+                <p className="text-ambe-gold font-semibold text-[17px] sm:text-lg tracking-wide mb-6 sm:mb-8">
                   Developed at Stanford · Est. 2016
                 </p>
 
-                <ul className="space-y-2 sm:space-y-2.5 mb-8 sm:mb-10">
+                <ul className="space-y-3 sm:space-y-3.5 mb-8 sm:mb-10">
                   {[
                     "Ancient wisdom. Modern science.",
                     "Vetted practitioners with accredited Ayurveda degrees and allopathic training.",
@@ -305,9 +305,9 @@ export default function Home() {
                   ].map((item) => (
                     <li
                       key={item}
-                      className="flex items-start gap-3 text-ambe-cream text-sm sm:text-base font-light"
+                      className="flex items-start gap-3.5 text-ambe-cream text-[17.5px] sm:text-[18px] lg:text-lg font-normal leading-snug sm:leading-relaxed drop-shadow-xs"
                     >
-                      <span className="mt-[0.45rem] w-1.5 h-1.5 rounded-full bg-ambe-gold shrink-0" />
+                      <span className="mt-[0.5rem] w-2.5 h-2.5 rounded-full bg-ambe-gold shrink-0 shadow-xs" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -315,7 +315,7 @@ export default function Home() {
 
                 <Link
                   href={CONSULT_HREF}
-                  className="btn-primary inline-flex w-full sm:w-auto px-10 sm:px-14 py-3.5 sm:py-4 text-sm sm:text-base tracking-wide cursor-pointer"
+                  className="btn-primary inline-flex w-full sm:w-auto px-10 sm:px-14 py-3.5 sm:py-4 text-base tracking-wide cursor-pointer text-center justify-center font-semibold"
                 >
                   BOOK FREE CONSULT NOW
                 </Link>
@@ -966,19 +966,17 @@ export default function Home() {
           {/* Meet the Experts Section */}
           <div className="py-12 sm:py-16 md:py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div
-                className={
-                  sectionTitleClasses +
-                  " text-center mb-4 text-2xl sm:text-3xl md:text-4xl"
-                }
-              >
-                Meet the Experts
+              {/* Semi-transparent backdrop with white text for clear visibility over video background */}
+              <div className="max-w-3xl mx-auto text-center mb-8 sm:mb-12 md:mb-16 bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-white/10 shadow-lg">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white font-heading not-italic mb-3 sm:mb-4 drop-shadow-sm">
+                  Meet the Experts
+                </h2>
+                <p className="text-base sm:text-lg text-white/90 leading-relaxed font-light sm:font-normal drop-shadow-xs">
+                  Guided by science. Every Ambé practitioner is
+                  trained in traditional medicine and modern clinical
+                  frameworks — bringing deep expertise to every personalized plan.
+                </p>
               </div>
-              <p className="text-center text-base sm:text-lg mb-8 sm:mb-12 md:mb-16 max-w-7xl mx-auto text-body px-4">
-                Guided by science. Every Ambé practitioner is
-                trained in traditional medicine and modern clinical
-                frameworks — bringing deep expertise to every personalized plan.
-              </p>
 
               {/* Desktop Doctors Grid */}
               <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

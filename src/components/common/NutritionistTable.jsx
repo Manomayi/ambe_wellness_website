@@ -93,32 +93,21 @@ const cellBorders = {
 };
 
 export default function NutritionistTable() {
-  const [compareMode, setCompareMode] = useState("all"); // "all" | "rd" | "nutritionist"
+  const [compareMode, setCompareMode] = useState("rd"); // "rd" | "nutritionist" | "all"
 
   return (
     <div className="w-full">
       {/* =========================================================================
           MOBILE VIEW (Visible on screens < 768px: md:hidden)
-          Simple, clean, easy-to-understand comparison cards
+          Compact 2-Column Fitted Table (100% screen fit, no horizontal scroll, zero clicks)
          ========================================================================= */}
       <div className="block md:hidden">
-        {/* Simple Top Segmented Switcher */}
-        <div className="mb-4">
-          <p className="text-xs text-[#7A736A] mb-2 text-center">
+        {/* Role Switcher */}
+        <div className="mb-3">
+          <p className="text-xs text-[#7A736A] mb-2 text-center font-medium">
             Compare Ayurvedic Doctor with:
           </p>
           <div className="bg-[#F6F1EA] p-1 rounded-xl flex gap-1 border border-[#E9E1D4]">
-            <button
-              type="button"
-              onClick={() => setCompareMode("all")}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                compareMode === "all"
-                  ? "bg-[#353535] text-white shadow-xs"
-                  : "text-[#535353] hover:text-[#353535]"
-              }`}
-            >
-              All 3
-            </button>
             <button
               type="button"
               onClick={() => setCompareMode("rd")}
@@ -141,69 +130,97 @@ export default function NutritionistTable() {
             >
               vs. Nutritionist
             </button>
+            <button
+              type="button"
+              onClick={() => setCompareMode("all")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                compareMode === "all"
+                  ? "bg-[#353535] text-white shadow-xs"
+                  : "text-[#535353] hover:text-[#353535]"
+              }`}
+            >
+              All 3
+            </button>
           </div>
         </div>
 
-        {/* Clean, Simple Comparison Cards */}
-        <div className="space-y-3">
-          {rows.map((row, idx) => {
-            const [feature, nutritionist, rd, ayurvedic] = row;
-            return (
-              <div
-                key={feature}
-                className="bg-white rounded-2xl border border-[#F5B880]/60 p-4 shadow-xs"
-              >
-                {/* Feature Name Header */}
-                <div className="flex items-center gap-2 pb-2.5 mb-2.5 border-b border-[#F4EFE6]">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#FFD3AC] text-[#353535] font-bold text-[11px] shrink-0">
-                    {idx + 1}
-                  </span>
-                  <h3 className="font-semibold text-sm sm:text-base text-[#353535] leading-snug">
-                    {feature}
-                  </h3>
+        {/* Compact Fitted Table Container */}
+        <div className="rounded-2xl border border-[#F5B880] shadow-xs bg-white overflow-hidden">
+          {/* Sticky Column Headers */}
+          <div className="sticky top-0 z-10 shadow-xs border-b border-[#F5B880]">
+            {compareMode !== "all" ? (
+              <div className="grid grid-cols-2 divide-x divide-[#F5B880]">
+                <div className="bg-[#FFD3AC] px-3 py-3 text-center font-bold text-[13.5px] sm:text-sm text-[#353535] flex items-center justify-center gap-1.5">
+                  <span>🌿</span>
+                  <span>Ayurvedic Doctor</span>
                 </div>
-
-                {/* Ayurvedic Doctor (AMBÉ Standard) */}
-                <div className="bg-[#FFF9F3] border border-[#F5B880]/70 rounded-xl p-3 mb-2.5">
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#353535]">
-                      🌿 Ayurvedic Doctor
-                    </span>
-                    <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#FFD3AC] text-[#353535]">
-                      AMBÉ
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#353535] font-medium leading-relaxed">
-                    {ayurvedic}
-                  </p>
+                <div className="bg-[#F4EFE6] px-3 py-3 text-center font-bold text-[13.5px] sm:text-sm text-[#353535]">
+                  {compareMode === "rd" ? "Dietitian (RD)" : "Nutritionist"}
                 </div>
-
-                {/* Registered Dietitian (shown if 'rd' or 'all') */}
-                {(compareMode === "rd" || compareMode === "all") && (
-                  <div className="bg-[#FAF8F5] border border-[#ECE5D8] rounded-xl p-3 mb-2">
-                    <span className="block text-[11px] font-semibold text-[#666666] mb-0.5">
-                      Registered Dietitian (RD)
-                    </span>
-                    <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">
-                      {rd}
-                    </p>
-                  </div>
-                )}
-
-                {/* Nutritionist (shown if 'nutritionist' or 'all') */}
-                {(compareMode === "nutritionist" || compareMode === "all") && (
-                  <div className="bg-[#FAF8F5] border border-[#ECE5D8] rounded-xl p-3">
-                    <span className="block text-[11px] font-semibold text-[#666666] mb-0.5">
-                      Nutritionist
-                    </span>
-                    <p className="text-xs sm:text-sm text-[#4A4A4A] leading-relaxed">
-                      {nutritionist}
-                    </p>
-                  </div>
-                )}
               </div>
-            );
-          })}
+            ) : (
+              <div className="grid grid-cols-3 divide-x divide-[#F5B880]">
+                <div className="bg-[#FFD3AC] px-1.5 py-2.5 text-center font-bold text-xs text-[#353535] flex items-center justify-center gap-0.5">
+                  <span>🌿</span>
+                  <span>Ayurvedic</span>
+                </div>
+                <div className="bg-[#F4EFE6] px-1.5 py-2.5 text-center font-bold text-xs text-[#353535] flex items-center justify-center">
+                  Dietitian (RD)
+                </div>
+                <div className="bg-[#EFE8DD] px-1.5 py-2.5 text-center font-bold text-xs text-[#353535] flex items-center justify-center">
+                  Nutritionist
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Table Rows */}
+          <div className="divide-y divide-[#F5B880]/30">
+            {rows.map((row, idx) => {
+              const [feature, nutritionist, rd, ayurvedic] = row;
+
+              return (
+                <div key={feature}>
+                  {/* Category Banner */}
+                  <div className="bg-[#FAF6F0] px-3.5 py-2 flex items-center gap-2 border-b border-[#F5B880]/20">
+                    <span className="w-5 h-5 rounded-full bg-[#FFD3AC] text-[#353535] font-bold text-[11px] flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span className="font-semibold text-[13.5px] sm:text-sm text-[#353535]">
+                      {feature}
+                    </span>
+                  </div>
+
+                  {/* 2-Column or 3-Column Content Cells */}
+                  {compareMode !== "all" ? (
+                    <div className="grid grid-cols-2 divide-x divide-[#F5B880]/30 items-stretch">
+                      {/* Left: Ayurvedic Doctor */}
+                      <div className="p-3.5 sm:p-4 bg-[#FFFDF9] text-[13.5px] sm:text-sm leading-relaxed text-[#2D2D2D] flex items-start">
+                        <p>{ayurvedic}</p>
+                      </div>
+
+                      {/* Right: Dietitian or Nutritionist */}
+                      <div className="p-3.5 sm:p-4 bg-white text-[13.5px] sm:text-sm leading-relaxed text-[#4A4A4A] flex items-start">
+                        <p>{compareMode === "rd" ? rd : nutritionist}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 divide-x divide-[#F5B880]/30 items-stretch">
+                      <div className="p-2.5 bg-[#FFFDF9] text-xs leading-relaxed text-[#2D2D2D]">
+                        <p>{ayurvedic}</p>
+                      </div>
+                      <div className="p-2.5 bg-white text-xs leading-relaxed text-[#4A4A4A]">
+                        <p>{rd}</p>
+                      </div>
+                      <div className="p-2.5 bg-[#FCFAF7] text-xs leading-relaxed text-[#4A4A4A]">
+                        <p>{nutritionist}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -255,11 +272,6 @@ export default function NutritionistTable() {
                       <div className="flex items-center gap-1.5">
                         {isAyurvedic && <span>🌿</span>}
                         <span>{header}</span>
-                        {isAyurvedic && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/70 text-[#353535] ml-auto">
-                            AMBÉ
-                          </span>
-                        )}
                       </div>
                     </th>
                   );
