@@ -70,17 +70,20 @@ export default function SignUpPage() {
   });
 
   const specializations = [
-    { value: 'primary_care', label: 'Primary Care' },
-    { value: 'mental_health', label: 'Mental Health' },
+    { value: 'general_health', label: 'General Health' },
     { value: 'womens_health', label: "Women's Health" },
     { value: 'mens_health', label: "Men's Health" },
-    { value: 'weight_loss', label: 'Weight Loss' },
-    { value: 'chronic_conditions', label: 'Chronic Conditions' },
-    { value: 'nutrition', label: 'Nutrition' },
-    { value: 'fitness', label: 'Fitness' },
-    { value: 'yoga_meditation', label: 'Yoga & Meditation' },
-    { value: 'general_health', label: 'Other (Please Specify)' },
+    { value: 'muscular_skeletal', label: 'Muscular Skeletal' },
+    { value: 'heart_health', label: 'Heart Health' },
+    { value: 'skin_hair_health', label: 'Skin & Hair Health' },
+    { value: 'mental_emotional_health', label: 'Mental Emotional Health' },
+    { value: 'digestive_metabolic', label: 'Digestive & Metabolic' },
+    { value: 'oncology', label: 'Oncology' },
+    { value: 'disabilities', label: 'Disabilities' },
+    { value: 'behavorial', label: 'Behavorial' },
   ];
+
+  const [showCustomSpecialization, setShowCustomSpecialization] = useState(false);
 
   const PROFESSIONAL_TITLES = ['MD', 'DO', 'NPR', 'BAMS', 'Other'];
   const currentYear = new Date().getFullYear();
@@ -99,6 +102,17 @@ export default function SignUpPage() {
         : [...prev.specializations, value],
     }));
     setErrors(prev => ({ ...prev, specialization: '' }));
+  };
+
+  const toggleCustomSpecialization = () => {
+    setShowCustomSpecialization(prev => {
+      const next = !prev;
+      if (!next) {
+        updateFormData('customSpecialization', '');
+      }
+      return next;
+    });
+    setErrors(prev => ({ ...prev, specialization: '', customSpecialization: '' }));
   };
 
   const toggleProfessionalTitle = (title) => {
@@ -168,6 +182,17 @@ export default function SignUpPage() {
 
       case 5:
         if (formData.userType === 'doctor') {
+          if (formData.specializations.length === 0 && (!showCustomSpecialization || !formData.customSpecialization.trim())) {
+            newErrors.specialization = 'Please select at least one field of practice';
+          }
+          if (showCustomSpecialization && !formData.customSpecialization.trim()) {
+            newErrors.customSpecialization = 'Please specify your other specialization';
+          }
+        }
+        break;
+
+      case 6:
+        if (formData.userType === 'doctor') {
           if (!formData.practiceStartYear) {
             newErrors.practiceStartYear = 'Practice start year is required';
           } else {
@@ -188,19 +213,10 @@ export default function SignUpPage() {
           ) {
             newErrors.customProfessionalTitle = 'Specify your professional title';
           }
-          if (formData.specializations.length === 0) {
-            newErrors.specialization = 'Please select at least one area of focus';
-          }
-          if (
-            formData.specializations.includes('general_health') &&
-            !formData.customSpecialization.trim()
-          ) {
-            newErrors.customSpecialization = 'Please specify your other specialization';
-          }
         }
         break;
 
-      case 6:
+      case 7:
         if (formData.userType === 'doctor') {
           if (!documents.license) {
             newErrors.license = 'Medical license is required';
@@ -211,7 +227,7 @@ export default function SignUpPage() {
         }
         break;
 
-      case 7:
+      case 8:
         break;
     }
 
@@ -220,14 +236,14 @@ export default function SignUpPage() {
   };
 
   const getStepCount = () => {
-    return formData.userType === 'doctor' ? 7 : 4;
+    return formData.userType === 'doctor' ? 8 : 4;
   };
 
   const handleNext = () => {
     if (validateStep()) {
       if (step === 4 && formData.userType !== 'doctor') {
         handleSubmit();
-      } else if (step === 7 && formData.userType === 'doctor') {
+      } else if (step === 8 && formData.userType === 'doctor') {
         handleSubmit();
       } else {
         setStep(prev => prev + 1);
@@ -243,6 +259,10 @@ export default function SignUpPage() {
   const handleFileUpload = (type, file) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
     setErrors(prev => ({ ...prev, [type]: '' }));
+  };
+
+  const handleRemoveDocument = (type) => {
+    setDocuments(prev => ({ ...prev, [type]: null }));
   };
 
   const handleProfilePhotoChange = (e) => {
@@ -326,7 +346,13 @@ export default function SignUpPage() {
         customSpecialization: formData.customSpecialization,
         ...(isDoctor
           ? {
-              doctor_fields: formData.specializations,
+              doctor_fields: (() => {
+                const fields = [...formData.specializations];
+                if (showCustomSpecialization && formData.customSpecialization.trim() && !fields.includes('general_health')) {
+                  fields.push('general_health');
+                }
+                return fields;
+              })(),
               practice_start_year: formData.practiceStartYear
                 ? Number(formData.practiceStartYear)
                 : null,
@@ -538,60 +564,94 @@ export default function SignUpPage() {
 
             {/* Optional DOB & Sex Assigned at Birth */}
             <div className="pt-2">
-              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
+              <label className="block text-white text-[17px] font-semibold font-sans mb-3 tracking-tight">
                 Date of Birth (Optional)
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                <select
-                  value={formData.dobMonth}
-                  onChange={(e) => updateFormData("dobMonth", e.target.value)}
-                  className="bg-white text-[#1E1E1E] text-xs font-sans rounded-full px-3 py-3 outline-none border border-transparent focus:border-[#FFD3AC]"
-                >
-                  <option value="">Month</option>
-                  {months.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-                <select
-                  value={formData.dobDay}
-                  onChange={(e) => updateFormData("dobDay", e.target.value)}
-                  className="bg-white text-[#1E1E1E] text-xs font-sans rounded-full px-3 py-3 outline-none border border-transparent focus:border-[#FFD3AC]"
-                >
-                  <option value="">Day</option>
-                  {days.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-                <select
-                  value={formData.dobYear}
-                  onChange={(e) => updateFormData("dobYear", e.target.value)}
-                  className="bg-white text-[#1E1E1E] text-xs font-sans rounded-full px-3 py-3 outline-none border border-transparent focus:border-[#FFD3AC]"
-                >
-                  <option value="">Year</option>
-                  {years.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
+              <div className="flex gap-2 sm:gap-3">
+                {/* Month Dropdown */}
+                <div className="relative flex-[4] min-w-0">
+                  <select
+                    value={formData.dobMonth}
+                    onChange={(e) => updateFormData("dobMonth", e.target.value)}
+                    className={`w-full bg-white font-sans text-sm sm:text-[15px] font-medium rounded-full pl-3.5 sm:pl-4 pr-7 sm:pr-8 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm transition-all duration-200 truncate ${
+                      formData.dobMonth ? "text-[#1E1E1E]" : "text-gray-500"
+                    }`}
+                  >
+                    <option value="" className="text-gray-500">Month</option>
+                    {months.map((m) => (
+                      <option key={m} value={m} className="text-[#1E1E1E]">{m}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 sm:pr-3 text-[#1E1E1E]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Day Dropdown */}
+                <div className="relative flex-[3] min-w-0">
+                  <select
+                    value={formData.dobDay}
+                    onChange={(e) => updateFormData("dobDay", e.target.value)}
+                    className={`w-full bg-white font-sans text-sm sm:text-[15px] font-medium rounded-full pl-3.5 sm:pl-4 pr-7 sm:pr-8 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm transition-all duration-200 truncate ${
+                      formData.dobDay ? "text-[#1E1E1E]" : "text-gray-500"
+                    }`}
+                  >
+                    <option value="" className="text-gray-500">Day</option>
+                    {days.map((d) => (
+                      <option key={d} value={d} className="text-[#1E1E1E]">{d}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 sm:pr-3 text-[#1E1E1E]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Year Dropdown */}
+                <div className="relative flex-[3] min-w-0">
+                  <select
+                    value={formData.dobYear}
+                    onChange={(e) => updateFormData("dobYear", e.target.value)}
+                    className={`w-full bg-white font-sans text-sm sm:text-[15px] font-medium rounded-full pl-3.5 sm:pl-4 pr-7 sm:pr-8 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm transition-all duration-200 truncate ${
+                      formData.dobYear ? "text-[#1E1E1E]" : "text-gray-500"
+                    }`}
+                  >
+                    <option value="" className="text-gray-500">Year</option>
+                    {years.map((y) => (
+                      <option key={y} value={y} className="text-[#1E1E1E]">{y}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 sm:pr-3 text-[#1E1E1E]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="pt-1">
-              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
+            <div className="pt-2">
+              <label className="block text-white text-[17px] font-semibold font-sans mb-3 tracking-tight">
                 Sex Assigned at Birth (Optional)
               </label>
               <div className="relative">
                 <select
                   value={formData.genderAtBirth}
                   onChange={(e) => updateFormData("genderAtBirth", e.target.value)}
-                  className="w-full bg-white text-[#1E1E1E] text-xs sm:text-sm font-sans rounded-full pl-4 pr-10 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm"
+                  className={`w-full bg-white font-sans text-sm sm:text-[15px] font-medium rounded-full pl-5 pr-10 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm transition-all duration-200 ${
+                    formData.genderAtBirth ? "text-[#1E1E1E]" : "text-gray-500"
+                  }`}
                 >
-                  <option value="">Select</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option value="" className="text-gray-500">Select</option>
+                  <option value="Male" className="text-[#1E1E1E]">Male</option>
+                  <option value="Female" className="text-[#1E1E1E]">Female</option>
+                  <option value="Other" className="text-[#1E1E1E]">Other</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#1E1E1E]">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
                 </div>
@@ -601,7 +661,7 @@ export default function SignUpPage() {
             {/* Referral Code - matches Flutter StepPersonalInfoUser placement */}
             {formData.userType !== "doctor" && (
               <div className="pt-2">
-                <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-1.5">
+                <label className="block text-white text-[17px] font-semibold font-sans mb-3 tracking-tight">
                   Referral Code (Optional)
                 </label>
                 <AmbeTextField
@@ -678,148 +738,311 @@ export default function SignUpPage() {
         );
 
       case 5:
-        // Doctor career & specializations
+        // Doctor: Field of Practice (Clinical Focus Areas)
         return (
           <div className="space-y-4 py-2">
-            <h2 className="text-white text-xl font-semibold text-center mb-4 font-sans">
-              Career &amp; Specialty
+            <h2 className="text-white text-xl font-semibold text-center mb-1 font-sans">
+              Field of Practice
             </h2>
+            <p className="text-gray-400 text-xs sm:text-sm text-center mb-5 font-sans">
+              Select all that apply to you
+            </p>
 
-            <div className="grid grid-cols-2 gap-3">
-              <AmbeTextField
-                placeholder="Practice Start Year (e.g. 2015)"
-                value={formData.practiceStartYear}
-                onChange={(e) => updateFormData("practiceStartYear", e.target.value)}
-                error={errors.practiceStartYear}
-              />
-              <AmbeTextField
-                placeholder="Medical School"
-                value={formData.medicalSchool}
-                onChange={(e) => updateFormData("medicalSchool", e.target.value)}
-                error={errors.medicalSchool}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
-                Professional Titles
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {PROFESSIONAL_TITLES.map((t) => {
-                  const sel = formData.professionalTitles.includes(t);
-                  return (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => toggleProfessionalTitle(t)}
-                      className={`
-                        px-4 py-2 rounded-full text-xs font-semibold transition cursor-pointer
-                        ${sel ? "bg-[#FFD3AC] text-[#1E1E1E]" : "bg-white/10 text-white hover:bg-white/20"}
-                      `}
+            <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+              {specializations.map(({ value, label }) => {
+                const sel = formData.specializations.includes(value);
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleSpecialization(value)}
+                    className={`
+                      w-full p-3.5 px-4 text-left rounded-2xl text-[15px] transition-all duration-150 cursor-pointer border flex items-center justify-between
+                      ${
+                        sel
+                          ? "bg-[#FFD3AC] text-[#1E1E1E] border-[#FFD3AC] font-semibold shadow-sm"
+                          : "bg-white text-[#1E1E1E] border-gray-200 font-medium hover:bg-gray-50"
+                      }
+                    `}
+                  >
+                    <span>{label}</span>
+                    <div
+                      className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ml-3 transition-colors ${
+                        sel
+                          ? "bg-black text-white"
+                          : "border-2 border-gray-400 bg-white"
+                      }`}
                     >
-                      {t}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.professionalTitles && (
-                <p className="text-xs text-red-400 mt-1">{errors.professionalTitles}</p>
-              )}
-            </div>
+                      {sel && (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
 
-            <div>
-              <label className="block text-xs uppercase tracking-wider font-semibold text-gray-400 mb-2">
-                Clinical Focus Areas
-              </label>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {specializations.map(({ value, label }) => {
-                  const sel = formData.specializations.includes(value);
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => toggleSpecialization(value)}
-                      className={`
-                        p-2.5 text-left rounded-xl text-xs font-medium transition cursor-pointer
-                        ${sel ? "bg-[#FFD3AC] text-[#1E1E1E] font-bold" : "bg-white/10 text-white hover:bg-white/20"}
-                      `}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.specialization && (
-                <p className="text-xs text-red-400 mt-1">{errors.specialization}</p>
-              )}
+              {/* Other (Please Specify) Option */}
+              <button
+                type="button"
+                onClick={toggleCustomSpecialization}
+                className={`
+                  w-full p-3.5 px-4 text-left rounded-2xl text-[15px] transition-all duration-150 cursor-pointer border flex items-center justify-between
+                  ${
+                    showCustomSpecialization
+                      ? "bg-[#FFD3AC] text-[#1E1E1E] border-[#FFD3AC] font-semibold shadow-sm"
+                      : "bg-white text-[#1E1E1E] border-gray-200 font-medium hover:bg-gray-50"
+                  }
+                `}
+              >
+                <span>Other (Please specify)</span>
+                <div
+                  className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ml-3 transition-colors ${
+                    showCustomSpecialization
+                      ? "bg-black text-white"
+                      : "border-2 border-gray-400 bg-white"
+                  }`}
+                >
+                  {showCustomSpecialization && (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  )}
+                </div>
+              </button>
             </div>
+            {errors.specialization && (
+              <p className="text-xs text-red-400 px-1">{errors.specialization}</p>
+            )}
+
+            {showCustomSpecialization && (
+              <div className="pt-2">
+                <AmbeTextField
+                  placeholder="Enter your specialization"
+                  value={formData.customSpecialization}
+                  onChange={(e) => updateFormData("customSpecialization", e.target.value)}
+                  error={errors.customSpecialization}
+                  leadingIcon={
+                    <svg className="w-5 h-5 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                    </svg>
+                  }
+                />
+              </div>
+            )}
           </div>
         );
 
       case 6:
-        // Doctor documents
+        // Doctor: Career Information matching app Image 2
         return (
           <div className="space-y-4 py-2">
-            <h2 className="text-white text-xl font-semibold text-center mb-4 font-sans">
-              Verification Documents
+            <h2 className="text-white text-xl font-semibold text-center mb-6 font-sans">
+              Career Information
             </h2>
 
-            <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-white/10 border border-white/15">
-                <label className="block text-xs uppercase font-semibold text-[#FFD3AC] mb-1">
-                  Medical License *
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => handleFileUpload("license", e.target.files?.[0])}
-                  className="w-full text-xs text-gray-300"
-                />
-                {documents.license && (
-                  <p className="text-xs text-emerald-400 mt-1">✓ {documents.license.name}</p>
-                )}
-                {errors.license && (
-                  <p className="text-xs text-red-400 mt-1">{errors.license}</p>
-                )}
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/10 border border-white/15">
-                <label className="block text-xs uppercase font-semibold text-[#FFD3AC] mb-1">
-                  Government ID *
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => handleFileUpload("id", e.target.files?.[0])}
-                  className="w-full text-xs text-gray-300"
-                />
-                {documents.id && (
-                  <p className="text-xs text-emerald-400 mt-1">✓ {documents.id.name}</p>
-                )}
-                {errors.id && (
-                  <p className="text-xs text-red-400 mt-1">{errors.id}</p>
-                )}
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/10 border border-white/15">
-                <label className="block text-xs uppercase font-semibold text-[#FFD3AC] mb-1">
-                  Board Certifications (Optional)
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => handleFileUpload("certifications", e.target.files?.[0])}
-                  className="w-full text-xs text-gray-300"
-                />
-                {documents.certifications && (
-                  <p className="text-xs text-emerald-400 mt-1">✓ {documents.certifications.name}</p>
-                )}
-              </div>
+            {/* Year Practice Started */}
+            <div>
+              <label className="block text-sm font-medium text-white mb-2 font-sans">
+                Year Practice Started
+              </label>
+              <AmbeTextField
+                placeholder="Enter year (e.g., 2010)"
+                value={formData.practiceStartYear}
+                onChange={(e) => updateFormData("practiceStartYear", e.target.value)}
+                error={errors.practiceStartYear}
+                leadingIcon={
+                  <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                }
+              />
             </div>
+
+            {/* Medical School */}
+            <div>
+              <label className="block text-sm font-medium text-white mb-2 font-sans">
+                Medical School
+              </label>
+              <AmbeTextField
+                placeholder="Enter your medical school"
+                value={formData.medicalSchool}
+                onChange={(e) => updateFormData("medicalSchool", e.target.value)}
+                error={errors.medicalSchool}
+                leadingIcon={
+                  <svg className="w-5 h-5 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+                  </svg>
+                }
+              />
+            </div>
+
+            {/* Professional Titles */}
+            <div>
+              <label className="block text-sm font-medium text-white mb-2 font-sans">
+                Professional Titles (Select all that apply)
+              </label>
+              <div className="p-4 rounded-2xl bg-[#2D2D30]/90 border border-white/15">
+                <div className="flex flex-wrap gap-2.5">
+                  {PROFESSIONAL_TITLES.map((t) => {
+                    const sel = formData.professionalTitles.includes(t);
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => toggleProfessionalTitle(t)}
+                        className={`
+                          px-4 py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer flex items-center gap-1.5 border
+                          ${
+                            sel
+                              ? "bg-[#FFD3AC] text-[#1E1E1E] font-bold border-[#FFD3AC] shadow-sm"
+                              : "bg-transparent border-white/30 text-white font-medium hover:border-white/60"
+                          }
+                        `}
+                      >
+                        {sel && (
+                          <svg className="w-3.5 h-3.5 text-[#1E1E1E] shrink-0" fill="none" stroke="currentColor" strokeWidth={2.8} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        )}
+                        <span>{t}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {errors.professionalTitles && (
+                <p className="text-xs text-red-400 mt-1.5 px-2">{errors.professionalTitles}</p>
+              )}
+            </div>
+
+            {/* Custom Professional Title (when Other is selected) */}
+            {formData.professionalTitles.includes("Other") && (
+              <div className="pt-1">
+                <AmbeTextField
+                  placeholder="Enter your professional title (e.g., MBBS, PhD)"
+                  value={formData.customProfessionalTitle}
+                  onChange={(e) => updateFormData("customProfessionalTitle", e.target.value)}
+                  error={errors.customProfessionalTitle}
+                  leadingIcon={
+                    <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.364a4.125 4.125 0 00-6.338 0 .375.375 0 01-.266.111h6.87c-.098 0-.193-.04-.266-.111z" />
+                    </svg>
+                  }
+                />
+              </div>
+            )}
           </div>
         );
 
       case 7:
+        // Doctor documents
+        const docSlots = [
+          {
+            type: "license",
+            title: "Medical License",
+            subtitle: "Upload your medical license document.",
+            required: true,
+          },
+          {
+            type: "id",
+            title: "Government ID",
+            subtitle: "Upload a government-issued photo ID.",
+            required: true,
+          },
+          {
+            type: "certifications",
+            title: "Certification",
+            subtitle: "Upload any relevant certification (optional).",
+            required: false,
+          },
+        ];
+
+        return (
+          <div className="space-y-4 py-2">
+            <h2 className="text-white text-xl font-semibold text-center mb-1 font-sans">
+              Upload Documents
+            </h2>
+            <p className="text-gray-400 text-xs sm:text-sm text-center mb-4 font-sans">
+              Provide your verification credentials
+            </p>
+
+            <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+              {docSlots.map(({ type, title, subtitle, required }) => {
+                const file = documents[type];
+                const error = errors[type];
+
+                return (
+                  <div key={type} className="space-y-2">
+                    <div className="flex items-center">
+                      <span className="text-white text-[17px] font-semibold font-sans">
+                        {title}
+                      </span>
+                      {required ? (
+                        <span className="text-[#FFD3AC] text-lg font-semibold ml-1.5">*</span>
+                      ) : (
+                        <span className="text-gray-400 text-xs sm:text-sm ml-2 font-sans">(optional)</span>
+                      )}
+                    </div>
+
+                    {file ? (
+                      <div className="relative w-full rounded-2xl bg-[#1E1E1E]/95 border border-[#FFD3AC]/70 p-3.5 flex items-center justify-between shadow-md">
+                        <div className="flex items-center space-x-3 min-w-0 pr-2">
+                          <div className="w-10 h-10 rounded-xl bg-[#FFD3AC]/20 text-[#FFD3AC] flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-white text-sm font-medium truncate">{file.name}</p>
+                            <p className="text-gray-400 text-xs">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDocument(type)}
+                          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center shrink-0 transition"
+                          title="Remove file"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="block w-full cursor-pointer group">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.heic"
+                          onChange={(e) => handleFileUpload(type, e.target.files?.[0])}
+                          className="hidden"
+                        />
+                        <div className="w-full h-28 sm:h-32 rounded-2xl border-2 border-dashed border-[#6B6B6B] group-hover:border-[#FFD3AC] bg-white/[0.02] group-hover:bg-white/[0.06] transition-all duration-200 flex flex-col items-center justify-center p-3 text-center">
+                          <svg className="w-7 h-7 text-[#FFD3AC] mb-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V3.75m0 0L7.5 8.25m4.5-4.5l4.5 4.5M4.5 19.5h15" />
+                          </svg>
+                          <span className="text-gray-400 text-xs sm:text-[13px] px-2 leading-relaxed">
+                            {subtitle}
+                          </span>
+                        </div>
+                      </label>
+                    )}
+
+                    {error && (
+                      <p className="text-xs text-red-400 px-1">{error}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+
+      case 8:
         // Doctor photo
         return (
           <div className="text-center py-2">

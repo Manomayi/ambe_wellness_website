@@ -53,12 +53,12 @@ export default function Navigation({ light = false, sticky = false, className = 
             </button>
           
             {/* Desktop navigation */}
-            <div className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-9">
+            <div className="hidden md:flex items-center gap-3.5 lg:gap-6 xl:gap-8">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-xs lg:text-sm whitespace-nowrap transition-colors hover:text-[#C8996A]"
+                  className="text-sm lg:text-base xl:text-lg font-medium whitespace-nowrap transition-colors hover:text-[#C8996A]"
                   style={{ color: linkColor(link.href) }}
                 >
                   {link.label}
@@ -66,7 +66,7 @@ export default function Navigation({ light = false, sticky = false, className = 
               ))}
               <Link
                 href="/download"
-                className={`border px-3 lg:px-6 py-1.5 lg:py-2 rounded-full text-xs lg:text-sm transition-colors whitespace-nowrap ${
+                className={`border px-3.5 lg:px-5 xl:px-6 py-1.5 lg:py-2 rounded-full text-sm lg:text-base xl:text-lg font-medium transition-colors whitespace-nowrap ${
                   light
                     ? "border-charcoal text-charcoal hover:bg-charcoal hover:text-white"
                     : "border-white hover:bg-white hover:text-black"
@@ -78,11 +78,15 @@ export default function Navigation({ light = false, sticky = false, className = 
               
               {/* Divider */}
               <div
-                className="hidden lg:block h-8 w-px opacity-50"
+                className="hidden lg:block h-6 lg:h-7 w-px opacity-50"
                 style={{ backgroundColor: dividerColor }}
               />
               
-              <Link href="/login" className="text-xs lg:text-sm transition-colors hover:text-[#C8996A]" style={{ color: navText }}>
+              <Link
+                href="/login"
+                className="text-sm lg:text-base xl:text-lg font-medium transition-colors hover:text-[#C8996A]"
+                style={{ color: navText }}
+              >
                 Sign in
               </Link>
             </div>
