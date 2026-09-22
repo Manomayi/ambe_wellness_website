@@ -831,8 +831,8 @@ export default function Home() {
             className="text-center text-sm sm:text-base mb-10 sm:mb-14 max-w-2xl mx-auto"
             style={{ color: "rgba(255,255,255,0.6)" }}
           >
-            Everything competitors charge extra for are included in the $50 per
-            month membership.
+            Everything competitors charge extra for are included in the pay as you can
+            membership.
           </p>
 
           <ComparisonGrid />
@@ -851,117 +851,6 @@ export default function Home() {
 
         <div className="relative z-10">
           <CertificationsSection />
-
-          {/* Steps Section - no title */}
-          <div className="py-12 sm:py-16 md:py-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* Responsive Steps Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-                  {/* Step 1 - Book */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
-                    <Image
-                      src="/images/home/step1.png"
-                      alt="Step 1"
-                      width={160}
-                      height={128}
-                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                    />
-                    <div className="flex-1">
-                      <div
-                        className="text-xl sm:text-2xl font-semibold mb-2"
-                        style={{ color: "#353535" }}
-                      >
-                        Book
-                      </div>
-                      <p
-                        className="text-sm sm:text-base leading-relaxed"
-                        style={{ color: "#353535" }}
-                      >
-                        Book now, and fill out your secured details to be matched
-                        with a doctor specific to your unique needs.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Step 2 - Video Call */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
-                    <Image
-                      src="/images/home/step2.png"
-                      alt="Step 2"
-                      width={160}
-                      height={128}
-                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                    />
-                    <div className="flex-1">
-                      <div
-                        className="text-xl sm:text-2xl font-semibold mb-2"
-                        style={{ color: "#353535" }}
-                      >
-                        Video Call
-                      </div>
-                      <p
-                        className="text-sm sm:text-base leading-relaxed"
-                        style={{ color: "#353535" }}
-                      >
-                        Video chat with your specialist.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Step 3 - Get Care + Unlimited Text */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
-                    <Image
-                      src="/images/home/step3.png"
-                      alt="Step 3"
-                      width={160}
-                      height={128}
-                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                    />
-                    <div className="flex-1">
-                      <div
-                        className="text-xl sm:text-2xl font-semibold mb-2"
-                        style={{ color: "#353535" }}
-                      >
-                        Get Care + Unlimited Text
-                      </div>
-                      <p
-                        className="text-sm sm:text-base leading-relaxed"
-                        style={{ color: "#353535" }}
-                      >
-                        Get customized diet, cleanse, lifestyle, exercise, yoga, and
-                        meditation plans by your specialist — plus unlimited
-                        texting.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Step 4 - Monthly Video Follow Up */}
-                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 md:gap-8 text-center sm:text-left bg-white/90 sm:bg-[#FAF8F5]/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-[#E7E2D9] shadow-sm transition-all hover:border-[#C8996A]">
-                    <Image
-                      src="/images/home/step4.png"
-                      alt="Step 4"
-                      width={160}
-                      height={128}
-                      className="w-32 sm:w-36 md:w-40 h-24 sm:h-28 md:h-32 object-contain flex-shrink-0"
-                    />
-                    <div className="flex-1">
-                      <div
-                        className="text-xl sm:text-2xl font-semibold mb-2"
-                        style={{ color: "#353535" }}
-                      >
-                        Monthly Video Follow Up
-                      </div>
-                      <p
-                        className="text-sm sm:text-base leading-relaxed"
-                        style={{ color: "#353535" }}
-                      >
-                        Monthly video call — essential care takes persistence.
-                      </p>
-                    </div>
-                  </div>
-              </div>
-            </div>
-          </div>
 
           {/* Meet the Experts Section */}
           <div className="py-12 sm:py-16 md:py-20">

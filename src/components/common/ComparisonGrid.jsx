@@ -15,7 +15,7 @@ const rows = [
   { label: "Personalized Consultations", cells: [true, false, true, true, false, false] },
   { label: "Unlimited Messaging", cells: [true, false, false, false, false, false] },
   { label: "Medicines Included", cells: [true, false, false, false, false, false] },
-  { label: "Monthly Cost", cells: ["$50", "N/A", "$500+", "$200+", "$299+", "$399+"] },
+  { label: "Monthly Cost", cells: ["Pay as you can", "N/A", "$500+", "$200+", "$299+", "$399+"] },
 ];
 
 function Cell({ value, isAmbe }) {
@@ -28,7 +28,7 @@ function Cell({ value, isAmbe }) {
   // literal value (e.g. prices)
   return (
     <span
-      className={isAmbe ? "font-bold" : ""}
+      className={isAmbe ? "font-bold text-xs sm:text-base leading-tight inline-block" : ""}
       style={{ color: isAmbe ? "#FFD3AC" : "rgba(255,255,255,0.55)" }}
     >
       {value}
