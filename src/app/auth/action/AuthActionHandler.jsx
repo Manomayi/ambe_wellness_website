@@ -96,13 +96,13 @@ export default function AuthActionHandler() {
 
   const targetWebPath = useMemo(() => {
     if (role === "doctor") return "/doctor/schedule";
-    if (role === "user") return "/user/menu/questionnaire";
+    if (role === "user") return "/user/home";
     if (continueUrl) {
       try {
         const parsed = new URL(continueUrl, "https://ambewellness.com");
         const r = parsed.searchParams.get("role");
         if (r === "doctor") return "/doctor/schedule";
-        if (r === "user") return "/user/menu/questionnaire";
+        if (r === "user") return "/user/home";
         if (
           parsed.origin === "https://ambewellness.com" &&
           parsed.pathname !== "/auth/continue" &&
@@ -112,7 +112,7 @@ export default function AuthActionHandler() {
         }
       } catch {}
     }
-    return "/user/menu/questionnaire";
+    return "/user/home";
   }, [role, continueUrl]);
 
   const openApp = useCallback(() => {

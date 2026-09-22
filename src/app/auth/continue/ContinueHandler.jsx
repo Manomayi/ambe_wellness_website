@@ -60,7 +60,7 @@ export default function ContinueHandler() {
   // Otherwise, if source is 'web' or on desktop/web session, user continues on web.
   const isFromApp = source === "app";
 
-  const nextWebPath = isDoctor ? "/doctor/schedule" : "/user/menu/questionnaire";
+  const nextWebPath = isDoctor ? "/doctor/schedule" : "/user/home";
 
   const [showFallbackCard, setShowFallbackCard] = useState(!isFromApp || platform !== "ios");
 
