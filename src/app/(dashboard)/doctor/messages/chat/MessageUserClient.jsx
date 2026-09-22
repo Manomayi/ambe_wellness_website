@@ -221,9 +221,9 @@ export default function MessageUserClient() {
   if (!chatId) return null
 
   return (
-    <div className="flex flex-col h-screen bg-transparent">
+    <div className="flex flex-col h-full bg-transparent overflow-hidden">
       {/* Header */}
-      <div className="flex items-center px-4 py-3.5 bg-[#1E1E1E]/90 backdrop-blur-md shadow-md border-b border-white/10 z-10">
+      <div className="flex items-center px-4 py-3.5 bg-[#1E1E1E]/90 backdrop-blur-md shadow-md border-b border-white/10 z-10 shrink-0">
         <AmbeBackButton onClick={() => router.back()} />
         {userPhotoUrl && (
           <img src={userPhotoUrl} alt={userName||''}
@@ -234,7 +234,7 @@ export default function MessageUserClient() {
 
       {/* Messages */}
       <div ref={containerRef}
-           className="flex-1 overflow-y-auto p-4 space-y-2"
+           className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2 [scrollbar-width:thin] [scrollbar-color:#3D3D42_transparent]"
            onScroll={onScroll}>
         {loadingMore && (
           <div className="flex justify-center mb-2">
@@ -354,7 +354,7 @@ export default function MessageUserClient() {
       )}
 
       {/* Input */}
-      <div className="p-3 sm:p-4 bg-black/40 backdrop-blur-md border-t border-white/10 flex items-center gap-2">
+      <div className="flex items-center p-3 sm:p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md gap-2 shrink-0 sticky bottom-0 z-20">
         <input
           ref={fileInputRef}
           type="file"

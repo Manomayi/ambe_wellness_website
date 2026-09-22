@@ -142,9 +142,9 @@ export default function DoctorChatPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <div className="h-screen flex flex-col bg-transparent">
+      <div className="h-full flex flex-col bg-transparent overflow-hidden">
         {/* Header */}
-        <div className="bg-[#1E1E1E]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between z-10">
+        <div className="bg-[#1E1E1E]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between z-10 shrink-0">
           <div className="flex items-center gap-3.5">
             <AmbeBackButton onClick={() => router.push('/doctor/messages')} />
             <div className="w-10 h-10 rounded-full overflow-hidden border border-[#FFD3AC]/60 bg-black/30 flex items-center justify-center shrink-0">
@@ -171,7 +171,7 @@ export default function DoctorChatPage() {
         </div>
 
         {/* Chat Window */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <ChatWindow
             chatId={chatId}
             recipientName={chatData.userName}

@@ -15,9 +15,7 @@ import {
   limit,
   setDoc,
 } from "firebase/firestore";
-import BackButton from "@/components/common/BackButton";
 import AmbeBackButton from "@/components/common/AmbeBackButton";
-import WebLayoutWrapper from "@/components/common/WebLayoutWrapper";
 import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 
 export default function DoctorConsultationReportPage() {
@@ -320,10 +318,10 @@ export default function DoctorConsultationReportPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div
-          className="animate-spin h-12 w-12 rounded-full 
-                        border-4 border-t-4 border-[#C8996A] 
+          className="animate-spin h-10 w-10 rounded-full 
+                        border-2 border-[#FFD3AC] 
                         border-t-transparent"
         />
       </div>
@@ -332,9 +330,18 @@ export default function DoctorConsultationReportPage() {
 
   if (!report) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6 p-4">
-        <BackButton href="/doctor/consultations/history" label="Back to History" />
-        <div className="bg-[#2D2D30]/80 border border-white/10 rounded-2xl p-10 text-center shadow-sm">
+      <div className="min-h-screen text-white pb-24 md:pb-12 pt-4 px-4 sm:px-6 max-w-xl mx-auto space-y-6">
+        <div className="relative flex items-center justify-center py-2">
+          <div className="absolute left-0">
+            <AmbeBackButton
+              onClick={() => router.push("/doctor/consultations/history")}
+            />
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-wide text-white text-center">
+            Report
+          </h1>
+        </div>
+        <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-10 text-center">
           <p className="text-gray-400">No consultation report found.</p>
         </div>
       </div>
@@ -415,11 +422,19 @@ export default function DoctorConsultationReportPage() {
     return pA - pB;
   });
 
+  const isDuplicateNote = Boolean(
+    notes &&
+    orderedRecommendations.some(([_, rec]) => {
+      const rNotes = typeof rec === "object" ? (rec.notes || rec.note || "") : String(rec);
+      return rNotes && rNotes.trim() === String(notes).trim();
+    })
+  );
+
   return (
-    <WebLayoutWrapper>
-      <div className="max-w-2xl mx-auto space-y-6 pb-24">
-        {/* Header matching Flutter DoctorUserReportPage */}
-        <div className="flex items-center gap-4 pt-2">
+    <div className="min-h-screen text-white pb-24 md:pb-12 pt-4 px-4 sm:px-6 max-w-xl mx-auto space-y-6">
+      {/* Top Bar with Centered Title matching Flutter AppBar */}
+      <div className="relative flex items-center justify-center py-2">
+        <div className="absolute left-0">
           <AmbeBackButton
             onClick={() => {
               if (typeof window !== "undefined" && window.history.length > 1) {
@@ -429,159 +444,165 @@ export default function DoctorConsultationReportPage() {
               }
             }}
           />
-          <h1 className="font-heading text-2xl sm:text-3xl text-white font-normal tracking-tight">
-            {pageTitle}
-          </h1>
         </div>
+        <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-wide text-white text-center">
+          {pageTitle}
+        </h1>
+      </div>
 
-        {/* Cancellation Banner */}
-        {statusInfo.isCancelled && (
-          <div className="bg-red-500/15 border border-red-500/30 rounded-2xl p-5 shadow-md space-y-2 backdrop-blur-md">
-            <p className="text-xs uppercase font-semibold text-red-300 tracking-wider">
-              CONSULTATION STATUS
-            </p>
-            <div className="flex items-center gap-2">
+      {/* Cancellation Banner */}
+      {statusInfo.isCancelled && (
+        <div className="bg-red-500/15 border border-red-500/30 rounded-2xl p-5 shadow-md space-y-2 backdrop-blur-md">
+          <p className="text-xs uppercase font-semibold text-red-300 tracking-wider">
+            CONSULTATION STATUS
+          </p>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full font-medium ${statusInfo.badgeClass}`}
+            >
               <span
-                className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full font-medium ${statusInfo.badgeClass}`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`}
-                />
-                {statusInfo.label}
-              </span>
-            </div>
-            {cancelDate && (
-              <p className="text-xs text-red-200/80">
-                Cancelled on: {formatReportDate(cancelDate)}
-              </p>
-            )}
-            {reason && (
-              <p className="text-xs text-red-200/70 italic">
-                Reason: {reason}
-              </p>
-            )}
+                className={`w-1.5 h-1.5 rounded-full mr-1.5 ${statusInfo.dotClass}`}
+              />
+              {statusInfo.label}
+            </span>
           </div>
-        )}
-
-        {/* Doctor Section matching App */}
-        {displayDoctorName && (
-          <div className="space-y-2">
-            <p className="text-xs uppercase font-semibold text-white/50 tracking-wider">
-              DOCTOR
+          {cancelDate && (
+            <p className="text-xs text-red-200/80">
+              Cancelled on: {formatReportDate(cancelDate)}
             </p>
-            <div className="bg-[#2D2D30]/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-md flex items-center gap-3.5 backdrop-blur-md">
-              <div className="w-10 h-10 rounded-xl bg-[#FFD3AC]/15 border border-[#FFD3AC]/25 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v1.069m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </div>
-              <span className="text-base sm:text-lg font-semibold text-white">
-                {displayDoctorName}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Date Section matching App */}
-        {effectiveTime && (
-          <div className="space-y-2">
-            <p className="text-xs uppercase font-semibold text-white/50 tracking-wider">
-              DATE
+          )}
+          {reason && (
+            <p className="text-xs text-red-200/70 italic">
+              Reason: {reason}
             </p>
-            <div className="bg-gradient-to-br from-[#FFD3AC] to-[#E5BA92] rounded-2xl p-4 sm:p-5 shadow-md flex items-center gap-3.5 text-[#1E1E1E]">
-              <div className="w-10 h-10 rounded-xl bg-black/15 flex items-center justify-center shrink-0">
-                <svg className="w-5 h-5 text-[#1E1E1E]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                </svg>
-              </div>
-              <span className="text-base sm:text-lg font-bold text-[#1E1E1E]">
-                {formatReportDate(effectiveTime)}
-              </span>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        {/* Clinical Notes & Observations (if present) */}
-        {notes && String(notes).trim().length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs uppercase font-semibold text-white/50 tracking-wider">
-              CLINICAL NOTES & OBSERVATIONS
-            </p>
-            <div className="bg-[#2D2D30]/70 border border-white/10 rounded-2xl p-5 shadow-md backdrop-blur-md">
-              <div className="w-full bg-black/30 border border-white/5 rounded-xl p-3.5 sm:p-4 text-sm text-white/90 leading-relaxed whitespace-pre-wrap">
-                {notes}
-              </div>
+      {/* Doctor Section matching App */}
+      {displayDoctorName && (
+        <div className="space-y-2">
+          <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
+            DOCTOR
+          </p>
+          <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 backdrop-blur-md">
+            <div className="w-10 h-10 rounded-xl bg-[#FFD3AC]/15 border border-[#FFD3AC]/25 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v1.069m7.5 0a48.667 48.667 0 00-7.5 0" />
+              </svg>
             </div>
+            <span className="text-base font-semibold text-white">
+              {displayDoctorName}
+            </span>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Recommendations Section matching App */}
-        {orderedRecommendations.length > 0 && (
+      {/* Date Section matching App */}
+      {effectiveTime && (
+        <div className="space-y-2">
+          <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
+            DATE
+          </p>
+          <div className="bg-gradient-to-br from-[#FFD3AC] to-[#F5C59F] rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 text-[#1E1E1E]">
+            <div className="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-[#1E1E1E]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+            </div>
+            <span className="text-base font-bold text-[#1E1E1E]">
+              {formatReportDate(effectiveTime)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations Section matching App */}
+      {orderedRecommendations.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
+            RECOMMENDATIONS
+          </p>
           <div className="space-y-3">
-            <p className="text-xs uppercase font-semibold text-white/50 tracking-wider">
-              RECOMMENDATIONS
+            {orderedRecommendations.map(([cat, rec]) => {
+              const selectedOption =
+                typeof rec === "object"
+                  ? rec.selectedOption || rec.selected_option || rec.option || ""
+                  : "";
+              const categoryNotes =
+                typeof rec === "object" ? rec.notes || rec.note || "" : String(rec);
+
+              return (
+                <div
+                  key={cat}
+                  className="bg-white/[0.08] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3 backdrop-blur-md"
+                >
+                  <h3 className="font-sans font-semibold text-[17px] text-white">
+                    {formatCategoryTitle(cat)}
+                  </h3>
+
+                  {categoryNotes && String(categoryNotes).trim().length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[13px] font-semibold text-[#FFD3AC]">
+                        Notes:
+                      </span>
+                      <div className="w-full bg-black/25 border border-white/[0.08] rounded-xl p-3.5 sm:p-4 text-sm text-white/85 leading-relaxed whitespace-pre-wrap">
+                        {categoryNotes}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedOption && String(selectedOption).trim().length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[13px] font-semibold text-[#FFD3AC]">
+                        Selected Option:
+                      </span>
+                      <div className="w-full bg-black/25 border border-white/[0.08] rounded-xl p-3.5 sm:p-4 text-sm font-medium text-white/85 leading-relaxed">
+                        {selectedOption}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Empty Clinical Content Message */}
+      {orderedRecommendations.length === 0 &&
+        (!store_recommendations || store_recommendations.length === 0) &&
+        (!notes || String(notes).trim().length === 0) &&
+        !report.referral &&
+        !statusInfo.isCancelled && (
+          <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-6 text-center">
+            <p className="text-white/70 text-sm">
+              Consultation completed. Clinical report is being processed.
             </p>
-            <div className="space-y-3">
-              {orderedRecommendations.map(([cat, rec]) => {
-                const selectedOption =
-                  typeof rec === "object"
-                    ? rec.selectedOption || rec.selected_option || rec.option || ""
-                    : "";
-                const categoryNotes =
-                  typeof rec === "object" ? rec.notes || rec.note || "" : String(rec);
-
-                return (
-                  <div
-                    key={cat}
-                    className="bg-[#2D2D30]/70 border border-white/10 rounded-2xl p-5 shadow-md space-y-3 backdrop-blur-md"
-                  >
-                    <h3 className="text-lg font-semibold text-white">
-                      {formatCategoryTitle(cat)}
-                    </h3>
-
-                    {categoryNotes && String(categoryNotes).trim().length > 0 && (
-                      <div className="space-y-1.5">
-                        <span className="text-xs font-semibold text-[#FFD3AC]">
-                          Notes:
-                        </span>
-                        <div className="w-full bg-black/30 border border-white/5 rounded-xl p-3.5 sm:p-4 text-sm text-white/90 leading-relaxed whitespace-pre-wrap">
-                          {categoryNotes}
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedOption && String(selectedOption).trim().length > 0 && (
-                      <div className="space-y-1.5">
-                        <span className="text-xs font-semibold text-[#FFD3AC]">
-                          Selected Option:
-                        </span>
-                        <div className="w-full bg-black/30 border border-white/5 rounded-xl p-3.5 sm:p-4 text-sm font-medium text-white/90 leading-relaxed">
-                          {selectedOption}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </div>
         )}
 
-        {/* Recommended Products */}
-        {Array.isArray(store_recommendations) &&
-          store_recommendations.length > 0 && (
+      {/* Recommended Products matching App */}
+      {Array.isArray(store_recommendations) &&
+        store_recommendations.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
+              PRODUCTS
+            </p>
             <div className="space-y-3">
-              <p className="text-xs uppercase font-semibold text-white/50 tracking-wider">
-                RECOMMENDED PRODUCTS
-              </p>
-              <div className="space-y-3">
-                {store_recommendations.map((item, i) => (
-                  <div
-                    key={i}
-                    className="bg-[#2D2D30]/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-md flex justify-between items-center backdrop-blur-md"
-                  >
+              {store_recommendations.map((item, i) => (
+                <div
+                  key={i}
+                  className="bg-white/[0.08] border border-white/10 rounded-2xl p-4 sm:p-5 flex items-center justify-between backdrop-blur-md"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-[#FFD3AC]/15 flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                      </svg>
+                    </div>
                     <div>
-                      <h4 className="font-semibold text-white text-base">
+                      <h4 className="font-sans font-semibold text-white text-[17px]">
                         {item.product_name || item.productName || "Product"}
                       </h4>
                       {item.size && (
@@ -590,38 +611,62 @@ export default function DoctorConsultationReportPage() {
                         </p>
                       )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-white/60">Qty</p>
-                      <p className="font-bold text-[#FFD3AC] text-base">
-                        {item.quantity || item.qty || 1}
-                      </p>
-                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        {/* Referral */}
-        {report.referral && (
-          <div className="space-y-2">
-            <p className="text-xs uppercase font-semibold text-white/50 tracking-wider">
-              REFERRAL
-            </p>
-            <div className="bg-[#2D2D30]/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-md backdrop-blur-md">
-              <p className="text-sm text-white">
-                <strong>Specialty / Doctor:</strong>{" "}
-                {report.referral.doctor_name || report.referral.specialty || "Referral requested"}
-              </p>
-              {report.referral.notes && (
-                <p className="text-xs text-white/70 mt-1">
-                  {report.referral.notes}
-                </p>
-              )}
+                  <div className="px-3 py-1 bg-[#FFD3AC]/15 text-[#FFD3AC] rounded-full text-sm font-semibold">
+                    Qty: {item.quantity || item.qty || 1}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
-      </div>
-    </WebLayoutWrapper>
+
+      {/* Notes Section (matching App) */}
+      {!isDuplicateNote && notes && String(notes).trim().length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
+            NOTES
+          </p>
+          <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3 backdrop-blur-md">
+            <div className="flex items-center gap-2 text-[#FFD3AC]">
+              <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <span className="text-sm font-semibold text-[#FFD3AC]">Doctor's Notes</span>
+            </div>
+            <div className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">
+              {notes}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Referral */}
+      {report.referral && (
+        <div className="space-y-2">
+          <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
+            REFERRAL
+          </p>
+          <div className="bg-white/[0.08] border border-[#FFD3AC]/40 rounded-2xl p-4 sm:p-5 flex items-center gap-4 backdrop-blur-md">
+            <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/15 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v1.069m7.5 0a48.667 48.667 0 00-7.5 0" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">
+                Doctor Recommendation
+              </p>
+              <p className="text-sm sm:text-[15px] font-semibold text-white mt-1">
+                For requesting new doctor you can refer to {report.referral.referred_to_doctor_name || report.referral.doctor_name || report.referral.referred_specialty_label || report.referral.specialty || "Specialist"}
+              </p>
+              {report.referral.notes && (
+                <p className="text-xs text-white/70 mt-1">{report.referral.notes}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

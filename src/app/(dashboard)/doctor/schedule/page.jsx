@@ -282,9 +282,19 @@ export default function DoctorSchedulePage() {
         },
         { merge: true }
       );
+
+      try {
+        await setDoc(
+          doc(db, 'users', user.uid),
+          { is_schedule_set: true },
+          { merge: true }
+        );
+      } catch (_) {}
       
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => {
+        router.push('/doctor/home');
+      }, 700);
     } catch (error) {
       console.error('Error saving schedule:', error);
       alert('Failed to save schedule. Please try again.');
@@ -310,14 +320,41 @@ export default function DoctorSchedulePage() {
         <div className="space-y-6 pb-12">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <AmbeBackButton href="/doctor/menu" />
+            <AmbeBackButton
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push('/doctor/home');
+                }
+              }}
+            />
             <h1 className="font-heading font-bold text-2xl sm:text-3xl text-white">
-              Set Schedule
+              Set Your Schedule
             </h1>
           </div>
 
+          {/* Hero Availability Card matching mobile app */}
+          <div className="bg-[#FFD3AC]/30 border border-[#FFD3AC]/40 rounded-3xl p-6 sm:p-7 text-center shadow-sm">
+            <div className="flex justify-center mb-3 text-[#1E1E1E]">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.253 18.75m3-18.75h-16.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h16.5A2.25 2.25 0 0023.25 18V6a2.25 2.25 0 00-2.25-2.25zM2.25 10.5h21" />
+              </svg>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#1E1E1E] mb-1.5 font-sans">
+              Set Your Availability
+            </h2>
+            <p className="text-sm text-[#2E2E2E] font-sans max-w-md mx-auto leading-relaxed">
+              Choose the days and times you&apos;re available for consultations
+            </p>
+          </div>
+
           {/* Instant Consult Availability Card */}
-          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 shadow-lg">
+          <div className={`border rounded-2xl p-5 shadow-lg transition-all ${
+            isAvailableNow
+              ? 'border-emerald-500/50 bg-[#1E1E1E]/90'
+              : 'border-white/10 bg-[#2D2D30]/85'
+          }`}>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
                 <div

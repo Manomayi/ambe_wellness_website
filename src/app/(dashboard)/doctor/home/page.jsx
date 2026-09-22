@@ -161,27 +161,17 @@ export default function DoctorHomePage() {
       <div className="space-y-6">
         {/* Header Section matching Flutter DoctorHomePage (Image 1) */}
         <div className="bg-[#2D2D30] rounded-b-[32px] md:rounded-[28px] px-6 pt-5 pb-6 shadow-xl border-b border-white/5 md:border md:border-white/10">
-          {/* Top Bar: Logo on left, Notification Bell on right */}
-          <div className="flex items-center justify-between mb-5">
-            <Link href="/doctor/home" className="flex items-center">
+          {/* Top Row: AMBE Logo on left */}
+          <div className="flex items-center justify-between mb-4">
+            <Link href="/doctor/home" className="inline-block">
               <Image
-                src="/images/logos/ambe_logo.png"
-                alt="AMBÉ"
+                src="/images/logo/ambe_logo.png"
+                alt="Ambe Logo"
                 width={100}
                 height={32}
                 className="w-[85px] sm:w-[95px] h-auto object-contain cursor-pointer"
                 priority
               />
-            </Link>
-
-            <Link
-              href="/doctor/notifications"
-              className="text-[#FFD3AC] hover:opacity-80 transition p-1 cursor-pointer"
-              aria-label="Notifications"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-              </svg>
             </Link>
           </div>
 

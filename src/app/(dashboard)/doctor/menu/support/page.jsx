@@ -201,29 +201,39 @@ export default function DoctorSupportPage() {
   }
 
   return (
-    <div className="min-h-screen text-white pb-24 md:pb-8 pt-4 px-4 sm:px-6 max-w-3xl mx-auto space-y-4">
-      <div className="flex items-center gap-3.5 mb-2">
-        <AmbeBackButton onClick={() => router.push('/doctor/menu')} />
-        <h1 className="text-xl font-bold tracking-tight text-white">Support Chat</h1>
+    <div className="min-h-screen text-white pb-24 md:pb-12 pt-4 px-4 sm:px-6 max-w-xl mx-auto space-y-6">
+      {/* Top Bar with Centered Title matching Flutter AppBar */}
+      <div className="relative flex items-center justify-center py-2">
+        <div className="absolute left-0">
+          <AmbeBackButton
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/doctor/menu');
+              }
+            }}
+          />
+        </div>
+        <h1 className="font-serif text-2xl font-normal tracking-wide text-white">
+          Support Chat
+        </h1>
       </div>
 
       {openTicket ? (
         <SupportChatView ticket={openTicket} user={user} />
       ) : (
-        <div className="bg-[#2D2D30] border border-white/10 rounded-2xl p-6 sm:p-10 shadow-sm">
-          <div className="text-center max-w-lg mx-auto mb-8">
-            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-[#FFD3AC]">
-              <ChatBubbleLeftRightIcon className="h-6 w-6" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+        <div className="pt-2">
+          <div className="text-center max-w-md mx-auto mb-8">
+            <h2 className="font-serif text-3xl sm:text-4xl font-normal text-white mb-2">
               How can we help you?
-            </h1>
-            <p className="text-sm text-white/60">
-              Create a support ticket and our team will respond as soon as possible.
+            </h2>
+            <p className="text-sm text-neutral-400 max-w-sm mx-auto leading-relaxed">
+              Create a support ticket and we will respond as soon as possible.
             </p>
           </div>
 
-          <form onSubmit={handleCreateTicket} className="space-y-6 max-w-lg mx-auto">
+          <form onSubmit={handleCreateTicket} className="space-y-6 max-w-md mx-auto">
             {formError && (
               <div className="p-3 bg-red-900/30 border border-red-500/30 rounded-xl text-xs text-red-200">
                 {formError}
@@ -232,55 +242,57 @@ export default function DoctorSupportPage() {
 
             {/* Topic Dropdown */}
             <div>
-              <label className="block text-sm font-semibold text-white/90 mb-2">
+              <label className="block font-serif text-lg text-white/90 mb-2">
                 Select Topic
               </label>
               <div className="relative">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none bg-[#1E1E1E] border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-[#FFD3AC] pr-10 cursor-pointer"
+                  className="w-full appearance-none bg-[#2A2A2E] border border-white/5 rounded-2xl px-4 py-3.5 text-base text-white font-normal focus:outline-none focus:border-[#FFD3AC]/40 pr-10 cursor-pointer shadow-sm"
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat} className="bg-[#1E1E1E] text-white">
+                    <option key={cat} value={cat} className="bg-[#2A2A2E] text-white">
                       {cat}
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#FFD3AC]">
-                  <ChevronDownIcon className="h-5 w-5" />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-[#FFD3AC]">
+                  <ChevronDownIcon className="h-5 w-5 stroke-[2]" />
                 </div>
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-semibold text-white/90">
-                  Description
-                </label>
-                <span className="text-xs text-white/40">
+              <label className="block font-serif text-lg text-white/90 mb-2">
+                Description
+              </label>
+              <div className="bg-[#2A2A2E] border border-white/5 rounded-2xl p-4 shadow-sm focus-within:border-[#FFD3AC]/40">
+                <textarea
+                  rows={6}
+                  maxLength={120}
+                  placeholder="Describe your issue..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-transparent border-none text-base text-white placeholder-neutral-500 focus:outline-none resize-none leading-relaxed"
+                />
+                <div className="text-right text-xs text-neutral-400 mt-2 font-mono">
                   {description.length}/120
-                </span>
+                </div>
               </div>
-              <textarea
-                rows={5}
-                maxLength={120}
-                placeholder="Describe your issue..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-4 border border-white/10 bg-[#1E1E1E] text-sm text-white rounded-xl focus:outline-none focus:border-[#FFD3AC] placeholder-white/30 resize-none"
-              />
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {isSubmitting ? 'Submitting Ticket…' : 'SUBMIT TICKET'}
-            </button>
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffe2c8] text-black py-4 rounded-full text-base font-bold uppercase tracking-wider shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isSubmitting ? 'SUBMITTING TICKET…' : 'SUBMIT TICKET'}
+              </button>
+            </div>
           </form>
         </div>
       )}

@@ -298,7 +298,7 @@ export default function DoctorEarningsPage() {
             </div>
 
             {/* Filter Pills */}
-            <div className="w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <div className="w-full md:w-auto overflow-x-auto md:overflow-visible scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <div className="inline-flex items-center space-x-1.5 bg-white/5 p-1 rounded-full border border-white/10 min-w-max">
                 {LEDGER_FILTERS.map((f) => {
                   const active = f.key === activeFilter.key;

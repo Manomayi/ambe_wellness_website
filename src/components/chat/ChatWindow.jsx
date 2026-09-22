@@ -313,10 +313,10 @@ export default function ChatWindow({
   }, {});
 
   return (
-    <div className="flex flex-col h-full bg-transparent">
+    <div className="flex flex-col h-full bg-transparent overflow-hidden">
       {/* Optional Inner Header */}
       {!hideHeader && (
-        <div className="p-4 border-b border-white/10 bg-[#1E1E1E]/80 backdrop-blur-md">
+        <div className="p-4 border-b border-white/10 bg-[#1E1E1E]/80 backdrop-blur-md shrink-0">
           <h3 className="font-semibold text-sm text-white">{recipientName}</h3>
           {!canSendMessage && !isDoctor && (
             <p className="text-xs text-white/60 mt-0.5">
@@ -327,7 +327,7 @@ export default function ChatWindow({
       )}
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 [scrollbar-width:thin] [scrollbar-color:#3D3D42_transparent]">
         {Object.keys(groupedMessages).length === 0 && !uploadingImage ? (
           <div className="flex items-center justify-center h-full text-center p-6">
             <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 max-w-sm backdrop-blur-md shadow-xl">
@@ -436,7 +436,7 @@ export default function ChatWindow({
       
       {/* Input */}
       {canSendMessage ? (
-        <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
+        <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md shrink-0 sticky bottom-0 z-20">
           <input
             ref={fileInputRef}
             type="file"
@@ -485,7 +485,7 @@ export default function ChatWindow({
           </div>
         </form>
       ) : (
-        <div className="p-4 border-t border-white/10 bg-black/40 backdrop-blur-md text-center">
+        <div className="p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md text-center shrink-0 sticky bottom-0 z-20">
           <p className="text-xs text-white/60 font-medium">
             {isDoctor 
               ? 'This conversation is currently locked' 
