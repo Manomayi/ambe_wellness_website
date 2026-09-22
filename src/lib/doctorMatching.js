@@ -53,6 +53,33 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
     return { matched: false, doctor: null, message: "User ID is required." };
   }
 
+  // Do not re-match or overwrite if user already has an assigned doctor
+  if (!isInstantRequest) {
+    try {
+      const userSnap = await getDoc(doc(db, "users", userId));
+      if (userSnap.exists()) {
+        const uData = userSnap.data();
+        const existingDoctor =
+          uData.doctor ||
+          (uData.doctor_uid
+            ? { uid: uData.doctor_uid, name: uData.doctor_name || "" }
+            : null);
+        if (existingDoctor && existingDoctor.uid) {
+          console.log(
+            `User ${userId} already has assigned doctor ${existingDoctor.uid}. Skipping matching.`
+          );
+          return {
+            matched: true,
+            doctor: existingDoctor,
+            message: "User already has an assigned doctor.",
+          };
+        }
+      }
+    } catch (checkErr) {
+      console.warn("Could not check existing doctor assignment:", checkErr);
+    }
+  }
+
   const normalizedField = normalizeHealthField(preferredField);
 
   try {

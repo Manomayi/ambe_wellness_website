@@ -11,6 +11,7 @@ import { classifyOutcome } from '@/lib/refundPolicy';
 import BackButton from '@/components/common/BackButton';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
+import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 
 export default function DoctorAppointmentPage() {
   const router = useRouter();

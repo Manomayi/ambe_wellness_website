@@ -48,43 +48,46 @@ export default function UserHomePage() {
           )}
         </div>
 
-        {/* YOUR NEXT STEP Card (Flutter _buildNextStepCard) */}
-        <div
-          onClick={handleNextStepClick}
-          className="
-            w-full bg-[#FFD3AC] text-[#1E1E1E] p-5 sm:p-6 rounded-[26px]
-            cursor-pointer transition-all duration-200 hover:shadow-lg active:scale-[0.99]
-            flex items-center justify-between gap-4 select-none
-          "
-        >
-          <div>
-            <span className="text-[11px] font-semibold tracking-[1.2px] text-[#7D6553] uppercase font-sans">
-              YOUR NEXT STEP
-            </span>
-            <h3
-              className="text-xl sm:text-2xl font-bold text-[#1E1E1E] mt-1 leading-tight"
-              style={{
-                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              }}
-            >
-              Book your consultation
-            </h3>
-            <p className="text-xs sm:text-sm text-[#7D6553] font-sans mt-0.5">
-              Meet your doctor over video
-            </p>
-          </div>
+        {/* YOUR NEXT STEP Card (Flutter _buildNextStepCard: content-fitted, left-aligned) */}
+        <div className="flex justify-start">
+          <div
+            onClick={handleNextStepClick}
+            className="
+              inline-flex items-center justify-between gap-5 sm:gap-6
+              bg-[#FFD3AC] text-[#1E1E1E] px-5 py-4 sm:px-5.5 sm:py-4.5 rounded-[26px]
+              cursor-pointer transition-all duration-200 hover:shadow-lg active:scale-[0.99]
+              select-none
+            "
+          >
+            <div>
+              <span className="text-[11px] font-semibold tracking-[1.2px] text-[#7D6553] uppercase font-sans">
+                YOUR NEXT STEP
+              </span>
+              <h3
+                className="text-lg sm:text-[19px] font-bold text-[#1E1E1E] mt-1 leading-tight"
+                style={{
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                }}
+              >
+                Book your consultation
+              </h3>
+              <p className="text-[13px] text-[#7D6553] font-sans mt-0.5">
+                Meet your doctor over video
+              </p>
+            </div>
 
-          {/* Black circle arrow */}
-          <div className="w-10 h-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-            <svg
-              className="w-4.5 h-4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.2}
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            {/* Black circle arrow */}
+            <div className="w-10 h-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
           </div>
         </div>
 

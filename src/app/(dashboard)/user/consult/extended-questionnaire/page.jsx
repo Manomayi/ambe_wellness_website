@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import ExtendedQuestionnaireModal from "@/components/user/ExtendedQuestionnaireModal";
-import BackButton from "@/components/common/BackButton";
 
 export default function ExtendedQuestionnairePage() {
   const router = useRouter();
@@ -23,14 +22,10 @@ export default function ExtendedQuestionnairePage() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <BackButton href="/user/home" label="Back to Home" forceHref={true} />
-        <ExtendedQuestionnaireModal
-          standalone={true}
-          onComplete={() => router.replace(profile?.is_consultation_set ? "/user/consult" : "/user/consult/schedule")}
-          onClose={() => router.push("/user/home")}
-        />
-      </div>
+      <ExtendedQuestionnaireModal
+        onComplete={() => router.replace(profile?.is_consultation_set ? "/user/consult" : "/user/consult/schedule")}
+        onClose={() => router.push("/user/home")}
+      />
     </ProtectedRoute>
   );
 }

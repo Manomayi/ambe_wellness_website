@@ -15,8 +15,11 @@ export default function UserLayout({ children }) {
   const [questionnaireDismissed, setQuestionnaireDismissed] = useState(false);
 
   // If user is loaded and questionnaire is not completed yet AND has no specialty chosen:
-  const isQuestionnairePage =
+  const isQuestionnaireFullscreen =
     pathname?.startsWith("/user/menu/questionnaire") ||
+    pathname?.startsWith("/user/consult/extended-questionnaire");
+  const isQuestionnairePage =
+    isQuestionnaireFullscreen ||
     pathname?.startsWith("/user/delete-account");
   const needsQuestionnaire =
     !questionnaireDismissed &&
@@ -26,6 +29,14 @@ export default function UserLayout({ children }) {
     profile &&
     profile.is_free_questionnaire_completed !== true &&
     !profile.preferred_health;
+
+  if (isQuestionnaireFullscreen) {
+    return (
+      <div className="relative min-h-screen bg-[#1E1E1E] text-white font-sans antialiased">
+        {children}
+      </div>
+    );
+  }
 
   if (needsQuestionnaire) {
     return (

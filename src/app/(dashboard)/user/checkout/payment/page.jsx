@@ -178,13 +178,13 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
 
       <button
         disabled={isProcessing || !stripe || !elements}
-        className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider"
+        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-xl font-bold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer"
       >
         {isProcessing ? "Processing..." : "Pay now"}
       </button>
 
       {message && (
-        <div className={`text-center p-3 rounded-lg text-sm ${message.includes('successful') ? 'bg-[#FAF8F5] text-[#C8996A] border border-[#C8996A]/30' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+        <div className={`text-center p-3 rounded-lg text-sm ${message.includes('successful') ? 'bg-[#FFD3AC]/15 text-[#FFD3AC] border border-[#FFD3AC]/30' : 'bg-red-500/15 text-red-300 border border-red-500/30'}`}>
           {message}
         </div>
       )}
@@ -213,15 +213,20 @@ function PaymentPageContent() {
   if (loading || configLoading || !clientSecret || !stripePromise) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C8996A]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
       </div>
     );
   }
 
   const appearance = {
-    theme: 'stripe',
+    theme: 'night',
     variables: {
-      colorPrimary: '#C8996A',
+      colorPrimary: '#FFD3AC',
+      colorBackground: '#242427',
+      colorText: '#ffffff',
+      colorDanger: '#ef4444',
+      fontFamily: 'system-ui, sans-serif',
+      borderRadius: '12px',
     },
   };
 
@@ -233,8 +238,8 @@ function PaymentPageContent() {
   return (
     <div className="max-w-md mx-auto space-y-4 pb-12">
       <BackButton href="/user/checkout" label="Back to Checkout" />
-      <div className="bg-white border border-[#E7E2D9] rounded-2xl p-8 shadow-sm space-y-6">
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">Card Payment</h1>
+      <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-md space-y-6">
+        <h1 className="text-2xl font-bold text-white">Card Payment</h1>
 
 
         <Elements options={options} stripe={stripePromise}>
@@ -242,7 +247,7 @@ function PaymentPageContent() {
         </Elements>
 
         <div className="text-center">
-          <p className="text-xs text-[#8C827A]">
+          <p className="text-xs text-white/50">
             Your payment information is encrypted and secured by Stripe.
           </p>
         </div>

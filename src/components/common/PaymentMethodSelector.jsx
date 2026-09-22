@@ -9,6 +9,7 @@ export default function PaymentMethodSelector({
   isTestMode = false,
   disabled = false,
   labelClassName = "text-white",
+  dark = true,
 }) {
   return (
     <div className="space-y-3">
@@ -18,7 +19,6 @@ export default function PaymentMethodSelector({
         </label>
       </div>
 
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Stripe Card Option */}
         <button
@@ -27,8 +27,12 @@ export default function PaymentMethodSelector({
           onClick={() => onSelectMethod("stripe")}
           className={`relative p-4 rounded-xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
             selectedMethod === "stripe"
-              ? "border-[#1A1A1A] bg-[#FFF9F2] shadow-sm"
-              : "border-[#E7E2D9] bg-white hover:border-[#C8996A] hover:bg-[#FAF8F5]"
+              ? dark
+                ? "border-[#FFD3AC] bg-[#FFD3AC]/10 shadow-sm"
+                : "border-[#1A1A1A] bg-[#FFF9F2] shadow-sm"
+              : dark
+                ? "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10"
+                : "border-[#E7E2D9] bg-white hover:border-[#C8996A] hover:bg-[#FAF8F5]"
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <div className="flex items-start justify-between w-full">
@@ -36,37 +40,59 @@ export default function PaymentMethodSelector({
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   selectedMethod === "stripe"
-                    ? "bg-[#1A1A1A] text-[#FFD3AC]"
-                    : "bg-[#FAF8F5] text-[#1A1A1A] border border-[#E7E2D9]"
+                    ? dark
+                      ? "bg-[#FFD3AC] text-[#1E1E1E]"
+                      : "bg-[#1A1A1A] text-[#FFD3AC]"
+                    : dark
+                      ? "bg-white/10 text-white/80 border border-white/15"
+                      : "bg-[#FAF8F5] text-[#1A1A1A] border border-[#E7E2D9]"
                 }`}
               >
                 <CreditCardIcon className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold text-sm text-[#1A1A1A]">
+                <p className={`font-semibold text-sm ${dark ? "text-white" : "text-[#1A1A1A]"}`}>
                   Credit / Debit Card
                 </p>
-                <p className="text-xs text-[#6B6862]">Secure via Stripe</p>
+                <p className={`text-xs ${dark ? "text-white/60" : "text-[#6B6862]"}`}>
+                  Secure via Stripe
+                </p>
               </div>
             </div>
 
             <div
               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center mt-1 ${
                 selectedMethod === "stripe"
-                  ? "border-[#1A1A1A] bg-[#1A1A1A]"
-                  : "border-[#8C827A]"
+                  ? dark
+                    ? "border-[#FFD3AC] bg-[#FFD3AC]"
+                    : "border-[#1A1A1A] bg-[#1A1A1A]"
+                  : dark
+                    ? "border-white/30"
+                    : "border-[#8C827A]"
               }`}
             >
               {selectedMethod === "stripe" && (
-                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                <div className={`w-1.5 h-1.5 rounded-full ${dark ? "bg-[#1E1E1E]" : "bg-white"}`} />
               )}
             </div>
           </div>
 
-          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-[#8C827A] uppercase font-medium">
-            <span className="px-1.5 py-0.5 bg-white border border-[#E7E2D9] rounded">Visa</span>
-            <span className="px-1.5 py-0.5 bg-white border border-[#E7E2D9] rounded">Mastercard</span>
-            <span className="px-1.5 py-0.5 bg-white border border-[#E7E2D9] rounded">Amex</span>
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] uppercase font-medium">
+            <span className={`px-1.5 py-0.5 rounded ${
+              dark
+                ? "bg-white/10 border border-white/15 text-white/80"
+                : "bg-white border border-[#E7E2D9] text-[#8C827A]"
+            }`}>Visa</span>
+            <span className={`px-1.5 py-0.5 rounded ${
+              dark
+                ? "bg-white/10 border border-white/15 text-white/80"
+                : "bg-white border border-[#E7E2D9] text-[#8C827A]"
+            }`}>Mastercard</span>
+            <span className={`px-1.5 py-0.5 rounded ${
+              dark
+                ? "bg-white/10 border border-white/15 text-white/80"
+                : "bg-white border border-[#E7E2D9] text-[#8C827A]"
+            }`}>Amex</span>
           </div>
         </button>
 
@@ -77,8 +103,12 @@ export default function PaymentMethodSelector({
           onClick={() => onSelectMethod("paypal")}
           className={`relative p-4 rounded-xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
             selectedMethod === "paypal"
-              ? "border-[#0070BA] bg-[#F4F9FF] shadow-sm"
-              : "border-[#E7E2D9] bg-white hover:border-[#0070BA]/50 hover:bg-[#FAF8F5]"
+              ? dark
+                ? "border-[#0070BA] bg-[#0070BA]/20 shadow-sm"
+                : "border-[#0070BA] bg-[#F4F9FF] shadow-sm"
+              : dark
+                ? "border-white/10 bg-white/5 hover:border-[#0070BA]/50 hover:bg-white/10"
+                : "border-[#E7E2D9] bg-white hover:border-[#0070BA]/50 hover:bg-[#FAF8F5]"
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <div className="flex items-start justify-between w-full">
@@ -86,15 +116,21 @@ export default function PaymentMethodSelector({
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg ${
                   selectedMethod === "paypal"
-                    ? "bg-[#003087] text-white"
-                    : "bg-[#FAF8F5] text-[#003087] border border-[#E7E2D9]"
+                    ? "bg-[#0070BA] text-white"
+                    : dark
+                      ? "bg-white/10 text-[#0070BA] border border-white/15"
+                      : "bg-[#FAF8F5] text-[#003087] border border-[#E7E2D9]"
                 }`}
               >
                 <span className="font-serif italic tracking-tighter">P</span>
               </div>
               <div>
-                <p className="font-semibold text-sm text-[#1A1A1A]">PayPal</p>
-                <p className="text-xs text-[#6B6862]">PayPal or Credit</p>
+                <p className={`font-semibold text-sm ${dark ? "text-white" : "text-[#1A1A1A]"}`}>
+                  PayPal
+                </p>
+                <p className={`text-xs ${dark ? "text-white/60" : "text-[#6B6862]"}`}>
+                  PayPal or Credit
+                </p>
               </div>
             </div>
 
@@ -102,7 +138,9 @@ export default function PaymentMethodSelector({
               className={`w-4 h-4 rounded-full border-2 flex items-center justify-center mt-1 ${
                 selectedMethod === "paypal"
                   ? "border-[#0070BA] bg-[#0070BA]"
-                  : "border-[#8C827A]"
+                  : dark
+                    ? "border-white/30"
+                    : "border-[#8C827A]"
               }`}
             >
               {selectedMethod === "paypal" && (
@@ -111,8 +149,12 @@ export default function PaymentMethodSelector({
             </div>
           </div>
 
-          <div className="mt-3 flex items-center gap-1.5 text-[10px] text-[#003087] font-medium">
-            <span className="px-1.5 py-0.5 bg-white border border-[#E7E2D9] rounded">PayPal Checkout</span>
+          <div className="mt-3 flex items-center gap-1.5 text-[10px] font-medium">
+            <span className={`px-1.5 py-0.5 rounded ${
+              dark
+                ? "bg-[#0070BA]/25 border border-[#0070BA]/40 text-[#60A5FA]"
+                : "bg-white border border-[#E7E2D9] text-[#003087]"
+            }`}>PayPal Checkout</span>
           </div>
         </button>
       </div>

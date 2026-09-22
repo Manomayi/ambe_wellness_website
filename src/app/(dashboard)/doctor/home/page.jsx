@@ -26,7 +26,6 @@ export default function DoctorHomePage() {
     unreadMessagesCount: 0,
   });
   const [reportsToFinish, setReportsToFinish] = useState([]);
-  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
 
@@ -74,14 +73,6 @@ export default function DoctorHomePage() {
           return aptDate >= startThreshold && aptDate <= endOfToday;
         });
 
-        // For the "Upcoming Consultations" preview section below, show future appointments
-        const future = list.filter((apt) => {
-          const aptDate = apt.time?.toDate ? apt.time.toDate() : (apt.time ? new Date(apt.time) : null);
-          if (!aptDate) return true;
-          return (aptDate - now) / (1000 * 60) >= -60;
-        });
-
-        setUpcomingAppointments(future.slice(0, 4));
         setStats((prev) => ({ ...prev, upcomingCount: todayUpcoming.length }));
       },
       (err) => {
@@ -154,18 +145,6 @@ export default function DoctorHomePage() {
   const photoUrl = profile?.profile_picture || user?.photoURL;
   const isScheduleSet = profile?.is_schedule_set ?? false;
 
-  const formatAppointmentTime = (time) => {
-    if (!time) return '';
-    const date = time?.toDate ? time.toDate() : new Date(time);
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }).format(date);
-  };
 
   const isToday = (date) => {
     const today = new Date();
@@ -394,51 +373,6 @@ export default function DoctorHomePage() {
               </div>
             </div>
           </div>
-
-        {/* Upcoming Appointments Preview */}
-        {upcomingAppointments.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-heading text-white font-normal">
-                Upcoming Consultations
-              </h2>
-              <Link
-                href="/doctor/consultations"
-                className="text-sm font-sans font-semibold text-[#FFD3AC] hover:underline"
-              >
-                View All
-              </Link>
-            </div>
-
-            <div className="space-y-2.5">
-              {upcomingAppointments.map((apt) => (
-                <div
-                  key={apt.id}
-                  onClick={() => router.push('/doctor/consultations')}
-                  className="bg-[#1B1A18]/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex items-center justify-between hover:border-[#FFD3AC]/40 transition cursor-pointer"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-full bg-[#2D2D30] border border-white/10 flex items-center justify-center text-[#FFD3AC] font-semibold text-sm">
-                      {(apt.user_name || 'P').charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold text-sm font-sans">
-                        {apt.user_name || 'Patient'}
-                      </h4>
-                      <p className="text-gray-400 text-xs mt-0.5 font-sans">
-                        {formatAppointmentTime(apt.time)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="text-xs px-3 py-1 rounded-full bg-[#FFD3AC]/15 text-[#FFD3AC] border border-[#FFD3AC]/30 font-semibold font-sans">
-                    Upcoming
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
         </div>
       </div>
     </ProtectedRoute>

@@ -468,14 +468,14 @@ export default function UserCheckoutPage() {
             <h2 className="text-base sm:text-lg font-bold text-white mb-2.5 font-sans">
               Delivery Address
             </h2>
-            <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[#1A1A1A] font-medium text-sm">
+                <p className={`text-sm ${deliveryAddress ? 'text-white font-medium' : 'text-white/60'}`}>
                   {deliveryAddress || 'No address provided'}
                 </p>
                 <button
                   onClick={() => setShowAddressModal(true)}
-                  className="text-[#C8996A] font-medium hover:underline text-sm uppercase tracking-wider shrink-0 cursor-pointer"
+                  className="text-[#FFD3AC] hover:text-[#ffe0c4] font-semibold text-sm uppercase tracking-wider shrink-0 cursor-pointer transition"
                 >
                   {deliveryAddress ? 'UPDATE' : 'ADD'}
                 </button>
@@ -488,33 +488,33 @@ export default function UserCheckoutPage() {
             <h2 className="text-base sm:text-lg font-bold text-white mb-2.5 font-sans">
               Order Summary
             </h2>
-          <div className="bg-white border border-[#E7E2D9] rounded-xl p-4 shadow-sm">
+          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-md">
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-[#6B6862]">Subtotal</span>
-                <span className="text-[#1A1A1A] font-medium">${subtotal.toFixed(2)}</span>
+                <span className="text-white/70">Subtotal</span>
+                <span className="text-white font-medium">${subtotal.toFixed(2)}</span>
               </div>
               
               {subscriptionDiscount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B6862]">Subscription Discount</span>
-                  <span className="text-[#C8996A] font-medium">-${subscriptionDiscount.toFixed(2)}</span>
+                  <span className="text-[#FFD3AC]">Subscription Discount</span>
+                  <span className="text-[#FFD3AC] font-medium">-${subscriptionDiscount.toFixed(2)}</span>
                 </div>
               )}
               
               {referralDiscount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B6862]">
+                  <span className="text-[#FFD3AC]">
                     {userData?.referred_by && !userData?.has_made_purchase
                       ? 'First Purchase Referral Discount (20%)'
                       : `Referral Discount (20% - ${(userData?.referral_credits || 0) - 1} left)`}
                   </span>
-                  <span className="text-[#C8996A] font-medium">-${referralDiscount.toFixed(2)}</span>
+                  <span className="text-[#FFD3AC] font-medium">-${referralDiscount.toFixed(2)}</span>
                 </div>
               )}
               
               <div className="flex justify-between items-center">
-                <span className="text-[#6B6862]">
+                <span className="text-white/70">
                   {isTaxCalculating
                     ? 'Tax (Calculating...)'
                     : taxMode === 'static'
@@ -523,9 +523,9 @@ export default function UserCheckoutPage() {
                     ? `Tax (${(taxRate * 100).toFixed(2)}%)`
                     : 'Tax'}
                 </span>
-                <span className="text-[#1A1A1A] font-medium">
+                <span className="text-white font-medium">
                   {isTaxCalculating ? (
-                    <span className="text-xs text-[#C8996A] animate-pulse">Calculating...</span>
+                    <span className="text-xs text-[#FFD3AC] animate-pulse">Calculating...</span>
                   ) : (
                     `$${tax.toFixed(2)}`
                   )}
@@ -533,14 +533,14 @@ export default function UserCheckoutPage() {
               </div>
               
               <div className="flex justify-between">
-                <span className="text-[#6B6862]">Shipping</span>
-                <span className="text-[#1A1A1A] font-medium">${shipping.toFixed(2)}</span>
+                <span className="text-white/70">Shipping</span>
+                <span className="text-white font-medium">${shipping.toFixed(2)}</span>
               </div>
               
-              <div className="border-t border-[#E7E2D9] pt-3">
+              <div className="border-t border-white/10 pt-3">
                 <div className="flex justify-between">
-                  <span className="text-xl font-bold text-[#1A1A1A]">Total</span>
-                  <span className="text-xl font-bold text-[#1A1A1A]">${total.toFixed(2)}</span>
+                  <span className="text-xl font-bold text-white">Total</span>
+                  <span className="text-xl font-bold text-white">${total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -548,13 +548,14 @@ export default function UserCheckoutPage() {
         </div>
 
         {/* Payment Method Selector */}
-        <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 shadow-sm">
+        <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-md">
           <PaymentMethodSelector
             selectedMethod={paymentMethod}
             onSelectMethod={setPaymentMethod}
             isTestMode={isTestMode}
             disabled={processing || isTaxCalculating}
-            labelClassName="text-[#1A1A1A]"
+            labelClassName="text-white"
+            dark={true}
           />
         </div>
 
@@ -562,10 +563,10 @@ export default function UserCheckoutPage() {
         <button
           onClick={handlePlaceOrder}
           disabled={processing || isTaxCalculating || cartItems.length === 0}
-          className={`w-full py-4 rounded-xl font-medium text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider cursor-pointer ${
+          className={`w-full py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer ${
             paymentMethod === 'paypal'
               ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
-              : 'bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white'
+              : 'bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E]'
           }`}
         >
           {processing
@@ -581,20 +582,20 @@ export default function UserCheckoutPage() {
         {/* Address Modal */}
         {showAddressModal && (
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowAddressModal(false);
             }}
           >
-            <div className="bg-white border border-[#E7E2D9] rounded-xl p-6 max-w-md w-full shadow-2xl">
-              <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">
+            <div className="bg-[#242427] border border-white/15 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <h3 className="text-xl font-bold text-white mb-2">
                 {deliveryAddress ? 'Update Address' : 'Add Address'}
               </h3>
               
               <div className="space-y-3">
                 {/* Google Places Search */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                  <label className="block text-xs font-semibold text-white/70 mb-1">
                     Search Address (Google Places)
                   </label>
                   <div className="relative">
@@ -602,80 +603,80 @@ export default function UserCheckoutPage() {
                       ref={searchInputRef}
                       type="text"
                       placeholder="Search street or place to auto-fill..."
-                      className="w-full pl-9 pr-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A] placeholder-gray-400 bg-gray-50/50"
+                      className="w-full pl-9 pr-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                     />
-                    <MagnifyingGlassIcon className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
+                    <MagnifyingGlassIcon className="w-4 h-4 text-white/40 absolute left-3 top-2.5 pointer-events-none" />
                   </div>
-                  <span className="text-[11px] text-gray-500 mt-1 block">
+                  <span className="text-[11px] text-white/50 mt-1 block">
                     Or enter and edit the address details manually below:
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="block text-[11px] text-gray-500 mb-0.5">Street Number *</label>
+                    <label className="block text-[11px] text-white/60 mb-0.5">Street Number *</label>
                     <input
                       type="text"
                       placeholder="e.g. 123"
                       value={addressForm.streetNumber}
                       onChange={(e) => setAddressForm({...addressForm, streetNumber: e.target.value})}
-                      className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
+                      className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-gray-500 mb-0.5">Street Name *</label>
+                    <label className="block text-[11px] text-white/60 mb-0.5">Street Name *</label>
                     <input
                       type="text"
                       placeholder="e.g. Main St"
                       value={addressForm.streetName}
                       onChange={(e) => setAddressForm({...addressForm, streetName: e.target.value})}
-                      className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
+                      className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-[11px] text-gray-500 mb-0.5">City *</label>
+                  <label className="block text-[11px] text-white/60 mb-0.5">City *</label>
                   <input
                     type="text"
                     placeholder="City"
                     value={addressForm.city}
                     onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
-                    className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
+                    className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] text-gray-500 mb-0.5">State *</label>
+                    <label className="block text-[11px] text-white/60 mb-0.5">State *</label>
                     <input
                       type="text"
                       placeholder="State (e.g. TX)"
                       value={addressForm.state}
                       onChange={(e) => setAddressForm({...addressForm, state: e.target.value})}
-                      className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
+                      className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-gray-500 mb-0.5">ZIP Code *</label>
+                    <label className="block text-[11px] text-white/60 mb-0.5">ZIP Code *</label>
                     <input
                       type="text"
                       placeholder="ZIP Code (e.g. 75001)"
                       value={addressForm.zipCode}
                       onChange={(e) => setAddressForm({...addressForm, zipCode: e.target.value})}
-                      className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
+                      className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-[11px] text-gray-500 mb-0.5">Country</label>
+                  <label className="block text-[11px] text-white/60 mb-0.5">Country</label>
                   <input
                     type="text"
                     placeholder="Country"
                     value={addressForm.country}
                     onChange={(e) => setAddressForm({...addressForm, country: e.target.value})}
-                    className="w-full px-3 py-2 border border-[#E7E2D9] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C8996A] text-sm text-[#1A1A1A]"
+                    className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                   />
                 </div>
               </div>
@@ -683,13 +684,13 @@ export default function UserCheckoutPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowAddressModal(false)}
-                  className="flex-1 py-3 border border-[#E7E2D9] rounded-lg hover:bg-[#FAF8F5] font-medium text-sm text-[#1A1A1A]"
+                  className="flex-1 py-3 border border-white/20 rounded-lg hover:bg-white/10 font-medium text-sm text-white/80 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={updateDeliveryAddress}
-                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white rounded-lg font-medium text-sm transition"
+                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-lg font-bold text-sm transition cursor-pointer"
                 >
                   Save Address
                 </button>

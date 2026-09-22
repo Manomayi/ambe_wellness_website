@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { doc, writeBatch, serverTimestamp, setDoc, getDoc, deleteField } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
@@ -873,6 +874,18 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
     await saveAssessment(false);
   };
 
+  // Save & Continue handler for bottom sticky bar
+  const handleSaveAndContinue = async () => {
+    if (!hasInitialSpecialty && !selectedHealthField) {
+      setShowSpecialtyAlert(true);
+      if (specialtyRef.current) {
+        specialtyRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+    await saveAssessment(isFullyCompleted);
+  };
+
   // Core save function
   const saveAssessment = async (isCompleted = false) => {
     if (!user) return;
@@ -988,15 +1001,27 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         } catch (e) {}
       }
 
-      // 4. Trigger doctor matching with the chosen specialty
-      try {
-        await matchUserWithDoctor(user.uid, prefHealthKey);
-      } catch (mErr) {
-        console.warn("Doctor matching call:", mErr);
-        await setDoc(userRef, {
-          needs_doctor_assignment: true,
-          preferred_health: prefHealthKey,
-        }, { merge: true }).catch(() => {});
+      // 4. Trigger doctor matching ONLY if user does not already have an assigned doctor
+      const userSnap = await getDoc(userRef);
+      const uData = userSnap.exists() ? userSnap.data() : {};
+      const hasAssignedDoctor = Boolean(
+        (uData.doctor && uData.doctor.uid) || uData.doctor_uid || uData.doctor_id
+      );
+
+      if (!hasAssignedDoctor) {
+        try {
+          await matchUserWithDoctor(user.uid, prefHealthKey);
+        } catch (mErr) {
+          console.warn("Doctor matching call:", mErr);
+          await setDoc(userRef, {
+            needs_doctor_assignment: true,
+            preferred_health: prefHealthKey,
+          }, { merge: true }).catch(() => {});
+        }
+      } else {
+        console.log(
+          "User already has assigned doctor. Preserving assignment and skipping matchUserWithDoctor."
+        );
       }
 
       // 5. Clean redirect without dialogs
@@ -1025,41 +1050,32 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
     <div className="fixed inset-0 z-50 bg-[#1E1E1E] overflow-y-auto flex flex-col justify-between text-white font-sans">
       <BackgroundVideo opacity={0.25} />
 
-      {/* Sticky Top Header */}
-      <div className="sticky top-0 z-30 bg-[#1B1A18]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3.5 shadow-md">
+      {/* Sticky Top Header matching Mobile App */}
+      <div className="sticky top-0 z-30 bg-[#1B1A18]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span
-              className="text-2xl font-normal text-white"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
-            >
-              AMBÉ®
-            </span>
-            <span className="text-xs uppercase tracking-widest font-semibold text-[#FFD3AC] hidden sm:inline">
-              Intake Assessment &amp; Health Profile
-            </span>
+            <Image
+              src="/images/logos/ambe_logo.png"
+              alt="AMBÉ"
+              width={100}
+              height={30}
+              className="w-[85px] sm:w-[105px] h-auto object-contain cursor-pointer"
+              priority
+              onClick={() => {
+                if (onClose) onClose();
+                else router.push("/user/home");
+              }}
+            />
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex flex-col items-end text-right">
-              <span className="text-xs font-semibold text-gray-200">
-                {totalAnsweredCount} of {totalQuestionsCount} completed
-              </span>
-              <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
-                <div
-                  className="h-full bg-[#FFD3AC] transition-all duration-300 rounded-full"
-                  style={{ width: `${percentComplete}%` }}
-                />
-              </div>
-            </div>
-
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handleSkip}
               disabled={isSaving}
-              className="text-xs font-semibold uppercase tracking-wider text-gray-300 hover:text-white transition-colors py-1.5 px-4 rounded-full bg-white/10 border border-white/20 shadow-xs cursor-pointer hover:bg-white/20"
+              className="text-xs font-bold text-[#FFD3AC] border border-[#FFD3AC]/50 rounded-full px-5 py-1.5 hover:bg-[#FFD3AC]/10 transition cursor-pointer"
             >
-              {(hasInitialSpecialty || selectedHealthField) ? "Skip & Finish" : "Skip"}
+              Skip
             </button>
 
             {onClose && (
@@ -1077,40 +1093,62 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         </div>
       </div>
 
-      {/* Main Form Container */}
-      <main className="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-8 py-8 space-y-12">
-        {/* Intro Hero Banner */}
-        <div className="bg-[#1B1A18]/80 border border-white/15 rounded-3xl p-6 sm:p-10 shadow-sm text-center space-y-3">
-          <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-            Holistic Intake Profile
+      {/* Progress Bar Row directly below top bar matching Mobile App */}
+      <div className="sticky top-[58px] z-20 bg-black/40 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-2.5">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <span className="text-xs sm:text-sm font-medium text-white/85">
+            {totalAnsweredCount} of {totalQuestionsCount} completed
           </span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-20 sm:w-28 h-1.5 bg-white/15 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#FFD3AC] transition-all duration-300 rounded-full"
+                style={{ width: `${percentComplete}%` }}
+              />
+            </div>
+            <span className="text-xs sm:text-sm font-bold text-[#FFD3AC]">
+              {percentComplete}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Form Container */}
+      <main className="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-8 py-6 space-y-8 pb-36">
+        {/* Intro Hero Banner matching Mobile App */}
+        <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-5 sm:p-7 shadow-sm space-y-3">
+          <div>
+            <span className="inline-block px-3 py-1 bg-[#FFD3AC]/20 text-[#FFD3AC] text-[11px] font-bold tracking-wider rounded-md uppercase">
+              HOLISTIC INTAKE
+            </span>
+          </div>
           <h1
-            className="text-3xl sm:text-4xl font-normal text-white"
+            className="text-2xl sm:text-3xl font-semibold text-white leading-tight"
             style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
           >
-            Wellness Assessment &amp; Medical History
+            Personalized Constitutional Assessment &amp; Health Profile
           </h1>
-          <p className="text-sm text-gray-300 max-w-xl mx-auto leading-relaxed">
-            Please complete your holistic profile below. All answers are kept strictly confidential and reviewed with your doctor to deliver personalized care.
+          <p className="text-xs sm:text-sm text-white/75 leading-relaxed">
+            Complete all sections below to receive your personalized constitution report, or choose your health specialty to book your specialist consultation.
           </p>
         </div>
 
         {/* ================================================================ */}
         {/* SECTION 1: CONSTITUTION & DOSHA ASSESSMENT (48 QUESTIONS)        */}
         {/* ================================================================ */}
-        <section className="space-y-8">
-          <div className="border-b border-white/15 pb-4">
+        <section className="space-y-6">
+          <div className="space-y-1 border-b border-white/10 pb-4">
             <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-              Part 1 of {hasInitialSpecialty ? 3 : 4}
+              PART 1
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-medium text-white mt-1"
+              className="text-2xl sm:text-3xl font-medium text-white"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
               Constitution &amp; Dosha Profile
             </h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Select the option that most closely describes your lifelong baseline tendencies.
+            <p className="text-xs sm:text-sm text-gray-400">
+              Answer these 48 questions based on your lifelong baseline tendencies to determine your unique Vata, Pitta, and Kapha constitution.
             </p>
           </div>
 
@@ -1119,23 +1157,34 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               .filter((q) => q.category === catName);
 
             return (
-              <div key={catName} className="space-y-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFD3AC] px-1">
+              <div key={catName} className="space-y-3 pt-2">
+                <h3 className="text-sm sm:text-base font-bold text-[#FFD3AC] tracking-wide">
                   {catName}
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {catQuestions.map(({ question, options, originalIdx }) => {
                     const selectedOpt = doshaAnswers[originalIdx];
+                    const isAnswered = selectedOpt !== null && selectedOpt !== undefined;
                     return (
                       <div
                         key={originalIdx}
-                        className="bg-[#1B1A18]/80 border border-white/15 rounded-2xl p-5 sm:p-6 space-y-3 shadow-xs"
+                        className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition ${
+                          isAnswered
+                            ? "bg-white/[0.04] border-[#FFD3AC]/30"
+                            : "bg-white/[0.02] border-white/10"
+                        }`}
                       >
-                        <div className="flex items-start gap-3">
-                          <span className="w-6 h-6 rounded-full bg-white/10 border border-white/15 text-[#FFD3AC] text-xs font-bold flex items-center justify-center shrink-0">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
+                            isAnswered
+                              ? "bg-[#FFD3AC]/20 border-[#FFD3AC] text-[#FFD3AC]"
+                              : "bg-white/10 border-white/20 text-white/80"
+                          }`}>
                             {originalIdx + 1}
                           </span>
-                          <h4 className="font-semibold text-white text-base sm:text-lg font-sans">{question}</h4>
+                          <h4 className="font-semibold text-white text-sm sm:text-base font-sans">
+                            {question}
+                          </h4>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
@@ -1146,14 +1195,18 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                                 key={optIdx}
                                 type="button"
                                 onClick={() => handleSelectDosha(originalIdx, optIdx)}
-                                className={`p-3.5 rounded-xl text-left border transition text-sm sm:text-base font-medium cursor-pointer flex items-center justify-between ${
+                                className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-xs sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
                                   isSelected
-                                    ? "border-transparent bg-[#FFD3AC] text-[#1E1E1E] shadow-xs font-semibold"
-                                    : "border-white/10 bg-white/10 text-gray-200 hover:bg-white/15 hover:text-white"
+                                    ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
+                                    : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
                                 }`}
                               >
-                                <span>{optText}</span>
-                                {isSelected && <CheckIcon className="w-4 h-4 text-[#1E1E1E] shrink-0 ml-2" />}
+                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                  isSelected ? "border-[#FFD3AC] bg-[#FFD3AC]" : "border-white/30"
+                                }`}>
+                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]" />}
+                                </div>
+                                <span className="flex-1">{optText}</span>
                               </button>
                             );
                           })}
@@ -1174,23 +1227,25 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
           <section
             ref={specialtyRef}
             id="specialty-section"
-            className={`space-y-6 bg-[#1B1A18]/80 border rounded-3xl p-6 sm:p-8 transition-all ${
-              showSpecialtyAlert ? "border-[#FFD3AC] shadow-lg ring-2 ring-[#FFD3AC]" : "border-white/15 shadow-sm"
+            className={`space-y-4 rounded-3xl p-5 sm:p-7 transition-all ${
+              showSpecialtyAlert
+                ? "bg-amber-950/20 border-2 border-[#FFD3AC] shadow-lg ring-2 ring-[#FFD3AC]/40"
+                : "bg-white/[0.03] border border-white/10 shadow-sm"
             }`}
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/15 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
               <div>
                 <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-                  Part 2 of 4 (Required)
+                  PART 2
                 </span>
                 <h2
                   className="text-2xl sm:text-3xl font-medium text-white mt-1"
                   style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
                 >
-                  Which area are you looking to improve?
+                  Area of Focus / Specialty
                 </h2>
-                <p className="text-sm text-gray-400 mt-1">
-                  Your primary health specialty matches you with the ideal licensed practitioner for your consultation.
+                <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                  Select the clinical specialty you seek. This is required to match you with the right specialist.
                 </p>
               </div>
               {selectedHealthField && (
@@ -1207,7 +1262,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               {HEALTH_FIELDS.map((hf) => {
                 const isSelected = selectedHealthField === hf.key;
                 return (
@@ -1217,21 +1272,19 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     onClick={() => handleSelectSpecialty(hf.key)}
                     className={`p-4 rounded-2xl text-left border transition cursor-pointer flex flex-col justify-between space-y-2 ${
                       isSelected
-                        ? "border-transparent bg-[#FFD3AC] text-[#1E1E1E] shadow-sm"
-                        : "border-white/10 bg-white/10 text-white hover:bg-white/15 hover:border-white/20"
+                        ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-white shadow-sm"
+                        : "border-white/10 bg-white/5 text-white/90 hover:bg-white/10 hover:border-white/20"
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className={`font-bold text-base sm:text-lg ${isSelected ? "text-[#1E1E1E]" : "text-white"}`}>{hf.label}</span>
-                      <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center border text-xs ${
-                          isSelected ? "bg-[#1E1E1E] text-[#FFD3AC] border-[#1E1E1E]" : "border-white/30 bg-transparent text-transparent"
-                        }`}
-                      >
+                      <span className={`font-bold text-base ${isSelected ? "text-[#FFD3AC]" : "text-white"}`}>{hf.label}</span>
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-xs ${
+                        isSelected ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]" : "border-white/30 text-transparent"
+                      }`}>
                         ✓
-                      </span>
+                      </div>
                     </div>
-                    <p className={`text-xs sm:text-sm leading-snug ${isSelected ? "text-[#1E1E1E]/80" : "text-gray-300"}`}>{hf.desc}</p>
+                    <p className={`text-xs leading-snug ${isSelected ? "text-white/80" : "text-gray-300"}`}>{hf.desc}</p>
                   </button>
                 );
               })}
@@ -1242,24 +1295,24 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         {/* ================================================================ */}
         {/* SECTION 3: MEDICAL CONDITIONS CHECKLIST (33 CONDITIONS)          */}
         {/* ================================================================ */}
-        <section className="space-y-6">
-          <div className="border-b border-white/15 pb-4">
+        <section className="space-y-4">
+          <div className="border-b border-white/10 pb-4 space-y-1">
             <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-              Part {hasInitialSpecialty ? 2 : 3} of {hasInitialSpecialty ? 3 : 4}
+              PART {hasInitialSpecialty ? "2" : "3"}
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-medium text-white mt-1"
+              className="text-2xl sm:text-3xl font-medium text-white"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
               Medical History &amp; Existing Conditions
             </h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Select all conditions that currently apply or that you have been diagnosed with, or choose &ldquo;None of the above&rdquo;.
+            <p className="text-xs sm:text-sm text-gray-400">
+              Select all conditions that apply to you, or choose &ldquo;None of the above&rdquo;.
             </p>
           </div>
 
-          <div className="bg-[#1B1A18]/80 border border-white/15 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
-            <div className="flex flex-wrap gap-2.5">
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs">
+            <div className="flex flex-wrap gap-2">
               {MEDICAL_CONDITIONS_LIST.map((condition) => {
                 const isSelected = selectedConditions.has(condition);
                 return (
@@ -1267,16 +1320,16 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     key={condition}
                     type="button"
                     onClick={() => handleToggleCondition(condition)}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer text-left ${
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer text-left border ${
                       isSelected
-                        ? "bg-[#FFD3AC] text-[#1E1E1E] font-semibold border-transparent shadow-xs"
-                        : "bg-white/10 border border-white/10 text-gray-200 hover:bg-white/15 hover:text-white"
+                        ? "bg-[#FFD3AC]/25 border-[#FFD3AC] text-[#FFD3AC] font-semibold"
+                        : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
                     }`}
                   >
                     <span
-                      className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
+                      className={`w-4 h-4 rounded-full flex items-center justify-center border text-[10px] ${
                         isSelected
-                          ? "bg-[#1E1E1E] border-[#1E1E1E] text-white"
+                          ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]"
                           : "border-white/30 text-transparent bg-transparent"
                       }`}
                     >
@@ -1290,16 +1343,16 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               <button
                 type="button"
                 onClick={handleToggleNoneConditions}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer border ${
                   noneConditions
-                    ? "bg-[#FFD3AC] text-[#1E1E1E] border-transparent shadow-xs"
-                    : "bg-white/10 border border-white/10 text-gray-300 hover:text-white hover:bg-white/15"
+                    ? "bg-[#FFD3AC]/25 border-[#FFD3AC] text-[#FFD3AC]"
+                    : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <span
-                  className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${
+                  className={`w-4 h-4 rounded-full flex items-center justify-center border text-[10px] ${
                     noneConditions
-                      ? "bg-[#1E1E1E] border-[#1E1E1E] text-white"
+                      ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]"
                       : "border-white/30 text-transparent bg-transparent"
                   }`}
                 >
@@ -1314,35 +1367,44 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         {/* ================================================================ */}
         {/* SECTION 4: CLINICAL & LIFESTYLE ASSESSMENT                       */}
         {/* ================================================================ */}
-        <section className="space-y-6">
-          <div className="border-b border-white/15 pb-4">
+        <section className="space-y-4">
+          <div className="border-b border-white/10 pb-4 space-y-1">
             <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-              Part {hasInitialSpecialty ? 3 : 4} of {hasInitialSpecialty ? 3 : 4}
+              PART {hasInitialSpecialty ? "3" : "4"}
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-medium text-white mt-1"
+              className="text-2xl sm:text-3xl font-medium text-white"
               style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
             >
-              Lifestyle, Habits &amp; Clinical Symptoms
+              Digestion, Lifestyle &amp; Clinical Symptoms
             </h2>
-            <p className="text-sm text-gray-400 mt-1">
-              Physical activity, digestive patterns, energy and daily habits.
+            <p className="text-xs sm:text-sm text-gray-400">
+              Share details about your daily routine, digestion, sleep, and physical activity.
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {allExtendedSingleQuestions.map((q, idx) => {
               const selectedOpt = extendedAnswers[q.id];
+              const isAnswered = selectedOpt !== undefined && selectedOpt !== null;
               return (
                 <div
                   key={q.id}
-                  className="bg-[#1B1A18]/80 border border-white/15 rounded-2xl p-5 sm:p-6 space-y-3 shadow-xs"
+                  className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition ${
+                    isAnswered
+                      ? "bg-white/[0.04] border-[#FFD3AC]/30"
+                      : "bg-white/[0.02] border-white/10"
+                  }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-full bg-white/10 border border-white/15 text-[#FFD3AC] text-xs font-bold flex items-center justify-center shrink-0">
-                      {idx + 1}
+                  <div className="flex items-center gap-3">
+                    <span className={`w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
+                      isAnswered
+                        ? "bg-[#FFD3AC]/20 border-[#FFD3AC] text-[#FFD3AC]"
+                        : "bg-white/10 border-white/20 text-white/80"
+                    }`}>
+                      {DOSHA_QUESTIONS.length + idx + 1}
                     </span>
-                    <h4 className="font-semibold text-white text-base sm:text-lg font-sans">{q.question}</h4>
+                    <h4 className="font-semibold text-white text-sm sm:text-base font-sans">{q.question}</h4>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
@@ -1353,14 +1415,18 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                           key={optText}
                           type="button"
                           onClick={() => handleSelectExtendedSingle(q.id, optText)}
-                          className={`p-3.5 rounded-xl text-left border transition text-sm sm:text-base font-medium cursor-pointer flex items-center justify-between ${
+                          className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-xs sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
                             isSelected
-                              ? "border-transparent bg-[#FFD3AC] text-[#1E1E1E] shadow-xs font-semibold"
-                              : "border-white/10 bg-white/10 text-gray-200 hover:bg-white/15 hover:text-white"
+                              ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
+                              : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
                           }`}
                         >
-                          <span>{optText}</span>
-                          {isSelected && <CheckIcon className="w-4 h-4 text-[#1E1E1E] shrink-0 ml-2" />}
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            isSelected ? "border-[#FFD3AC] bg-[#FFD3AC]" : "border-white/30"
+                          }`}>
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]" />}
+                          </div>
+                          <span className="flex-1">{optText}</span>
                         </button>
                       );
                     })}
@@ -1370,54 +1436,24 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
             })}
           </div>
         </section>
-
-        {/* Bottom Submission & Action Card */}
-        <div className="bg-[#1B1A18]/90 border border-white/15 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-            <div>
-              <h3 className="font-semibold text-lg text-white">Ready to submit?</h3>
-              <p className="text-xs text-gray-400 mt-1">
-                {isFullyCompleted
-                  ? "All sections are answered. Submitting unlocks your personalized Dosha constitution report."
-                  : "You can submit now, or choose Skip & Finish to proceed with booking your consultation."}
-              </p>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-xs font-bold text-[#FFD3AC] uppercase tracking-wider">
-                {percentComplete}% Completed
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <button
-              type="button"
-              onClick={handleSkip}
-              disabled={isSaving}
-              className="w-full sm:w-auto px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-wider text-gray-300 hover:text-white hover:bg-white/10 border border-white/20 transition cursor-pointer"
-            >
-              {(hasInitialSpecialty || selectedHealthField) ? "Skip & Finish" : "Skip to Specialty"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => saveAssessment(isFullyCompleted)}
-              disabled={isSaving || (!hasInitialSpecialty && !selectedHealthField)}
-              className="w-full sm:w-auto px-10 py-3.5 rounded-full text-xs font-semibold uppercase tracking-[0.14em] transition bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {isSaving
-                ? "Saving..."
-                : isFullyCompleted
-                ? "Complete Assessment"
-                : "Save & Continue"}
-            </button>
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-gray-400 pb-8">
-          Your answers are private and encrypted. They will only be reviewed with your licensed specialist during your clinical consultation.
-        </p>
       </main>
+
+      {/* Sticky Bottom Action Bar matching Mobile App */}
+      <div className="sticky bottom-0 z-30 bg-[#1B1A18]/95 backdrop-blur-md border-t border-white/10 px-4 sm:px-8 py-3.5 shadow-2xl">
+        <div className="max-w-4xl mx-auto space-y-2 text-center">
+          <button
+            type="button"
+            onClick={handleSaveAndContinue}
+            disabled={isSaving}
+            className="w-full py-4 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase shadow-md transition cursor-pointer disabled:opacity-50"
+          >
+            {isSaving ? "Saving..." : "SAVE & CONTINUE"}
+          </button>
+          <p className="text-[11px] sm:text-xs text-white/60">
+            There&apos;s no wrong answer — just choose whatever feels most true for you.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

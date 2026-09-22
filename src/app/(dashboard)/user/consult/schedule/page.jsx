@@ -308,6 +308,9 @@ function ScheduleConsultationContent() {
       const booked = snapshot.docs.map(doc => doc.data().time.toDate());
       setBookedSlots(booked);
     } catch (error) {
+      if (error?.code === 'permission-denied') {
+        return;
+      }
       console.error('Error loading booked appointments:', error);
     }
   };
