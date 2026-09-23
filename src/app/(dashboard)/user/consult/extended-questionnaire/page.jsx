@@ -20,10 +20,27 @@ export default function ExtendedQuestionnairePage() {
     return null;
   }
 
+  const handleDone = (targetPath) => {
+    if (targetPath) {
+      router.replace(targetPath);
+      return;
+    }
+    const hasDoctor = Boolean(profile?.doctor?.uid || profile?.doctor_uid);
+    if (profile?.is_consultation_set) {
+      router.replace("/user/consult");
+    } else if (hasDoctor) {
+      router.replace("/user/consult/schedule");
+    } else {
+      router.replace("/user/consult");
+    }
+  };
+
   return (
     <ProtectedRoute userType="user">
       <ExtendedQuestionnaireModal
-        onComplete={() => router.replace(profile?.is_consultation_set ? "/user/consult" : "/user/consult/schedule")}
+        fromBooking={true}
+        onComplete={handleDone}
+        onSkip={handleDone}
         onClose={() => router.push("/user/home")}
       />
     </ProtectedRoute>

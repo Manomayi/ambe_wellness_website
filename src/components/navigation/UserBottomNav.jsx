@@ -88,6 +88,13 @@ export default function UserBottomNav() {
     <nav
       aria-label="Mobile Navigation"
       className="fixed bottom-0 left-0 right-0 z-50 bg-[#000000] border-t border-white/10 shadow-2xl safe-area-pb"
+      style={{
+        transform: "translate3d(0, 0, 0)",
+        WebkitTransform: "translate3d(0, 0, 0)",
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        willChange: "transform",
+      }}
     >
       <div className="max-w-lg mx-auto flex items-center justify-around h-16 px-2">
         {navItems.map((item) => {

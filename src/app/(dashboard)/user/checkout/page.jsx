@@ -455,7 +455,7 @@ export default function UserCheckoutPage() {
   return (
     <ProtectedRoute userType="user">
       <WebLayoutWrapper maxWidth="680px">
-        <div className="space-y-6 pb-16">
+        <div className="space-y-6 pb-36">
           <div className="flex items-center gap-3 pt-1">
             <AmbeBackButton href="/user/cart" />
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">

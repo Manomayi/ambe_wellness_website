@@ -38,7 +38,20 @@ function VerifyEmailContent() {
     if (destinationRole === "doctor") {
       router.push("/doctor/home");
     } else {
-      router.push("/user/home");
+      let isCompleted = false;
+      if (auth.currentUser) {
+        try {
+          const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+          isCompleted = userSnap.data()?.is_free_questionnaire_completed === true;
+        } catch (err) {
+          console.warn("Could not check user doc:", err);
+        }
+      }
+      if (!isCompleted) {
+        router.push("/user/menu/questionnaire");
+      } else {
+        router.push("/user/home");
+      }
     }
   }, [router, userType, queryRole]);
 

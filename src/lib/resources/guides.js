@@ -18,6 +18,8 @@ export const FEATURED_GUIDE_IDS = [
   "home-environment",
   "anti-inflammatory-foods",
   "mental-wellness",
+  "think-dirty-app",
+  "inci-beauty-app",
 ];
 
 export const RESOURCE_GUIDES = [
@@ -101,6 +103,34 @@ export const RESOURCE_GUIDES = [
       "Simple, nutrient-dense, healing meals, cooling drinks, and snacks rooted in Ayurvedic tradition.",
     downloadTitle: "Seasonal Recipe Collection",
   },
+  {
+    id: "think-dirty-app",
+    category: "Body Care",
+    categories: ["Body Care", "Home Environment"],
+    appIcon: "/images/resources/think_dirty.png",
+    image: "/images/resources/think_dirty.png",
+    imageAlt: "Think Dirty App",
+    title: "Think Dirty: Ingredient & Beauty Scanner",
+    summary:
+      "Empowers consumers to identify potential toxins in cosmetics and personal care. Scan barcodes to get a 0-10 Dirty Meter® rating and safe alternatives.",
+    badge: "Recommended Tool",
+    externalUrl: "https://www.thinkdirtyapp.com",
+    ctaText: "Open Think Dirty",
+  },
+  {
+    id: "inci-beauty-app",
+    category: "Body Care",
+    categories: ["Body Care", "Home Environment"],
+    appIcon: "/images/resources/inci_beauty.png",
+    image: "/images/resources/inci_beauty.png",
+    imageAlt: "INCI Beauty App",
+    title: "INCI Beauty: Cosmetic Ingredient Scanner",
+    summary:
+      "Analyze cosmetic formulas and chemical compositions simply by scanning barcodes or searching INCI ingredient lists to assess ingredient safety.",
+    badge: "Recommended Tool",
+    externalUrl: "https://apps.apple.com/us/app/inci-beauty-cosmetic-scanner/id1276113963",
+    ctaText: "Open App Store",
+  },
 ];
 
 export function filterGuides(guides, category) {
@@ -109,5 +139,9 @@ export function filterGuides(guides, category) {
       Boolean
     );
   }
-  return guides.filter((guide) => guide.category === category);
+  return guides.filter(
+    (guide) =>
+      guide.category === category ||
+      (Array.isArray(guide.categories) && guide.categories.includes(category))
+  );
 }

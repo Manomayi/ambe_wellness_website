@@ -154,8 +154,11 @@ export default function ReferFriendPage() {
     <ProtectedRoute userType="user">
       <WebLayoutWrapper>
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-          <BackButton />
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Refer a Friend</h1>
+          {/* Sticky Header: Back Button & Title */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-6 pt-6 pb-3 border-b border-white/10 shadow-sm space-y-2">
+            <BackButton />
+            <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif">Refer a Friend</h1>
+          </div>
 
           {/* Hero Promo Card — peach bg matching Flutter */}
           <div className="bg-[#FFD3AC] rounded-3xl p-6 sm:p-8 text-center shadow-[0_8px_20px_rgba(255,211,172,0.25)]">

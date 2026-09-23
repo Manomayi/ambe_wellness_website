@@ -142,12 +142,14 @@ export default function DeleteAccountPage() {
 
   return (
     <WebLayoutWrapper maxWidth="600px">
-      {/* Top Bar with AmbeBackButton */}
-      <div className="flex items-center gap-4 mb-6">
-        <AmbeBackButton />
-        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
-          Delete Account
-        </h1>
+      {/* Sticky Top Bar with AmbeBackButton */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-6 border-b border-white/10 shadow-sm">
+        <div className="flex items-center gap-4">
+          <AmbeBackButton />
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Delete Account
+          </h1>
+        </div>
       </div>
 
       <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-xl space-y-6">

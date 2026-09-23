@@ -59,7 +59,7 @@ export default function AmbeTextField({
             type="button"
             tabIndex={-1}
             onClick={() => setObscure(!obscure)}
-            className="absolute right-4 text-gray-500 hover:text-gray-700 p-1 focus:outline-none cursor-pointer"
+            className="absolute right-4 text-[#FFD3AC] hover:opacity-80 p-1 focus:outline-none cursor-pointer transition-opacity"
           >
             {obscure ? (
               // Eye Slash

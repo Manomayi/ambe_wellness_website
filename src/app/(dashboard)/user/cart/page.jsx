@@ -236,11 +236,11 @@ export default function UserCartPage() {
   return (
     <ProtectedRoute userType="user">
       <WebLayoutWrapper>
-        <div className="space-y-6 pb-28">
-          {/* Header */}
-          <div className="flex items-center gap-4 pt-2">
+        <div className="space-y-6 pb-36">
+          {/* Sticky Header */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm flex items-center gap-4">
             <AmbeBackButton onClick={() => router.push('/user/store')} />
-            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-serif">
               {totalQuantity === 0 ? 'No Items' : `${totalQuantity} Item${totalQuantity > 1 ? 's' : ''}`}
             </h1>
           </div>

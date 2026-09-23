@@ -50,6 +50,7 @@ export default function ContinueHandler() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(queryRole || "user");
   const [isDoctor, setIsDoctor] = useState(queryRole === "doctor");
+  const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
 
   const platform = useMemo(detectPlatform, []);
@@ -60,7 +61,11 @@ export default function ContinueHandler() {
   // Otherwise, if source is 'web' or on desktop/web session, user continues on web.
   const isFromApp = source === "app";
 
-  const nextWebPath = isDoctor ? "/doctor/schedule" : "/user/home";
+  const nextWebPath = isDoctor
+    ? "/doctor/schedule"
+    : questionnaireCompleted
+    ? "/user/home"
+    : "/user/menu/questionnaire";
 
   const [showFallbackCard, setShowFallbackCard] = useState(!isFromApp || platform !== "ios");
 
@@ -91,6 +96,14 @@ export default function ContinueHandler() {
           } else {
             setIsDoctor(queryRole === "doctor");
             setRole(queryRole || "user");
+            try {
+              const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+              if (userDoc.exists() && userDoc.data()?.is_free_questionnaire_completed === true) {
+                setQuestionnaireCompleted(true);
+              }
+            } catch (uErr) {
+              console.warn("ContinueHandler user doc error:", uErr);
+            }
           }
         }
       } catch (err) {

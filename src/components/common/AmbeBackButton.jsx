@@ -33,13 +33,13 @@ export default function AmbeBackButton({
         ${className}
       `}
     >
-      {/* Flutter app rotated play arrow / chevron back */}
+      {/* Flutter app rotated play arrow back */}
       <svg
         style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
         fill="currentColor"
         viewBox="0 0 24 24"
       >
-        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+        <path d="M16 19V5l-11 7z" />
       </svg>
     </button>
   );

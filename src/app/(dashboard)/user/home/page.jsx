@@ -12,11 +12,10 @@ export default function UserHomePage() {
   const isMember = Boolean(profile?.subscription?.active);
   const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "there";
   const isQuestionnaireCompleted = profile?.is_free_questionnaire_completed === true;
-  const isExtendedQuestionnaireCompleted = profile?.is_extended_questionnaire_completed === true;
-
   const handleNextStepClick = () => {
-    if (!isExtendedQuestionnaireCompleted) {
-      router.push("/user/consult/extended-questionnaire");
+    const hasDoctor = Boolean(profile?.doctor?.uid || profile?.doctor_uid);
+    if (hasDoctor && !profile?.is_consultation_set) {
+      router.push("/user/consult/schedule");
     } else {
       router.push("/user/consult");
     }
@@ -141,7 +140,7 @@ export default function UserHomePage() {
               if (isQuestionnaireCompleted) {
                 router.push("/user/menu/questionnaire/results");
               } else {
-                router.push("/user/menu/questionnaire");
+                router.push("/user/menu/questionnaire?returnToHome=true");
               }
             }}
             className="

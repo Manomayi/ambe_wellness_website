@@ -8,7 +8,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import {
-  LockClosedIcon,
   CalendarDaysIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
@@ -278,9 +277,13 @@ export default function QuestionnaireResultsPage() {
   if (error) {
     return (
       <WebLayoutWrapper>
-        <div className="flex items-center gap-4 mb-6">
-          <AmbeBackButton />
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">Questionnaire Result</h1>
+        <div className="relative flex items-center justify-center mb-6 pt-1">
+          <div className="absolute left-0">
+            <AmbeBackButton onClick={() => router.back()} />
+          </div>
+          <h1 className="font-serif text-xl sm:text-2xl font-semibold text-white tracking-tight text-center">
+            Questionnaire Result
+          </h1>
         </div>
         <p className="text-center text-red-400 mt-8">{error}</p>
       </WebLayoutWrapper>
@@ -290,20 +293,21 @@ export default function QuestionnaireResultsPage() {
   if (!doshaData) {
     return (
       <WebLayoutWrapper>
-        <div className="flex items-center gap-4 mb-6">
-          <AmbeBackButton />
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">Questionnaire Result</h1>
-        </div>
-        <div className="flex flex-col items-center justify-center min-h-[340px] text-center space-y-5 bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 backdrop-blur-md shadow-xl">
-          <div className="w-14 h-14 rounded-full bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 flex items-center justify-center text-[#FFD3AC]">
-            <LockClosedIcon className="w-7 h-7" />
+        <div className="relative flex items-center justify-center mb-8 pt-1">
+          <div className="absolute left-0">
+            <AmbeBackButton onClick={() => router.back()} />
           </div>
-          <p className="text-base font-medium text-white/90 max-w-sm leading-relaxed">
+          <h1 className="font-serif text-xl sm:text-2xl font-semibold text-white tracking-tight text-center">
+            Questionnaire Result
+          </h1>
+        </div>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4 space-y-6">
+          <p className="text-base sm:text-lg font-normal text-white max-w-sm sm:max-w-md leading-relaxed font-sans">
             Please complete the questionnaire to view your personalized constitution report.
           </p>
           <button
             onClick={() => router.push('/user/menu/questionnaire')}
-            className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg transition-transform active:scale-95 cursor-pointer"
+            className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-8 py-3.5 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg transition-transform active:scale-95 cursor-pointer"
           >
             COMPLETE QUESTIONNAIRE
           </button>
@@ -318,12 +322,16 @@ export default function QuestionnaireResultsPage() {
 
   return (
     <WebLayoutWrapper>
-      {/* Top Bar with AmbeBackButton */}
-      <div className="flex items-center gap-4 mb-6">
-        <AmbeBackButton />
-        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
-          Questionnaire Result
-        </h1>
+      {/* Sticky Top Bar with AmbeBackButton */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-6 border-b border-white/10 shadow-sm">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute left-0">
+            <AmbeBackButton onClick={() => router.back()} />
+          </div>
+          <h1 className="font-serif text-xl sm:text-2xl font-semibold text-white tracking-tight text-center">
+            Questionnaire Result
+          </h1>
+        </div>
       </div>
 
       <div className="space-y-6 pb-12">

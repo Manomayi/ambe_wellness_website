@@ -537,15 +537,18 @@ export default function UserRefundsPage() {
   return (
     <WebLayoutWrapper>
       <div className="space-y-6 pb-24">
-        <div className="flex items-center gap-4 pt-2">
-          <AmbeBackButton onClick={() => router.push('/user/menu')} />
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-serif">
-              Refund Management
-            </h1>
-            <p className="text-xs sm:text-sm text-white/60 mt-0.5">
-              View consultation deposit payment history, check refund eligibility, and track refund requests.
-            </p>
+        {/* Sticky Top Header */}
+        <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+          <div className="flex items-center gap-4">
+            <AmbeBackButton onClick={() => router.push('/user/menu')} />
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-serif">
+                Refund Management
+              </h1>
+              <p className="text-xs sm:text-sm text-white/60 mt-0.5">
+                View consultation deposit payment history, check refund eligibility, and track refund requests.
+              </p>
+            </div>
           </div>
         </div>
 

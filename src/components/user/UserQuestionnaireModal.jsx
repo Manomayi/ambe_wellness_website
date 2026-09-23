@@ -562,7 +562,13 @@ export const LIFESTYLE_HEALTH_QUESTIONS = [
 // ============================================================================
 // MAIN UNIFIED QUESTIONNAIRE COMPONENT
 // ============================================================================
-export default function UserQuestionnaireModal({ onComplete, onClose }) {
+export default function UserQuestionnaireModal({
+  onComplete,
+  onClose,
+  onSkip,
+  fromBooking = false,
+  returnToHomeOnSkip = false,
+}) {
   const router = useRouter();
   const { user, profile } = useAuth();
 
@@ -871,7 +877,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
     }
 
     // Specialty is selected! Save draft and finish
-    await saveAssessment(false);
+    await saveAssessment(false, true);
   };
 
   // Save & Continue handler for bottom sticky bar
@@ -887,7 +893,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
   };
 
   // Core save function
-  const saveAssessment = async (isCompleted = false) => {
+  const saveAssessment = async (isCompleted = false, isSkip = false) => {
     if (!user) return;
     setIsSaving(true);
 
@@ -1004,13 +1010,16 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
       // 4. Trigger doctor matching ONLY if user does not already have an assigned doctor
       const userSnap = await getDoc(userRef);
       const uData = userSnap.exists() ? userSnap.data() : {};
-      const hasAssignedDoctor = Boolean(
+      let hasAssignedDoctor = Boolean(
         (uData.doctor && uData.doctor.uid) || uData.doctor_uid || uData.doctor_id
       );
 
       if (!hasAssignedDoctor) {
         try {
-          await matchUserWithDoctor(user.uid, prefHealthKey);
+          const matchResult = await matchUserWithDoctor(user.uid, prefHealthKey);
+          if (matchResult?.matched && matchResult?.doctor) {
+            hasAssignedDoctor = true;
+          }
         } catch (mErr) {
           console.warn("Doctor matching call:", mErr);
           await setDoc(userRef, {
@@ -1024,11 +1033,22 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
         );
       }
 
-      // 5. Clean redirect without dialogs
-      if (onComplete) {
-        onComplete("/user/home");
+      // 5. Clean redirect: Once matched, proceed directly to booking (/user/consult/schedule)
+      let targetPath;
+      if (isSkip && returnToHomeOnSkip) {
+        targetPath = "/user/home";
+      } else if (hasAssignedDoctor || Boolean(profile?.doctor?.uid)) {
+        targetPath = "/user/consult/schedule";
       } else {
-        router.push("/user/home");
+        targetPath = "/user/consult";
+      }
+
+      if (isSkip && onSkip) {
+        onSkip(targetPath);
+      } else if (onComplete) {
+        onComplete(targetPath);
+      } else {
+        router.push(targetPath);
       }
     } catch (err) {
       console.error("Error saving assessment:", err);
@@ -1182,7 +1202,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                           }`}>
                             {originalIdx + 1}
                           </span>
-                          <h4 className="font-semibold text-white text-sm sm:text-base font-sans">
+                          <h4 className="font-semibold text-white text-[15px] sm:text-base font-sans">
                             {question}
                           </h4>
                         </div>
@@ -1195,7 +1215,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                                 key={optIdx}
                                 type="button"
                                 onClick={() => handleSelectDosha(originalIdx, optIdx)}
-                                className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-xs sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
+                                className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
                                   isSelected
                                     ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
                                     : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
@@ -1320,7 +1340,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     key={condition}
                     type="button"
                     onClick={() => handleToggleCondition(condition)}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer text-left border ${
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13.5px] sm:text-sm font-medium transition cursor-pointer text-left border ${
                       isSelected
                         ? "bg-[#FFD3AC]/25 border-[#FFD3AC] text-[#FFD3AC] font-semibold"
                         : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
@@ -1343,7 +1363,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
               <button
                 type="button"
                 onClick={handleToggleNoneConditions}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition cursor-pointer border ${
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13.5px] sm:text-sm font-semibold transition cursor-pointer border ${
                   noneConditions
                     ? "bg-[#FFD3AC]/25 border-[#FFD3AC] text-[#FFD3AC]"
                     : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
@@ -1404,7 +1424,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                     }`}>
                       {DOSHA_QUESTIONS.length + idx + 1}
                     </span>
-                    <h4 className="font-semibold text-white text-sm sm:text-base font-sans">{q.question}</h4>
+                    <h4 className="font-semibold text-white text-[15px] sm:text-base font-sans">{q.question}</h4>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
@@ -1415,7 +1435,7 @@ export default function UserQuestionnaireModal({ onComplete, onClose }) {
                           key={optText}
                           type="button"
                           onClick={() => handleSelectExtendedSingle(q.id, optText)}
-                          className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-xs sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
+                          className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
                             isSelected
                               ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
                               : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"

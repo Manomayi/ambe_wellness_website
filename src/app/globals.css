@@ -38,19 +38,28 @@
 }
 
 /* ── Base ── */
-html,
-body {
-  overflow-x: clip;
-  max-width: 100%;
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
+  overflow-x: hidden;
+  max-width: 100%;
   background: var(--ambe-cream);
   color: var(--ambe-charcoal);
   font-size: 16px;
   line-height: 1.5;
   font-family: var(--font-jost), "Jost", sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Safe area insets for mobile Safari / notches */
+.safe-area-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.safe-area-pt {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
 }
 
 @layer base {

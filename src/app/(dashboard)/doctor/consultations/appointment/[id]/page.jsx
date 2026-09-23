@@ -62,24 +62,6 @@ export default function DoctorAppointmentPage() {
   const handleCallEnd = async ({ endedByDoctor } = {}) => {
     setInCall(false);
 
-    // When the user cuts the call from the app/web:
-    // Do NOT mark as completed and do NOT redirect to complete-report.
-    // Just pop the call page and return to consultations list.
-    if (!endedByDoctor) {
-      try {
-        await updateDoc(
-          doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
-          {
-            call_ended_at: new Date()
-          }
-        );
-      } catch (error) {
-        console.error('Error updating appointment call_ended_at:', error);
-      }
-      router.push('/doctor/consultations');
-      return;
-    }
-
     const patientUid = appointment?.user_id || appointment?.user_uid || appointment?.userId;
 
     // Read attendance back off the live consultation document before deciding
@@ -97,6 +79,8 @@ export default function DoctorAppointmentPage() {
     }
     const userJoined = liveConsultation.user_joined === true;
     const outcomeStatus = classifyOutcome({ userJoined, doctorJoined: true });
+
+    const callEndedBy = liveConsultation.call_ended_by || (endedByDoctor ? 'doctor' : 'user');
 
     // 1. Immediately reset is_consultation_set: false on patient's profile so user can book next appointment
     if (patientUid) {
@@ -123,7 +107,7 @@ export default function DoctorAppointmentPage() {
             doctor_joined: true,
             doctor_joined_at: serverTimestamp(),
             call_ended_at: serverTimestamp(),
-            call_ended_by: 'doctor',
+            call_ended_by: callEndedBy,
             ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
             ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
             ...(appointment?.doctor_name ? { doctor_name: appointment.doctor_name } : {}),
@@ -177,7 +161,7 @@ export default function DoctorAppointmentPage() {
           status: outcomeStatus,
           consultation_outcome: outcomeStatus,
           call_status: 'ended',
-          call_ended_by: 'doctor',
+          call_ended_by: callEndedBy,
           call_ended_at: serverTimestamp(),
           doctor_joined: true,
           doctor_id: user.uid,

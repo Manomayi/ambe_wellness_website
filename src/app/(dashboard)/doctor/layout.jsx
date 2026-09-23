@@ -13,7 +13,7 @@ export default function DoctorLayout({ children }) {
   return (
     <div
       className={`relative bg-[#1E1E1E] text-white font-sans antialiased flex flex-col selection:bg-[#FFD3AC] selection:text-[#1E1E1E] ${
-        isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'
+        isChatPage ? 'h-screen overflow-hidden' : 'min-h-[100dvh]'
       }`}
     >
       {/* Background Video matching Flutter App */}

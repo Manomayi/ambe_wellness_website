@@ -110,15 +110,17 @@ export default function UserNotificationsSettingsPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-2xl mx-auto">
-      <div className="mb-6">
-        <BackButton fallbackRoute="/user/menu" />
-      </div>
-
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Notification Settings</h1>
-        <p className="text-sm text-white/70 mt-1">
-          Manage your email notification preferences.
-        </p>
+      {/* Sticky Top Header */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-6 md:-mx-8 px-6 md:px-8 -mt-6 md:-mt-8 pt-6 md:pt-8 pb-3 mb-6 border-b border-white/10 shadow-sm">
+        <div className="flex items-center gap-4">
+          <BackButton fallbackRoute="/user/menu" />
+          <div>
+            <h1 className="text-2xl font-bold text-white font-serif">Notification Settings</h1>
+            <p className="text-xs sm:text-sm text-white/70 mt-0.5">
+              Manage your email notification preferences.
+            </p>
+          </div>
+        </div>
       </div>
 
       {error && (

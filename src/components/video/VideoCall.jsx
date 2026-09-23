@@ -10,6 +10,7 @@ import {
   MicrophoneIcon,
   VideoCameraIcon,
   PhoneXMarkIcon,
+  ArrowLeftIcon,
 } from '@heroicons/react/24/solid';
 import {
   MicrophoneIcon as MicrophoneOutlineIcon,
@@ -61,6 +62,8 @@ export default function VideoCall({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [error, setError] = useState('');
+  const [showEndCallModal, setShowEndCallModal] = useState(false);
+  const [showBackModal, setShowBackModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -486,7 +489,7 @@ export default function VideoCall({
           {/* End Call */}
           <button
             type="button"
-            onClick={endCall}
+            onClick={() => setShowEndCallModal(true)}
             aria-label="End Video Call"
             className="w-14 h-14 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-xl cursor-pointer active:scale-95 ring-2 ring-red-400/50"
           >
@@ -498,7 +501,7 @@ export default function VideoCall({
       {/* Call Info & Back Button */}
       <div className="absolute top-4 left-4 flex items-center gap-3 z-30 pointer-events-auto">
         <AmbeBackButton 
-          onClick={handleBack} 
+          onClick={() => setShowBackModal(true)} 
           className="!bg-black/60 hover:!bg-black/80 !border-white/20 !text-[#FFD3AC] shadow-lg shrink-0" 
         />
         <div className="text-white drop-shadow-md">
@@ -506,6 +509,74 @@ export default function VideoCall({
           <p className="text-[11px] sm:text-xs text-white/70">Appointment ID: {appointmentId}</p>
         </div>
       </div>
+
+      {/* End Call Confirmation Modal */}
+      {showEndCallModal && (
+        <div className="fixed inset-0 z-[10000] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1E1E1E] border border-white/15 rounded-3xl max-w-sm sm:max-w-md w-full p-6 sm:p-7 shadow-2xl text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-red-500/15 border border-red-500/40 flex items-center justify-center mx-auto text-red-500">
+              <PhoneXMarkIcon className="w-7 h-7" />
+            </div>
+            <h3 className="text-xl font-bold text-white">Complete Consultation?</h3>
+            <p className="text-sm text-white/70 leading-relaxed">
+              Are you sure to complete the consultation? Once you hang up, you will not be able to join again and the consultation will be completed.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowEndCallModal(false)}
+                className="flex-1 py-3 px-4 rounded-xl border border-white/20 text-white/80 hover:bg-white/10 font-semibold text-sm transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowEndCallModal(false);
+                  endCall();
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition shadow-md cursor-pointer"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Back Button Confirmation Modal */}
+      {showBackModal && (
+        <div className="fixed inset-0 z-[10000] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1E1E1E] border border-white/15 rounded-3xl max-w-sm sm:max-w-md w-full p-6 sm:p-7 shadow-2xl text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-[#FFD3AC]/15 border border-[#FFD3AC]/40 flex items-center justify-center mx-auto text-[#FFD3AC]">
+              <ArrowLeftIcon className="w-7 h-7" />
+            </div>
+            <h3 className="text-xl font-bold text-white">Are you sure to go back?</h3>
+            <p className="text-sm text-white/70 leading-relaxed">
+              This will not end the call and consultation will not be completed. You can join the call again.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowBackModal(false)}
+                className="flex-1 py-3 px-4 rounded-xl border border-white/20 text-white/80 hover:bg-white/10 font-semibold text-sm transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBackModal(false);
+                  handleBack();
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] font-bold text-sm transition shadow-md cursor-pointer"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

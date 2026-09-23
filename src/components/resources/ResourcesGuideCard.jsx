@@ -49,6 +49,8 @@ function GuidePeachIcon({ category }) {
   }
 }
 
+import Image from "next/image";
+
 export default function ResourcesGuideCard({ guide, onDownload }) {
   return (
     <article
@@ -56,15 +58,34 @@ export default function ResourcesGuideCard({ guide, onDownload }) {
       style={{ backgroundColor: "#FFFFFF" }}
     >
       <div className="relative w-full aspect-[16/10] bg-[#FAF8F5] flex items-center justify-center p-6 border-b border-[#E7E2D9]/60">
-        <div className="w-20 h-20 rounded-full bg-[#FFD3AC]/40 border border-[#FFD3AC] flex items-center justify-center shadow-inner">
-          <GuidePeachIcon category={guide.category} />
-        </div>
+        {guide.appIcon ? (
+          <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-md border border-[#E7E2D9] relative bg-white">
+            <Image
+              src={guide.appIcon}
+              alt={guide.title}
+              fill
+              className="object-cover"
+              sizes="80px"
+            />
+          </div>
+        ) : (
+          <div className="w-20 h-20 rounded-full bg-[#FFD3AC]/40 border border-[#FFD3AC] flex items-center justify-center shadow-inner">
+            <GuidePeachIcon category={guide.category} />
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col flex-1 px-6 pt-5 pb-6">
-        <p className="text-[11px] sm:text-xs tracking-[0.2em] uppercase text-[#C8996A] font-semibold mb-2">
-          {guide.category}
-        </p>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="text-[11px] sm:text-xs tracking-[0.2em] uppercase text-[#C8996A] font-semibold">
+            {guide.category}
+          </p>
+          {guide.badge && (
+            <span className="text-[10px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-[#FAF8F5] text-[#8C7A6B] border border-[#E7E2D9]">
+              {guide.badge}
+            </span>
+          )}
+        </div>
 
         <h3 className="font-heading !text-lg sm:!text-xl !text-[#1A1A1A] !font-normal leading-snug mb-3">
           {guide.title}
@@ -74,14 +95,26 @@ export default function ResourcesGuideCard({ guide, onDownload }) {
           {guide.summary}
         </p>
 
-        <button
-          type="button"
-          onClick={() => onDownload(guide.downloadTitle)}
-          className="text-xs tracking-[0.15em] uppercase text-[#1A1A1A] hover:text-[#C8996A] transition-colors cursor-pointer text-left font-semibold inline-flex items-center gap-1.5"
-        >
-          <span>Complimentary Download</span>
-          <span>→</span>
-        </button>
+        {guide.externalUrl ? (
+          <a
+            href={guide.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs tracking-[0.15em] uppercase text-[#1A1A1A] hover:text-[#C8996A] transition-colors cursor-pointer text-left font-semibold inline-flex items-center gap-1.5"
+          >
+            <span>{guide.ctaText || "Open App"}</span>
+            <span className="text-sm">↗</span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onDownload(guide.downloadTitle)}
+            className="text-xs tracking-[0.15em] uppercase text-[#1A1A1A] hover:text-[#C8996A] transition-colors cursor-pointer text-left font-semibold inline-flex items-center gap-1.5"
+          >
+            <span>Complimentary Download</span>
+            <span>→</span>
+          </button>
+        )}
       </div>
     </article>
   );

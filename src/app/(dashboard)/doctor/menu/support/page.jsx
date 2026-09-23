@@ -164,7 +164,7 @@ export default function DoctorSupportPage() {
       setTimeout(async () => {
         try {
           const botMessage =
-            '👋 Hello! Thanks for reaching out to support. Our team has received your ticket and will assist you shortly. Please feel free to share any additional details. Please allow 24 hrs within business hours for our team to get back to you.';
+            '👋 Hello! Thanks for reaching out to support. Our team has received your ticket and will assist you shortly. Please feel free to share any additional details. Please allow 24 to 48 hrs within business hours for our team to get back to you.';
 
           await addDoc(collection(db, 'tickets', ticketRef.id, 'messages'), {
             content: botMessage,

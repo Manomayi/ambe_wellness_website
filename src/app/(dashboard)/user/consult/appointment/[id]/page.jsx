@@ -70,31 +70,26 @@ export default function UserAppointmentPage() {
       console.error('Error updating appointment:', error);
     }
 
-    if (endedByDoctor) {
-      // Resolve doctor UID from appointment or user profile
-      const doctorUid = 
-        appointment?.doctor_id || 
-        appointment?.doctor_uid || 
-        profile?.doctor?.uid || 
-        (typeof profile?.doctor === 'string' ? profile.doctor : '') || 
-        profile?.doctor_uid || 
-        '';
-      const doctorName = 
-        appointment?.doctor_name || 
-        profile?.doctor_name || 
-        (profile?.doctor?.first_name ? `${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() : '') || 
-        '';
+    // Resolve doctor UID from appointment or user profile
+    const doctorUid = 
+      appointment?.doctor_id || 
+      appointment?.doctor_uid || 
+      profile?.doctor?.uid || 
+      (typeof profile?.doctor === 'string' ? profile.doctor : '') || 
+      profile?.doctor_uid || 
+      '';
+    const doctorName = 
+      appointment?.doctor_name || 
+      profile?.doctor_name || 
+      (profile?.doctor?.first_name ? `${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() : '') || 
+      '';
 
-      const query = new URLSearchParams();
-      if (doctorUid) query.set('doctorUid', doctorUid);
-      if (doctorName) query.set('doctorName', doctorName);
-      if (params.id) query.set('appointmentId', params.id);
+    const query = new URLSearchParams();
+    if (doctorUid) query.set('doctorUid', doctorUid);
+    if (doctorName) query.set('doctorName', doctorName);
+    if (params.id) query.set('appointmentId', params.id);
 
-      router.push(`/user/consult/feedback?${query.toString()}`);
-    } else {
-      // User cut the call -> return back to consultations
-      router.push('/user/consult');
-    }
+    router.push(`/user/consult/feedback?${query.toString()}`);
   };
 
   const formatAppointmentTime = (timestamp) => {

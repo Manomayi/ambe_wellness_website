@@ -8,7 +8,8 @@ import BackgroundVideo from "@/components/common/BackgroundVideo";
 export default function UserLayout({ children }) {
   const pathname = usePathname();
   const isQuestionnaireFullscreen =
-    pathname?.startsWith("/user/menu/questionnaire") ||
+    (pathname?.startsWith("/user/menu/questionnaire") &&
+      !pathname?.startsWith("/user/menu/questionnaire/results")) ||
     pathname?.startsWith("/user/consult/extended-questionnaire");
 
   if (isQuestionnaireFullscreen) {
@@ -20,7 +21,7 @@ export default function UserLayout({ children }) {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#1E1E1E] text-white font-sans antialiased flex flex-col selection:bg-[#FFD3AC] selection:text-[#1E1E1E]">
+    <div className="relative min-h-[100dvh] bg-[#1E1E1E] text-white font-sans antialiased flex flex-col selection:bg-[#FFD3AC] selection:text-[#1E1E1E]">
       {/* Background Video matching Flutter App */}
       <BackgroundVideo opacity={0.3} />
 

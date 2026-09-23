@@ -87,12 +87,14 @@ export default function EditNamePage() {
 
   return (
     <div className="max-w-md mx-auto space-y-6">
-      {/* Top Bar */}
-      <div className="flex items-center gap-4 pt-1">
-        <AmbeBackButton onClick={() => router.back()} />
-        <h1 className="text-white text-xl font-bold font-sans flex-1">
-          Edit Name
-        </h1>
+      {/* Sticky Top Bar */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="flex items-center gap-4">
+          <AmbeBackButton onClick={() => router.back()} />
+          <h1 className="text-white text-xl font-bold font-sans flex-1">
+            Edit Name
+          </h1>
+        </div>
       </div>
 
       {/* Form Container */}

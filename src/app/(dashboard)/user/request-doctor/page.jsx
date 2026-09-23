@@ -355,14 +355,19 @@ export default function RequestDoctorPage() {
   // 6. Main Request Doctor Form
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <BackButton />
+      {/* Sticky Top Header */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="flex items-center gap-4">
+          <BackButton />
+          <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif">
+            Request a New Doctor
+          </h1>
+        </div>
+      </div>
 
       <div className="bg-white border border-[#E7E2D9] rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A]">
-            Request a New Doctor
-          </h1>
-          <p className="text-sm text-[#6B6862] mt-1">
+          <p className="text-sm text-[#6B6862]">
             We want to make sure you receive the care that best fits your wellness journey.
           </p>
         </div>

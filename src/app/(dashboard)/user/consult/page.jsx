@@ -251,8 +251,11 @@ export default function UserConsultPage() {
         }
       }
 
-      // 3. If still no doctor matched immediately, mark needs_doctor_assignment
-      if (!matchResult || !matchResult.matched) {
+      // 3. If doctor matched, proceed directly to booking calendar
+      if (matchResult && (matchResult.matched || matchResult.doctor)) {
+        router.push('/user/consult/schedule');
+      } else {
+        // Still no doctor matched immediately, mark needs_doctor_assignment
         await updateDoc(doc(db, 'users', user.uid), {
           needs_doctor_assignment: true,
           preferred_health: selectedSpecialty,

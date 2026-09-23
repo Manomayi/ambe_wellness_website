@@ -388,46 +388,48 @@ export default function UserStorePage() {
     <ProtectedRoute userType="user">
       <WebLayoutWrapper>
         <div className="space-y-6 pb-28">
-          {/* Page Header */}
-          <div className="flex items-center justify-between gap-4 pt-2">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Store
-            </h1>
-            <div className="flex items-center gap-2.5">
-              {/* Wishlist / Favorites Button */}
-              <button
-                onClick={() => router.push('/user/wishlist')}
-                className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/15 text-[#FFD3AC] transition flex items-center justify-center cursor-pointer"
-                aria-label="View Wishlist"
-                title="Wishlist"
-              >
-                <HeartIconSolid className="h-6 w-6 text-[#FFD3AC]" />
-                {wishlistIds.size > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#FFD3AC] text-[#1E1E1E] w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shadow-md">
-                    {wishlistIds.size}
-                  </span>
-                )}
-              </button>
+          {/* Sticky Top Section: Header, Search & Filter Bar */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mt-4 sm:-mt-6 pt-4 sm:pt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 space-y-4 border-b border-white/10 shadow-lg transition-all">
+            {/* Page Header */}
+            <div className="flex items-center justify-between gap-4 pt-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                Store
+              </h1>
+              <div className="flex items-center gap-2.5">
+                {/* Wishlist / Favorites Button */}
+                <button
+                  onClick={() => router.push('/user/wishlist')}
+                  className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/15 text-[#FFD3AC] transition flex items-center justify-center cursor-pointer"
+                  aria-label="View Wishlist"
+                  title="Wishlist"
+                >
+                  <HeartIconSolid className="h-6 w-6 text-[#FFD3AC]" />
+                  {wishlistIds.size > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#FFD3AC] text-[#1E1E1E] w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shadow-md">
+                      {wishlistIds.size}
+                    </span>
+                  )}
+                </button>
 
-              {/* Shopping Cart Button */}
-              <button
-                onClick={() => router.push('/user/cart')}
-                className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/15 text-[#FFD3AC] transition flex items-center justify-center cursor-pointer"
-                aria-label="View Cart"
-                title="Cart"
-              >
-                <ShoppingCartIcon className="h-6 w-6" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#FFD3AC] text-[#1E1E1E] w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shadow-md">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+                {/* Shopping Cart Button */}
+                <button
+                  onClick={() => router.push('/user/cart')}
+                  className="relative p-2.5 rounded-full bg-white/10 hover:bg-white/15 text-[#FFD3AC] transition flex items-center justify-center cursor-pointer"
+                  aria-label="View Cart"
+                  title="Cart"
+                >
+                  <ShoppingCartIcon className="h-6 w-6" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#FFD3AC] text-[#1E1E1E] w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center shadow-md">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Search Bar - White rounded pill matching Flutter */}
-          <div className="bg-white rounded-full flex items-center px-4 py-3 shadow-md">
+            {/* Search Bar - White rounded pill matching Flutter */}
+            <div className="bg-white rounded-full flex items-center px-4 py-2.5 sm:py-3 shadow-md">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 shrink-0 mr-3" />
             <input
               type="text"
@@ -526,6 +528,7 @@ export default function UserStorePage() {
               </div>
             )}
           </div>
+        </div>
 
           {/* Products Grid */}
           {filteredAndSortedProducts.length === 0 ? (

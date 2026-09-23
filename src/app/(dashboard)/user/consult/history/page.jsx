@@ -71,17 +71,19 @@ export default function ConsultationHistoryPage() {
   return (
     <WebLayoutWrapper maxWidth="760px">
       <div className="space-y-6 pb-16">
-        {/* Top Header matching Flutter UnifiedHistoryPage */}
-        <div className="flex items-center gap-4 mb-2">
-          <AmbeBackButton />
-          <h1
-            className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
-            style={{
-              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            }}
-          >
-            Consultation History
-          </h1>
+        {/* Sticky Top Header matching Flutter UnifiedHistoryPage */}
+        <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+          <div className="flex items-center gap-4">
+            <AmbeBackButton />
+            <h1
+              className="text-2xl sm:text-3xl font-bold text-white tracking-tight"
+              style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+              }}
+            >
+              Consultation History
+            </h1>
+          </div>
         </div>
 
         {history.length === 0 ? (

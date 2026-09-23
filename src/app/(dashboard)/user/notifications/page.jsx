@@ -162,39 +162,40 @@ export default function NotificationsPage() {
     <ProtectedRoute userType="user">
       <WebLayoutWrapper>
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-          <BackButton />
+          {/* Sticky Top Header */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-6 pt-6 pb-3 border-b border-white/10 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <BackButton />
+                <h1 className="text-2xl font-bold text-white font-serif">Notifications</h1>
+                {unreadCount > 0 && (
+                  <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/10">
+                    <span className="w-2 h-2 rounded-full bg-[#FFD3AC]" />
+                    {unreadCount} unread
+                  </span>
+                )}
+              </div>
 
-          {/* Header row matching Flutter AppBar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-white">Notifications</h1>
-              {unreadCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-white border border-white/10">
-                  <span className="w-2 h-2 rounded-full bg-[#FFD3AC]" />
-                  {unreadCount} unread
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
+              <div className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllAsRead}
+                    disabled={markingAll}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-white/10 border border-white/10 hover:border-[#FFD3AC]/40 hover:bg-white/15 transition cursor-pointer disabled:opacity-50"
+                  >
+                    <CheckIcon className="w-3.5 h-3.5 text-[#FFD3AC]" />
+                    {markingAll ? 'Marking...' : 'Mark all as read'}
+                  </button>
+                )}
                 <button
-                  type="button"
-                  onClick={handleMarkAllAsRead}
-                  disabled={markingAll}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-white/10 border border-white/10 hover:border-[#FFD3AC]/40 hover:bg-white/15 transition cursor-pointer disabled:opacity-50"
+                  onClick={() => router.push('/user/notifications-settings')}
+                  className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition cursor-pointer"
+                  aria-label="Notification settings"
                 >
-                  <CheckIcon className="w-3.5 h-3.5 text-[#FFD3AC]" />
-                  {markingAll ? 'Marking...' : 'Mark all as read'}
+                  <Cog6ToothIcon className="w-5 h-5 text-white" />
                 </button>
-              )}
-              <button
-                onClick={() => router.push('/user/notifications-settings')}
-                className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition cursor-pointer"
-                aria-label="Notification settings"
-              >
-                <Cog6ToothIcon className="w-5 h-5 text-white" />
-              </button>
+              </div>
             </div>
           </div>
 

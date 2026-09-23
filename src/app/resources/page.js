@@ -8,6 +8,7 @@ import ResourcesGuideCard from "@/components/resources/ResourcesGuideCard";
 import ResourcesFeaturedGuide from "@/components/resources/ResourcesFeaturedGuide";
 import ResourcesCategoryOverview from "@/components/resources/ResourcesCategoryOverview";
 import ResourcesStarterGuide from "@/components/resources/ResourcesStarterGuide";
+import ResourcesRecommendedTools from "@/components/resources/ResourcesRecommendedTools";
 import ResourcesCuratedReading from "@/components/resources/ResourcesCuratedReading";
 import {
   RESOURCE_CATEGORIES,
@@ -130,6 +131,8 @@ export default function Resources() {
       </section>
 
       <ResourcesCategoryOverview onSelectCategory={handleCategorySelect} />
+
+      <ResourcesRecommendedTools />
 
       <ResourcesStarterGuide />
 
