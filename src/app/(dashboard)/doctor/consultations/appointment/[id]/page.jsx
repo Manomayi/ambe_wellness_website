@@ -242,6 +242,22 @@ export default function DoctorAppointmentPage() {
     );
   }
 
+  const handleStartCall = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+        const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        probe.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch (_) {}
+        });
+      }
+    } catch (err) {
+      console.warn('Pre-call permission probe note:', err);
+    }
+    setInCall(true);
+  };
+
   const isAppointmentNow = () => {
     if (!appointment?.time) return false;
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
@@ -361,7 +377,7 @@ export default function DoctorAppointmentPage() {
             {/* Join Call Button */}
             {canJoinCall && (
               <button
-                onClick={() => setInCall(true)}
+                onClick={handleStartCall}
                 className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold transition flex items-center justify-center text-base shadow-lg cursor-pointer"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

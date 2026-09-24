@@ -29,14 +29,12 @@ export default function BiomarkersAccordion({ items, image, imageAlt }) {
               <div
                 key={item.title}
                 style={{ borderTop: index === 0 ? "none" : "1px solid #F4F1EA" }}
-                onMouseEnter={() => setOpenIndex(index)}
               >
                 <button
                   type="button"
                   onClick={() => toggle(index)}
-                  onFocus={() => setOpenIndex(index)}
                   aria-expanded={isOpen}
-                  className="w-full flex items-center justify-between gap-4 text-left py-4 cursor-pointer"
+                  className="w-full flex items-center justify-between gap-4 text-left py-4 cursor-pointer select-none"
                 >
                   <span
                     className="font-heading text-base sm:text-lg font-medium"

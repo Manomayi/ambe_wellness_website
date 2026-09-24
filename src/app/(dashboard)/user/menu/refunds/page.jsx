@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, db, storage } from '@/lib/firebase/config';
+import { auth, db } from '@/lib/firebase/config';
 import {
   decideRefund,
   formatSeconds,
@@ -20,11 +20,6 @@ import {
   setDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import {
-  ref as storageRef,
-  uploadBytesResumable,
-  getDownloadURL,
-} from 'firebase/storage';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import {
@@ -32,7 +27,6 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  PaperClipIcon,
   InformationCircleIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
@@ -83,7 +77,6 @@ function parseDate(val) {
 
 export default function UserRefundsPage() {
   const router = useRouter();
-  const fileInputRef = useRef(null);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -93,8 +86,6 @@ export default function UserRefundsPage() {
   // Modal State
   const [selectedItem, setSelectedItem] = useState(null);
   const [patientMessage, setPatientMessage] = useState('Refund Deposit Request');
-  const [receiptFile, setReceiptFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -327,19 +318,6 @@ export default function UserRefundsPage() {
   const handleOpenRefundModal = (item) => {
     setSelectedItem(item);
     setPatientMessage('Refund Deposit Request');
-    setReceiptFile(null);
-    setUploadProgress(0);
-    setSubmitError('');
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setSubmitError('File exceeds 10MB limit. Please choose a smaller file.');
-      return;
-    }
-    setReceiptFile(file);
     setSubmitError('');
   };
 
@@ -353,36 +331,11 @@ export default function UserRefundsPage() {
     setIsSubmitting(true);
     setSubmitError('');
 
-    let receiptUrl = null;
-    let receiptStoragePath = null;
+    const receiptUrl = null;
+    const receiptStoragePath = null;
 
     try {
-      // 1. Upload receipt if selected
-      if (receiptFile) {
-        const cleanName = receiptFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        receiptStoragePath = `refund_receipts/${currentUser.uid}/${Date.now()}_${cleanName}`;
-        const fileRef = storageRef(storage, receiptStoragePath);
-
-        const uploadTask = uploadBytesResumable(fileRef, receiptFile);
-
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              const progress =
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(Math.round(progress));
-            },
-            (error) => reject(error),
-            async () => {
-              receiptUrl = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve();
-            }
-          );
-        });
-      }
-
-      // 2. Submit via Cloud Function
+      // Submit via Cloud Function
       const consultationDateStr = selectedItem.consultationDate
         ? (selectedItem.consultationDate instanceof Date
             ? selectedItem.consultationDate.toLocaleDateString('en-US', {
@@ -877,62 +830,7 @@ export default function UserRefundsPage() {
                 />
               </div>
 
-              {/* Receipt / Proof Upload */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-white/80">
-                  Deposit Receipt / Payment Proof
-                </label>
-                <p className="text-[11px] text-white/60">
-                  Attach receipt screenshot or statement proof (JPG, PNG, PDF up to 10MB)
-                </p>
 
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-
-                {!receiptFile ? (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-3 px-4 border border-dashed border-[#FFD3AC]/50 hover:border-[#FFD3AC] rounded-xl text-xs font-semibold text-[#FFD3AC] hover:bg-white/5 transition flex items-center justify-center space-x-2 cursor-pointer"
-                  >
-                    <PaperClipIcon className="w-4 h-4" />
-                    <span>Choose Receipt File</span>
-                  </button>
-                ) : (
-                  <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between text-xs">
-                    <div className="flex items-center space-x-2 truncate">
-                      <PaperClipIcon className="w-4 h-4 text-[#FFD3AC] shrink-0" />
-                      <span className="font-medium text-white truncate">
-                        {receiptFile.name}
-                      </span>
-                      <span className="text-white/50 shrink-0">
-                        ({(receiptFile.size / 1024).toFixed(1)} KB)
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setReceiptFile(null)}
-                      className="text-red-400 hover:text-red-300 text-xs font-semibold ml-2 shrink-0 cursor-pointer"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden mt-2">
-                    <div
-                      className="bg-[#FFD3AC] h-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                )}
-              </div>
 
               {submitError && (
                 <div className="p-3 bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-xl flex items-center space-x-2">

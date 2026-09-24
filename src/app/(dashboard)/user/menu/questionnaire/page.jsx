@@ -8,13 +8,22 @@ function QuestionnaireContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnToHomeOnSkip = searchParams.get("returnToHome") === "true";
+  const fromResults =
+    searchParams.get("from") === "results" ||
+    searchParams.get("fromResults") === "true";
+
+  const handleBackToMenu = () => {
+    router.push("/user/menu");
+  };
 
   return (
     <div className="min-h-screen">
       <UserQuestionnaireModal
         returnToHomeOnSkip={returnToHomeOnSkip}
         onSkip={(targetPath) => {
-          if (returnToHomeOnSkip) {
+          if (fromResults) {
+            handleBackToMenu();
+          } else if (returnToHomeOnSkip) {
             router.push("/user/home");
           } else if (targetPath) {
             router.push(targetPath);
@@ -29,7 +38,13 @@ function QuestionnaireContent() {
             router.push("/user/consult");
           }
         }}
-        onClose={() => router.push("/user/home")}
+        onClose={() => {
+          if (fromResults) {
+            handleBackToMenu();
+          } else {
+            router.push("/user/home");
+          }
+        }}
       />
     </div>
   );

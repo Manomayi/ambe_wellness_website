@@ -62,6 +62,9 @@ export default function VideoCall({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [error, setError] = useState('');
+  const [permissionStatus, setPermissionStatus] = useState('prompt'); // 'prompt' | 'granted' | 'denied'
+  const [permissionErrorDetail, setPermissionErrorDetail] = useState('');
+  const [isRetryingPermissions, setIsRetryingPermissions] = useState(false);
   const [showEndCallModal, setShowEndCallModal] = useState(false);
   const [showBackModal, setShowBackModal] = useState(false);
 
@@ -243,8 +246,43 @@ export default function VideoCall({
       }
     );
 
-    const initializeAgora = async () => {
+    const initializeAgora = async (isRetry = false) => {
+      if (cancelled) return;
       try {
+        setError('');
+        if (isRetry) {
+          setIsRetryingPermissions(true);
+        }
+
+        // 1. Unified getUserMedia call - triggers ONE native prompt in Safari for BOTH camera and mic
+        // This solves the WebKit bug where concurrent getUserMedia requests cancel or drop the video prompt.
+        if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+          try {
+            const probeStream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+              video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user',
+              },
+            });
+            probeStream.getTracks().forEach((track) => {
+              try {
+                track.stop();
+              } catch (_) {}
+            });
+          } catch (probeErr) {
+            console.warn('[VideoCall] Combined getUserMedia probe note:', probeErr);
+            if (probeErr.name === 'NotAllowedError' || probeErr.name === 'PermissionDeniedError') {
+              setPermissionStatus('denied');
+              setPermissionErrorDetail(
+                'Camera and/or Microphone permissions were denied. Please allow camera and microphone access to join the video call.'
+              );
+              return;
+            }
+          }
+        }
+
         const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : '';
         const response = await fetch(
           'https://us-central1-ambe-wellness.cloudfunctions.net/generateAgoraTokenPublic',
@@ -274,8 +312,10 @@ export default function VideoCall({
         client.on('user-left', handleUserLeft);
         client.on('user-joined', handleUserJoined);
 
-        // Join channel
-        await client.join(data.appId, channelName, data.token, numericUid);
+        // Join channel if not already connected
+        if (!client.connectionState || client.connectionState === 'DISCONNECTED') {
+          await client.join(data.appId, channelName, data.token, numericUid);
+        }
         if (cancelled) {
           await client.leave().catch(() => {});
           return;
@@ -300,7 +340,6 @@ export default function VideoCall({
               ...(otherPartyUid
                 ? (isDoctor ? { user_id: otherPartyUid } : { doctor_id: otherPartyUid })
                 : {}),
-              // Clear previous call_status if joining anew
               call_status: deleteField(),
               call_ended_by: deleteField(),
               call_ended_at: deleteField(),
@@ -308,7 +347,6 @@ export default function VideoCall({
             { merge: true }
           );
 
-          // Redundantly stamp attendance on user & doctor upcoming appointment docs
           const patientUid = isDoctor ? otherPartyUid : userId;
           const docUid = isDoctor ? userId : otherPartyUid;
           const joinPayload = isDoctor
@@ -325,8 +363,25 @@ export default function VideoCall({
           console.error('[VideoCall] Error writing join signal:', signalError);
         }
 
-        // Create and publish local tracks
-        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        // 2. Create local tracks sequentially so Safari/WebKit never crashes on parallel calls
+        let audioTrack = null;
+        let videoTrack = null;
+
+        try {
+          audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        } catch (audioErr) {
+          console.warn('[VideoCall] Audio track creation error:', audioErr);
+        }
+
+        try {
+          videoTrack = await AgoraRTC.createCameraVideoTrack({
+            encoderConfig: '720p_2',
+            optimizationMode: 'detail',
+          });
+        } catch (videoErr) {
+          console.warn('[VideoCall] Video track creation error:', videoErr);
+        }
+
         if (cancelled) {
           stopAndCloseTrack(audioTrack);
           stopAndCloseTrack(videoTrack);
@@ -334,28 +389,53 @@ export default function VideoCall({
           return;
         }
 
+        if (!audioTrack && !videoTrack) {
+          setPermissionStatus('denied');
+          setPermissionErrorDetail(
+            'Neither camera nor microphone could be accessed. Please ensure permissions are allowed in Safari settings and retry.'
+          );
+          return;
+        }
+
         localAudioTrackRef.current = audioTrack;
         localVideoTrackRef.current = videoTrack;
         setLocalAudioTrack(audioTrack);
         setLocalVideoTrack(videoTrack);
+        setIsMuted(!audioTrack);
+        setIsVideoOff(!videoTrack);
 
         // Play local video
-        if (localVideoRef.current) {
+        if (videoTrack && localVideoRef.current) {
+          localVideoRef.current.innerHTML = '';
           videoTrack.play(localVideoRef.current);
         }
 
-        // Publish tracks
-        await client.publish([audioTrack, videoTrack]);
-        setIsJoined(true);
-
-      } catch (error) {
-        console.error('Error initializing Agora:', error);
-        if (!cancelled) {
-          setError('Failed to join video call. Please check your camera and microphone permissions.');
+        // Publish available tracks safely
+        const tracksToPublish = [audioTrack, videoTrack].filter(Boolean);
+        if (tracksToPublish.length > 0) {
+          await client.publish(tracksToPublish);
         }
+
+        setIsJoined(true);
+        setPermissionStatus('granted');
+        setPermissionErrorDetail('');
+        setError('');
+      } catch (error) {
+        console.error('[VideoCall] Initialization error:', error);
+        if (!cancelled) {
+          if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            setPermissionStatus('denied');
+            setPermissionErrorDetail('Permissions were denied. Please allow camera and microphone access.');
+          } else {
+            setError('Failed to join video call. Please check your camera and microphone permissions.');
+          }
+        }
+      } finally {
+        setIsRetryingPermissions(false);
       }
     };
 
+    initializeAgoraRef.current = initializeAgora;
     initializeAgora();
 
     return () => {
@@ -376,19 +456,82 @@ export default function VideoCall({
     };
   }, []);
 
+  const handleRetryPermissions = async () => {
+    setIsRetryingPermissions(true);
+    setPermissionErrorDetail('');
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: true,
+        });
+        stream.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch (_) {}
+        });
+      }
+      setPermissionStatus('prompt');
+      if (initializeAgoraRef.current) {
+        await initializeAgoraRef.current(true);
+      }
+    } catch (err) {
+      console.warn('[VideoCall] Retry permission prompt failed:', err);
+      setPermissionStatus('denied');
+      setPermissionErrorDetail(
+        'Permissions are still blocked. In Safari, please tap the website settings icon (aA or ⚙️) in the address bar, set Camera and Microphone to "Allow", and tap Allow Permissions again.'
+      );
+    } finally {
+      setIsRetryingPermissions(false);
+    }
+  };
+
   const toggleMute = async () => {
     const track = localAudioTrackRef.current || localAudioTrack;
     if (track) {
-      await track.setEnabled(isMuted);
-      setIsMuted(!isMuted);
+      const nextMuted = !isMuted;
+      await track.setEnabled(!nextMuted);
+      setIsMuted(nextMuted);
+    } else if (clientRef.current && isJoined) {
+      try {
+        const newAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        localAudioTrackRef.current = newAudioTrack;
+        setLocalAudioTrack(newAudioTrack);
+        setIsMuted(false);
+        await clientRef.current.publish([newAudioTrack]);
+      } catch (err) {
+        console.error('[VideoCall] Failed to enable audio track:', err);
+        setError('Microphone permission denied or microphone unavailable.');
+        setTimeout(() => setError(''), 4000);
+      }
     }
   };
 
   const toggleVideo = async () => {
     const track = localVideoTrackRef.current || localVideoTrack;
     if (track) {
-      await track.setEnabled(isVideoOff);
-      setIsVideoOff(!isVideoOff);
+      const nextOff = !isVideoOff;
+      await track.setEnabled(!nextOff);
+      setIsVideoOff(nextOff);
+    } else if (clientRef.current && isJoined) {
+      try {
+        const newVideoTrack = await AgoraRTC.createCameraVideoTrack({
+          encoderConfig: '720p_2',
+          optimizationMode: 'detail',
+        });
+        localVideoTrackRef.current = newVideoTrack;
+        setLocalVideoTrack(newVideoTrack);
+        setIsVideoOff(false);
+        if (localVideoRef.current) {
+          localVideoRef.current.innerHTML = '';
+          newVideoTrack.play(localVideoRef.current);
+        }
+        await clientRef.current.publish([newVideoTrack]);
+      } catch (err) {
+        console.error('[VideoCall] Failed to enable camera track:', err);
+        setError('Camera permission denied or camera unavailable.');
+        setTimeout(() => setError(''), 4000);
+      }
     }
   };
 
@@ -572,6 +715,53 @@ export default function VideoCall({
                 className="flex-1 py-3 px-4 rounded-xl bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] font-bold text-sm transition shadow-md cursor-pointer"
               >
                 Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Permission Denied Modal */}
+      {permissionStatus === 'denied' && (
+        <div className="fixed inset-0 z-[10001] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#1E1E1E] border border-white/15 rounded-3xl max-w-sm sm:max-w-md w-full p-6 sm:p-7 shadow-2xl text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#FFD3AC]/15 border border-[#FFD3AC]/40 flex items-center justify-center mx-auto text-[#FFD3AC]">
+              <VideoCameraSlashIcon className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-white font-serif">
+              Camera & Microphone Access Required
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+              {permissionErrorDetail ||
+                'To connect with your consultation, please allow access to both your camera and microphone.'}
+            </p>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 text-left space-y-1.5">
+              <p className="text-[11px] font-bold text-[#FFD3AC] tracking-wider uppercase">
+                If Using Safari:
+              </p>
+              <ul className="text-[11px] text-white/70 space-y-1 list-disc list-inside">
+                <li>Tap <strong>Allow</strong> when the browser asks for Camera & Microphone.</li>
+                <li>If blocked, tap the website settings icon (<strong>aA</strong> or <strong>⚙️</strong>) in your Safari URL bar.</li>
+                <li>Set both <strong>Camera</strong> and <strong>Microphone</strong> to <strong>Allow</strong>.</li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl border border-white/20 text-white/80 hover:bg-white/10 font-semibold text-sm transition cursor-pointer"
+              >
+                Leave Call
+              </button>
+              <button
+                type="button"
+                onClick={handleRetryPermissions}
+                disabled={isRetryingPermissions}
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] font-bold text-sm transition shadow-md cursor-pointer disabled:opacity-50"
+              >
+                {isRetryingPermissions ? 'REQUESTING...' : 'ALLOW PERMISSIONS'}
               </button>
             </div>
           </div>

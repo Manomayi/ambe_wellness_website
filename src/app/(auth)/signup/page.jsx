@@ -7,7 +7,7 @@ import { httpsCallable } from 'firebase/functions';
 import { auth, functions, db } from '@/lib/firebase/config';
 import { sendEmailVerification, updateProfile } from 'firebase/auth';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from 'firebase/firestore';
 import PhoneInputWithCountry from '@/components/common/PhoneInputWithCountry';
 import Link from 'next/link';
 import AmbeButton from '@/components/common/AmbeButton';
@@ -22,6 +22,9 @@ export default function SignUpPage() {
   const [error, setError] = useState('');
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
+  const [editingFromConfirmation, setEditingFromConfirmation] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showDoctorAgreementsModal, setShowDoctorAgreementsModal] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -59,6 +62,17 @@ export default function SignUpPage() {
     return `${dobYear}-${month}-${dobDay}`;
   };
 
+  const getFormattedDOB = () => {
+    const { dobDay, dobMonth, dobYear } = formData;
+    if (!dobDay || !dobMonth || !dobYear) return 'Date of birth not set';
+    return `${Number(dobDay)} ${dobMonth} ${dobYear}`;
+  };
+
+  const handleJumpToStep = (targetStep) => {
+    setEditingFromConfirmation(true);
+    setStep(targetStep);
+  };
+
   // Validation errors
   const [errors, setErrors] = useState({});
 
@@ -85,7 +99,7 @@ export default function SignUpPage() {
 
   const [showCustomSpecialization, setShowCustomSpecialization] = useState(false);
 
-  const PROFESSIONAL_TITLES = ['MD', 'DO', 'NPR', 'BAMS', 'Other'];
+  const PROFESSIONAL_TITLES = ['DO', 'NPR', 'BAMS', 'Other'];
   const currentYear = new Date().getFullYear();
 
   const updateFormData = (field, value) => {
@@ -120,19 +134,19 @@ export default function SignUpPage() {
       const isCurrentlySelected = formData.professionalTitles.includes('Other');
       setFormData(prev => ({
         ...prev,
-        professionalTitles: isCurrentlySelected ? [] : ['Other'],
+        professionalTitles: isCurrentlySelected
+          ? prev.professionalTitles.filter(t => t !== 'Other')
+          : [...prev.professionalTitles, 'Other'],
         customProfessionalTitle: isCurrentlySelected ? '' : prev.customProfessionalTitle,
       }));
     } else {
       setFormData(prev => {
-        const withoutOther = prev.professionalTitles.filter(t => t !== 'Other');
-        const isSelected = withoutOther.includes(title);
+        const isSelected = prev.professionalTitles.includes(title);
         return {
           ...prev,
           professionalTitles: isSelected
-            ? withoutOther.filter(t => t !== title)
-            : [...withoutOther, title],
-          customProfessionalTitle: '',
+            ? prev.professionalTitles.filter(t => t !== title)
+            : [...prev.professionalTitles, title],
         };
       });
     }
@@ -141,94 +155,89 @@ export default function SignUpPage() {
 
   const validateStep = () => {
     const newErrors = {};
+    const isDoctor = formData.userType === 'doctor';
 
-    switch (step) {
-      case 1:
-        if (!formData.userType) {
-          newErrors.userType = 'Please select a role before continuing.';
+    if (step === 1) {
+      if (!formData.userType) {
+        newErrors.userType = 'Please select a role before continuing.';
+      }
+    } else if (step === 2) {
+      if (!formData.firstName.trim()) {
+        newErrors.firstName = 'First name is required';
+      }
+      if (!formData.lastName.trim()) {
+        newErrors.lastName = 'Last name is required';
+      }
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Invalid email address';
+      }
+    } else if (step === 3) {
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Phone number is required';
+      }
+    } else if (step === 4) {
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    } else if (isDoctor) {
+      if (step === 5) {
+        if (formData.specializations.length === 0 && (!showCustomSpecialization || !formData.customSpecialization.trim())) {
+          newErrors.specialization = 'Please select at least one field of practice';
         }
-        break;
-
-      case 2:
-        if (!formData.firstName.trim()) {
-          newErrors.firstName = 'First name is required';
+        if (showCustomSpecialization && !formData.customSpecialization.trim()) {
+          newErrors.customSpecialization = 'Please specify your other specialization';
         }
-        if (!formData.lastName.trim()) {
-          newErrors.lastName = 'Last name is required';
-        }
-        if (!formData.email.trim()) {
-          newErrors.email = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-          newErrors.email = 'Invalid email address';
-        }
-        break;
-
-      case 3:
-        if (!formData.phone.trim()) {
-          newErrors.phone = 'Phone number is required';
-        }
-        break;
-
-      case 4:
-        if (!formData.password) {
-          newErrors.password = 'Password is required';
-        } else if (formData.password.length < 8) {
-          newErrors.password = 'Password must be at least 8 characters';
-        }
-        if (formData.password !== formData.confirmPassword) {
-          newErrors.confirmPassword = 'Passwords do not match';
-        }
-        break;
-
-      case 5:
-        if (formData.userType === 'doctor') {
-          if (formData.specializations.length === 0 && (!showCustomSpecialization || !formData.customSpecialization.trim())) {
-            newErrors.specialization = 'Please select at least one field of practice';
-          }
-          if (showCustomSpecialization && !formData.customSpecialization.trim()) {
-            newErrors.customSpecialization = 'Please specify your other specialization';
-          }
-        }
-        break;
-
-      case 6:
-        if (formData.userType === 'doctor') {
-          if (!formData.practiceStartYear) {
-            newErrors.practiceStartYear = 'Practice start year is required';
-          } else {
-            const year = Number(formData.practiceStartYear);
-            if (Number.isNaN(year) || year < 1950 || year > currentYear) {
-              newErrors.practiceStartYear = `Enter a valid year between 1950 and ${currentYear}`;
-            }
-          }
-          if (!formData.medicalSchool.trim()) {
-            newErrors.medicalSchool = 'Medical school is required';
-          }
-          if (formData.professionalTitles.length === 0) {
-            newErrors.professionalTitles = 'Select at least one professional title';
-          }
-          if (
-            formData.professionalTitles.includes('Other') &&
-            !formData.customProfessionalTitle.trim()
-          ) {
-            newErrors.customProfessionalTitle = 'Specify your professional title';
+      } else if (step === 6) {
+        if (!formData.practiceStartYear) {
+          newErrors.practiceStartYear = 'Practice start year is required';
+        } else {
+          const year = Number(formData.practiceStartYear);
+          if (Number.isNaN(year) || year < 1950 || year > currentYear) {
+            newErrors.practiceStartYear = `Enter a valid year between 1950 and ${currentYear}`;
           }
         }
-        break;
-
-      case 7:
-        if (formData.userType === 'doctor') {
-          if (!documents.license) {
-            newErrors.license = 'Medical license is required';
-          }
-          if (!documents.id) {
-            newErrors.id = 'Government ID is required';
-          }
+        if (!formData.medicalSchool.trim()) {
+          newErrors.medicalSchool = 'Medical school is required';
         }
-        break;
-
-      case 8:
-        break;
+        if (formData.professionalTitles.length === 0) {
+          newErrors.professionalTitles = 'Select at least one professional title';
+        }
+        if (
+          formData.professionalTitles.includes('Other') &&
+          !formData.customProfessionalTitle.trim()
+        ) {
+          newErrors.customProfessionalTitle = 'Specify your professional title';
+        }
+      } else if (step === 7) {
+        if (!documents.license) {
+          newErrors.license = 'Medical license is required';
+        }
+        if (!documents.id) {
+          newErrors.id = 'Government ID is required';
+        }
+      } else if (step === 8) {
+        // Photo is optional
+      } else if (step === 9) {
+        if (!termsAccepted) {
+          newErrors.terms = 'Please accept the Agreements to proceed';
+        }
+      }
+    } else {
+      // Patient steps
+      if (step === 5) {
+        // Photo is optional
+      } else if (step === 6) {
+        if (!termsAccepted) {
+          newErrors.terms = 'Please accept the Terms and Conditions to proceed';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -236,14 +245,18 @@ export default function SignUpPage() {
   };
 
   const getStepCount = () => {
-    return formData.userType === 'doctor' ? 8 : 4;
+    return formData.userType === 'doctor' ? 9 : 6;
   };
 
   const handleNext = () => {
     if (validateStep()) {
-      if (step === 4 && formData.userType !== 'doctor') {
-        handleSubmit();
-      } else if (step === 8 && formData.userType === 'doctor') {
+      if (editingFromConfirmation) {
+        setEditingFromConfirmation(false);
+        setStep(getStepCount());
+        return;
+      }
+
+      if (step === getStepCount()) {
         handleSubmit();
       } else {
         setStep(prev => prev + 1);
@@ -253,6 +266,11 @@ export default function SignUpPage() {
 
   const handleBack = () => {
     setError('');
+    if (editingFromConfirmation) {
+      setEditingFromConfirmation(false);
+      setStep(getStepCount());
+      return;
+    }
     setStep(prev => Math.max(1, prev - 1));
   };
 
@@ -357,12 +375,17 @@ export default function SignUpPage() {
                 ? Number(formData.practiceStartYear)
                 : null,
               medical_school: formData.medicalSchool,
-              professional_title: formData.professionalTitles.includes('Other')
-                ? formData.customProfessionalTitle.trim()
-                : formData.professionalTitles.join(', '),
-              custom_professional_title: formData.professionalTitles.includes('Other')
-                ? formData.customProfessionalTitle.trim()
-                : null,
+              professional_title: (() => {
+                const nonOther = formData.professionalTitles.filter(t => t !== 'Other');
+                const custom = formData.customProfessionalTitle.trim();
+                const hasOther = formData.professionalTitles.includes('Other');
+                const combined = hasOther && custom ? [...nonOther, custom] : nonOther;
+                return combined.join(', ') || null;
+              })(),
+              custom_professional_title:
+                formData.professionalTitles.includes('Other') && formData.customProfessionalTitle.trim()
+                  ? formData.customProfessionalTitle.trim()
+                  : null,
               documents: documentsPayload,
             }
           : {}),
@@ -370,6 +393,8 @@ export default function SignUpPage() {
 
       if (result.data?.uid) {
         const userType = await signIn(formData.email, formData.password);
+
+        const colName = isDoctor ? 'doctors' : 'users';
 
         if (profilePhoto) {
           try {
@@ -382,7 +407,6 @@ export default function SignUpPage() {
               await updateProfile(auth.currentUser, { photoURL });
             }
 
-            const colName = isDoctor ? 'doctors' : 'users';
             await setDoc(
               doc(db, colName, result.data.uid),
               { profile_picture: photoURL },
@@ -393,24 +417,71 @@ export default function SignUpPage() {
           }
         }
 
-        if (!isDoctor && formData.referralCode && formData.referralCode.trim()) {
+        // Terms acceptance & agreement metadata
+        try {
+          const termsData = {
+            terms_accepted: true,
+            terms_accepted_at: serverTimestamp(),
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          };
+
+          if (isDoctor) {
+            termsData.accepted_agreements = [
+              'Ambe_Employment_Code_of_Conduct.pdf',
+              'Ambe_Independent_Contractor_Agreement.pdf',
+              'Ambe_NDA_NCA_Doctors.pdf',
+            ];
+          }
+
+          await setDoc(
+            doc(db, colName, result.data.uid),
+            termsData,
+            { merge: true }
+          );
+        } catch (termsErr) {
+          console.warn("Terms update warning:", termsErr);
+        }
+
+        if (!isDoctor) {
           try {
-            const enteredCode = formData.referralCode.trim().toUpperCase();
-            const referrerQuery = query(
-              collection(db, 'users'),
-              where('referral_code', '==', enteredCode),
-              limit(1)
-            );
-            const referrerSnap = await getDocs(referrerQuery);
-            if (!referrerSnap.empty) {
-              const referrerDoc = referrerSnap.docs[0];
+            if (formData.referralCode && formData.referralCode.trim()) {
+              const enteredCode = formData.referralCode.trim().toUpperCase();
+              const referrerQuery = query(
+                collection(db, 'users'),
+                where('referral_code', '==', enteredCode),
+                limit(1)
+              );
+              const referrerSnap = await getDocs(referrerQuery);
+              if (!referrerSnap.empty) {
+                const referrerDoc = referrerSnap.docs[0];
+                await setDoc(
+                  doc(db, 'users', result.data.uid),
+                  {
+                    referred_by: referrerDoc.id,
+                    referral_status: 'pending',
+                    has_made_purchase: false,
+                    referral_code_used: enteredCode,
+                    referral_credits: 0,
+                  },
+                  { merge: true }
+                );
+              } else {
+                await setDoc(
+                  doc(db, 'users', result.data.uid),
+                  {
+                    has_made_purchase: false,
+                    referral_credits: 0,
+                  },
+                  { merge: true }
+                );
+              }
+            } else {
               await setDoc(
                 doc(db, 'users', result.data.uid),
                 {
-                  referred_by: referrerDoc.id,
-                  referral_status: 'pending',
                   has_made_purchase: false,
-                  referral_code_used: enteredCode,
                   referral_credits: 0,
                 },
                 { merge: true }
@@ -437,7 +508,9 @@ export default function SignUpPage() {
           console.warn("Email verification error:", verifyErr);
         }
 
-        router.push(`/verify-email?email=${encodeURIComponent(formData.email.trim())}&role=${userType || formData.userType}`);
+        router.push(
+          `/verify-email?email=${encodeURIComponent(formData.email.trim())}&role=${isDoctor ? "doctor" : userType || formData.userType}`
+        );
       }
     } catch (err) {
       console.error('Signup error:', err);
@@ -445,6 +518,221 @@ export default function SignUpPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderProfilePhotoStep = () => {
+    const isDoctor = formData.userType === 'doctor';
+    return (
+      <div className="text-center py-2">
+        <h2 className="text-white text-xl font-semibold mb-2 font-sans">
+          Profile Picture
+        </h2>
+        <p className="text-gray-400 text-xs mb-6">
+          {isDoctor
+            ? "Add a professional photo so patients can recognize you."
+            : "Add a photo to personalize your profile (optional)."}
+        </p>
+
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="relative w-32 h-32 rounded-full border-2 border-[#FFD3AC] bg-white/10 flex items-center justify-center overflow-hidden shadow-lg">
+            {profilePhotoPreview ? (
+              <img
+                src={profilePhotoPreview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            )}
+          </div>
+
+          <label className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1E1E1E] cursor-pointer hover:bg-white transition shadow-sm">
+            {profilePhotoPreview ? "Change Photo" : "Choose Photo"}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePhotoChange}
+              className="hidden"
+            />
+          </label>
+
+          {profilePhotoPreview && (
+            <button
+              type="button"
+              onClick={handleRemoveProfilePhoto}
+              className="text-xs text-red-400 hover:text-red-300"
+            >
+              Remove photo
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderConfirmationStep = () => {
+    const isDoctor = formData.userType === 'doctor';
+    return (
+      <div className="space-y-4 py-2">
+        <h2 className="text-white text-xl font-semibold text-center mb-6 font-sans">
+          Review and Confirm
+        </h2>
+
+        {/* Profile Photo with Edit Badge */}
+        <div className="flex justify-center mb-6">
+          <div
+            onClick={() => handleJumpToStep(isDoctor ? 8 : 5)}
+            className="relative cursor-pointer group"
+            title="Edit profile photo"
+          >
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-[#FFD3AC] overflow-hidden bg-white/10 flex items-center justify-center shadow-lg transition-transform group-hover:scale-105">
+              {profilePhotoPreview ? (
+                <img
+                  src={profilePhotoPreview}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg className="w-14 h-14 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              )}
+            </div>
+            <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#FFD3AC] text-[#1E1E1E] flex items-center justify-center shadow-md">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* User Information Pill Cards */}
+        <div className="space-y-3">
+          {/* Name */}
+          <div
+            onClick={() => handleJumpToStep(2)}
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+              <span className="text-black font-medium text-[15px] truncate">
+                {formData.firstName || formData.lastName
+                  ? `${formData.firstName} ${formData.lastName}`.trim()
+                  : "Name not set"}
+              </span>
+            </div>
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+            </svg>
+          </div>
+
+          {/* Date of Birth */}
+          <div
+            onClick={() => handleJumpToStep(2)}
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="text-black font-medium text-[15px] truncate">
+                {getFormattedDOB()}
+              </span>
+            </div>
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+            </svg>
+          </div>
+
+          {/* Email */}
+          <div
+            onClick={() => handleJumpToStep(2)}
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+              </svg>
+              <span className="text-black font-medium text-[15px] truncate">
+                {formData.email || "Email not set"}
+              </span>
+            </div>
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+            </svg>
+          </div>
+
+          {/* Phone */}
+          <div
+            onClick={() => handleJumpToStep(3)}
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+              </svg>
+              <span className="text-black font-medium text-[15px] truncate">
+                {formData.phone || "Phone not set"}
+              </span>
+            </div>
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Agreements / Terms Checkbox */}
+        <div className="pt-3">
+          <label className="flex items-start gap-3 cursor-pointer group select-none">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(e) => {
+                setTermsAccepted(e.target.checked);
+                if (errors.terms) setErrors(prev => ({ ...prev, terms: '' }));
+              }}
+              className="mt-1 w-5 h-5 rounded border-2 border-white/60 checked:bg-[#FFD3AC] checked:border-[#FFD3AC] text-[#1E1E1E] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#FFD3AC]"
+            />
+            <span className="text-white text-sm font-sans leading-relaxed">
+              I accept the{" "}
+              {isDoctor ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDoctorAgreementsModal(true);
+                  }}
+                  className="text-[#FFD3AC] font-bold underline hover:text-white transition inline"
+                >
+                  Agreements (NDA, Contractor, Code of Conduct)
+                </button>
+              ) : (
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[#FFD3AC] font-bold underline hover:text-white transition inline"
+                >
+                  Terms and Conditions
+                </a>
+              )}
+              .
+            </span>
+          </label>
+          {errors.terms && (
+            <p className="text-xs text-red-400 mt-2 px-1">{errors.terms}</p>
+          )}
+        </div>
+      </div>
+    );
   };
 
   const renderStep = () => {
@@ -738,6 +1026,9 @@ export default function SignUpPage() {
         );
 
       case 5:
+        if (formData.userType !== "doctor") {
+          return renderProfilePhotoStep();
+        }
         // Doctor: Field of Practice (Clinical Focus Areas)
         return (
           <div className="space-y-4 py-2">
@@ -748,7 +1039,7 @@ export default function SignUpPage() {
               Select all that apply to you
             </p>
 
-            <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-80 overflow-y-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {specializations.map(({ value, label }) => {
                 const sel = formData.specializations.includes(value);
                 return (
@@ -835,6 +1126,9 @@ export default function SignUpPage() {
         );
 
       case 6:
+        if (formData.userType !== "doctor") {
+          return renderConfirmationStep();
+        }
         // Doctor: Career Information matching app Image 2
         return (
           <div className="space-y-4 py-2">
@@ -971,7 +1265,7 @@ export default function SignUpPage() {
               Provide your verification credentials
             </p>
 
-            <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
+            <div className="space-y-4 max-h-[380px] overflow-y-auto scrollbar-hide [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {docSlots.map(({ type, title, subtitle, required }) => {
                 const file = documents[type];
                 const error = errors[type];
@@ -1043,110 +1337,139 @@ export default function SignUpPage() {
         );
 
       case 8:
-        // Doctor photo
-        return (
-          <div className="text-center py-2">
-            <h2 className="text-white text-xl font-semibold mb-2 font-sans">
-              Profile Picture
-            </h2>
-            <p className="text-gray-400 text-xs mb-6">
-              Add a professional photo so patients can recognize you.
-            </p>
+        // Doctor: Profile Picture
+        return renderProfilePhotoStep();
 
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="relative w-32 h-32 rounded-full border-2 border-[#FFD3AC] bg-white/10 flex items-center justify-center overflow-hidden">
-                {profilePhotoPreview ? (
-                  <img
-                    src={profilePhotoPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                )}
-              </div>
-
-              <label className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1E1E1E] cursor-pointer hover:bg-white transition shadow-sm">
-                {profilePhotoPreview ? "Change Photo" : "Choose Photo"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleProfilePhotoChange}
-                  className="hidden"
-                />
-              </label>
-
-              {profilePhotoPreview && (
-                <button
-                  type="button"
-                  onClick={handleRemoveProfilePhoto}
-                  className="text-xs text-red-400 hover:text-red-300"
-                >
-                  Remove photo
-                </button>
-              )}
-            </div>
-          </div>
-        );
+      case 9:
+        // Doctor: Review and Confirm
+        return renderConfirmationStep();
     }
   };
 
   return (
-    <div className="w-full flex flex-col justify-between px-2 sm:px-4">
-      {/* Top Bar matching Flutter RegistrationScaffold */}
-      <div>
-        <div className="flex items-center gap-4 pt-2 pb-4">
-          <AmbeBackButton onClick={step > 1 ? handleBack : () => router.push("/login")} />
-          <h1 className="text-white text-lg sm:text-xl font-semibold tracking-wide font-sans flex-1">
-            Register your profile ({step}/{getStepCount()})
-          </h1>
-        </div>
-
-        {/* Peach Progress Bar */}
-        <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mb-6">
-          <div
-            className="h-full bg-[#FFD3AC] rounded-full transition-all duration-300"
-            style={{ width: `${(step / getStepCount()) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col justify-center">
-        {error && (
-          <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center mb-4">
-            <p className="text-xs text-red-300 font-sans">{error}</p>
+    <>
+      {/* Doctor Agreements Modal */}
+      {showDoctorAgreementsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1E1E1E] border border-white/20 rounded-3xl p-6 w-full max-w-md shadow-2xl relative text-left">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+              <h3 className="text-lg font-semibold text-white">Doctor Agreements</h3>
+              <button
+                type="button"
+                onClick={() => setShowDoctorAgreementsModal(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-xs text-gray-300 mb-4">
+              Please review each required practitioner document prior to registration:
+            </p>
+            <div className="space-y-3">
+              {[
+                { title: "Employment Code of Conduct", file: "Ambe_Employment_Code_of_Conduct.pdf" },
+                { title: "Independent Contractor Agreement", file: "Ambe_Independent_Contractor_Agreement.pdf" },
+                { title: "NDA & NCA", file: "Ambe_NDA_NCA_Doctors.pdf" },
+              ].map(({ title, file }) => (
+                <a
+                  key={file}
+                  href={`/terms/${file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition group"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                    <span className="text-sm font-medium text-white group-hover:text-[#FFD3AC] transition">
+                      {title}
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#FFD3AC] font-medium flex items-center gap-1">
+                    View
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </span>
+                </a>
+              ))}
+            </div>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setTermsAccepted(true);
+                  setShowDoctorAgreementsModal(false);
+                  if (errors.terms) setErrors(prev => ({ ...prev, terms: '' }));
+                }}
+                className="w-full py-3 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FFD3AC] text-[#1E1E1E] hover:bg-white transition cursor-pointer"
+              >
+                Accept and Close
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {renderStep()}
+      <div className="w-full flex flex-col justify-between px-2 sm:px-4">
+        {/* Top Bar matching Flutter RegistrationScaffold */}
+        <div>
+          <div className="flex items-center gap-4 pt-2 pb-4">
+            <AmbeBackButton onClick={step > 1 || editingFromConfirmation ? handleBack : () => router.push("/login")} />
+            <h1 className="text-white text-lg sm:text-xl font-semibold tracking-wide font-sans flex-1">
+              Register your profile ({step}/{getStepCount()})
+            </h1>
+          </div>
 
-        {/* Bottom Button matching Flutter AmbeButton */}
-        <div className="pt-6 flex justify-center">
-          <AmbeButton
-            onClick={handleNext}
-            loading={loading}
-            className="w-full sm:w-[260px]"
-          >
-            {step === getStepCount() ? (loading ? "CREATING ACCOUNT…" : "CREATE ACCOUNT") : "NEXT"}
-          </AmbeButton>
+          {/* Peach Progress Bar */}
+          <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden mb-6">
+            <div
+              className="h-full bg-[#FFD3AC] rounded-full transition-all duration-300"
+              style={{ width: `${(step / getStepCount()) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col justify-center">
+          {error && (
+            <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center mb-4">
+              <p className="text-xs text-red-300 font-sans">{error}</p>
+            </div>
+          )}
+
+          {renderStep()}
+
+          {/* Bottom Button matching Flutter AmbeButton */}
+          <div className="pt-6 flex justify-center">
+            <AmbeButton
+              onClick={handleNext}
+              loading={loading}
+              className="w-full sm:w-[260px]"
+            >
+              {editingFromConfirmation
+                ? "SAVE & RETURN"
+                : step === getStepCount()
+                ? (loading ? "CREATING ACCOUNT…" : "COMPLETE")
+                : "NEXT"}
+            </AmbeButton>
+          </div>
+        </div>
+
+        {/* Already have account */}
+        <div className="text-center pt-6 pb-2">
+          <p className="text-sm font-sans text-gray-200">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-[#FFD3AC] font-semibold hover:underline underline-offset-4 ml-1 inline-block"
+            >
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
-
-      {/* Already have account */}
-      <div className="text-center pt-6 pb-2">
-        <p className="text-sm font-sans text-gray-200">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-[#FFD3AC] font-semibold hover:underline underline-offset-4 ml-1 inline-block"
-          >
-            Sign In
-          </Link>
-        </p>
-      </div>
-    </div>
+    </>
   );
 }

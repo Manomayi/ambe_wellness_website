@@ -36,7 +36,7 @@ function VerifyEmailContent() {
       }
     }
     if (destinationRole === "doctor") {
-      router.push("/doctor/home");
+      router.push("/doctor/schedule");
     } else {
       let isCompleted = false;
       if (auth.currentUser) {

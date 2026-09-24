@@ -9,7 +9,6 @@ import { db } from '@/lib/firebase/config';
 import { ClockIcon, CheckIcon, BoltIcon, InformationCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { BoltIcon as BoltIconSolid } from '@heroicons/react/24/solid';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
-import AmbeButton from '@/components/common/AmbeButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 
 const DAYS_OF_WEEK = [
@@ -30,6 +29,35 @@ const TIME_SLOTS = [
   '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
   '21:00', '21:30', '22:00'
 ];
+
+const TIMEZONES = [
+  { value: 'Asia/Kolkata', city: 'Kolkata', region: 'Asia' },
+  { value: 'America/New_York', city: 'New York', region: 'America' },
+  { value: 'America/Chicago', city: 'Chicago', region: 'America' },
+  { value: 'America/Denver', city: 'Denver', region: 'America' },
+  { value: 'America/Los_Angeles', city: 'Los Angeles', region: 'America' },
+  { value: 'America/Phoenix', city: 'Phoenix', region: 'America' },
+  { value: 'America/Anchorage', city: 'Anchorage', region: 'America' },
+  { value: 'Pacific/Honolulu', city: 'Honolulu', region: 'Pacific' },
+  { value: 'America/Toronto', city: 'Toronto', region: 'America' },
+  { value: 'America/Vancouver', city: 'Vancouver', region: 'America' },
+  { value: 'Europe/London', city: 'London', region: 'Europe' },
+  { value: 'Europe/Paris', city: 'Paris', region: 'Europe' },
+  { value: 'Asia/Dubai', city: 'Dubai', region: 'Asia' },
+  { value: 'Asia/Singapore', city: 'Singapore', region: 'Asia' },
+  { value: 'Asia/Tokyo', city: 'Tokyo', region: 'Asia' },
+  { value: 'Australia/Sydney', city: 'Sydney', region: 'Australia' },
+];
+
+function getTimezoneDisplay(tz) {
+  if (!tz) return { city: 'Kolkata', region: 'Asia' };
+  const found = TIMEZONES.find((t) => t.value === tz);
+  if (found) return found;
+  const parts = tz.split('/');
+  const city = parts.length > 1 ? parts[parts.length - 1].replace(/_/g, ' ') : tz;
+  const region = parts.length > 1 ? parts[0] : '';
+  return { city, region };
+}
 
 function parseTimeString(val, defaultTime = '09:00') {
   if (!val) return defaultTime;
@@ -318,78 +346,54 @@ export default function DoctorSchedulePage() {
     <ProtectedRoute userType="doctor">
       <WebLayoutWrapper>
         <div className="space-y-6 pb-12">
-          {/* Header */}
-          <div className="flex items-center gap-4">
-            <AmbeBackButton
-              onClick={() => {
-                if (typeof window !== 'undefined' && window.history.length > 1) {
-                  router.back();
-                } else {
-                  router.push('/doctor/home');
-                }
-              }}
-            />
-            <h1 className="font-heading font-bold text-2xl sm:text-3xl text-white">
-              Set Your Schedule
-            </h1>
+          {/* Sticky Header matching Flutter AppBar */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute left-0">
+                <AmbeBackButton
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.history.length > 1) {
+                      router.back();
+                    } else {
+                      router.push('/doctor/home');
+                    }
+                  }}
+                />
+              </div>
+              <h1 className="font-serif text-2xl sm:text-3xl text-white font-normal text-center">
+                Set Your Schedule
+              </h1>
+            </div>
           </div>
 
           {/* Hero Availability Card matching mobile app */}
-          <div className="bg-[#FFD3AC]/30 border border-[#FFD3AC]/40 rounded-3xl p-6 sm:p-7 text-center shadow-sm">
+          <div className="bg-gradient-to-br from-[#FFD3AC] to-[#F3BE8B] border border-[#FFD3AC] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center shadow-lg text-[#1E1E1E]">
             <div className="flex justify-center mb-3 text-[#1E1E1E]">
-              <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.253 18.75m3-18.75h-16.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h16.5A2.25 2.25 0 0023.25 18V6a2.25 2.25 0 00-2.25-2.25zM2.25 10.5h21" />
+              <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2zm-8 4h2v2H7zm4 4h2v2h-2zm4 0h2v2h-2z" />
               </svg>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1E1E1E] mb-1.5 font-sans">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#1E1E1E] mb-2 font-sans tracking-tight">
               Set Your Availability
             </h2>
-            <p className="text-sm text-[#2E2E2E] font-sans max-w-md mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base text-[#1E1E1E]/90 font-sans max-w-md mx-auto leading-relaxed">
               Choose the days and times you&apos;re available for consultations
             </p>
           </div>
 
           {/* Instant Consult Availability Card */}
-          <div className={`border rounded-2xl p-5 shadow-lg transition-all ${
-            isAvailableNow
-              ? 'border-emerald-500/50 bg-[#1E1E1E]/90'
-              : 'border-white/10 bg-[#2D2D30]/85'
-          }`}>
+          <div className="bg-[#1E1E1E]/85 backdrop-blur-md border border-emerald-500/60 rounded-2xl p-4 sm:p-5 shadow-lg">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
-                <div
-                  className={`p-2.5 rounded-full transition-colors shrink-0 ${
-                    isAvailableNow
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-white/10 text-white/50'
-                  }`}
-                >
-                  {isAvailableNow ? (
-                    <BoltIconSolid className="h-6 w-6" />
-                  ) : (
-                    <BoltIcon className="h-6 w-6" />
-                  )}
+                <div className="text-emerald-400 shrink-0">
+                  <BoltIconSolid className="h-7 w-7 text-[#00E676]" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-base text-white">
-                      Available for Instant Consult
-                    </h3>
-                    {isAvailableNow ? (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        <span className="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                        Active Now
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-white/10 text-white/60">
-                        Offline
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-white/60 mt-0.5">
-                    {isAvailableNow
-                      ? 'Users will see you as available right now for immediate bookings'
-                      : 'Toggle to become active for immediate bookings'}
+                  <h3 className="font-bold text-base sm:text-lg text-white font-sans">
+                    Available for Instant Consult
+                  </h3>
+                  <p className="text-xs sm:text-sm text-white/60 mt-0.5 font-sans">
+                    Users will see you as available right now
                   </p>
                 </div>
               </div>
@@ -404,7 +408,7 @@ export default function DoctorSchedulePage() {
                     aria-checked={isAvailableNow}
                     onClick={handleToggleInstantAvailability}
                     className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      isAvailableNow ? 'bg-emerald-500' : 'bg-white/20'
+                      isAvailableNow ? 'bg-[#00E676]' : 'bg-white/20'
                     }`}
                   >
                     <span className="sr-only">Toggle instant consult availability</span>
@@ -434,9 +438,9 @@ export default function DoctorSchedulePage() {
           </div>
 
           {/* Instructions banner */}
-          <div className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 flex items-center gap-3">
-            <InformationCircleIcon className="w-5 h-5 text-[#FFD3AC] shrink-0" />
-            <p className="text-xs sm:text-sm text-white/70">
+          <div className="bg-[#2A2A2E] border border-white/10 rounded-2xl p-4 sm:p-5 flex items-center gap-3.5">
+            <InformationCircleIcon className="w-6 h-6 text-[#FFD3AC] shrink-0" />
+            <p className="text-sm sm:text-base text-white/80 font-normal">
               Select the days you&apos;re available and set your working hours
             </p>
           </div>
@@ -446,29 +450,29 @@ export default function DoctorSchedulePage() {
             <label className="text-xs font-semibold text-white/60 tracking-wider uppercase block">
               TIMEZONE
             </label>
-            <div className="bg-white rounded-xl p-3 border border-gray-300 flex items-center gap-3 shadow-xs">
-              <ClockIcon className="w-5 h-5 text-[#FFD3AC] shrink-0" />
+            <div className="relative bg-white rounded-2xl px-4 py-3.5 border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:border-gray-300 transition">
+              <div className="flex items-center gap-3 min-w-0">
+                <ClockIcon className="w-6 h-6 text-[#FF9E54] shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-base font-bold text-black font-sans leading-tight truncate">
+                    {getTimezoneDisplay(timezone).city}
+                  </div>
+                  <div className="text-xs text-gray-500 font-sans leading-tight mt-0.5">
+                    {getTimezoneDisplay(timezone).region}
+                  </div>
+                </div>
+              </div>
+              <ChevronDownIcon className="w-5 h-5 text-[#FF9E54] shrink-0 ml-2" />
               <select
                 value={timezone}
                 onChange={handleTimezoneChange}
-                className="w-full bg-transparent text-[#1E1E1E] text-sm font-medium focus:outline-none cursor-pointer"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               >
-                <option value="America/New_York">Eastern Time (New York)</option>
-                <option value="America/Chicago">Central Time (Chicago)</option>
-                <option value="America/Denver">Mountain Time (Denver)</option>
-                <option value="America/Los_Angeles">Pacific Time (Los Angeles)</option>
-                <option value="America/Phoenix">Arizona Time (Phoenix)</option>
-                <option value="America/Anchorage">Alaska Time (Anchorage)</option>
-                <option value="Pacific/Honolulu">Hawaii Time (Honolulu)</option>
-                <option value="America/Toronto">Toronto Time</option>
-                <option value="America/Vancouver">Vancouver Time</option>
-                <option value="Europe/London">London Time (GMT)</option>
-                <option value="Europe/Paris">Paris Time (CET)</option>
-                <option value="Asia/Dubai">Dubai Time (GST)</option>
-                <option value="Asia/Kolkata">India Time (Kolkata)</option>
-                <option value="Asia/Singapore">Singapore Time</option>
-                <option value="Asia/Tokyo">Tokyo Time (JST)</option>
-                <option value="Australia/Sydney">Sydney Time (AEST)</option>
+                {TIMEZONES.map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.city} ({tz.region})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -486,10 +490,10 @@ export default function DoctorSchedulePage() {
                     key={day}
                     type="button"
                     onClick={() => handleDayToggle(day)}
-                    className={`capitalize px-5 py-2.5 rounded-full text-sm font-semibold transition-all cursor-pointer ${
+                    className={`capitalize px-5 py-2.5 rounded-full text-sm transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#FFD3AC] text-[#1E1E1E] border-2 border-[#FFD3AC] shadow-md shadow-[#FFD3AC]/20'
-                        : 'bg-white text-[#1E1E1E] border border-gray-300 hover:border-gray-400'
+                        ? 'bg-[#FFD3AC] text-[#1E1E1E] font-bold border-2 border-[#FFD3AC] shadow-md shadow-[#FFD3AC]/30'
+                        : 'bg-white text-black font-medium border border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {day}
@@ -506,7 +510,7 @@ export default function DoctorSchedulePage() {
             </label>
 
             {/* Same hours toggle */}
-            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-[#2A2A2E] border border-white/10 rounded-2xl p-4 sm:p-5 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-sm sm:text-base text-white">
                   Use same hours for all days
@@ -536,12 +540,12 @@ export default function DoctorSchedulePage() {
 
             {/* Time Slot Editor */}
             {useSameHours ? (
-              <div className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 space-y-3">
+              <div className="bg-[#2A2A2E] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
                 <h4 className="font-bold text-sm sm:text-base text-white">All Days</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-white/60 mb-1 block">Start Time</label>
-                    <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                    <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-xs">
                       <select
                         value={commonStartTime}
                         onChange={(e) => handleCommonTimeChange('startTime', e.target.value)}
@@ -557,7 +561,7 @@ export default function DoctorSchedulePage() {
                   </div>
                   <div>
                     <label className="text-xs text-white/60 mb-1 block">End Time</label>
-                    <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                    <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-xs">
                       <select
                         value={commonEndTime}
                         onChange={(e) => handleCommonTimeChange('endTime', e.target.value)}
@@ -576,12 +580,12 @@ export default function DoctorSchedulePage() {
             ) : (
               <div className="space-y-3">
                 {DAYS_OF_WEEK.filter((day) => schedule[day]?.isAvailable).map((day) => (
-                  <div key={day} className="bg-[#2D2D30]/85 border border-white/10 rounded-xl p-4 space-y-3">
+                  <div key={day} className="bg-[#2A2A2E] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
                     <h4 className="font-bold text-sm sm:text-base text-white capitalize">{day}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-xs text-white/60 mb-1 block">Start Time</label>
-                        <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                        <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-xs">
                           <select
                             value={schedule[day]?.startTime || '09:00'}
                             onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
@@ -597,7 +601,7 @@ export default function DoctorSchedulePage() {
                       </div>
                       <div>
                         <label className="text-xs text-white/60 mb-1 block">End Time</label>
-                        <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                        <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-xs">
                           <select
                             value={schedule[day]?.endTime || '17:00'}
                             onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
@@ -620,13 +624,14 @@ export default function DoctorSchedulePage() {
 
           {/* Save Action matching Flutter full-width bottom button */}
           <div className="pt-6 pb-12">
-            <AmbeButton
+            <button
+              type="button"
               onClick={handleSave}
-              disabled={loading || !hasSelectedDay}
-              className="w-full py-4 text-base sm:text-lg font-bold shadow-md tracking-wider"
+              disabled={loading}
+              className="w-full bg-[#FFD3AC] hover:bg-[#ffe2c8] active:scale-[0.99] text-[#1E1E1E] font-bold py-4 rounded-full transition-all uppercase tracking-wider shadow-xl text-base sm:text-lg cursor-pointer flex items-center justify-center disabled:opacity-60"
             >
-              {saved ? "SAVED!" : loading ? "SAVING..." : "SAVE SCHEDULE"}
-            </AmbeButton>
+              {saved ? "SAVED!" : loading ? "SAVING..." : "SET SCHEDULE & CONTINUE"}
+            </button>
           </div>
         </div>
       </WebLayoutWrapper>

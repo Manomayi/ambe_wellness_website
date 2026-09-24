@@ -306,7 +306,7 @@ export default function QuestionnaireResultsPage() {
             Please complete the questionnaire to view your personalized constitution report.
           </p>
           <button
-            onClick={() => router.push('/user/menu/questionnaire')}
+            onClick={() => router.push('/user/menu/questionnaire?from=results')}
             className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-8 py-3.5 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg transition-transform active:scale-95 cursor-pointer"
           >
             COMPLETE QUESTIONNAIRE

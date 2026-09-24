@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { auth } from "@/lib/firebase/config";
+import { auth, db } from "@/lib/firebase/config";
+import { doc, getDoc } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 import AmbeButton from "@/components/common/AmbeButton";
 import AmbeTextField from "@/components/common/AmbeTextField";
@@ -50,7 +51,11 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(userType === "doctor" ? "/doctor/home" : "/user/home");
+      if (userType === "doctor") {
+        router.push("/doctor/home");
+      } else {
+        router.push("/user/home");
+      }
     } catch (err) {
       console.error(err);
       setError("Invalid email address or password. Please try again.");
