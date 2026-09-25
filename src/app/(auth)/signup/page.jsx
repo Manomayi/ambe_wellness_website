@@ -13,6 +13,7 @@ import Link from 'next/link';
 import AmbeButton from '@/components/common/AmbeButton';
 import AmbeTextField from '@/components/common/AmbeTextField';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
+import ProfileCreationAnimation from '@/components/common/ProfileCreationAnimation';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -511,11 +512,12 @@ export default function SignUpPage() {
         router.push(
           `/verify-email?email=${encodeURIComponent(formData.email.trim())}&role=${isDoctor ? "doctor" : userType || formData.userType}`
         );
+      } else {
+        setLoading(false);
       }
     } catch (err) {
       console.error('Signup error:', err);
       setError(err.message || 'Failed to create account. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -1470,6 +1472,8 @@ export default function SignUpPage() {
           </p>
         </div>
       </div>
+
+      {loading && <ProfileCreationAnimation />}
     </>
   );
 }

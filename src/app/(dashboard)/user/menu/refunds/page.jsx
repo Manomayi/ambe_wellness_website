@@ -103,8 +103,49 @@ export default function UserRefundsPage() {
     return () => unsubAuth();
   }, [router]);
 
+  const syncHistoryToConsultations = async (uid) => {
+    try {
+      const historySnap = await getDocs(collection(db, 'users', uid, 'appointments_history'));
+      if (historySnap.empty) return;
+
+      const consultSnap = await getDocs(query(collection(db, 'consultations'), where('user_id', '==', uid)));
+      const existingConsultIds = new Set(consultSnap.docs.map(d => d.id));
+      consultSnap.docs.forEach(d => {
+        const cData = d.data();
+        if (cData.appointment_id) existingConsultIds.add(cData.appointment_id);
+      });
+
+      for (const hDoc of historySnap.docs) {
+        const hData = hDoc.data();
+        const hId = hDoc.id;
+        const apptId = (hData.appointment_id || hData.consultation_id || hId).toString();
+
+        if (!existingConsultIds.has(hId) && !existingConsultIds.has(apptId)) {
+          const targetKey = apptId || hId;
+          await setDoc(doc(db, 'consultations', targetKey), {
+            ...hData,
+            user_id: uid,
+            appointment_id: targetKey,
+            consultation_id: targetKey,
+            deposit_amount: hData.deposit_amount ?? 50.0,
+            payment_id: hData.payment_id || hData.payment_intent_id || targetKey,
+            payment_status: hData.payment_status || 'succeeded',
+            status: hData.status || 'missed',
+            is_no_show: hData.is_no_show ?? (hData.status === 'missed' || hData.status === 'no_show'),
+            auto_synced: true,
+          }, { merge: true });
+        }
+      }
+    } catch (e) {
+      console.warn('Background history sync note:', e);
+    }
+  };
+
   const initListeners = (uid) => {
     setLoading(true);
+
+    // Auto-sync any past appointments that only exist in history to consultations
+    syncHistoryToConsultations(uid);
 
     const consultQ = query(
       collection(db, 'consultations'),
@@ -149,59 +190,92 @@ export default function UserRefundsPage() {
   // Build merged consultation deposit payment items & stats
   const { depositItems, stats } = useMemo(() => {
     const refundsMap = {};
-      refundRequests.forEach((r) => {
-        if (r.id) refundsMap[r.id] = r;
-        if (r.consultationId && r.consultationId !== 'N/A') {
-          refundsMap[r.consultationId] = r;
+    refundRequests.forEach((r) => {
+      if (r.id) refundsMap[r.id] = r;
+      if (r.consultationId && r.consultationId !== 'N/A') {
+        refundsMap[r.consultationId] = r;
+      }
+    });
+
+    const now = new Date();
+    let paidCount = 0;
+    let unpaidCount = 0;
+    let completedCount = 0;
+    let upcomingCount = 0;
+    let cancelledCount = 0;
+    let noShowCount = 0;
+
+    const parseDate = (val) => {
+      if (!val) return null;
+      if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+      if (val.toDate) return val.toDate();
+      if (typeof val === 'number') return new Date(val > 100000000000 ? val : val * 1000);
+      if (val.seconds) return new Date(val.seconds * 1000);
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    // Consolidate primary consultation documents
+    const consolidatedDocs = {};
+    for (const c of consultations) {
+      const id = c.id;
+      const originalId = c.original_appointment_id || c.consultation_id;
+      const isTimestampFormat = /^\d{8}_\d{6}_/.test(id);
+
+      if (isTimestampFormat && originalId && originalId !== id && consultations.some((d) => d.id === originalId)) {
+        if (consolidatedDocs[originalId]) {
+          consolidatedDocs[originalId] = { ...consolidatedDocs[originalId], ...c };
+        } else {
+          consolidatedDocs[originalId] = { ...c };
         }
-      });
+        continue;
+      }
 
-      const now = new Date();
-      let paidCount = 0;
-      let unpaidCount = 0;
-      let completedCount = 0;
-      let upcomingCount = 0;
-      let cancelledCount = 0;
-      let noShowCount = 0;
+      if (consolidatedDocs[id]) {
+        consolidatedDocs[id] = { ...c, ...consolidatedDocs[id] };
+      } else {
+        consolidatedDocs[id] = { ...c };
+      }
+    }
 
-      const parseDate = (val) => {
-        if (!val) return null;
-        if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
-        if (val.toDate) return val.toDate();
-        if (typeof val === 'number') return new Date(val > 100000000000 ? val : val * 1000);
-        if (val.seconds) return new Date(val.seconds * 1000);
-        const d = new Date(val);
-        return isNaN(d.getTime()) ? null : d;
-      };
+    // Also merge any doc pointed to by another doc's history_appointment_id
+    for (const [key, val] of Object.entries(consolidatedDocs)) {
+      const histId = val.history_appointment_id;
+      if (histId && histId !== key && consolidatedDocs[histId]) {
+        const histData = consolidatedDocs[histId];
+        delete consolidatedDocs[histId];
+        consolidatedDocs[key] = { ...val, ...histData };
+      }
+    }
 
-      const items = consultations.map((c) => {
-        const consultationId = c.id;
-        const doctorName = c.doctor_name || 'Assigned Doctor';
-        const formattedDoctor = (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr '))
-          ? `Dr. ${doctorName}`
-          : doctorName;
+    const items = Object.values(consolidatedDocs).map((c) => {
+      const consultationId = c.id || c.appointment_id || c.consultation_id;
+      const doctorName = c.doctor_name || 'Assigned Doctor';
+      const formattedDoctor = (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr '))
+        ? `Dr. ${doctorName}`
+        : doctorName;
 
-        const rawAmount = c.deposit_amount ?? 50.0;
-        const depositAmount = Number(rawAmount) || 50.0;
-        const paymentId = c.payment_id || c.payment_intent_id || consultationId;
-        const paymentStatus = (c.payment_status || 'succeeded').toLowerCase();
+      const rawAmount = c.deposit_amount ?? 50.0;
+      const depositAmount = Number(rawAmount) || 50.0;
+      const paymentId = c.payment_id || c.payment_intent_id || consultationId;
+      const paymentStatus = (c.payment_status || 'succeeded').toLowerCase();
 
-        const consultationDate = parseDate(c.time || c.scheduled_at);
-        const paymentDate = parseDate(c.created_at || c.created) || consultationDate || now;
+      const consultationDate = parseDate(c.time || c.scheduled_at);
+      const paymentDate = parseDate(c.created_at || c.created) || consultationDate || now;
 
-        const userJoined = c.user_joined === true;
-        const userJoinedAt = parseDate(c.user_joined_at);
-        const doctorJoined = c.doctor_joined === true;
-        const doctorJoinedAt = parseDate(c.doctor_joined_at);
-        const callEndedAt = parseDate(c.call_ended_at);
-        const callEndedBy = c.call_ended_by;
+      const userJoined = c.user_joined === true;
+      const userJoinedAt = parseDate(c.user_joined_at);
+      const doctorJoined = c.doctor_joined === true;
+      const doctorJoinedAt = parseDate(c.doctor_joined_at);
+      const callEndedAt = parseDate(c.call_ended_at);
+      const callEndedBy = c.call_ended_by;
 
-        const rawStatus = (c.status || 'scheduled').toLowerCase();
-        const isCancelledByUser = rawStatus === 'cancelled_by_user' || rawStatus === 'cancelled';
-        const isCancelledByDoctor = rawStatus.includes('cancelled_by_doctor') || rawStatus.includes('cancelled_doctor');
-        const isCancelled = isCancelledByUser || isCancelledByDoctor;
+      const rawStatus = (c.status || 'scheduled').toLowerCase();
+      const isCancelledByUser = rawStatus === 'cancelled_by_user' || rawStatus === 'cancelled';
+      const isCancelledByDoctor = rawStatus.includes('cancelled_by_doctor') || rawStatus.includes('cancelled_doctor');
+      const isCancelled = isCancelledByUser || isCancelledByDoctor;
 
-        const refundReq = refundsMap[consultationId] || null;
+      const refundReq = refundsMap[consultationId] || refundsMap[paymentId] || null;
 
         const diffDays = Math.floor((now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24));
         const isWithin30Days = diffDays <= 30;

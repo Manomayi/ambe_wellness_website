@@ -27,8 +27,11 @@ import {
   TrashIcon, 
   MinusIcon, 
   PlusIcon,
-  ShoppingCartIcon
+  ShoppingCartIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
+import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
+import { fetchProductForModal } from '@/lib/shop/productModalHelper';
 
 export default function UserCartPage() {
   const router = useRouter();
@@ -42,6 +45,21 @@ export default function UserCartPage() {
     hasReferrer: false,
     hasMadePurchase: false
   });
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+  const [transitioningToCheckout, setTransitioningToCheckout] = useState(false);
+
+  const handleOpenProductDetails = async (item) => {
+    try {
+      const prod = await fetchProductForModal(
+        item.productId || item.product_id || item.id,
+        item.productName || item.product_name,
+        item
+      );
+      setSelectedProductForModal(prod);
+    } catch (e) {
+      console.error('Error opening product details:', e);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -194,6 +212,9 @@ export default function UserCartPage() {
   const updateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
     
+    // 1. Instant optimistic UI update for 0ms delay on Safari / mobile
+    setCartItems(prev => prev.map(item => item.id === itemId ? { ...item, quantity: newQuantity } : item));
+
     try {
       await updateDoc(doc(db, 'users', user.uid, 'cart', itemId), {
         quantity: newQuantity
@@ -204,6 +225,8 @@ export default function UserCartPage() {
   };
 
   const removeItem = async (itemId) => {
+    // 1. Instant optimistic removal from UI
+    setCartItems(prev => prev.filter(item => item.id !== itemId));
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'cart', itemId));
     } catch (error) {
@@ -212,6 +235,8 @@ export default function UserCartPage() {
   };
 
   const handleCheckout = () => {
+    if (cartItems.length === 0 || transitioningToCheckout) return;
+    setTransitioningToCheckout(true);
     router.push('/user/checkout');
   };
 
@@ -273,8 +298,13 @@ export default function UserCartPage() {
                     } rounded-2xl p-5 shadow-xl backdrop-blur-md space-y-3 transition`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-bold text-base text-white leading-snug">
-                        {item.productName || item.product_name}
+                      <h3
+                        onClick={() => handleOpenProductDetails(item)}
+                        className="font-bold text-base text-white leading-snug hover:text-[#FFD3AC] transition cursor-pointer inline-flex items-center gap-1.5 group"
+                        title="Click to view product details"
+                      >
+                        <span>{item.productName || item.product_name}</span>
+                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-[#FFD3AC] opacity-0 group-hover:opacity-100 transition shrink-0" />
                       </h3>
                       {item.doctor_recommended && (
                         <span className="bg-[#FFD3AC] text-[#1E1E1E] text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">
@@ -305,19 +335,23 @@ export default function UserCartPage() {
                       {/* Quantity pill control */}
                       <div className="bg-[#FFD3AC] rounded-full flex items-center px-1.5 py-0.5 shadow-md">
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
                           disabled={(item.quantity || 1) <= 1}
-                          className="p-1.5 text-[#1E1E1E] disabled:opacity-30 cursor-pointer"
+                          className="p-1.5 text-[#1E1E1E] disabled:opacity-30 cursor-pointer active:scale-75 transition-transform"
+                          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                           aria-label="Decrease quantity"
                         >
                           <MinusIcon className="h-3.5 w-3.5 stroke-[2.5]" />
                         </button>
-                        <span className="px-3 text-[#1E1E1E] font-bold text-sm">
+                        <span className="px-3 text-[#1E1E1E] font-bold text-sm min-w-[20px] text-center select-none">
                           {item.quantity || 1}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
-                          className="p-1.5 text-[#1E1E1E] cursor-pointer"
+                          className="p-1.5 text-[#1E1E1E] cursor-pointer active:scale-75 transition-transform"
+                          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                           aria-label="Increase quantity"
                         >
                           <PlusIcon className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -399,13 +433,30 @@ export default function UserCartPage() {
               {/* Checkout Button */}
               <div className="pt-2">
                 <button
+                  type="button"
                   onClick={handleCheckout}
-                  className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] font-bold py-4 rounded-full transition uppercase tracking-wider shadow-lg text-sm cursor-pointer"
+                  disabled={transitioningToCheckout || cartItems.length === 0}
+                  className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] active:scale-[0.98] text-[#1E1E1E] font-bold py-4 rounded-full transition-all uppercase tracking-wider shadow-lg text-sm cursor-pointer disabled:opacity-80 flex items-center justify-center gap-2"
+                  style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                 >
-                  CHECKOUT
+                  {transitioningToCheckout ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                      <span>PROCEEDING TO CHECKOUT...</span>
+                    </>
+                  ) : (
+                    <span>CHECKOUT</span>
+                  )}
                 </button>
               </div>
             </div>
+          )}
+
+          {selectedProductForModal && (
+            <ProductDetailsModal
+              product={selectedProductForModal}
+              onClose={() => setSelectedProductForModal(null)}
+            />
           )}
         </div>
       </WebLayoutWrapper>

@@ -17,6 +17,8 @@ import {
 } from "firebase/firestore";
 import AmbeBackButton from "@/components/common/AmbeBackButton";
 import { getConsultationStatusInfo } from "@/lib/consultationStatus";
+import ProductDetailsModal from "@/components/user/store/ProductDetailsModal";
+import { fetchProductForModal } from "@/lib/shop/productModalHelper";
 
 export default function DoctorConsultationReportPage() {
   const router = useRouter();
@@ -43,6 +45,25 @@ export default function DoctorConsultationReportPage() {
     }
     return null;
   });
+
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+
+  const handleOpenProductDetails = async (item) => {
+    try {
+      const prod = await fetchProductForModal(
+        item.product_id || item.productId || item.item_id,
+        item.product_name || item.productName || item.name,
+        item
+      );
+      if (prod) {
+        prod.selectedSize = item.size || item.pack || item.variant || "";
+        prod.selectedQuantity = item.quantity || item.qty || 1;
+      }
+      setSelectedProductForModal(prod);
+    } catch (e) {
+      console.error("Error opening product modal:", e);
+    }
+  };
 
   const [loading, setLoading] = useState(() => {
     if (typeof window !== "undefined") {
@@ -349,6 +370,7 @@ export default function DoctorConsultationReportPage() {
   }
 
   const { recommendations, store_recommendations, notes, time } = report;
+  const internalNotes = report.internal_notes || report.internalNotes || '';
   const statusInfo = getConsultationStatusInfo(report, "doctor");
   const cancelDate = report.cancelled_at || report.cancelledAt;
   const reason =
@@ -593,17 +615,22 @@ export default function DoctorConsultationReportPage() {
               {store_recommendations.map((item, i) => (
                 <div
                   key={i}
-                  className="bg-white/[0.08] border border-white/10 rounded-2xl p-4 sm:p-5 flex items-center justify-between backdrop-blur-md"
+                  onClick={() => handleOpenProductDetails(item)}
+                  className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/10 hover:border-[#FFD3AC]/40 rounded-2xl p-4 sm:p-5 flex items-center justify-between backdrop-blur-md transition cursor-pointer group"
+                  title="Click to view product details"
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-[#FFD3AC]/15 flex items-center justify-center shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-[#FFD3AC]/15 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
                       <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                       </svg>
                     </div>
                     <div>
-                      <h4 className="font-sans font-semibold text-white text-[17px]">
-                        {item.product_name || item.productName || "Product"}
+                      <h4 className="font-sans font-semibold text-white group-hover:text-[#FFD3AC] text-[17px] transition flex items-center gap-1.5">
+                        <span>{item.product_name || item.productName || "Product"}</span>
+                        <svg className="w-3.5 h-3.5 text-white/40 group-hover:text-[#FFD3AC] opacity-0 group-hover:opacity-100 transition shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                       </h4>
                       {item.size && (
                         <p className="text-xs text-white/60 mt-0.5">
@@ -612,8 +639,13 @@ export default function DoctorConsultationReportPage() {
                       )}
                     </div>
                   </div>
-                  <div className="px-3 py-1 bg-[#FFD3AC]/15 text-[#FFD3AC] rounded-full text-sm font-semibold">
-                    Qty: {item.quantity || item.qty || 1}
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1 bg-[#FFD3AC]/15 text-[#FFD3AC] rounded-full text-sm font-semibold">
+                      Qty: {item.quantity || item.qty || 1}
+                    </div>
+                    <svg className="w-4 h-4 text-white/30 group-hover:text-[#FFD3AC] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
               ))}
@@ -636,6 +668,31 @@ export default function DoctorConsultationReportPage() {
             </div>
             <div className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">
               {notes}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Internal Notes Section (Doctor & Admin Only - Not visible to patient) */}
+      {internalNotes && String(internalNotes).trim().length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <p className="text-xs sm:text-sm uppercase font-semibold text-[#FFD3AC] tracking-wider">
+              INTERNAL NOTES
+            </p>
+            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#FFD3AC]/20 text-[#FFD3AC] font-medium border border-[#FFD3AC]/30">
+              Visible to You
+            </span>
+          </div>
+          <div className="bg-white/[0.08] border border-[#FFD3AC]/35 rounded-2xl p-4 sm:p-5 space-y-3 backdrop-blur-md">
+            <div className="flex items-center gap-2 text-[#FFD3AC]">
+              <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              <span className="text-sm font-semibold text-[#FFD3AC]">Confidential Internal Notes</span>
+            </div>
+            <div className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">
+              {internalNotes}
             </div>
           </div>
         </div>
@@ -666,6 +723,14 @@ export default function DoctorConsultationReportPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {selectedProductForModal && (
+        <ProductDetailsModal
+          product={selectedProductForModal}
+          isDoctor={true}
+          onClose={() => setSelectedProductForModal(null)}
+        />
       )}
     </div>
   );

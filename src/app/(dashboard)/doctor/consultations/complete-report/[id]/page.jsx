@@ -23,6 +23,7 @@ import {
 import { db } from '@/lib/firebase/config';
 import { classifyOutcome } from '@/lib/refundPolicy';
 import { generateCartItemId } from '@/lib/cartUtils';
+import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
 import {
   XMarkIcon,
   CheckIcon,
@@ -35,6 +36,8 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   AdjustmentsHorizontalIcon,
+  ShoppingCartIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 
 // SVG Icons matching Flutter mobile app exactly
@@ -228,6 +231,17 @@ export default function CompleteReportPage() {
   // Step state: 1: Recommendations, 2: Your Notes, 3: Store Recommendations, 4: Consultation Summary
   const [step, setStep] = useState(1);
 
+  // Lock body scroll in Step 3 so ONLY the products grid is scrollable
+  useEffect(() => {
+    if (step === 3) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [step]);
+
   // Recommendations state
   const [notesByCategory, setNotesByCategory] = useState({
     lifestyle: '',
@@ -246,6 +260,7 @@ export default function CompleteReportPage() {
 
   // Step 2: Notes
   const [overallNotes, setOverallNotes] = useState('');
+  const [internalNotes, setInternalNotes] = useState('');
 
   // Step 3: Store Products
   const [storeProducts, setStoreProducts] = useState([]);
@@ -258,6 +273,7 @@ export default function CompleteReportPage() {
   const [productSearch, setProductSearch] = useState('');
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [pickerSelections, setPickerSelections] = useState({});
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
 
   // Active expanded category document
   const activeExpandedCategory = useMemo(() => {
@@ -442,10 +458,10 @@ export default function CompleteReportPage() {
     }));
   };
 
-  const addProductToRecommendations = (product) => {
+  const addProductToRecommendations = (product, explicitSize, explicitQuantity) => {
     const selection = pickerSelections[product.productKey] || {};
-    const size = selection.size || product.packs?.[0]?.size || 'Standard';
-    const quantity = Number(selection.quantity) > 0 ? Number(selection.quantity) : 1;
+    const size = explicitSize || selection.size || product.packs?.[0]?.size || 'Standard';
+    const quantity = explicitQuantity != null ? Number(explicitQuantity) : (Number(selection.quantity) > 0 ? Number(selection.quantity) : 1);
     if (!size || quantity <= 0) return;
 
     const pack = product.packs?.find((p) => p.size === size) || product.packs?.[0] || {};
@@ -479,6 +495,10 @@ export default function CompleteReportPage() {
   const removeRecommendedProduct = (itemId) => {
     setRecommendedProducts((prev) => prev.filter((item) => item.item_id !== itemId));
   };
+
+  const totalCartCount = useMemo(() => {
+    return recommendedProducts.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+  }, [recommendedProducts]);
 
   const filteredProducts = useMemo(() => {
     const searchLower = productSearch.toLowerCase().trim();
@@ -702,8 +722,10 @@ export default function CompleteReportPage() {
         updated_at: serverTimestamp(),
         recommendations,
         notes: overallNotes.trim(),
+        ...(internalNotes.trim() ? { internal_notes: internalNotes.trim() } : {}),
         store_recommendations: normalizedStoreRecommendations,
         recommendations_added_to_cart: true,
+        reviewed_by_user: false,
         ...(selectedReferral ? { referral: selectedReferral } : {}),
       };
 
@@ -786,6 +808,38 @@ export default function CompleteReportPage() {
           appointmentReportData,
           { merge: true }
         );
+
+        // 5b. Create notification for the patient in users/{userUid}/notifications
+        const notifRef = doc(collection(db, 'users', effectiveUserUid, 'notifications'));
+        batch.set(notifRef, {
+          title: "Doctor's Recommendations Ready",
+          body: `Please review your doctor's recommendations from your consultation with ${doctorName}.`,
+          type: 'doctor_recommendation',
+          report_id: documentId,
+          document_id: documentId,
+          appointment_id: documentId,
+          doctor_name: doctorName,
+          doctor_uid: doctorUid,
+          is_read: false,
+          created_at: serverTimestamp(),
+        });
+
+        // 5c. Set pending recommendation flag on the user document for home card
+        batch.set(
+          doc(db, 'users', effectiveUserUid),
+          {
+            pending_recommendation: {
+              report_id: documentId,
+              document_id: documentId,
+              appointment_id: documentId,
+              doctor_name: doctorName,
+              doctor_uid: doctorUid,
+              created_at: serverTimestamp(),
+              reviewed: false,
+            },
+          },
+          { merge: true }
+        );
       }
 
       // 5b. Update master consultations document with report fields
@@ -808,6 +862,7 @@ export default function CompleteReportPage() {
             consultation_id: documentId,
             recommendations,
             notes: overallNotes.trim(),
+            ...(internalNotes.trim() ? { internal_notes: internalNotes.trim() } : {}),
             store_recommendations: normalizedStoreRecommendations,
             recommendations_added_to_cart: true,
             updated_at: serverTimestamp(),
@@ -906,7 +961,7 @@ export default function CompleteReportPage() {
       case 3:
         return 'Store Recommendations';
       case 4:
-        return 'Consultation Summary';
+        return `${userName?.split(' ')?.[0] || 'Patient'}'s Cart`;
       default:
         return 'Recommendations';
     }
@@ -914,18 +969,45 @@ export default function CompleteReportPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <WebLayoutWrapper>
-        <div className="max-w-2xl mx-auto space-y-4 pb-40 md:pb-28 pt-2 px-4 sm:px-6 relative min-h-screen">
+      <WebLayoutWrapper
+        className={step === 3 ? 'h-full overflow-hidden' : ''}
+        contentClassName={step === 3 ? 'h-full !py-0 flex flex-col' : ''}
+      >
+        <div
+          className={`max-w-2xl mx-auto w-full relative ${
+            step === 3
+              ? 'h-[calc(100dvh-5rem)] md:h-[calc(100dvh-5.5rem)] flex flex-col overflow-hidden px-2 sm:px-4 pt-1'
+              : 'space-y-4 pb-40 md:pb-28 pt-2 px-4 sm:px-6 min-h-screen'
+          }`}
+        >
           {/* Top Bar */}
-          <div className="flex items-center justify-between pt-2 pb-2 mb-2">
+          <div className={`shrink-0 flex items-center justify-between ${step === 3 ? 'pt-1 pb-2 mb-1' : 'pt-2 pb-2 mb-2'} relative`}>
             <AmbeBackButton onClick={handleBack} />
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-wide text-center flex-1 pr-10">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-wide text-center flex-1">
               {getPageTitle()}
             </h1>
+            {step === 3 ? (
+              <button
+                type="button"
+                onClick={handleNextFromStep3}
+                className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-[#FFD3AC] transition cursor-pointer flex items-center justify-center shrink-0"
+                title="View Cart"
+                aria-label="View Cart"
+              >
+                <ShoppingCartIcon className="w-6 h-6 text-[#FFD3AC]" />
+                {totalCartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-[#FFD3AC] text-[#1E1E1E] text-xs font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                    {totalCartCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <div className="w-10 h-10 shrink-0" />
+            )}
           </div>
 
           {error && (
-            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+            <div className="shrink-0 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
               {error}
             </div>
           )}
@@ -1090,8 +1172,47 @@ export default function CompleteReportPage() {
                 <textarea
                   value={overallNotes}
                   onChange={(e) => setOverallNotes(e.target.value)}
-                  rows={10}
+                  rows={8}
                   placeholder="Enter your notes here..."
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: '#ffffff',
+                  }}
+                  className="w-full rounded-xl border border-white/15 p-4 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:border-[#FFD3AC] focus:ring-1 focus:ring-[#FFD3AC] transition resize-none font-sans"
+                />
+              </div>
+
+              {/* Internal Notes Section (Doctor & Admin Only) */}
+              <div
+                style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+                className="border border-white/20 rounded-[18px] p-4 flex items-start gap-3 backdrop-blur-md mt-6"
+              >
+                <svg className="w-5 h-5 text-[#FFD3AC] shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-semibold text-sm font-sans">Internal Notes</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FFD3AC]/20 text-[#FFD3AC] font-medium border border-[#FFD3AC]/30">
+                      Visible to You
+                    </span>
+                  </div>
+                  <p className="text-white/70 text-xs font-sans mt-0.5">
+                    Only visible to you. Not visible to the patient.
+                  </p>
+                </div>
+              </div>
+
+              {/* Internal Notes Textarea */}
+              <div
+                style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
+                className="border border-white/20 rounded-[18px] p-5 shadow-sm backdrop-blur-md"
+              >
+                <textarea
+                  value={internalNotes}
+                  onChange={(e) => setInternalNotes(e.target.value)}
+                  rows={6}
+                  placeholder="Enter internal notes (visible only to you)..."
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
                     color: '#ffffff',
@@ -1119,13 +1240,13 @@ export default function CompleteReportPage() {
               STEP 3: STORE RECOMMENDATIONS
              ═════════════════════════════════════════════════════════════════════ */}
           {step === 3 && (
-            <div className="space-y-4">
-              <p className="text-white/60 text-xs sm:text-sm text-center -mt-2">
+            <div className="flex-1 min-h-0 flex flex-col space-y-2.5 overflow-hidden">
+              <p className="shrink-0 text-white/60 text-xs sm:text-sm text-center -mt-1">
                 Recommend products for your patient from the store
               </p>
 
               {/* Search Bar */}
-              <div className="relative">
+              <div className="shrink-0 relative">
                 <MagnifyingGlassIcon className="w-5 h-5 text-white/40 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
@@ -1136,12 +1257,12 @@ export default function CompleteReportPage() {
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
                     color: '#ffffff',
                   }}
-                  className="w-full rounded-xl border border-white/20 pl-11 pr-4 py-3 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:border-[#FFD3AC] focus:ring-1 focus:ring-[#FFD3AC] transition"
+                  className="w-full rounded-xl border border-white/20 pl-11 pr-4 py-2.5 sm:py-3 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:border-[#FFD3AC] focus:ring-1 focus:ring-[#FFD3AC] transition"
                 />
               </div>
 
               {/* Category Filter Pills & Expandable Subcategories */}
-              <div className="space-y-2.5">
+              <div className="shrink-0 space-y-2">
                 <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar items-center">
                   {/* Tune / Filter button - circular dark icon button matching Flutter */}
                   <button
@@ -1245,72 +1366,25 @@ export default function CompleteReportPage() {
                 )}
               </div>
 
-              {/* Recommended Items Badge / Summary if items are added */}
-              {recommendedProducts.length > 0 && (
-                <div
-                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-                  className="border border-[#FFD3AC]/50 rounded-[18px] p-4 backdrop-blur-md"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <ShoppingBagIcon className="w-5 h-5 text-[#FFD3AC]" />
-                    <span className="font-bold text-white text-sm">
-                      Recommended Products ({recommendedProducts.length})
-                    </span>
-                  </div>
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {recommendedProducts.map((item) => (
-                      <div
-                        key={item.item_id}
-                        className="flex items-center justify-between bg-black/40 rounded-xl p-2.5 border border-white/10 gap-3"
-                      >
-                        <div className="flex items-center gap-2.5 overflow-hidden">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.product_name}
-                              className="w-10 h-10 object-contain rounded-lg bg-neutral-800 p-1 shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-lg bg-neutral-800 flex items-center justify-center text-base shrink-0">
-                              🌿
-                            </div>
-                          )}
-                          <div className="truncate">
-                            <p className="font-medium text-white text-xs sm:text-sm truncate">{item.product_name}</p>
-                            <p className="text-[11px] text-white/60">
-                              {item.size} · Qty {item.quantity} {item.price ? `· $${(item.price * item.quantity).toFixed(2)}` : ''}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeRecommendedProduct(item.item_id)}
-                          className="text-white/60 hover:text-red-400 p-1.5 rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0"
-                          aria-label={`Remove ${item.product_name}`}
-                        >
-                          <XMarkIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Products List - Matching User Side Store Style */}
-              {productsLoading ? (
-                <p className="text-center text-sm text-white/60 py-8">Loading products...</p>
-              ) : filteredProducts.length === 0 ? (
-                <p className="text-center text-sm text-white/60 py-8">No products found.</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* Products List - Only this area scrolls! */}
+              <div
+                className="flex-1 min-h-0 overflow-y-auto pr-1 pb-6"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(255, 211, 172, 0.4) transparent',
+                }}
+              >
+                {productsLoading ? (
+                  <p className="text-center text-sm text-white/60 py-8">Loading products...</p>
+                ) : filteredProducts.length === 0 ? (
+                  <p className="text-center text-sm text-white/60 py-8">No products found.</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 pb-6">
                   {filteredProducts.map((product) => {
                     const selection = pickerSelections[product.productKey] || {};
                     const selectedSize = selection.size || product.packs?.[0]?.size || 'Standard';
                     const selectedQty = selection.quantity || 1;
                     const pack = product.packs?.find((p) => p.size === selectedSize) || product.packs?.[0] || {};
-                    const price = pack?.price != null ? Number(pack.price) : (Number(product.price) || 0);
-                    const originalPrice = pack?.mrp != null ? Number(pack.mrp) : (Number(product.original_price) || price);
-                    const discount = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 
                     // Calculate if and how many already added
                     const alreadyAddedItems = recommendedProducts.filter(
@@ -1327,7 +1401,10 @@ export default function CompleteReportPage() {
                         } rounded-[20px] overflow-hidden hover:border-[#FFD3AC]/60 transition flex flex-col justify-between shadow-xl backdrop-blur-md group`}
                       >
                         {/* Product Image Area matching user side store */}
-                        <div className="w-full bg-gradient-to-b from-neutral-800 to-neutral-700 relative flex items-center justify-center p-3 h-36 sm:h-44 overflow-hidden">
+                        <div
+                          onClick={() => setSelectedProductForModal(product)}
+                          className="w-full bg-gradient-to-b from-neutral-800 to-neutral-700 relative flex items-center justify-center p-2.5 h-32 sm:h-36 overflow-hidden cursor-pointer"
+                        >
                           {product.imageUrl ? (
                             <img
                               src={product.imageUrl}
@@ -1347,13 +1424,6 @@ export default function CompleteReportPage() {
                             </span>
                           </div>
 
-                          {/* Discount Badge */}
-                          {discount > 0 && (
-                            <span className="absolute top-2.5 left-2.5 bg-[#FFD3AC] text-[#1E1E1E] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
-                              {discount}% OFF
-                            </span>
-                          )}
-
                           {/* Added Badge */}
                           {totalAddedQty > 0 && (
                             <span className="absolute top-2.5 right-2.5 bg-[#FFD3AC] text-[#1E1E1E] text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md flex items-center gap-1">
@@ -1366,7 +1436,10 @@ export default function CompleteReportPage() {
                         {/* Product Info Area */}
                         <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
                           <div>
-                            <h4 className="font-bold text-xs sm:text-sm text-white line-clamp-2 leading-snug group-hover:text-[#FFD3AC] transition-colors mb-1">
+                            <h4
+                              onClick={() => setSelectedProductForModal(product)}
+                              className="font-bold text-xs sm:text-sm text-white line-clamp-2 leading-snug group-hover:text-[#FFD3AC] transition-colors mb-1 cursor-pointer"
+                            >
                               {product.product_name}
                             </h4>
 
@@ -1381,7 +1454,7 @@ export default function CompleteReportPage() {
                                 >
                                   {(product.packs || []).map((p, vIdx) => (
                                     <option key={`${p.size}-${vIdx}`} value={p.size} className="bg-[#1E1E1E] text-white">
-                                      {p.size} {p.price ? `($${p.price})` : ''}
+                                      {p.size}
                                     </option>
                                   ))}
                                 </select>
@@ -1389,19 +1462,8 @@ export default function CompleteReportPage() {
                             )}
                           </div>
 
-                          {/* Bottom Price & Controls */}
-                          <div className="pt-2 border-t border-white/10 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm sm:text-base font-bold text-white">
-                                ${price ? price.toFixed(2) : '0.00'}
-                              </span>
-                              {originalPrice > price && (
-                                <span className="text-[11px] text-white/50 line-through">
-                                  ${originalPrice.toFixed(2)}
-                                </span>
-                              )}
-                            </div>
-
+                          {/* Bottom Controls */}
+                          <div className="pt-2 border-t border-white/10">
                             <div className="flex items-center gap-2">
                               {/* Quantity Stepper */}
                               <div className="flex items-center rounded-xl border border-white/15 overflow-hidden bg-black/40">
@@ -1446,30 +1508,57 @@ export default function CompleteReportPage() {
                   })}
                 </div>
               )}
-
-              {/* Floating Action Button -> Step 4 */}
-              <button
-                type="button"
-                onClick={handleNextFromStep3}
-                className="fixed bottom-24 md:bottom-8 right-5 md:right-8 z-40 w-14 h-14 rounded-2xl bg-[#FFD3AC] hover:bg-[#ffc999] text-[#1E1E1E] flex items-center justify-center shadow-2xl transition transform hover:scale-105 active:scale-95 cursor-pointer"
-                title="Review & Summary"
-                aria-label="Next step"
-              >
-                <svg className="w-6 h-6 text-[#1E1E1E]" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </button>
             </div>
-          )}
+          </div>
+        )}
 
           {/* ═════════════════════════════════════════════════════════════════════
-              STEP 4: CONSULTATION SUMMARY & SUBMIT
+              STEP 4: CART & CONSULTATION SUMMARY & SUBMIT
              ═════════════════════════════════════════════════════════════════════ */}
           {step === 4 && (
             <div className="space-y-4">
               <p className="text-white/60 text-xs sm:text-sm text-center -mt-2">
-                Review all consultation details before finalizing
+                Review recommended products and consultation details before completing
               </p>
+
+              {/* Cart Items List - Matching Flutter App Image 3 */}
+              <div className="space-y-3">
+                {recommendedProducts.length === 0 ? (
+                  <div
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
+                    className="border border-white/20 rounded-2xl p-8 text-center backdrop-blur-md"
+                  >
+                    <p className="text-white/70 font-medium text-base">The cart is empty</p>
+                    <p className="text-white/40 text-xs mt-1">No products recommended for this patient</p>
+                  </div>
+                ) : (
+                  recommendedProducts.map((item) => (
+                    <div
+                      key={item.item_id}
+                      style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
+                      className="border border-white/20 rounded-2xl p-4 flex items-center justify-between gap-4 backdrop-blur-md shadow-sm"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-base text-white truncate">
+                          {item.product_name}
+                        </h4>
+                        <p className="text-sm text-[#FFD3AC] font-medium mt-1">
+                          Size: {item.size} &nbsp;•&nbsp; Qty: {item.quantity}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeRecommendedProduct(item.item_id)}
+                        className="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition cursor-pointer shrink-0"
+                        title="Remove item"
+                        aria-label={`Remove ${item.product_name}`}
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
 
               {/* Patient Info */}
               <div
@@ -1514,6 +1603,26 @@ export default function CompleteReportPage() {
                 </p>
               </div>
 
+              {/* Internal Notes Summary (Doctor & Admin Only) */}
+              {internalNotes.trim() && (
+                <div
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
+                  className="border border-[#FFD3AC]/30 rounded-[18px] p-5 shadow-sm backdrop-blur-md"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-xs font-bold text-[#FFD3AC] uppercase tracking-wider">
+                      Internal Notes
+                    </h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FFD3AC]/20 text-[#FFD3AC] font-medium border border-[#FFD3AC]/30">
+                      Visible to You
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-white/70 whitespace-pre-wrap">
+                    {internalNotes}
+                  </p>
+                </div>
+              )}
+
               {/* Referral Summary */}
               <div
                 style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
@@ -1535,62 +1644,24 @@ export default function CompleteReportPage() {
                 )}
               </div>
 
-              {/* Store Recommendations Summary */}
-              <div
-                style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
-                className="border border-white/20 rounded-[18px] p-5 shadow-sm backdrop-blur-md"
-              >
-                <h3 className="text-xs font-bold text-[#FFD3AC] uppercase tracking-wider mb-2">
-                  Recommended Products ({recommendedProducts.length})
-                </h3>
-                {recommendedProducts.length === 0 ? (
-                  <p className="text-xs text-white/40 italic">No products recommended</p>
-                ) : (
-                  <div className="space-y-2.5">
-                    {recommendedProducts.map((item) => (
-                      <div
-                        key={item.item_id}
-                        className="flex items-center justify-between text-xs sm:text-sm py-1.5 border-b border-white/5 last:border-b-0 gap-3"
-                      >
-                        <div className="flex items-center gap-2.5 overflow-hidden">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.product_name}
-                              className="w-9 h-9 object-contain rounded-lg bg-neutral-800 p-1 shrink-0"
-                            />
-                          ) : (
-                            <div className="w-9 h-9 rounded-lg bg-neutral-800 flex items-center justify-center text-sm shrink-0">
-                              🌿
-                            </div>
-                          )}
-                          <div className="truncate">
-                            <span className="text-white font-medium block truncate">{item.product_name}</span>
-                            <span className="text-[11px] text-white/60">Size: {item.size}</span>
-                          </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className="text-white/80 block">Qty: {item.quantity}</span>
-                          {item.price != null && (
-                            <span className="text-xs text-[#FFD3AC] font-semibold">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Final Submit Button */}
+              {/* Final Complete Button - Matching Flutter COMPLETE */}
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full bg-[#FFD3AC] hover:bg-[#ffc999] disabled:opacity-50 text-[#1E1E1E] font-bold text-base py-4 rounded-2xl shadow-2xl transition transform hover:scale-[1.01] active:scale-[0.99] cursor-pointer mt-6"
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffc999] disabled:opacity-50 text-[#1E1E1E] font-bold text-base py-4 rounded-2xl shadow-2xl transition transform hover:scale-[1.01] active:scale-[0.99] cursor-pointer mt-6 uppercase tracking-wider flex items-center justify-center gap-2"
               >
-                {submitting ? 'Submitting Recommendations...' : 'SUBMIT RECOMMENDATIONS'}
+                {submitting ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-[#1E1E1E]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  'COMPLETE'
+                )}
               </button>
             </div>
           )}
@@ -1775,6 +1846,19 @@ export default function CompleteReportPage() {
                 </div>
               </div>
             </div>
+          )}
+          {/* Product Details Modal for Doctor Recommendation */}
+          {selectedProductForModal && (
+            <ProductDetailsModal
+              product={selectedProductForModal}
+              isDoctor={true}
+              isDoctorRecommendation={true}
+              onClose={() => setSelectedProductForModal(null)}
+              onAddToCart={({ product, size, quantity }) => {
+                addProductToRecommendations(product, size, quantity);
+                setSelectedProductForModal(null);
+              }}
+            />
           )}
         </div>
       </WebLayoutWrapper>

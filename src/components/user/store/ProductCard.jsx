@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   collection,
@@ -14,6 +14,7 @@ import {
 import { db } from '@/lib/firebase/config';
 import {
   PlusIcon,
+  CheckIcon,
   HeartIcon as HeartIconOutline
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
@@ -24,6 +25,8 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
   const [selectedVariant, setSelectedVariant] = useState(variants[0]?.id || '');
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const addingRef = useRef(false);
 
   useEffect(() => {
     if (variants.length > 0 && !selectedVariant) {
@@ -47,6 +50,8 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
       return;
     }
 
+    if (addingRef.current) return;
+    addingRef.current = true;
     setAdding(true);
     try {
       const cartRef = collection(db, 'users', user.uid, 'cart');
@@ -91,11 +96,15 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
       }
 
       setQuantity(1);
-      alert(`${product.name} added to cart!`);
+      setJustAdded(true);
+      setTimeout(() => {
+        setJustAdded(false);
+      }, 1500);
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add to cart. Please try again.');
     } finally {
+      addingRef.current = false;
       setAdding(false);
     }
   }
@@ -191,14 +200,28 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
           <button
             type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               addToCart();
             }}
-            disabled={adding}
-            className="w-10 h-10 rounded-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] flex items-center justify-center transition shadow-md cursor-pointer disabled:opacity-50 shrink-0"
-            aria-label="Add to Cart"
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-md cursor-pointer shrink-0 active:scale-90 ${
+              justAdded
+                ? 'bg-emerald-500 text-white scale-105 shadow-emerald-500/30'
+                : 'bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E]'
+            }`}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            aria-label={justAdded ? 'Added to Cart' : 'Add to Cart'}
+            title={justAdded ? 'Added!' : 'Add to Cart'}
           >
-            <PlusIcon className="w-5 h-5 stroke-[2.5]" />
+            {justAdded ? (
+              <CheckIcon className="w-5 h-5 stroke-[2.5]" />
+            ) : adding ? (
+              <div className="w-4 h-4 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <PlusIcon className="w-5 h-5 stroke-[2.5]" />
+            )}
           </button>
         </div>
       </div>

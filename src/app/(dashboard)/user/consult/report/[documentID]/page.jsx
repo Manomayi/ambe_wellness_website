@@ -25,6 +25,8 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { getConsultationStatusInfo } from '@/lib/consultationStatus';
+import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
+import { fetchProductForModal } from '@/lib/shop/productModalHelper';
 
 export default function ConsultationReportPage() {
   const router = useRouter();
@@ -35,6 +37,20 @@ export default function ConsultationReportPage() {
   const [data, setData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [cartItemsMap, setCartItemsMap] = useState({});
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+
+  const handleOpenProductDetails = async (item) => {
+    try {
+      const prod = await fetchProductForModal(
+        item.product_id || item.productId || item.item_id,
+        item.product_name || item.productName || item.name,
+        item
+      );
+      setSelectedProductForModal(prod);
+    } catch (e) {
+      console.error('Error opening product details:', e);
+    }
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -305,7 +321,6 @@ export default function ConsultationReportPage() {
         },
         { merge: true }
       );
-      alert(`${pName} added to cart!`);
     } catch (err) {
       console.error('Error adding item to cart:', err);
     }
@@ -625,15 +640,18 @@ export default function ConsultationReportPage() {
                 return (
                   <div
                     key={idx}
-                    className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 backdrop-blur-md shadow-xl flex items-center justify-between gap-4"
+                    onClick={() => handleOpenProductDetails(item)}
+                    className="bg-[#2D2D30]/85 border border-white/10 hover:border-[#FFD3AC]/50 transition rounded-2xl p-5 backdrop-blur-md shadow-xl flex items-center justify-between gap-4 cursor-pointer group"
+                    title="Click to view product details"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 group-hover:border-[#FFD3AC]/40 group-hover:bg-[#FFD3AC]/10 transition flex items-center justify-center shrink-0">
                         <ShoppingBagIcon className="w-5 h-5 text-[#FFD3AC]" />
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-sm font-bold text-white truncate">
-                          {productName}
+                        <h4 className="text-sm font-bold text-white group-hover:text-[#FFD3AC] transition truncate flex items-center gap-1.5">
+                          <span>{productName}</span>
+                          <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-[#FFD3AC] opacity-0 group-hover:opacity-100 transition shrink-0" />
                         </h4>
                         {size && (
                           <p className="text-xs text-white/60 mt-0.5">
@@ -651,8 +669,14 @@ export default function ConsultationReportPage() {
                         </span>
                       ) : (
                         <button
-                          onClick={() => handleAddToCart(item)}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E1E1E] bg-[#FFD3AC] hover:bg-[#ffe0c4] px-2.5 py-1 rounded-full transition cursor-pointer"
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddToCart(item);
+                          }}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E1E1E] bg-[#FFD3AC] hover:bg-[#ffe0c4] active:scale-95 px-2.5 py-1 rounded-full transition cursor-pointer"
+                          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                         >
                           + Add to Cart
                         </button>
@@ -669,8 +693,10 @@ export default function ConsultationReportPage() {
             {/* Go to cart full button */}
             <div className="pt-2">
               <button
+                type="button"
                 onClick={() => router.push('/user/cart')}
-                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] font-bold py-4 rounded-full transition flex items-center justify-center gap-2 shadow-lg cursor-pointer text-sm uppercase tracking-wider"
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] active:scale-[0.98] text-[#1E1E1E] font-bold py-4 rounded-full transition flex items-center justify-center gap-2 shadow-lg cursor-pointer text-sm uppercase tracking-wider"
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 <ShoppingBagIcon className="w-5 h-5" />
                 GO TO CART
@@ -703,6 +729,13 @@ export default function ConsultationReportPage() {
               )}
             </div>
           </div>
+        )}
+
+        {selectedProductForModal && (
+          <ProductDetailsModal
+            product={selectedProductForModal}
+            onClose={() => setSelectedProductForModal(null)}
+          />
         )}
       </div>
     </WebLayoutWrapper>

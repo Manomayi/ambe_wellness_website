@@ -49,6 +49,7 @@ export default function VideoCall({
 
   const localAudioTrackRef = useRef(null);
   const localVideoTrackRef = useRef(null);
+  const initializeAgoraRef = useRef(null);
 
   useEffect(() => {
     onCallEndRef.current = onCallEnd;
@@ -215,36 +216,46 @@ export default function VideoCall({
       }
     };
 
+    let hasObservedActiveCall = false;
     const handleUserLeft = (user) => {
       console.log('[VideoCall] Remote user left channel:', user.uid);
       setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
-      // If remote user had previously joined and now left, end the call
-      if (hadRemoteJoinedRef.current && !callEndedRef.current) {
+      // In a 1-on-1 consultation, if the remote party leaves, terminate the call immediately
+      if (!callEndedRef.current) {
         handleRemoteCallEnd({ call_ended_by: isDoctor ? 'user' : 'doctor' });
       }
     };
 
     // Listen to shared consultation doc for remote call end signal
-    const unsubConsultation = onSnapshot(
-      doc(db, 'consultations', appointmentId),
-      (snap) => {
-        if (cancelled || callEndedRef.current) return;
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.call_status === 'ended') {
-            const endedAt = data.call_ended_at?.toMillis ? data.call_ended_at.toMillis() : Date.now();
-            if (endedAt >= sessionStartTime - 10000) {
-              console.log('[VideoCall] Detected call_status=ended from Firestore:', data);
-              handleRemoteCallEnd(data);
+    let unsubConsultation = null;
+    try {
+      unsubConsultation = onSnapshot(
+        doc(db, 'consultations', appointmentId),
+        (snap) => {
+          if (cancelled || callEndedRef.current) return;
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.call_status === 'active') {
+              hasObservedActiveCall = true;
+            }
+            if (data.call_status === 'ended') {
+              const endedAt = data.call_ended_at?.toMillis ? data.call_ended_at.toMillis() : Date.now();
+              const isOtherParty = data.call_ended_by ? data.call_ended_by !== (isDoctor ? 'doctor' : 'user') : true;
+              if (hasObservedActiveCall || isOtherParty || endedAt >= sessionStartTime - 30000) {
+                console.log('[VideoCall] Detected call_status=ended from Firestore:', data);
+                handleRemoteCallEnd(data);
+              }
             }
           }
+        },
+        (err) => {
+          if (err?.code === 'permission-denied') return;
+          console.error('[VideoCall] Consultation doc listener error:', err);
         }
-      },
-      (err) => {
-        if (err?.code === 'permission-denied') return;
-        console.error('[VideoCall] Consultation doc listener error:', err);
-      }
-    );
+      );
+    } catch (listenerErr) {
+      console.warn('[VideoCall] Could not attach consultation listener:', listenerErr);
+    }
 
     const initializeAgora = async (isRetry = false) => {
       if (cancelled) return;
@@ -340,9 +351,7 @@ export default function VideoCall({
               ...(otherPartyUid
                 ? (isDoctor ? { user_id: otherPartyUid } : { doctor_id: otherPartyUid })
                 : {}),
-              call_status: deleteField(),
-              call_ended_by: deleteField(),
-              call_ended_at: deleteField(),
+              call_status: 'active',
             },
             { merge: true }
           );
@@ -440,7 +449,11 @@ export default function VideoCall({
 
     return () => {
       cancelled = true;
-      unsubConsultation();
+      if (typeof unsubConsultation === 'function') {
+        try {
+          unsubConsultation();
+        } catch (_) {}
+      }
       // Ensure camera/mic hardware is always closed on unmount
       if (localAudioTrackRef.current) {
         stopAndCloseTrack(localAudioTrackRef.current);

@@ -7,9 +7,11 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, query, addDoc, serverTimestamp } from 'firebase/firestore';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
-import { TruckIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { TruckIcon, ClockIcon, XMarkIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
+import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
+import { fetchProductForModal } from '@/lib/shop/productModalHelper';
 
 // Helper to add business days (excluding Saturday & Sunday)
 function addBusinessDays(startDate, days) {
@@ -56,6 +58,22 @@ export default function PurchaseHistoryPage() {
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [reviewError, setReviewError] = useState('');
 
+  // Product Details Modal state
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+
+  const handleOpenProductDetails = async (item) => {
+    try {
+      const prod = await fetchProductForModal(
+        item.product_id || item.productId || item.item_id || item.id,
+        item.name || item.product_name || item.productName,
+        item
+      );
+      setSelectedProductForModal(prod);
+    } catch (e) {
+      console.error('Error opening product details:', e);
+    }
+  };
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -97,8 +115,23 @@ export default function PurchaseHistoryPage() {
             data.order_status ||
             data.status;
 
+          const rawRefundStatus = (data.refund_status || '').toLowerCase();
+          const declineReason = (data.decline_reason || data.declineReason || '').trim();
+
           if (orderType === 'consultation' || orderType === 'consultation_deposit') {
-            if (
+            if (rawRefundStatus === 'declined' || (productStatus && productStatus.toLowerCase().includes('decline'))) {
+              productStatus = 'Refund Declined';
+            } else if (
+              rawRefundStatus === 'refunded' ||
+              rawRefundStatus === 'approved' ||
+              (productStatus && productStatus.toLowerCase().includes('refund'))
+            ) {
+              const is50 =
+                data.refund_percentage === 50 ||
+                Number(data.refund_amount) === 25 ||
+                (productStatus && productStatus.includes('50%'));
+              productStatus = is50 ? 'Refunded (50%)' : 'Refunded';
+            } else if (
               !productStatus ||
               ['succeeded', 'paid', 'success'].includes(productStatus.toLowerCase())
             ) {
@@ -109,7 +142,19 @@ export default function PurchaseHistoryPage() {
               productStatus = 'Processing';
             }
           } else {
-            if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
+            if (rawRefundStatus === 'declined' || (productStatus && productStatus.toLowerCase().includes('decline'))) {
+              productStatus = 'Refund Declined';
+            } else if (
+              rawRefundStatus === 'refunded' ||
+              rawRefundStatus === 'approved' ||
+              (productStatus && productStatus.toLowerCase().includes('refund'))
+            ) {
+              const is50 =
+                data.refund_percentage === 50 ||
+                Number(data.refund_amount) === 25 ||
+                (productStatus && productStatus.includes('50%'));
+              productStatus = is50 ? 'Refunded (50%)' : 'Refunded';
+            } else if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
               productStatus = 'Paid';
             }
           }
@@ -119,6 +164,7 @@ export default function PurchaseHistoryPage() {
             amount: displayAmount,
             currency: (data.currency || 'USD').toUpperCase(),
             status: productStatus,
+            declineReason: declineReason,
             paymentStatus: data.status || 'succeeded',
             type: orderType,
             description: data.description || '',
@@ -214,6 +260,12 @@ export default function PurchaseHistoryPage() {
 
   const getStatusBadgeColor = (statusStr) => {
     const s = (statusStr || '').toLowerCase();
+    if (s.includes('decline')) {
+      return 'text-rose-400 bg-rose-500/20 border-rose-500/30';
+    }
+    if (s.includes('refund')) {
+      return 'text-amber-400 bg-amber-500/20 border-amber-500/30';
+    }
     if (s === 'delivered' || s === 'paid' || s === 'succeeded' || s === 'success') {
       return 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30';
     }
@@ -242,7 +294,7 @@ export default function PurchaseHistoryPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {purchases.map(({ id, amount, currency, status, type, description, items, time, shipDate, trackingNumber }) => {
+            {purchases.map(({ id, amount, currency, status, type, description, items, time, shipDate, trackingNumber, declineReason }) => {
               const diffMs = now - time;
               const daysElapsed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
               const canReview = daysElapsed >= 14;
@@ -301,6 +353,12 @@ export default function PurchaseHistoryPage() {
                     </div>
                   </div>
 
+                  {status === 'Refund Declined' && declineReason && (
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200">
+                      <strong className="text-rose-300">Decline Reason:</strong> {declineReason}
+                    </div>
+                  )}
+
                   {/* Shipping notice banner for store orders */}
                   {type === 'store' && status?.toLowerCase() !== 'shipped' && status?.toLowerCase() !== 'delivered' && (
                     <div className="flex items-start gap-2.5 bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white/80">
@@ -338,13 +396,18 @@ export default function PurchaseHistoryPage() {
                           return (
                             <div
                               key={idx}
-                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-white/5 border border-white/10 text-xs"
+                              onClick={() => handleOpenProductDetails(item)}
+                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#FFD3AC]/40 transition text-xs cursor-pointer group"
+                              title="Click to view product details"
                             >
                               <div className="flex items-center gap-2">
                                 <div>
-                                  <span className="font-semibold text-white">
-                                    {productName}
-                                    {sizeDisplay} × {qty}
+                                  <span className="font-semibold text-white group-hover:text-[#FFD3AC] transition inline-flex items-center gap-1.5">
+                                    <span>
+                                      {productName}
+                                      {sizeDisplay} × {qty}
+                                    </span>
+                                    <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-[#FFD3AC] opacity-0 group-hover:opacity-100 transition shrink-0" />
                                   </span>
                                   <span className="ml-2 font-medium text-white/60">
                                     ${(price * qty).toFixed(2)}
@@ -354,7 +417,10 @@ export default function PurchaseHistoryPage() {
 
                               {/* Delayed review button / tag */}
                               {type === 'store' && hasProduct && (
-                                <div className="flex items-center sm:justify-end">
+                                <div
+                                  className="flex items-center sm:justify-end"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   {canReview ? (
                                     <button
                                       type="button"
@@ -486,6 +552,13 @@ export default function PurchaseHistoryPage() {
               )}
             </div>
           </div>
+        )}
+
+        {selectedProductForModal && (
+          <ProductDetailsModal
+            product={selectedProductForModal}
+            onClose={() => setSelectedProductForModal(null)}
+          />
         )}
       </div>
     </WebLayoutWrapper>

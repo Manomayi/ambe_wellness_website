@@ -474,8 +474,10 @@ export default function UserCheckoutPage() {
                   {deliveryAddress || 'No address provided'}
                 </p>
                 <button
+                  type="button"
                   onClick={() => setShowAddressModal(true)}
-                  className="text-[#FFD3AC] hover:text-[#ffe0c4] font-semibold text-sm uppercase tracking-wider shrink-0 cursor-pointer transition"
+                  className="text-[#FFD3AC] hover:text-[#ffe0c4] active:scale-95 font-semibold text-sm uppercase tracking-wider shrink-0 cursor-pointer transition"
+                  style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                 >
                   {deliveryAddress ? 'UPDATE' : 'ADD'}
                 </button>
@@ -561,13 +563,15 @@ export default function UserCheckoutPage() {
 
         {/* Place Order Button */}
         <button
+          type="button"
           onClick={handlePlaceOrder}
           disabled={processing || isTaxCalculating || cartItems.length === 0}
-          className={`w-full py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer ${
+          className={`w-full py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer active:scale-[0.99] ${
             paymentMethod === 'paypal'
               ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
               : 'bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E]'
           }`}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
           {processing
             ? 'Processing...'

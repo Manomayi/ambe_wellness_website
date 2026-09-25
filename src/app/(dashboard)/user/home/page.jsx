@@ -1,17 +1,110 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
+import { doc, updateDoc, collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import { ClipboardDocumentListIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 export default function UserHomePage() {
   const router = useRouter();
   const { user, profile } = useAuth();
+  const [pendingRecommendation, setPendingRecommendation] = useState(null);
 
   const isMember = Boolean(profile?.subscription?.active);
   const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "there";
   const isQuestionnaireCompleted = profile?.is_free_questionnaire_completed === true;
+
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    // 1. Check user profile pending_recommendation
+    const userDocRef = doc(db, "users", user.uid);
+    const unsubUser = onSnapshot(userDocRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        const pending = data?.pending_recommendation;
+        if (pending && !pending.reviewed) {
+          setPendingRecommendation({
+            report_id: pending.report_id || pending.document_id,
+            doctor_name: pending.doctor_name || "Your Doctor",
+            reviewed: false,
+          });
+          return;
+        }
+      }
+    });
+
+    // 2. Fallback check: appointments_history for unreviewed reports
+    const historyQuery = query(
+      collection(db, "users", user.uid, "appointments_history"),
+      orderBy("created_at", "desc"),
+      limit(5)
+    );
+
+    const unsubHistory = onSnapshot(
+      historyQuery,
+      (snap) => {
+        let foundUnreviewed = null;
+        for (const d of snap.docs) {
+          const data = d.data();
+          const hasRecs = Boolean(data.recommendations || data.notes || data.store_recommendations);
+          const isReviewed = data.reviewed_by_user === true;
+          if (hasRecs && !isReviewed) {
+            foundUnreviewed = {
+              report_id: d.id,
+              document_id: d.id,
+              doctor_name: data.doctor_name || "Your Doctor",
+              reviewed: false,
+              from_history: true,
+            };
+            break;
+          }
+        }
+
+        setPendingRecommendation((prev) => {
+          if (prev && !prev.from_history && !prev.reviewed) return prev;
+          return foundUnreviewed;
+        });
+      },
+      (err) => {
+        console.warn("Could not query appointments_history:", err);
+      }
+    );
+
+    return () => {
+      unsubUser();
+      unsubHistory();
+    };
+  }, [user?.uid]);
+
+  const handleRecommendationClick = async () => {
+    if (!pendingRecommendation) return;
+    const reportId = pendingRecommendation.report_id || pendingRecommendation.document_id;
+    if (!reportId) return;
+
+    // Dismiss immediately from UI
+    setPendingRecommendation(null);
+
+    if (user?.uid) {
+      try {
+        await updateDoc(doc(db, "users", user.uid), {
+          "pending_recommendation.reviewed": true,
+        }).catch(() => {});
+
+        await updateDoc(doc(db, "users", user.uid, "appointments_history", reportId), {
+          reviewed_by_user: true,
+        }).catch(() => {});
+      } catch (e) {
+        console.error("Error marking recommendation reviewed:", e);
+      }
+    }
+
+    router.push(`/user/consult/report/${reportId}`);
+  };
+
   const handleNextStepClick = () => {
     const hasDoctor = Boolean(profile?.doctor?.uid || profile?.doctor_uid);
     if (hasDoctor && !profile?.is_consultation_set) {
@@ -46,6 +139,52 @@ export default function UserHomePage() {
             </div>
           )}
         </div>
+
+        {/* DOCTOR RECOMMENDATION Card (Appears above Book your consultation) */}
+        {pendingRecommendation && (
+          <div className="flex justify-start">
+            <div
+              onClick={handleRecommendationClick}
+              className="
+                w-full sm:max-w-xl
+                flex items-center justify-between gap-4 sm:gap-6
+                bg-gradient-to-br from-[#2A2421] to-[#1E1A17]
+                border border-[#FFD3AC]/60
+                shadow-[0_4px_20px_rgba(255,211,172,0.12)]
+                px-5 py-4 sm:px-6 sm:py-5 rounded-[26px]
+                cursor-pointer transition-all duration-200 hover:border-[#FFD3AC] hover:shadow-[0_6px_24px_rgba(255,211,172,0.2)] active:scale-[0.99]
+                select-none group
+              "
+            >
+              <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                <div className="w-11 h-11 rounded-full bg-[#FFD3AC]/15 border border-[#FFD3AC]/30 flex items-center justify-center flex-shrink-0 text-[#FFD3AC]">
+                  <ClipboardDocumentListIcon className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] sm:text-[11px] font-semibold tracking-[1.2px] text-[#FFD3AC] uppercase font-sans">
+                    NEW RECOMMENDATION
+                  </span>
+                  <h3
+                    className="text-lg sm:text-[19px] font-bold text-[#FAF7F2] mt-0.5 leading-tight"
+                    style={{
+                      fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                    }}
+                  >
+                    Please review your doctor's recommendations
+                  </h3>
+                  <p className="text-[12px] sm:text-[13px] text-[#B5AFA8] font-sans mt-0.5">
+                    Prepared by {pendingRecommendation.doctor_name || "Your Doctor"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Circle arrow button */}
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#FFD3AC] text-[#1E1E1E] flex items-center justify-center flex-shrink-0 shadow-sm transition-transform group-hover:translate-x-0.5">
+                <ArrowRightIcon className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* YOUR NEXT STEP Card (Flutter _buildNextStepCard: content-fitted, left-aligned) */}
         <div className="flex justify-start">

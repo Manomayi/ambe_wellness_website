@@ -90,9 +90,29 @@ export default function UserConsultPage() {
   const [showActiveAppointmentModal, setShowActiveAppointmentModal] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
 
-  // Check if patient already has an active appointment
-  const activeAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
-  const hasActiveAppointment = Boolean(activeAppointment || profile?.is_consultation_set === true);
+  // Check if patient already has an active appointment (strictly non-expired and not ended)
+  const activeAppointment = upcomingAppointments.find((a) => {
+    if (
+      a.call_status === 'ended' ||
+      a.call_ended_at ||
+      a.status === 'completed' ||
+      a.consultation_outcome === 'completed'
+    ) {
+      return false;
+    }
+    const d = a.time?.toDate ? a.time.toDate() : (a.time ? new Date(a.time) : null);
+    if (!d) return true;
+    const diffMinutes = (d.getTime() - Date.now()) / (1000 * 60);
+    return diffMinutes >= -60;
+  }) || null;
+  const hasActiveAppointment = Boolean(activeAppointment);
+
+  // Auto-heal is_consultation_set if user has no valid upcoming appointment
+  useEffect(() => {
+    if (user && profile?.is_consultation_set === true && !activeAppointment && !loading) {
+      updateDoc(doc(db, 'users', user.uid), { is_consultation_set: false }).catch(() => {});
+    }
+  }, [user, profile?.is_consultation_set, activeAppointment, loading]);
 
   // Resolve doctor UID from profile
   const resolvedDoctorUid = 
@@ -125,6 +145,21 @@ export default function UserConsultPage() {
     const userJoined = appt.user_joined === true;
     const doctorJoined = appt.doctor_joined === true;
 
+    // First try the backend Cloud Function with Admin SDK privileges
+    try {
+      const autoResolveFn = httpsCallable(functions, 'autoResolveExpiredConsultation');
+      await autoResolveFn({
+        appointmentId,
+        doctorId: doctorUid,
+        userJoined,
+        doctorJoined,
+      });
+      console.log(`Auto-resolved expired consultation ${appointmentId} via Cloud Function`);
+      return;
+    } catch (fnErr) {
+      console.warn("Backend autoResolveExpiredConsultation failed, attempting client fallback:", fnErr);
+    }
+
     let resolvedStatus = "no_show";
     let isNoShow = true;
     if (userJoined && doctorJoined) {
@@ -155,13 +190,7 @@ export default function UserConsultPage() {
       batch.set(userHistoryRef, historyData, { merge: true });
       batch.update(doc(db, 'users', user.uid), { is_consultation_set: false });
 
-      if (doctorUid) {
-        const docUpcomingRef = doc(db, 'doctors', doctorUid, 'appointments_upcoming', appointmentId);
-        const docHistoryRef = doc(db, 'doctors', doctorUid, 'appointments_history', appointmentId);
-        batch.delete(docUpcomingRef);
-        batch.set(docHistoryRef, historyData, { merge: true });
-      }
-
+      // Note: Do not touch doctor subcollections here directly as client lacks permission
       const consultRef = doc(db, 'consultations', appointmentId);
       batch.set(consultRef, {
         status: resolvedStatus,
@@ -172,7 +201,7 @@ export default function UserConsultPage() {
       }, { merge: true });
 
       await batch.commit();
-      console.log(`Auto-resolved expired consultation ${appointmentId} to ${resolvedStatus}`);
+      console.log(`Auto-resolved expired consultation ${appointmentId} to ${resolvedStatus} via client fallback`);
     } catch (e) {
       console.warn("Error auto-resolving expired consultation:", e);
     }
@@ -284,6 +313,16 @@ export default function UserConsultPage() {
 
         snapshot.docs.forEach(docSnap => {
           const data = { id: docSnap.id, ...docSnap.data() };
+          // If call has ended or status is completed, auto-resolve to history and omit from upcoming
+          if (
+            data.call_status === 'ended' ||
+            data.call_ended_at ||
+            data.status === 'completed' ||
+            data.consultation_outcome === 'completed'
+          ) {
+            autoResolveExpiredConsultation(data, docSnap.id);
+            return;
+          }
           const apptDate = data.time?.toDate ? data.time.toDate() : (data.time ? new Date(data.time) : null);
           if (apptDate) {
             const diffMinutes = (apptDate.getTime() - now.getTime()) / (1000 * 60);
@@ -382,6 +421,14 @@ export default function UserConsultPage() {
 
   const isAppointmentNow = (appointment) => {
     if (!appointment?.time) return false;
+    if (
+      appointment.call_status === 'ended' ||
+      appointment.call_ended_at ||
+      appointment.status === 'completed' ||
+      appointment.consultation_outcome === 'completed'
+    ) {
+      return false;
+    }
     const appointmentTime = appointment.time.toDate ? appointment.time.toDate() : new Date(appointment.time);
     const now = new Date();
     const diffMinutes = (appointmentTime - now) / (1000 * 60);

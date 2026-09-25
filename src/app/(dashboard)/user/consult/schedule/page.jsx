@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -169,10 +169,6 @@ function ScheduleConsultationContent() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
 
-  // Active appointment detection
-  const activeAppointment = upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
-  const hasActiveAppointment = Boolean(activeAppointment || profile?.is_consultation_set === true);
-
   // Safe doctor UID resolution
   const resolvedDoctorUid = 
     profile?.doctor?.uid || 
@@ -181,6 +177,103 @@ function ScheduleConsultationContent() {
     profile?.matched_doctor || 
     profile?.doctor_id || 
     null;
+
+  // Active appointment detection (strictly non-expired and not ended)
+  const activeAppointment = upcomingAppointments.find((a) => {
+    if (
+      a.call_status === 'ended' ||
+      a.call_ended_at ||
+      a.status === 'completed' ||
+      a.consultation_outcome === 'completed'
+    ) {
+      return false;
+    }
+    const d = a.time?.toDate ? a.time.toDate() : (a.time ? new Date(a.time) : null);
+    if (!d) return true;
+    const diffMinutes = (d.getTime() - Date.now()) / (1000 * 60);
+    return diffMinutes >= -60;
+  }) || null;
+  const hasActiveAppointment = Boolean(activeAppointment);
+
+  // Auto-heal is_consultation_set if user has no valid upcoming appointment
+  useEffect(() => {
+    if (user && profile?.is_consultation_set === true && !activeAppointment && !loading) {
+      updateDoc(doc(db, 'users', user.uid), { is_consultation_set: false }).catch(() => {});
+    }
+  }, [user, profile?.is_consultation_set, activeAppointment, loading]);
+
+  const resolvingSetRef = useRef(new Set());
+
+  const autoResolveExpiredConsultation = async (appt, docId) => {
+    if (!user) return;
+    const appointmentId = (appt.appointment_id || docId || '').toString();
+    if (!appointmentId || resolvingSetRef.current.has(appointmentId)) return;
+    resolvingSetRef.current.add(appointmentId);
+
+    const doctorUid = appt.doctor_id || appt.doctor_uid || resolvedDoctorUid;
+    const userJoined = appt.user_joined === true;
+    const doctorJoined = appt.doctor_joined === true;
+
+    // First try the backend Cloud Function with Admin SDK privileges
+    try {
+      const autoResolveFn = httpsCallable(functions, 'autoResolveExpiredConsultation');
+      await autoResolveFn({
+        appointmentId,
+        doctorId: doctorUid,
+        userJoined,
+        doctorJoined,
+      });
+      console.log(`Auto-resolved expired consultation ${appointmentId} via Cloud Function`);
+      return;
+    } catch (fnErr) {
+      console.warn("Backend autoResolveExpiredConsultation failed, attempting client fallback:", fnErr);
+    }
+
+    let resolvedStatus = "no_show";
+    let isNoShow = true;
+    if (userJoined && doctorJoined) {
+      resolvedStatus = "completed";
+      isNoShow = false;
+    } else if (userJoined && !doctorJoined) {
+      resolvedStatus = "doctor_absent";
+      isNoShow = false;
+    } else {
+      resolvedStatus = "no_show";
+      isNoShow = true;
+    }
+
+    try {
+      const batch = writeBatch(db);
+      const historyData = {
+        ...appt,
+        status: resolvedStatus,
+        is_no_show: isNoShow,
+        auto_resolved: true,
+        resolved_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      const userUpcomingRef = doc(db, 'users', user.uid, 'appointments_upcoming', appointmentId);
+      const userHistoryRef = doc(db, 'users', user.uid, 'appointments_history', appointmentId);
+      batch.delete(userUpcomingRef);
+      batch.set(userHistoryRef, historyData, { merge: true });
+      batch.update(doc(db, 'users', user.uid), { is_consultation_set: false });
+
+      const consultRef = doc(db, 'consultations', appointmentId);
+      batch.set(consultRef, {
+        status: resolvedStatus,
+        is_no_show: isNoShow,
+        auto_resolved: true,
+        resolved_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
+      await batch.commit();
+      console.log(`Auto-resolved expired consultation ${appointmentId} to ${resolvedStatus} via client fallback`);
+    } catch (e) {
+      console.warn("Error auto-resolving expired consultation:", e);
+    }
+  };
 
   const formatAppointmentTime = (timestamp) => {
     if (!timestamp) return 'Time not set';
@@ -202,16 +295,38 @@ function ScheduleConsultationContent() {
     const unsubscribe = onSnapshot(
       upcomingQuery,
       (snapshot) => {
-        const appointments = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        appointments.sort((a, b) => {
+        const now = new Date();
+        const validUpcoming = [];
+
+        snapshot.docs.forEach((docSnap) => {
+          const data = { id: docSnap.id, ...docSnap.data() };
+          // If call has ended or status is completed, auto-resolve to history and omit from upcoming
+          if (
+            data.call_status === 'ended' ||
+            data.call_ended_at ||
+            data.status === 'completed' ||
+            data.consultation_outcome === 'completed'
+          ) {
+            autoResolveExpiredConsultation(data, docSnap.id);
+            return;
+          }
+          const apptDate = data.time?.toDate ? data.time.toDate() : (data.time ? new Date(data.time) : null);
+          if (apptDate) {
+            const diffMinutes = (apptDate.getTime() - now.getTime()) / (1000 * 60);
+            if (diffMinutes < -60) {
+              autoResolveExpiredConsultation(data, docSnap.id);
+              return;
+            }
+          }
+          validUpcoming.push(data);
+        });
+
+        validUpcoming.sort((a, b) => {
           const timeA = a.time?.toDate ? a.time.toDate().getTime() : (a.time ? new Date(a.time).getTime() : 0);
           const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
           return timeA - timeB;
         });
-        setUpcomingAppointments(appointments);
+        setUpcomingAppointments(validUpcoming);
       },
       (err) => {
         if (err?.code === 'permission-denied') return;
@@ -671,9 +786,7 @@ function ScheduleConsultationContent() {
       }
 
       setBookingSuccess(true);
-      setTimeout(() => {
-        router.push('/user/consult');
-      }, 1500);
+      router.replace('/user/consult');
     } catch (error) {
       console.error('Error completing booking:', error);
       alert('Your payment was processed, but we encountered an issue finalizing your appointment. Please contact info@ambewellness.com with your receipt.');
@@ -772,9 +885,7 @@ function ScheduleConsultationContent() {
       }
 
       setBookingSuccess(true);
-      setTimeout(() => {
-        router.push('/user/consult');
-      }, 1500);
+      router.replace('/user/consult');
     } catch (error) {
       console.error('Error rescheduling appointment:', error);
       alert('Could not reschedule your appointment. Please try again or contact support.');
@@ -916,8 +1027,20 @@ function ScheduleConsultationContent() {
     ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim()
     : (profile?.doctor_name || "Healthcare Provider");
 
+  // 3. If User Just Completed Booking/Rescheduling -> Show Smooth Transition
+  if (bookingSuccess) {
+    return (
+      <ProtectedRoute userType="user">
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#C8996A] border-t-transparent" />
+          <p className="text-[#8C827A] text-sm font-medium">Opening your consultation...</p>
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
   // 4. If Already Has Active Consultation & Not in Reschedule Mode -> Guard View
-  if (hasActiveAppointment && !isRescheduleParam) {
+  if (hasActiveAppointment && !isRescheduleParam && !scheduling && !bookingSuccess) {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-2xl mx-auto space-y-6">

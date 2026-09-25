@@ -9,6 +9,7 @@ import BackButton from '@/components/common/BackButton';
 
 const DEFAULT_PREFERENCES = {
   email: true,
+  sms: true,
 };
 
 const TOGGLES = [
@@ -16,6 +17,11 @@ const TOGGLES = [
     key: 'email',
     label: 'Email Notifications',
     description: 'Receive email updates for your consultations, appointments, and wellness alerts.',
+  },
+  {
+    key: 'sms',
+    label: 'Text / SMS Notifications',
+    description: 'Receive SMS text alerts for appointments, doctor recommendations, and consultations.',
   },
 ];
 
@@ -62,7 +68,11 @@ export default function UserNotificationsSettingsPage() {
             data.notification_preferences?.email ??
             data.notifications?.email ??
             true;
-          setPreferences({ email: emailPref });
+          const smsPref =
+            data.notification_preferences?.sms ??
+            data.notifications?.sms ??
+            true;
+          setPreferences({ email: emailPref, sms: smsPref });
         }
       } catch (e) {
         console.error('Failed to load notification preferences:', e);
@@ -87,6 +97,8 @@ export default function UserNotificationsSettingsPage() {
       await updateDoc(doc(db, 'users', user.uid), {
         'notification_preferences.email': preferences.email,
         'notifications.email': preferences.email,
+        'notification_preferences.sms': preferences.sms,
+        'notifications.sms': preferences.sms,
       });
       setSaved(true);
     } catch (e) {

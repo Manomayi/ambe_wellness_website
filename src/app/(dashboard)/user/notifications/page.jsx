@@ -14,7 +14,8 @@ import {
   ClockIcon, 
   UserPlusIcon,
   CheckIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -118,6 +119,22 @@ export default function NotificationsPage() {
     }
 
     const type = notification.type;
+    if (type === 'doctor_recommendation' || type === 'consultation_report' || notification.report_id) {
+      const reportId = notification.report_id || notification.document_id || notification.appointment_id;
+      if (reportId) {
+        if (user) {
+          updateDoc(doc(db, 'users', user.uid), {
+            'pending_recommendation.reviewed': true,
+          }).catch(() => {});
+          updateDoc(doc(db, 'users', user.uid, 'appointments_history', reportId), {
+            reviewed_by_user: true,
+          }).catch(() => {});
+        }
+        router.push(`/user/consult/report/${reportId}`);
+        return;
+      }
+    }
+
     if (type === 'new_message' || type === 'consultation_scheduled' || type === 'consultation_reminder') {
       router.push('/user/consult');
     } else if (type === 'doctor_referral') {
@@ -145,6 +162,9 @@ export default function NotificationsPage() {
     switch (type) {
       case 'new_message':
         return <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#FFD3AC]" />;
+      case 'doctor_recommendation':
+      case 'consultation_report':
+        return <ClipboardDocumentListIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'consultation_scheduled':
         return <CalendarDaysIcon className="w-5 h-5 text-[#2E7D32]" />;
       case 'consultation_reminder':
