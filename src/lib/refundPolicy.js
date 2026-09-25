@@ -189,6 +189,8 @@ function decideRefund(input) {
     userJoined = false,
     doctorJoined = false,
     status = null,
+    callStatus = null,
+    callEndedAtMs = null,
     paymentDateMs = null,
     depositAmount = DEPOSIT_AMOUNT,
     hasPendingAppointment = false,
@@ -210,13 +212,21 @@ function decideRefund(input) {
     ...extra,
   });
 
-  // --- Scenario 8: still inside the join window --------------------------
-  // Checked before everything except an explicit terminal status, because a
-  // consultation that has not finished cannot yet be refunded. A patient who
-  // has already joined is never "upcoming".
+  // --- Scenario 8: session still live / inside the join window -----------
+  // Checked before attendance: if the call has not ended and the 60-min window
+  // has not passed, the consultation is still live and cannot yet be refunded,
+  // even if the patient has joined.
+  const isCallEnded = Boolean(
+    callEndedAtMs !== null ||
+    callStatus === "ended" ||
+    status === OUTCOME.COMPLETED ||
+    status === "completed"
+  );
+
   const windowPassed =
-    appointmentTimeMs !== null &&
-    now >= appointmentTimeMs + GRACE_MINUTES * 60000;
+    isCallEnded ||
+    (appointmentTimeMs !== null &&
+    now >= appointmentTimeMs + GRACE_MINUTES * 60000);
 
   // --- Scenarios 1-3: cancellations ---------------------------------------
   if (isCancelledStatus(status)) {
@@ -263,6 +273,12 @@ function decideRefund(input) {
       break;
   }
 
+  // If the appointment is not cancelled, and the session has neither ended nor
+  // passed its grace window, it is still ongoing/upcoming. Refund is locked.
+  if (appointmentTimeMs !== null && !windowPassed) {
+    return decide(NO_REFUND, POLICY_TEXT.UPCOMING, 8, { isUpcoming: true });
+  }
+
   // --- Scenarios 4-7: decided by who actually joined ----------------------
   if (userJoined && doctorJoined) {
     return decide(full, POLICY_TEXT.COMPLETED, 4, { outcome: OUTCOME.COMPLETED });
@@ -271,11 +287,6 @@ function decideRefund(input) {
     // Scenario 5. The patient turned up; the doctor did not. Full refund, and
     // explicitly NOT a no-show — the patient is never charged for this.
     return decide(full, POLICY_TEXT.DOCTOR_ABSENT, 5, { outcome: OUTCOME.MISSED_BY_DOCTOR });
-  }
-
-  // Patient has not joined. If the slot is still live, nothing is decided yet.
-  if (appointmentTimeMs !== null && !windowPassed) {
-    return decide(NO_REFUND, POLICY_TEXT.UPCOMING, 8, { isUpcoming: true });
   }
 
   if (appointmentTimeMs === null) {

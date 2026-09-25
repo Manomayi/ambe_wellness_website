@@ -1,13 +1,33 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, getDocs, query, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  where,
+  doc,
+  setDoc,
+} from 'firebase/firestore';
+import { decideRefund } from '@/lib/refundPolicy';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
-import { TruckIcon, ClockIcon, XMarkIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import {
+  TruckIcon,
+  ClockIcon,
+  XMarkIcon,
+  ArrowTopRightOnSquareIcon,
+  ReceiptRefundIcon,
+  CheckCircleIcon,
+  InformationCircleIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { StarIcon as StarIconOutline } from '@heroicons/react/24/outline';
 import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
@@ -46,7 +66,9 @@ function getShipDateString(orderDate, explicitShipDate) {
 export default function PurchaseHistoryPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
-  const [purchases, setPurchases] = useState([]);
+  const [purchasesRaw, setPurchasesRaw] = useState([]);
+  const [consultations, setConsultations] = useState([]);
+  const [refundRequests, setRefundRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Review Modal state
@@ -60,6 +82,13 @@ export default function PurchaseHistoryPage() {
 
   // Product Details Modal state
   const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+
+  // Refund Modal state
+  const [selectedRefundItem, setSelectedRefundItem] = useState(null);
+  const [refundPatientMessage, setRefundPatientMessage] = useState('Refund Deposit Request');
+  const [submittingRefund, setSubmittingRefund] = useState(false);
+  const [refundSuccess, setRefundSuccess] = useState(false);
+  const [refundError, setRefundError] = useState('');
 
   const handleOpenProductDetails = async (item) => {
     try {
@@ -75,118 +104,266 @@ export default function PurchaseHistoryPage() {
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    let unsubs = [];
+    const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push('/login');
         return;
       }
       setCurrentUser(user);
-      try {
-        const uid = user.uid;
-        const q = query(collection(db, 'users', uid, 'purchases'));
-        const snap = await getDocs(q);
+      const uid = user.uid;
 
-        const parseDate = (val) => {
-          if (!val) return new Date();
-          if (val.toDate) return val.toDate();
-          if (typeof val === 'number') {
-            return new Date(val < 10000000000 ? val * 1000 : val);
+      // 1. Listen to purchases collection
+      const purchasesQ = query(collection(db, 'users', uid, 'purchases'));
+      const unsubPurchases = onSnapshot(
+        purchasesQ,
+        (snap) => {
+          setPurchasesRaw(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+          setLoading(false);
+        },
+        (err) => {
+          console.error('Failed to load purchases:', err);
+          setLoading(false);
+        }
+      );
+
+      // 2. Listen to consultations
+      const consultQ = query(collection(db, 'consultations'), where('user_id', '==', uid));
+      const unsubConsult = onSnapshot(
+        consultQ,
+        (snap) => {
+          setConsultations(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        },
+        (err) => {
+          if (err?.code !== 'permission-denied') {
+            console.error('Failed to load consultations:', err);
           }
-          const parsed = new Date(val);
-          return isNaN(parsed.getTime()) ? new Date() : parsed;
-        };
+        }
+      );
 
-        const items = snap.docs.map(doc => {
-          const data = doc.data();
-          const orderType = data.type || 'store';
-          const rawTime = data.created_at || data.createdAt || data.created || data.timestamp;
-          const date = parseDate(rawTime);
+      // 3. Listen to refundRequests
+      const refundQ = query(collection(db, 'refundRequests'), where('userId', '==', uid));
+      const unsubRefund = onSnapshot(
+        refundQ,
+        (snap) => {
+          setRefundRequests(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        },
+        (err) => {
+          if (err?.code !== 'permission-denied') {
+            console.error('Failed to load refund requests:', err);
+          }
+        }
+      );
 
-          const rawAmount = data.amount ?? 0;
-          const amountNum = typeof rawAmount === 'number' ? rawAmount : parseFloat(rawAmount) || 0;
-          // If stored in cents (e.g. 5000), format to 50.00
-          const displayAmount = amountNum >= 100 && Number.isInteger(amountNum) && !data.amount_is_dollars
-            ? (amountNum / 100).toFixed(2)
-            : amountNum.toFixed(2);
+      unsubs = [unsubPurchases, unsubConsult, unsubRefund];
+    });
 
-          let productStatus =
-            data.product_status ||
-            data.fulfillment_status ||
-            data.order_status ||
-            data.status;
+    return () => {
+      unsubAuth();
+      unsubs.forEach((u) => u && u());
+    };
+  }, [router]);
+
+  const purchases = useMemo(() => {
+    const parseDate = (val) => {
+      if (!val) return null;
+      if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+      if (val.toDate) return val.toDate();
+      if (typeof val === 'number') return new Date(val > 100000000000 ? val : val * 1000);
+      if (val.seconds) return new Date(val.seconds * 1000);
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    // Index refunds
+    const refundsMap = {};
+    refundRequests.forEach((r) => {
+      if (r.id) refundsMap[r.id] = r;
+      if (r.consultationId && r.consultationId !== 'N/A') refundsMap[r.consultationId] = r;
+      if (r.paymentId && r.paymentId !== 'N/A') refundsMap[r.paymentId] = r;
+    });
+
+    // Index consultations
+    const consultationsMap = {};
+    consultations.forEach((c) => {
+      if (c.id) consultationsMap[c.id] = c;
+      if (c.appointment_id) consultationsMap[c.appointment_id] = c;
+      if (c.consultation_id) consultationsMap[c.consultation_id] = c;
+      if (c.payment_id) consultationsMap[c.payment_id] = c;
+      if (c.payment_intent_id) consultationsMap[c.payment_intent_id] = c;
+    });
+
+    const now = new Date();
+
+    const items = purchasesRaw.map((data) => {
+      const orderType = data.type || 'store';
+      const rawTime = data.created_at || data.createdAt || data.created || data.timestamp;
+      const date = parseDate(rawTime) || new Date();
+
+      const rawAmount = data.amount ?? 0;
+      const amountNum = typeof rawAmount === 'number' ? rawAmount : parseFloat(rawAmount) || 0;
+      const displayAmount =
+        amountNum >= 100 && Number.isInteger(amountNum) && !data.amount_is_dollars
+          ? (amountNum / 100).toFixed(2)
+          : amountNum.toFixed(2);
+
+      let productStatus =
+        data.product_status ||
+        data.fulfillment_status ||
+        data.order_status ||
+        data.status;
+
+      let declineReason = (data.decline_reason || data.declineReason || '').trim();
+
+      const consultationId = data.consultation_id || data.appointment_id || null;
+      const paymentIntentId = data.payment_intent_id || data.payment_id || null;
+
+      let refundReq = null;
+      let consultDoc = null;
+      let refundEligibility = null;
+
+      if (orderType === 'consultation' || orderType === 'consultation_deposit') {
+        // Match consultation document
+        if (consultationId && consultationsMap[consultationId]) {
+          consultDoc = consultationsMap[consultationId];
+        } else if (paymentIntentId && consultationsMap[paymentIntentId]) {
+          consultDoc = consultationsMap[paymentIntentId];
+        } else if (consultationsMap[data.id]) {
+          consultDoc = consultationsMap[data.id];
+        }
+
+        // Match refund request
+        if (consultationId && refundsMap[consultationId]) {
+          refundReq = refundsMap[consultationId];
+        } else if (paymentIntentId && refundsMap[paymentIntentId]) {
+          refundReq = refundsMap[paymentIntentId];
+        } else if (refundsMap[data.id]) {
+          refundReq = refundsMap[data.id];
+        }
+
+        if (refundReq) {
+          const reqStatus = (refundReq.status || '').toLowerCase();
+          if (
+            reqStatus === 'waiting_for_approval' ||
+            reqStatus === 'waitingforapproval' ||
+            reqStatus === 'requested'
+          ) {
+            productStatus = 'Waiting for Approval';
+          } else if (reqStatus === 'approved') {
+            productStatus = 'Approved';
+          } else if (reqStatus === 'declined') {
+            productStatus = 'Refund Declined';
+            if (refundReq.declineReason) {
+              declineReason = refundReq.declineReason.trim();
+            }
+          } else if (reqStatus === 'refunded') {
+            const is50 = refundReq.refundableAmount === 25 || refundReq.isNoShow === true;
+            productStatus = is50 ? 'Refunded (50%)' : 'Refunded';
+          }
+        } else {
+          // No refund request, calculate eligibility
+          const apptTime = consultDoc
+            ? parseDate(consultDoc.time || consultDoc.scheduled_at)
+            : null;
+          const userJoined = consultDoc?.user_joined === true;
+          const doctorJoined = consultDoc?.doctor_joined === true;
+          const cStatus = consultDoc?.status || null;
+          const callStatus = consultDoc?.call_status || null;
+          const callEndedAt = consultDoc ? parseDate(consultDoc.call_ended_at) : null;
+
+          const decision = decideRefund({
+            nowMs: now.getTime(),
+            appointmentTimeMs: apptTime ? apptTime.getTime() : null,
+            cancelledAtMs: consultDoc ? parseDate(consultDoc.cancelled_at)?.getTime() || null : null,
+            userJoined,
+            doctorJoined,
+            status: cStatus,
+            callStatus,
+            callEndedAtMs: callEndedAt ? callEndedAt.getTime() : null,
+            paymentDateMs: date ? date.getTime() : null,
+            depositAmount: 50.0,
+          });
+
+          const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+          const isWithin30Days = diffDays <= 30;
+          const isUpcoming = decision.isUpcoming;
+          const canRequestRefund = isWithin30Days && !isUpcoming;
+
+          refundEligibility = {
+            ...decision,
+            isWithin30Days,
+            canRequestRefund,
+            consultDoc,
+            consultationDate: apptTime,
+            doctorName: consultDoc?.doctor_name || 'Assigned Doctor',
+          };
 
           const rawRefundStatus = (data.refund_status || '').toLowerCase();
-          const declineReason = (data.decline_reason || data.declineReason || '').trim();
-
-          if (orderType === 'consultation' || orderType === 'consultation_deposit') {
-            if (rawRefundStatus === 'declined' || (productStatus && productStatus.toLowerCase().includes('decline'))) {
-              productStatus = 'Refund Declined';
-            } else if (
-              rawRefundStatus === 'refunded' ||
-              rawRefundStatus === 'approved' ||
-              (productStatus && productStatus.toLowerCase().includes('refund'))
-            ) {
-              const is50 =
-                data.refund_percentage === 50 ||
-                Number(data.refund_amount) === 25 ||
-                (productStatus && productStatus.includes('50%'));
-              productStatus = is50 ? 'Refunded (50%)' : 'Refunded';
-            } else if (
-              !productStatus ||
-              ['succeeded', 'paid', 'success'].includes(productStatus.toLowerCase())
-            ) {
-              productStatus = 'Success';
-            }
-          } else if (orderType === 'store') {
-            if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
-              productStatus = 'Processing';
-            }
-          } else {
-            if (rawRefundStatus === 'declined' || (productStatus && productStatus.toLowerCase().includes('decline'))) {
-              productStatus = 'Refund Declined';
-            } else if (
-              rawRefundStatus === 'refunded' ||
-              rawRefundStatus === 'approved' ||
-              (productStatus && productStatus.toLowerCase().includes('refund'))
-            ) {
-              const is50 =
-                data.refund_percentage === 50 ||
-                Number(data.refund_amount) === 25 ||
-                (productStatus && productStatus.includes('50%'));
-              productStatus = is50 ? 'Refunded (50%)' : 'Refunded';
-            } else if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
-              productStatus = 'Paid';
-            }
+          if (
+            rawRefundStatus === 'waiting_for_approval' ||
+            rawRefundStatus === 'waitingforapproval' ||
+            rawRefundStatus === 'requested'
+          ) {
+            productStatus = 'Waiting for Approval';
+          } else if (
+            rawRefundStatus === 'declined' ||
+            (productStatus && productStatus.toLowerCase().includes('decline'))
+          ) {
+            productStatus = 'Refund Declined';
+          } else if (rawRefundStatus === 'refunded' || rawRefundStatus === 'approved') {
+            const is50 = data.refund_percentage === 50 || Number(data.refund_amount) === 25;
+            productStatus = is50 ? 'Refunded (50%)' : 'Refunded';
+          } else if (isUpcoming) {
+            productStatus = 'Upcoming';
+          } else if (
+            !productStatus ||
+            ['succeeded', 'paid', 'success'].includes(productStatus.toLowerCase())
+          ) {
+            productStatus = 'Success';
           }
-
-          return {
-            id: doc.id,
-            amount: displayAmount,
-            currency: (data.currency || 'USD').toUpperCase(),
-            status: productStatus,
-            declineReason: declineReason,
-            paymentStatus: data.status || 'succeeded',
-            type: orderType,
-            description: data.description || '',
-            items: Array.isArray(data.items) ? data.items : [],
-            time: date,
-            shipDate: data.ship_date || data.shipped_at || null,
-            trackingNumber: data.tracking_number || data.trackingNumber || '',
-            consultationId: data.consultation_id || data.appointment_id || null,
-            paymentIntentId: data.payment_intent_id || data.payment_id || null,
-          };
-        });
-        // Sort newest first
-        items.sort((a, b) => b.time - a.time);
-        setPurchases(items);
-      } catch (e) {
-        console.error('Failed to load purchases:', e);
-      } finally {
-        setLoading(false);
+        }
+      } else if (orderType === 'store') {
+        if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
+          productStatus = 'Processing';
+        }
+      } else {
+        const rawRefundStatus = (data.refund_status || '').toLowerCase();
+        if (
+          rawRefundStatus === 'declined' ||
+          (productStatus && productStatus.toLowerCase().includes('decline'))
+        ) {
+          productStatus = 'Refund Declined';
+        } else if (rawRefundStatus === 'refunded' || rawRefundStatus === 'approved') {
+          productStatus = 'Refunded';
+        } else if (!productStatus || productStatus.toLowerCase() === 'succeeded') {
+          productStatus = 'Paid';
+        }
       }
+
+      return {
+        id: data.id,
+        amount: displayAmount,
+        currency: (data.currency || 'USD').toUpperCase(),
+        status: productStatus,
+        declineReason: declineReason,
+        paymentStatus: data.status || 'succeeded',
+        type: orderType,
+        description: data.description || '',
+        items: Array.isArray(data.items) ? data.items : [],
+        time: date,
+        shipDate: data.ship_date || data.shipped_at || null,
+        trackingNumber: data.tracking_number || data.trackingNumber || '',
+        consultationId,
+        paymentIntentId,
+        refundReq,
+        refundEligibility,
+        consultDoc,
+      };
     });
-    return () => unsub();
-  }, [router]);
+
+    items.sort((a, b) => b.time - a.time);
+    return items;
+  }, [purchasesRaw, consultations, refundRequests]);
 
   const openReviewModal = (item) => {
     setReviewingProduct(item);
@@ -263,6 +440,9 @@ export default function PurchaseHistoryPage() {
     if (s.includes('decline')) {
       return 'text-rose-400 bg-rose-500/20 border-rose-500/30';
     }
+    if (s.includes('waiting') || s.includes('approval') || s.includes('request')) {
+      return 'text-amber-400 bg-amber-500/20 border-amber-500/30';
+    }
     if (s.includes('refund')) {
       return 'text-amber-400 bg-amber-500/20 border-amber-500/30';
     }
@@ -270,7 +450,131 @@ export default function PurchaseHistoryPage() {
       return 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30';
     }
     if (s === 'shipped') return 'text-blue-400 bg-blue-500/20 border-blue-500/30';
+    if (s === 'upcoming') return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
     return 'text-amber-400 bg-amber-500/20 border-amber-500/30';
+  };
+
+  const handleOpenRefundModal = (item) => {
+    setSelectedRefundItem(item);
+    setRefundPatientMessage('Refund Deposit Request');
+    setRefundError('');
+    setRefundSuccess(false);
+  };
+
+  const closeRefundModal = () => {
+    setSelectedRefundItem(null);
+  };
+
+  const handleSubmitRefund = async (e) => {
+    e.preventDefault();
+    if (!currentUser || !selectedRefundItem) return;
+    if (!refundPatientMessage.trim()) {
+      setRefundError('Please enter a message or reason for the refund.');
+      return;
+    }
+
+    setSubmittingRefund(true);
+    setRefundError('');
+
+    try {
+      const eligibility = selectedRefundItem.refundEligibility;
+      const targetConsultationId =
+        selectedRefundItem.consultationId ||
+        selectedRefundItem.paymentIntentId ||
+        selectedRefundItem.id;
+      const paymentId =
+        selectedRefundItem.paymentIntentId ||
+        targetConsultationId;
+
+      const consultationDateStr = eligibility?.consultationDate
+        ? eligibility.consultationDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+          })
+        : 'N/A';
+
+      const doctorName = eligibility?.doctorName || 'Assigned Doctor';
+      const formattedDoctor =
+        doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')
+          ? `Dr. ${doctorName}`
+          : doctorName;
+
+      const refPayload = {
+        id: targetConsultationId,
+        userId: currentUser.uid,
+        user_id: currentUser.uid,
+        userName: currentUser.displayName || 'Patient',
+        userEmail: currentUser.email || '',
+        paymentId: paymentId,
+        payment_id: paymentId,
+        consultationId: targetConsultationId,
+        consultation_id: targetConsultationId,
+        doctorName: formattedDoctor,
+        doctor_name: formattedDoctor,
+        consultationDate: consultationDateStr,
+        depositAmount: 50.0,
+        refundableAmount: eligibility?.refundableAmount ?? 50.0,
+        isNoShow: eligibility?.isNoShow ?? false,
+        refundPolicy: eligibility?.policyText || 'Full deposit refund eligible.',
+        status: 'waiting_for_approval',
+        patientMessage: refundPatientMessage.trim(),
+        receiptUrl: null,
+        receiptStoragePath: null,
+        declineReason: null,
+        submittedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        auditTrail: [
+          {
+            status: 'waiting_for_approval',
+            changedBy: currentUser.uid,
+            role: 'patient',
+            timestamp: new Date().toISOString(),
+            note: 'Refund request submitted by patient from purchase history',
+          },
+        ],
+      };
+
+      // 1. Update/set consultation record
+      await setDoc(
+        doc(db, 'consultations', targetConsultationId),
+        {
+          refund_status: 'waiting_for_approval',
+          refundable_amount: eligibility?.refundableAmount ?? 50.0,
+          patient_message: refundPatientMessage.trim(),
+          refund_submitted_at: serverTimestamp(),
+          is_no_show: eligibility?.isNoShow ?? false,
+        },
+        { merge: true }
+      );
+
+      // 2. Set refundRequests record
+      await setDoc(doc(db, 'refundRequests', targetConsultationId), refPayload, { merge: true });
+
+      // 3. Update purchase document under users/{uid}/purchases
+      if (selectedRefundItem.id) {
+        await setDoc(
+          doc(db, 'users', currentUser.uid, 'purchases', selectedRefundItem.id),
+          {
+            refund_status: 'waiting_for_approval',
+          },
+          { merge: true }
+        );
+      }
+
+      setRefundSuccess(true);
+      setTimeout(() => {
+        closeRefundModal();
+      }, 1500);
+    } catch (err) {
+      console.error('Failed to submit refund request:', err);
+      setRefundError(err.message || 'Failed to submit refund request. Please try again.');
+    } finally {
+      setSubmittingRefund(false);
+    }
   };
 
   const now = new Date();
@@ -294,7 +598,22 @@ export default function PurchaseHistoryPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {purchases.map(({ id, amount, currency, status, type, description, items, time, shipDate, trackingNumber, declineReason }) => {
+            {purchases.map((purchaseItem) => {
+              const {
+                id,
+                amount,
+                currency,
+                status,
+                type,
+                description,
+                items,
+                time,
+                shipDate,
+                trackingNumber,
+                declineReason,
+                refundReq,
+                refundEligibility,
+              } = purchaseItem;
               const diffMs = now - time;
               const daysElapsed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
               const canReview = daysElapsed >= 14;
@@ -448,6 +767,98 @@ export default function PurchaseHistoryPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Consultation Refund Status Boxes / Action */}
+                  {(type === 'consultation' || type === 'consultation_deposit') && (
+                    <div className="pt-2 border-t border-white/10 space-y-3">
+                      {refundReq ? (
+                        <>
+                          {refundReq.status === 'waiting_for_approval' && (
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-200 space-y-1">
+                              <div className="flex items-center gap-1.5 font-bold text-amber-300">
+                                <ClockIcon className="w-4 h-4 shrink-0" />
+                                <span>Refund Request Submitted</span>
+                              </div>
+                              {refundReq.patientMessage && (
+                                <p className="text-white/80">
+                                  <strong>Reason:</strong> {refundReq.patientMessage}
+                                </p>
+                              )}
+                              <p className="text-white/50 text-[11px]">
+                                Submitted & waiting for administrative approval.
+                              </p>
+                            </div>
+                          )}
+
+                          {refundReq.status === 'approved' && (
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-200">
+                              <div className="flex items-center gap-1.5 font-bold text-blue-300">
+                                <CheckCircleIcon className="w-4 h-4 shrink-0" />
+                                <span>Approved / Processing Refund</span>
+                              </div>
+                              {refundReq.patientMessage && (
+                                <p className="text-white/80 mt-1">
+                                  <strong>Reason:</strong> {refundReq.patientMessage}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {refundReq.status === 'declined' && (
+                            <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200">
+                              <strong className="text-rose-300">Decline Reason:</strong> {declineReason || refundReq.declineReason || 'No reason provided.'}
+                            </div>
+                          )}
+
+                          {refundReq.status === 'refunded' && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-xs text-emerald-200 flex items-center gap-2">
+                              <CheckCircleIcon className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <span>Refund Completed (${(refundReq.refundableAmount ?? 50).toFixed(2)})</span>
+                            </div>
+                          )}
+                        </>
+                      ) : refundEligibility ? (
+                        <>
+                          {refundEligibility.canRequestRefund ? (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-xl p-3.5">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold text-white">
+                                    Calculated Refund:
+                                  </span>
+                                  <span className="text-sm font-bold text-[#FFD3AC]">
+                                    ${refundEligibility.refundableAmount.toFixed(2)} ({refundEligibility.isNoShow ? '50%' : 'Full'})
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-white/60 mt-0.5">
+                                  {refundEligibility.policyText}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenRefundModal(purchaseItem)}
+                                className="px-4 py-2 text-xs font-bold rounded-full bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe0c4] transition cursor-pointer shadow-sm shrink-0 flex items-center justify-center gap-1.5"
+                              >
+                                <ReceiptRefundIcon className="w-4 h-4" />
+                                <span>
+                                  {refundEligibility.isNoShow ? 'Request 50% Refund ($25.00)' : 'Request Full Refund ($50.00)'}
+                                </span>
+                              </button>
+                            </div>
+                          ) : refundEligibility.isUpcoming ? (
+                            <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-200">
+                              <ClockIcon className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                              <span>Refund locked until the consultation ends or is cancelled.</span>
+                            </div>
+                          ) : !refundEligibility.isWithin30Days ? (
+                            <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200">
+                              Refund period expired (exceeded 30 days).
+                            </div>
+                          ) : null}
+                        </>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -546,6 +957,130 @@ export default function PurchaseHistoryPage() {
                       className="px-5 py-2.5 text-xs font-bold rounded-full bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe0c4] transition disabled:opacity-50 cursor-pointer shadow-md"
                     >
                       {submittingReview ? 'Submitting...' : 'Submit Review'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Refund Request Modal */}
+        {selectedRefundItem && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-[#2D2D30] rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-white/15 space-y-5 my-auto text-white">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-white">
+                    Request Consultation Refund
+                  </h3>
+                  <p className="text-xs text-white/60 mt-0.5">
+                    Order #{selectedRefundItem.id}
+                  </p>
+                </div>
+                <button
+                  onClick={closeRefundModal}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition cursor-pointer"
+                  aria-label="Close"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+
+              {refundSuccess ? (
+                <div className="py-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-xl font-bold">
+                    <CheckCircleIcon className="w-7 h-7" />
+                  </div>
+                  <h4 className="text-lg font-bold text-white">
+                    Refund Request Submitted!
+                  </h4>
+                  <p className="text-xs text-white/70 max-w-xs mx-auto">
+                    Your request has been submitted and is waiting for administrator approval.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitRefund} className="space-y-4">
+                  {/* Refund Amount Card */}
+                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10 space-y-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#FFD3AC]">
+                      Refundable Amount
+                    </span>
+                    <p className="text-3xl font-extrabold text-[#FFD3AC]">
+                      ${(selectedRefundItem.refundEligibility?.refundableAmount ?? 50.0).toFixed(2)} USD
+                    </p>
+                    <p className="text-xs text-white/70 flex items-center space-x-1.5">
+                      <InformationCircleIcon className="w-4 h-4 text-[#FFD3AC] shrink-0" />
+                      <span>
+                        {selectedRefundItem.refundEligibility?.policyText || 'Full deposit refund eligible.'}
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Consultation / Payment Details */}
+                  <div className="text-xs text-white/80 space-y-1.5 bg-black/20 p-4 rounded-xl border border-white/10">
+                    <p>
+                      <span className="font-semibold text-white">Doctor:</span>{' '}
+                      {selectedRefundItem.refundEligibility?.doctorName || 'Assigned Doctor'}
+                    </p>
+                    {selectedRefundItem.refundEligibility?.consultationDate && (
+                      <p>
+                        <span className="font-semibold text-white">Consultation Date:</span>{' '}
+                        {selectedRefundItem.refundEligibility.consultationDate.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    )}
+                    <p>
+                      <span className="font-semibold text-white">Deposit Paid:</span> $
+                      {(Number(selectedRefundItem.amount) || 50.0).toFixed(2)} {selectedRefundItem.currency || 'USD'}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Order Date:</span>{' '}
+                      {selectedRefundItem.time.toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Patient Message / Reason */}
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-white/80">
+                      Message / Reason *
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={refundPatientMessage}
+                      onChange={(e) => setRefundPatientMessage(e.target.value)}
+                      placeholder="Explain the reason for your refund request..."
+                      className="w-full p-3 text-xs border border-white/15 bg-white/5 rounded-xl focus:border-[#FFD3AC] text-white placeholder:text-white/40 focus:outline-none resize-none"
+                    />
+                  </div>
+
+                  {refundError && (
+                    <div className="p-3 bg-red-500/20 border border-red-500/30 text-red-300 text-xs rounded-xl flex items-center space-x-2">
+                      <ExclamationTriangleIcon className="w-4 h-4 shrink-0" />
+                      <span>{refundError}</span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end space-x-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={closeRefundModal}
+                      className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white/70 hover:text-white rounded-full transition cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingRefund}
+                      className="px-6 py-2.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition disabled:opacity-50 shadow-md cursor-pointer"
+                    >
+                      {submittingRefund ? 'Submitting...' : 'Submit Request'}
                     </button>
                   </div>
                 </form>

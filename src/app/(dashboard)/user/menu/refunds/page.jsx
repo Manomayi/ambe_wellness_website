@@ -282,6 +282,14 @@ export default function UserRefundsPage() {
         const daysRemaining = Math.max(0, 30 - diffDays);
         const deadline = new Date(paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
+        const callStatus = (c.call_status || '').toLowerCase();
+        const isCallExplicitlyEnded = Boolean(
+          callEndedAt ||
+          callStatus === 'ended' ||
+          rawStatus === 'completed'
+        );
+        const windowPassed = isCallExplicitlyEnded || (consultationDate && now.getTime() >= (consultationDate.getTime() + 60 * 60 * 1000));
+
         let isNoShow = false;
         let isUpcoming = false;
         let calculatedRefund = 50.0;
@@ -299,6 +307,11 @@ export default function UserRefundsPage() {
           policyText = isCancelledByDoctor
             ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
             : 'Full deposit refund eligible (Appointment was cancelled).';
+        } else if (!windowPassed && consultationDate) {
+          // Session is still ongoing/active. Lock refund even if user joined.
+          isUpcoming = true;
+          calculatedRefund = 0.0;
+          policyText = 'Refund locked until the consultation ends or is cancelled.';
         } else if (userJoined && doctorJoined) {
           calculatedRefund = 50.0;
           policyText = 'Full deposit refund eligible (Consultation completed).';
@@ -306,33 +319,26 @@ export default function UserRefundsPage() {
           calculatedRefund = 50.0;
           policyText = 'Full deposit refund eligible (Doctor was absent).';
         } else {
-          const sessionEnded = Boolean(callEndedAt || rawStatus === 'completed');
-          const windowPassed = sessionEnded || (consultationDate && now.getTime() >= (consultationDate.getTime() + 60 * 60 * 1000));
-          if (!windowPassed && consultationDate) {
-            isUpcoming = true;
-            calculatedRefund = 0.0;
-            policyText = 'Refund locked until the consultation ends or is cancelled.';
-          } else {
-            isNoShow = true;
-            calculatedRefund = 25.0;
-            policyText = '50% refund because the consultation was missed.';
-          }
+          isNoShow = true;
+          calculatedRefund = 25.0;
+          policyText = '50% refund because the consultation was missed.';
         }
 
         let consultationStatus = rawStatus;
-        if (isNoShow) {
+        if (isCancelled) {
+          cancelledCount++;
+        } else if (isUpcoming) {
+          consultationStatus = 'upcoming';
+          upcomingCount++;
+        } else if (isNoShow) {
           consultationStatus = 'no_show';
           noShowCount++;
-        } else if (userJoined && !doctorJoined && !isCancelled) {
+        } else if (userJoined && !doctorJoined) {
           consultationStatus = 'doctor_absent';
         } else if (userJoined && doctorJoined) {
           consultationStatus = 'completed';
           completedCount++;
-        } else if (isCancelled) {
-          cancelledCount++;
         }
-
-        if (isUpcoming) upcomingCount++;
 
         if (paymentStatus === 'succeeded' || paymentStatus === 'paid') {
           paidCount++;

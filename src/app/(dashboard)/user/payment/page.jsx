@@ -9,6 +9,7 @@ import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Elements,
   PaymentElement,
+  ExpressCheckoutElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -86,7 +87,15 @@ function CheckoutForm({ user, paymentIntentId }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement options={{ layout: "tabs" }} />
+      <PaymentElement
+        options={{
+          layout: "tabs",
+          wallets: {
+            applePay: "never",
+            googlePay: "never",
+          },
+        }}
+      />
       
       {errorMsg && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
@@ -102,6 +111,120 @@ function CheckoutForm({ user, paymentIntentId }) {
         {processing ? "Processing…" : "Pay $50 Deposit"}
       </button>
     </form>
+  );
+}
+
+function ApplePayDepositForm({ user, paymentIntentId }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const router = useRouter();
+  const [processing, setProcessing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [applePayAvailable, setApplePayAvailable] = useState(true);
+
+  const handleConfirm = async () => {
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    setErrorMsg("");
+
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        setErrorMsg(submitError.message || "Payment submission failed.");
+        setProcessing(false);
+        return;
+      }
+
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: window.location.href },
+        redirect: 'if_required',
+      });
+
+      if (result.error) {
+        setErrorMsg(result.error.message || "Payment confirmation failed.");
+        setProcessing(false);
+      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+        const intentId = result.paymentIntent.id || paymentIntentId;
+        
+        if (ENABLE_CLIENT_SIDE_FALLBACK_WRITE && user && intentId) {
+          try {
+            const purchaseRef = doc(db, 'users', user.uid, 'purchases', intentId);
+            await setDoc(purchaseRef, {
+              id: intentId,
+              amount: 50.00,
+              currency: 'USD',
+              status: 'succeeded',
+              type: 'subscription',
+              description: 'Consultation Deposit & Membership Subscription',
+              refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
+              created: serverTimestamp(),
+              payment_intent_id: intentId,
+            }, { merge: true });
+
+            await updateDoc(doc(db, 'users', user.uid), {
+              'subscription.active': true,
+              'subscription.status': 'active',
+              'subscription.deposit_paid': true,
+            }).catch(() => {});
+          } catch (pErr) {
+            console.error('Error saving subscription purchase fallback:', pErr);
+          }
+        }
+
+        router.push("/user/consult/schedule");
+      }
+    } catch (err) {
+      console.error('Payment confirm error:', err);
+      setErrorMsg("An error occurred confirming your payment. Please try again.");
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {!applePayAvailable && (
+        <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-800 text-xs">
+          Apple Pay requires Safari on an Apple device (iPhone, iPad, or Mac) with an active card in Apple Wallet.
+        </div>
+      )}
+
+      <ExpressCheckoutElement
+        onConfirm={handleConfirm}
+        onReady={({ availablePaymentMethods }) => {
+          if (!availablePaymentMethods || !availablePaymentMethods.applePay) {
+            setApplePayAvailable(false);
+          } else {
+            setApplePayAvailable(true);
+          }
+        }}
+        options={{
+          wallets: {
+            applePay: 'always',
+            googlePay: 'never',
+          },
+          buttonType: {
+            applePay: 'plain',
+          },
+          buttonTheme: {
+            applePay: 'black',
+          },
+          buttonHeight: 48,
+        }}
+      />
+
+      {errorMsg && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
+          {errorMsg}
+        </div>
+      )}
+
+      {processing && (
+        <div className="text-center py-2 text-xs text-gray-500">
+          Processing Apple Pay...
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -274,6 +397,29 @@ export default function UserPaymentPage() {
               }}
             >
               <CheckoutForm user={user} paymentIntentId={paymentIntentId} />
+            </Elements>
+          )
+        ) : paymentMethod === "apple_pay" ? (
+          !clientSecret ? (
+            <button
+              onClick={handleProceed}
+              disabled={loading || configLoading}
+              className="w-full bg-[#1A1A1A] hover:bg-black text-white py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+            >
+              {loading ? "Loading Apple Pay…" : "Proceed to Apple Pay"}
+            </button>
+          ) : (
+            <Elements
+              stripe={stripePromise}
+              options={{ 
+                clientSecret, 
+                appearance: { 
+                  theme: "stripe",
+                  variables: { colorPrimary: '#C8996A' }
+                } 
+              }}
+            >
+              <ApplePayDepositForm user={user} paymentIntentId={paymentIntentId} />
             </Elements>
           )
         ) : (

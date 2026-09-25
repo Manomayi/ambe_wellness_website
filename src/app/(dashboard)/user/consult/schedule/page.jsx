@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -24,7 +24,7 @@ import { functions, db } from '@/lib/firebase/config';
 import { matchUserWithDoctor } from '@/lib/doctorMatching';
 import UserQuestionnaireModal from '@/components/user/UserQuestionnaireModal';
 import ExtendedQuestionnaireModal from '@/components/user/ExtendedQuestionnaireModal';
-import { CalendarIcon, ClockIcon, BoltIcon, ShieldCheckIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, BoltIcon, ShieldCheckIcon, EnvelopeIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import moment from 'moment-timezone';
 import BackButton from '@/components/common/BackButton';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
@@ -35,6 +35,7 @@ import { startPayPalCheckout } from '@/lib/paypal';
 import {
   Elements,
   PaymentElement,
+  ExpressCheckoutElement,
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
@@ -109,7 +110,15 @@ function ConsultationPaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement options={{ layout: "tabs" }} />
+      <PaymentElement
+        options={{
+          layout: "tabs",
+          wallets: {
+            applePay: "never",
+            googlePay: "never",
+          },
+        }}
+      />
       
       {errorMsg && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs">
@@ -125,6 +134,105 @@ function ConsultationPaymentForm({
         {processing ? "Processing Payment..." : "Pay $50 Deposit & Confirm Appointment"}
       </button>
     </form>
+  );
+}
+
+function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate, paymentIntentId, onSuccess }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [errorMsg, setErrorMsg] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [applePayAvailable, setApplePayAvailable] = useState(true);
+
+  const handleConfirm = async () => {
+    if (!stripe || !elements) return;
+    setProcessing(true);
+    setErrorMsg('');
+
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        setErrorMsg(submitError.message || 'Payment submission failed.');
+        setProcessing(false);
+        return;
+      }
+
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,
+        },
+        redirect: 'if_required',
+      });
+
+      if (result.error) {
+        setErrorMsg(result.error.message || 'Payment confirmation failed.');
+        setProcessing(false);
+      } else if (
+        result.paymentIntent &&
+        (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')
+      ) {
+        const intentId = result.paymentIntent.id || paymentIntentId;
+        await onSuccess(intentId);
+      } else {
+        setErrorMsg(
+          result.paymentIntent?.status
+            ? `Payment status: ${result.paymentIntent.status}. Please try again.`
+            : 'Payment was not completed. Please try again.'
+        );
+        setProcessing(false);
+      }
+    } catch (err) {
+      console.error('Apple Pay error:', err);
+      setErrorMsg('Apple Pay could not be completed. Please try again.');
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {!applePayAvailable && (
+        <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-xs">
+          Apple Pay requires Safari on an Apple device (iPhone, iPad, or Mac) with an active card in Apple Wallet. If you are on another browser or device, please select <strong>Credit / Debit Card</strong> or <strong>PayPal</strong> above.
+        </div>
+      )}
+
+      <ExpressCheckoutElement
+        onConfirm={handleConfirm}
+        onReady={({ availablePaymentMethods }) => {
+          if (!availablePaymentMethods || !availablePaymentMethods.applePay) {
+            setApplePayAvailable(false);
+          } else {
+            setApplePayAvailable(true);
+          }
+        }}
+        options={{
+          wallets: {
+            applePay: 'always',
+            googlePay: 'never',
+          },
+          buttonType: {
+            applePay: 'plain',
+          },
+          buttonTheme: {
+            applePay: 'white',
+          },
+          buttonHeight: 48,
+        }}
+      />
+
+      {errorMsg && (
+        <div className="p-3 bg-red-500/15 border border-red-500/30 rounded-lg text-red-300 text-xs">
+          {errorMsg}
+        </div>
+      )}
+
+      {processing && (
+        <div className="text-center py-2 text-xs text-white/60">
+          Processing Apple Pay...
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -337,7 +445,10 @@ function ScheduleConsultationContent() {
   }, [user]);
 
   useEffect(() => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (timezone === 'Asia/Calcutta' || timezone === 'Calcutta') {
+      timezone = 'Asia/Kolkata';
+    }
     setUserTimezone(timezone);
     
     if (resolvedDoctorUid) {
@@ -921,22 +1032,93 @@ function ScheduleConsultationContent() {
     }
   };
 
-  // 30 days for calendar
-  const generateCalendarDays = () => {
-    const days = [];
+  const [currentMonth, setCurrentMonth] = useState(() => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      days.push(date);
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
+
+  // Keep currentMonth synced if selectedDate changes outside the current month view
+  useEffect(() => {
+    if (selectedDate) {
+      const dateMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      if (dateMonth.getFullYear() !== currentMonth.getFullYear() || dateMonth.getMonth() !== currentMonth.getMonth()) {
+        setCurrentMonth(dateMonth);
+      }
     }
-    
-    return days;
+  }, [selectedDate, currentMonth]);
+
+  const canGoPrevMonth = () => {
+    const today = new Date();
+    const startOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    return currentMonth > startOfCurrentMonth;
   };
 
-  const calendarDays = generateCalendarDays();
+  const canGoNextMonth = () => {
+    const today = new Date();
+    const maxDate = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000);
+    const startOfMaxMonth = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+    return currentMonth < startOfMaxMonth;
+  };
+
+  const handlePrevMonth = () => {
+    if (!canGoPrevMonth()) return;
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    if (!canGoNextMonth()) return;
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  const formatTimezone = (tz) => {
+    if (!tz) return "Local Time";
+    if (tz === 'Asia/Calcutta' || tz === 'Calcutta') return 'Kolkata';
+    const parts = tz.split('/');
+    let formatted = parts[parts.length - 1].replace(/_/g, ' ');
+    if (formatted === 'Calcutta') formatted = 'Kolkata';
+    return formatted;
+  };
+
+  const calendarCells = useMemo(() => {
+    const yr = currentMonth.getFullYear();
+    const mo = currentMonth.getMonth();
+    const firstDayIndex = new Date(yr, mo, 1).getDay(); // 0 = Sun, 1 = Mon ...
+    const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000);
+
+    const cells = [];
+    for (let i = 0; i < firstDayIndex; i++) {
+      cells.push(null);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(yr, mo, d);
+      const isPast = date < today;
+      const isBeyondMax = date > maxDate;
+
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      const daySchedule = doctorSchedule?.[dayName];
+      const isScheduledAvail = daySchedule?.is_available === true;
+      const isToday = date.toDateString() === today.toDateString();
+      const isAvailable = !isPast && !isBeyondMax && (isScheduledAvail || (isToday && isInstantAvailable));
+      const isSelected = selectedDate?.toDateString() === date.toDateString();
+
+      cells.push({
+        date,
+        isPast,
+        isBeyondMax,
+        isAvailable,
+        isSelected,
+        isToday
+      });
+    }
+
+    return cells;
+  }, [currentMonth, doctorSchedule, isInstantAvailable, selectedDate]);
 
   if (loading) {
     return (
@@ -1096,357 +1278,389 @@ function ScheduleConsultationContent() {
   return (
     <ProtectedRoute userType="user">
       <WebLayoutWrapper>
-        <div className="space-y-6 pb-24">
-          <div className="flex items-center gap-4 pt-2">
+        <div className="space-y-6 pb-16">
+          {/* Sticky Header with AmbeBackButton */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm flex items-center gap-4">
             <AmbeBackButton onClick={() => router.push('/user/consult')} />
-            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               {isRescheduleParam ? "Reschedule Consultation" : "Schedule Consultation"}
             </h1>
           </div>
 
-          {/* Doctor Info Card */}
-          <div className="bg-white rounded-[20px] p-5 shadow-lg text-[#1E1E1E]">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-neutral-100 border-2 border-[#FFD3AC] rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
-                {doctorInfo?.profile_picture ? (
-                  <img 
-                    src={doctorInfo.profile_picture} 
-                    alt={doctorDisplayName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-xl font-bold text-[#1E1E1E]">
-                    {doctorDisplayName.replace('Dr. ', '').charAt(0) || '👨‍⚕️'}
+          <div className="max-w-xl mx-auto space-y-6">
+            {/* Sleek Doctor Info Pill */}
+            {doctorDisplayName && (
+              <div className="flex items-center justify-between px-1 text-xs text-white/70">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 overflow-hidden flex items-center justify-center text-xs flex-shrink-0">
+                    {doctorInfo?.profile_picture ? (
+                      <img src={doctorInfo.profile_picture} alt={doctorDisplayName} className="w-full h-full object-cover" />
+                    ) : (
+                      '👨‍⚕️'
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold text-lg text-[#1E1E1E] leading-tight truncate">{doctorDisplayName}</h3>
-                  {isInstantAvailable && (
-                    <span className="inline-flex items-center gap-1 bg-[#2E7D32] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                      <BoltIcon className="w-3 h-3" /> Available Now
-                    </span>
-                  )}
+                  <div>
+                    <span className="font-semibold text-white">{doctorDisplayName}</span>
+                    {doctorInfo?.title && <span className="text-[#FFD3AC] ml-1.5 font-medium">({doctorInfo.title})</span>}
+                  </div>
                 </div>
-                {doctorInfo?.title && (
-                  <p className="text-xs text-[#C2691C] font-semibold mt-0.5">{doctorInfo.title}</p>
-                )}
-                {doctorInfo?.field && doctorInfo.field.length > 0 && (
-                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
-                    {doctorInfo.field.map(f => HEALTH_FIELD_LABELS[f] || f).join(', ')}
-                  </p>
-                )}
+              </div>
+            )}
+
+            {/* Calendar Card (Matching App & Image 2) */}
+            <div className="bg-[#2D2D30] border border-white/10 rounded-2xl overflow-hidden shadow-xl text-white">
+              {/* Month Header Navigation */}
+              <div className="flex items-center justify-between px-6 pt-5 pb-3">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  disabled={!canGoPrevMonth()}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed transition cursor-pointer"
+                  aria-label="Previous Month"
+                >
+                  <ChevronLeftIcon className="w-5 h-5 text-white" />
+                </button>
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
+                  {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                </h2>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  disabled={!canGoNextMonth()}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed transition cursor-pointer"
+                  aria-label="Next Month"
+                >
+                  <ChevronRightIcon className="w-5 h-5 text-white" />
+                </button>
+              </div>
+
+              {/* Day Headers (Sun - Sat) */}
+              <div className="grid grid-cols-7 gap-1 px-4 text-center text-xs font-semibold text-white/50 mb-2">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="py-1">{day}</div>
+                ))}
+              </div>
+
+              {/* Day Cells Grid */}
+              <div className="grid grid-cols-7 gap-y-2 gap-x-1 px-4 pb-4">
+                {calendarCells.map((cell, idx) => {
+                  if (!cell) {
+                    return <div key={`empty-${idx}`} className="h-10 sm:h-11" />;
+                  }
+
+                  const { date, isAvailable, isSelected, isToday } = cell;
+                  return (
+                    <div key={date.toISOString()} className="flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => isAvailable && handleDateSelect(date)}
+                        disabled={!isAvailable}
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex flex-col items-center justify-center transition relative ${
+                          isSelected
+                            ? 'bg-[#FFD3AC] text-[#1E1E1E] font-bold shadow-[0_0_12px_rgba(255,211,172,0.45)]'
+                            : isToday
+                            ? 'border border-[#FFD3AC] text-[#FFD3AC] font-semibold hover:bg-white/5'
+                            : isAvailable
+                            ? 'text-white font-medium hover:bg-white/10 cursor-pointer'
+                            : 'text-white/20 cursor-not-allowed'
+                        }`}
+                      >
+                        <span className="text-xs sm:text-sm">{date.getDate()}</span>
+                        {isAvailable && !isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FFD3AC] absolute bottom-1" />
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Timezone Strip */}
+              <div className="bg-[#FFD3AC]/10 border-t border-[#FFD3AC]/25 py-3 px-4 flex items-center justify-center gap-2 text-xs text-white">
+                <ClockIcon className="w-4 h-4 text-[#FFD3AC] flex-shrink-0" />
+                <span>
+                  Displaying times in: <strong className="font-semibold text-white">{formatTimezone(userTimezone)}</strong>
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Instant Availability Card */}
-          {isInstantAvailable && (
-            <div className="bg-[#2D2D30]/85 border border-[#FFD3AC]/40 rounded-2xl p-5 shadow-xl backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-white font-bold text-base">
-                  <BoltIcon className="w-5 h-5 text-[#FFD3AC]" />
-                  Instant Consultation Available
-                </div>
-                <p className="text-xs text-white/70 mt-1">
-                  Your doctor is available right now for an immediate video consultation.
-                </p>
+            {/* Selected Date Header (Centered, matching Image 2) */}
+            {selectedDate && (
+              <div className="text-center pt-2 pb-1">
+                <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">
+                  {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </h3>
               </div>
-              <button
-                onClick={handleInstantSelect}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider transition shadow-md cursor-pointer ${
-                  selectedSlot?.isInstant 
-                    ? 'bg-black text-[#FFD3AC]' 
-                    : 'bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E]'
-                }`}
-              >
-                <BoltIcon className="w-4 h-4" />
-                {selectedSlot?.isInstant ? "Selected: Available Now" : "Available Now"}
-              </button>
-            </div>
-          )}
+            )}
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Calendar */}
+            {/* Time Slot Grid (3-column matching app & Image 2) */}
             <div>
-              <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3 flex items-center">
-                <CalendarIcon className="h-4 w-4 mr-2 text-[#FFD3AC]" />
-                Select a Date
-              </h2>
-              <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-5 shadow-xl backdrop-blur-md text-white">
-                <div className="text-center font-bold text-base text-white mb-4">
-                  {selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                </div>
+              {availableSlots.length > 0 ? (
+                <div className="grid grid-cols-3 gap-3">
+                  {availableSlots.map((slot, index) => {
+                    const isSelected = selectedSlot?.time?.getTime() === slot.time?.getTime();
 
-                <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-white/50 mb-2">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="py-1">{day}</div>
-                  ))}
-                </div>
+                    if (slot.isInstant) {
+                      return (
+                        <button
+                          key="instant"
+                          type="button"
+                          onClick={() => {
+                            setSelectedSlot(slot);
+                            setTimeout(() => {
+                              const el = document.getElementById('payment-section');
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 100);
+                          }}
+                          className={`h-12 rounded-2xl flex items-center justify-center gap-1.5 transition font-semibold text-xs border-2 cursor-pointer ${
+                            isSelected
+                              ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                              : 'bg-[#2D2D30] border-emerald-500 text-white hover:bg-emerald-500/20'
+                          }`}
+                        >
+                          <BoltIcon className="w-4 h-4 text-white" />
+                          <span>Available Now</span>
+                        </button>
+                      );
+                    }
 
-                <div className="grid grid-cols-7 gap-1.5">
-                  {calendarDays.map((date, index) => {
-                    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                    const daySchedule = doctorSchedule?.[dayName];
-                    const isScheduledAvail = daySchedule?.is_available === true;
-                    const isToday = date.toDateString() === new Date().toDateString();
-                    const isAvailable = isScheduledAvail || (isToday && isInstantAvailable);
-                    const isSelected = selectedDate?.toDateString() === date.toDateString();
-                    const isPast = date < new Date(new Date().setHours(0,0,0,0));
-                    
                     return (
                       <button
                         key={index}
-                        onClick={() => isAvailable && !isPast && handleDateSelect(date)}
-                        disabled={!isAvailable || isPast}
-                        className={`h-10 rounded-xl flex flex-col items-center justify-center transition-all text-xs relative ${
+                        type="button"
+                        onClick={() => {
+                          setSelectedSlot(slot);
+                          setTimeout(() => {
+                            const el = document.getElementById('payment-section');
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
+                        }}
+                        className={`h-12 rounded-2xl flex flex-col items-center justify-center transition border cursor-pointer ${
                           isSelected
-                            ? 'bg-[#FFD3AC] text-[#1E1E1E] font-bold shadow-md'
-                            : isAvailable && !isPast
-                            ? 'bg-white/10 text-white font-medium hover:bg-white/20 border border-white/10 cursor-pointer'
-                            : 'bg-black/20 text-white/20 cursor-not-allowed border border-transparent'
+                            ? 'bg-[#FFD3AC] border-2 border-[#FFD3AC] text-[#1E1E1E] font-bold shadow-[0_0_14px_rgba(255,211,172,0.45)]'
+                            : 'bg-[#2D2D30]/65 border-white/10 hover:border-white/30 text-white font-semibold'
                         }`}
                       >
-                        <span>{date.getDate()}</span>
-                        {isAvailable && !isPast && (
-                          <span className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-[#1E1E1E]' : 'bg-[#FFD3AC]'}`} />
+                        <span className="text-xs sm:text-sm font-semibold">{slot.userDisplay}</span>
+                        {doctorTimezone && userTimezone && doctorTimezone !== userTimezone && (
+                          <span className={`text-[10px] ${isSelected ? 'text-[#1E1E1E]/75' : 'text-white/40'}`}>
+                            ({slot.doctorDisplay})
+                          </span>
                         )}
                       </button>
                     );
                   })}
                 </div>
-
-                {/* Timezone banner */}
-                <div className="mt-4 p-3 bg-black/30 border border-white/10 rounded-xl flex items-center text-xs text-white/70">
-                  <ClockIcon className="w-4 h-4 mr-2 text-[#FFD3AC] flex-shrink-0" />
-                  <span>Displaying times in: <strong className="text-white font-semibold">{userTimezone || "Local Time"}</strong></span>
-                </div>
-              </div>
-            </div>
-
-            {/* Time Slots */}
-            <div>
-              <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3 flex items-center">
-                <ClockIcon className="h-4 w-4 mr-2 text-[#FFD3AC]" />
-                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-              </h2>
-              
-              <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl shadow-xl backdrop-blur-md p-5 text-white">
-                {availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {availableSlots.map((slot, index) => {
-                      const isSelected = selectedSlot?.time?.getTime() === slot.time?.getTime();
-                      return (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`p-3 rounded-xl border transition-all font-medium text-center cursor-pointer ${
-                            isSelected
-                              ? 'border-[#FFD3AC] bg-[#FFD3AC] text-[#1E1E1E] font-bold shadow-md'
-                              : slot.isInstant
-                              ? 'border-emerald-500/50 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
-                              : 'border-white/15 bg-white/5 text-white hover:bg-white/10'
-                          }`}
-                        >
-                          {slot.isInstant ? (
-                            <div className="flex items-center justify-center gap-1 font-bold text-xs">
-                              <BoltIcon className="w-3.5 h-3.5" /> Available Now
-                            </div>
-                          ) : (
-                            <div>
-                              <div className="font-semibold text-xs">{slot.userDisplay}</div>
-                              {doctorTimezone !== userTimezone && (
-                                <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-[#1E1E1E]/70' : 'text-white/50'}`}>
-                                  ({slot.doctorDisplay} Dr's time)
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-xs text-white/60 text-center py-8">
-                    No available time slots for this date. Please select another date from the calendar.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Booking / Reschedule Review */}
-          {selectedSlot && (
-            <div className="mt-8 bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-md space-y-6 text-white">
-              <h3 className="font-bold text-xl text-white">
-                {isRescheduleParam ? "Confirm Rescheduled Slot" : "Confirm Consultation & Pay Deposit"}
-              </h3>
-
-              {/* Summary Details */}
-              <div className="grid sm:grid-cols-3 gap-4 p-4 bg-black/30 border border-white/10 rounded-xl text-xs text-white">
-                <div>
-                  <span className="text-white/60 block font-medium">Doctor</span>
-                  <strong className="text-sm font-semibold">{doctorDisplayName}</strong>
-                </div>
-                <div>
-                  <span className="text-white/60 block font-medium">
-                    {isRescheduleParam ? "New Date & Time" : "Date & Time"}
-                  </span>
-                  <strong className="text-sm font-semibold text-[#FFD3AC]">
-                    {selectedSlot.isInstant 
-                      ? "Available Now (Immediate)" 
-                      : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-white/60 block font-medium">Deposit Fee</span>
-                  <strong className={`text-sm font-semibold ${isRescheduleParam ? "text-emerald-400" : "text-[#FFD3AC]"}`}>
-                    {isRescheduleParam ? "Previously Paid ($50.00)" : "$50.00 USD"}
-                  </strong>
-                </div>
-              </div>
-
-              {isRescheduleParam ? (
-                /* Reschedule Mode: No New Deposit Charged */
-                <div className="space-y-6 pt-2">
-                  <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">
-                    <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
-                      <ShieldCheckIcon className="w-5 h-5" />
-                      Reschedule Policy
-                    </div>
-                    <p className="leading-relaxed text-white/80">
-                      Your original <strong>$50 deposit</strong> remains securely applied to this appointment. You do not need to pay anything additional to reschedule your slot.
-                    </p>
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      onClick={handleConfirmReschedule}
-                      disabled={scheduling}
-                      className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer"
-                    >
-                      {scheduling ? "Updating Appointment..." : "Confirm Rescheduled Slot"}
-                    </button>
-                  </div>
-                </div>
               ) : (
-                /* New Booking Mode: Stripe $50 Deposit Payment Sheet */
-                <>
-                  {/* Deposit & Refund Policy Card */}
-                  <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">
-                    <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
-                      <ShieldCheckIcon className="w-5 h-5" />
-                      Deposit & Refund Policy
-                    </div>
-                    <p className="leading-relaxed text-white/80">
-                      A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 text-white/70 pt-1">
-                      <li>
-                        <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
-                        <a 
-                          href="mailto:info@ambewellness.com" 
-                          className="font-semibold text-[#FFD3AC] underline hover:text-white"
-                        >
-                          info@ambewellness.com
-                        </a>{' '}
-                        within 30 days of the appointment date.
-                      </li>
-                      <li>
-                        <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
-                      </li>
-                    </ul>
-                  </div>
+                <div className="bg-[#2D2D30]/65 border border-white/10 rounded-2xl p-8 text-center text-white/60 text-xs">
+                  No available slots on this day. The doctor may be unavailable or all slots are booked.
+                </div>
+              )}
+            </div>
 
-                  {/* Payment Method Selector */}
-                  <div className="pt-4 border-t border-white/10">
-                    <PaymentMethodSelector
-                      selectedMethod={paymentMethod}
-                      onSelectMethod={(method) => {
-                        setPaymentMethod(method);
-                        if (method === "stripe" && !clientSecret && !paymentLoading) {
-                          initializePaymentIntent();
-                        }
-                      }}
-                      isTestMode={isTestMode}
-                      disabled={scheduling || paymentLoading || paypalProcessing}
-                    />
-                  </div>
+            {/* Booking / Payment / Reschedule Section */}
+            {selectedSlot && (
+              <div id="payment-section" className="scroll-mt-24 bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-md space-y-6 text-white">
+                <h3 className="font-bold text-xl text-white">
+                  {isRescheduleParam ? "Confirm Rescheduled Slot" : "Confirm Consultation & Pay Deposit"}
+                </h3>
 
-                  {paymentMethod === "stripe" ? (
-                    /* Stripe Card Payment Sheet */
-                    <div className="pt-3">
-                      <h4 className="font-sans font-semibold text-sm text-white mb-3">Enter Card Details</h4>
-                      {paymentLoading || !clientSecret || !stripePromise ? (
-                        <div className="py-8 flex flex-col items-center justify-center space-y-2">
-                          <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
-                          <p className="text-xs text-white/60">Loading secure payment sheet...</p>
-                        </div>
-                      ) : (
-                        <Elements
-                          stripe={stripePromise}
-                          options={{
-                            clientSecret,
-                            appearance: {
-                              theme: 'night',
-                              variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
-                            }
-                          }}
-                        >
-                          <ConsultationPaymentForm
-                            user={user}
-                            doctorInfo={doctorInfo}
-                            selectedSlot={selectedSlot}
-                            selectedDate={selectedDate}
-                            paymentIntentId={paymentIntentId}
-                            onSuccess={handlePaymentSuccessAndSchedule}
-                          />
-                        </Elements>
-                      )}
-                    </div>
-                  ) : (
-                    /* PayPal Deposit Flow */
-                    <div className="pt-3 space-y-4">
-                      <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between text-xs text-white">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center font-bold text-lg">
-                            <span className="font-serif italic">P</span>
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm text-white">PayPal Checkout</p>
-                            <p className="text-white/60">Secure $50 deposit via your PayPal account or PayPal card</p>
-                          </div>
-                        </div>
+                {/* Summary Details */}
+                <div className="grid sm:grid-cols-3 gap-4 p-4 bg-black/30 border border-white/10 rounded-xl text-xs text-white">
+                  <div>
+                    <span className="text-white/60 block font-medium">Doctor</span>
+                    <strong className="text-sm font-semibold">{doctorDisplayName}</strong>
+                  </div>
+                  <div>
+                    <span className="text-white/60 block font-medium">
+                      {isRescheduleParam ? "New Date & Time" : "Date & Time"}
+                    </span>
+                    <strong className="text-sm font-semibold text-[#FFD3AC]">
+                      {selectedSlot.isInstant 
+                        ? "Available Now (Immediate)" 
+                        : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-white/60 block font-medium">Deposit Fee</span>
+                    <strong className={`text-sm font-semibold ${isRescheduleParam ? "text-emerald-400" : "text-[#FFD3AC]"}`}>
+                      {isRescheduleParam ? "Previously Paid ($50.00)" : "$50.00 USD"}
+                    </strong>
+                  </div>
+                </div>
+
+                {isRescheduleParam ? (
+                  /* Reschedule Mode: No New Deposit Charged */
+                  <div className="space-y-6 pt-2">
+                    <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">
+                      <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
+                        <ShieldCheckIcon className="w-5 h-5" />
+                        Reschedule Policy
                       </div>
+                      <p className="leading-relaxed text-white/80">
+                        Your original <strong>$50 deposit</strong> remains securely applied to this appointment. You do not need to pay anything additional to reschedule your slot.
+                      </p>
+                    </div>
 
+                    <div className="pt-2">
                       <button
-                        type="button"
-                        onClick={handlePayPalDeposit}
-                        disabled={scheduling || paypalProcessing}
-                        className="w-full bg-[#0070BA] hover:bg-[#003087] text-white py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+                        onClick={handleConfirmReschedule}
+                        disabled={scheduling}
+                        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer"
                       >
-                        {paypalProcessing ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                            Processing with PayPal...
-                          </>
-                        ) : (
-                          "Pay $50 Deposit with PayPal"
-                        )}
+                        {scheduling ? "Updating Appointment..." : "Confirm Rescheduled Slot"}
                       </button>
                     </div>
-                  )}
-                </>
-              )}
+                  </div>
+                ) : (
+                  /* New Booking Mode: Stripe $50 Deposit Payment Sheet */
+                  <>
+                    {/* Deposit & Refund Policy Card */}
+                    <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">
+                      <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
+                        <ShieldCheckIcon className="w-5 h-5" />
+                        Deposit & Refund Policy
+                      </div>
+                      <p className="leading-relaxed text-white/80">
+                        A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-white/70 pt-1">
+                        <li>
+                          <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
+                          <a 
+                            href="mailto:info@ambewellness.com" 
+                            className="font-semibold text-[#FFD3AC] underline hover:text-white"
+                          >
+                            info@ambewellness.com
+                          </a>{' '}
+                          within 30 days of the appointment date.
+                        </li>
+                        <li>
+                          <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
+                        </li>
+                      </ul>
+                    </div>
 
-              {bookingSuccess && (
-                <div className="p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-center text-emerald-300 text-sm font-semibold">
-                  ✓ {isRescheduleParam ? "Consultation rescheduled successfully! Redirecting to your dashboard..." : "Consultation booked successfully! Redirecting to your dashboard..."}
-                </div>
-              )}
-            </div>
-          )}
+                    {/* Payment Method Selector */}
+                    <div className="pt-4 border-t border-white/10">
+                      <PaymentMethodSelector
+                        selectedMethod={paymentMethod}
+                        onSelectMethod={(method) => {
+                          setPaymentMethod(method);
+                          if ((method === "stripe" || method === "apple_pay") && !clientSecret && !paymentLoading) {
+                            initializePaymentIntent();
+                          }
+                        }}
+                        isTestMode={isTestMode}
+                        disabled={scheduling || paymentLoading || paypalProcessing}
+                      />
+                    </div>
+
+                    {paymentMethod === "stripe" ? (
+                      /* Stripe Card Payment Sheet */
+                      <div className="pt-3">
+                        <h4 className="font-sans font-semibold text-sm text-white mb-3">Enter Card Details</h4>
+                        {paymentLoading || !clientSecret || !stripePromise ? (
+                          <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
+                            <p className="text-xs text-white/60">Loading secure payment sheet...</p>
+                          </div>
+                        ) : (
+                          <Elements
+                            stripe={stripePromise}
+                            options={{
+                              clientSecret,
+                              appearance: {
+                                theme: 'night',
+                                variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
+                              }
+                            }}
+                          >
+                            <ConsultationPaymentForm
+                              user={user}
+                              doctorInfo={doctorInfo}
+                              selectedSlot={selectedSlot}
+                              selectedDate={selectedDate}
+                              paymentIntentId={paymentIntentId}
+                              onSuccess={handlePaymentSuccessAndSchedule}
+                            />
+                          </Elements>
+                        )}
+                      </div>
+                    ) : paymentMethod === "apple_pay" ? (
+                      /* Apple Pay Flow */
+                      <div className="pt-3">
+                        <h4 className="font-sans font-semibold text-sm text-white mb-3">Pay with Apple Pay</h4>
+                        {paymentLoading || !clientSecret || !stripePromise ? (
+                          <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
+                            <p className="text-xs text-white/60">Loading Apple Pay...</p>
+                          </div>
+                        ) : (
+                          <Elements
+                            stripe={stripePromise}
+                            options={{
+                              clientSecret,
+                              appearance: {
+                                theme: 'night',
+                                variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
+                              }
+                            }}
+                          >
+                            <ConsultationApplePayForm
+                              user={user}
+                              doctorInfo={doctorInfo}
+                              selectedSlot={selectedSlot}
+                              selectedDate={selectedDate}
+                              paymentIntentId={paymentIntentId}
+                              onSuccess={handlePaymentSuccessAndSchedule}
+                            />
+                          </Elements>
+                        )}
+                      </div>
+                    ) : (
+                      /* PayPal Deposit Flow */
+                      <div className="pt-3 space-y-4">
+                        <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between text-xs text-white">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center font-bold text-lg">
+                              <span className="font-serif italic">P</span>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm text-white">PayPal Checkout</p>
+                              <p className="text-white/60">Secure $50 deposit via your PayPal account or PayPal card</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handlePayPalDeposit}
+                          disabled={scheduling || paypalProcessing}
+                          className="w-full bg-[#0070BA] hover:bg-[#003087] text-white py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          {paypalProcessing ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                              Processing with PayPal...
+                            </>
+                          ) : (
+                            "Pay $50 Deposit with PayPal"
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {bookingSuccess && (
+                  <div className="p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-center text-emerald-300 text-sm font-semibold">
+                    ✓ {isRescheduleParam ? "Consultation rescheduled successfully! Redirecting to your dashboard..." : "Consultation booked successfully! Redirecting to your dashboard..."}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </WebLayoutWrapper>
     </ProtectedRoute>

@@ -70,7 +70,10 @@ export default function RescheduleConsultationModal({
   // Detect local timezone once
   useEffect(() => {
     try {
-      const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      let detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (detected === 'Asia/Calcutta' || detected === 'Calcutta') {
+        detected = 'Asia/Kolkata';
+      }
       if (detected) setLocalTimezone(detected);
     } catch (_) {}
   }, []);

@@ -429,8 +429,8 @@ export default function UserCheckoutPage() {
       // Store payment intent ID for monitoring
       sessionStorage.setItem('paymentIntentId', paymentIntentId);
       
-      // Redirect to Stripe payment page
-      router.push(`/user/checkout/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}&test_mode=${isTestMode}`);
+      // Redirect to payment page
+      router.push(`/user/checkout/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}&test_mode=${isTestMode}&method=${paymentMethod}`);
     } catch (error) {
       console.error('Checkout error:', error);
       alert(error.message || 'Failed to process checkout. Please try again.');
@@ -579,6 +579,8 @@ export default function UserCheckoutPage() {
             ? 'CALCULATING TAX...'
             : paymentMethod === 'paypal'
             ? 'PAY WITH PAYPAL'
+            : paymentMethod === 'apple_pay'
+            ? 'PROCEED TO APPLE PAY'
             : 'PROCEED TO CARD PAYMENT'}
         </button>
 

@@ -49,12 +49,21 @@ const TIMEZONES = [
   { value: 'Australia/Sydney', city: 'Sydney', region: 'Australia' },
 ];
 
+function normalizeTimezone(tz) {
+  if (!tz) return 'Asia/Kolkata';
+  if (tz === 'Asia/Calcutta' || tz === 'Calcutta' || tz === 'IST') {
+    return 'Asia/Kolkata';
+  }
+  return tz;
+}
+
 function getTimezoneDisplay(tz) {
-  if (!tz) return { city: 'Kolkata', region: 'Asia' };
-  const found = TIMEZONES.find((t) => t.value === tz);
+  const normalized = normalizeTimezone(tz);
+  const found = TIMEZONES.find((t) => t.value === normalized);
   if (found) return found;
-  const parts = tz.split('/');
-  const city = parts.length > 1 ? parts[parts.length - 1].replace(/_/g, ' ') : tz;
+  const parts = normalized.split('/');
+  let city = parts.length > 1 ? parts[parts.length - 1].replace(/_/g, ' ') : normalized;
+  if (city === 'Calcutta') city = 'Kolkata';
   const region = parts.length > 1 ? parts[0] : '';
   return { city, region };
 }
@@ -74,7 +83,7 @@ export default function DoctorSchedulePage() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const [schedule, setSchedule] = useState({});
-  const [timezone, setTimezone] = useState('');
+  const [timezone, setTimezone] = useState('Asia/Kolkata');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   
@@ -98,8 +107,9 @@ export default function DoctorSchedulePage() {
         // Load instant consult availability
         setIsAvailableNow(Boolean(data.is_available_now));
         
-        // Set timezone
-        setTimezone(data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+        // Set timezone (ensuring Asia/Calcutta is mapped to Asia/Kolkata)
+        const detectedTz = normalizeTimezone(data.timezone || (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'Asia/Kolkata'));
+        setTimezone(detectedTz);
 
         const scheduleRaw = data.schedule || {};
         const parsedSchedule = {};
@@ -242,7 +252,7 @@ export default function DoctorSchedulePage() {
   };
 
   const handleTimezoneChange = (e) => {
-    setTimezone(e.target.value);
+    setTimezone(normalizeTimezone(e.target.value));
     setSaved(false);
   };
 
@@ -304,7 +314,7 @@ export default function DoctorSchedulePage() {
         doc(db, 'doctors', user.uid),
         {
           schedule: scheduleToSave,
-          timezone,
+          timezone: normalizeTimezone(timezone),
           is_schedule_set: true,
           schedule_updated_at: serverTimestamp(),
         },

@@ -551,8 +551,8 @@ export default function UserConsultPage() {
     <ProtectedRoute userType="user">
       <WebLayoutWrapper>
         <div className="space-y-6 pb-24">
-          <div className="flex items-center justify-between pt-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm flex items-center justify-between">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-serif">
               Consultations
             </h1>
           </div>
@@ -989,20 +989,10 @@ export default function UserConsultPage() {
 
           {/* No Upcoming Appointments */}
           {hasDoctor && upcomingAppointments.length === 0 && !loading && (
-            <div className="bg-[#1B1A18]/65 border border-white/15 rounded-[22px] p-8 text-center">
-              <CalendarIcon className="h-10 w-10 text-[#FFD3AC] mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-white mb-1">
+            <div className="py-6 sm:py-8 text-center">
+              <p className="text-white text-base sm:text-lg font-medium">
                 No appointment set
-              </h3>
-              <p className="text-xs text-white/60 mb-4">
-                Schedule a consultation with your healthcare provider
               </p>
-              <button
-                onClick={handleScheduleClick}
-                className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition shadow-md cursor-pointer"
-              >
-                Schedule Consultation
-              </button>
             </div>
           )}
 
