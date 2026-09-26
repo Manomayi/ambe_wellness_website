@@ -6,6 +6,7 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 import { loadStripe } from "@stripe/stripe-js";
 import { startPayPalCheckout } from "@/lib/paypal";
 import { recordContribution } from "@/lib/contributionService";
+import PaymentProcessingOverlay from "@/components/common/PaymentProcessingOverlay";
 
 function StripeContributionCheckoutForm({
   amount,
@@ -14,6 +15,7 @@ function StripeContributionCheckoutForm({
   doctorInfo,
   onSuccess,
   onError,
+  onProcessingChange,
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -24,6 +26,7 @@ function StripeContributionCheckoutForm({
     e.preventDefault();
     if (!stripe || !elements) return;
     setProcessing(true);
+    if (onProcessingChange) onProcessingChange(true);
     setErrorMsg("");
 
     try {
@@ -38,6 +41,7 @@ function StripeContributionCheckoutForm({
       if (result.error) {
         setErrorMsg(result.error.message || "Payment confirmation failed.");
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
       } else if (
         result.paymentIntent &&
         (result.paymentIntent.status === "succeeded" ||
@@ -48,11 +52,13 @@ function StripeContributionCheckoutForm({
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
       }
     } catch (err) {
       console.error("Payment error:", err);
       setErrorMsg("Payment could not be confirmed. Please try again.");
       setProcessing(false);
+      if (onProcessingChange) onProcessingChange(false);
     }
   };
 
@@ -101,6 +107,7 @@ export default function ContributionView({
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [paypalProcessing, setPaypalProcessing] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   // Lock body scroll when modal is open
@@ -167,6 +174,7 @@ export default function ContributionView({
         type: "contribution_before",
         isTestMode: Boolean(isTestMode),
         onSuccess: async ({ orderId }) => {
+          setIsProcessingPayment(true);
           await handlePaymentCompleted(orderId, "paypal");
           setPaypalProcessing(false);
         },
@@ -174,19 +182,23 @@ export default function ContributionView({
           console.error("PayPal error:", err);
           alert(err.message || "PayPal payment could not be completed.");
           setPaypalProcessing(false);
+          setIsProcessingPayment(false);
         },
         onCancel: () => {
           setPaypalProcessing(false);
+          setIsProcessingPayment(false);
         },
       });
     } catch (e) {
       console.error("PayPal flow error:", e);
       setPaypalProcessing(false);
+      setIsProcessingPayment(false);
     }
   };
 
   const handlePaymentCompleted = async (paymentId, method = "card") => {
     setShowCheckoutModal(false);
+    setIsProcessingPayment(true);
     try {
       await recordContribution({
         user,
@@ -203,14 +215,15 @@ export default function ContributionView({
         await onSuccessSchedule(paymentId, activeAmount);
       } else {
         // Amount < 20, proceed to standard $50 deposit
+        setIsProcessingPayment(false);
         onProceedToDeposit(paymentId, activeAmount);
       }
     } catch (err) {
       console.error("Error recording contribution:", err);
-      alert("Contribution recorded. Finalizing appointment...");
       if (activeAmount >= 20.0) {
         await onSuccessSchedule(paymentId, activeAmount);
       } else {
+        setIsProcessingPayment(false);
         onProceedToDeposit(paymentId, activeAmount);
       }
     }
@@ -452,6 +465,7 @@ export default function ContributionView({
                       doctorInfo={doctorInfo}
                       onSuccess={(intentId) => handlePaymentCompleted(intentId, "card")}
                       onError={(err) => setErrorMessage(err)}
+                      onProcessingChange={setIsProcessingPayment}
                     />
                   </Elements>
                 )
@@ -477,6 +491,11 @@ export default function ContributionView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Full-screen Payment Processing Overlay matching mobile app */}
+      {isProcessingPayment && (
+        <PaymentProcessingOverlay />
       )}
     </div>
   );

@@ -41,6 +41,7 @@ import {
 } from '@stripe/react-stripe-js';
 import ContributionView from '@/components/consult/ContributionView';
 import { consumePendingContribution } from '@/lib/contributionService';
+import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverlay';
 
 
 // Health field mapping
@@ -68,7 +69,8 @@ function ConsultationPaymentForm({
   selectedSlot, 
   selectedDate, 
   paymentIntentId, 
-  onSuccess 
+  onSuccess,
+  onProcessingChange,
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -79,6 +81,7 @@ function ConsultationPaymentForm({
     e.preventDefault();
     if (!stripe || !elements) return;
     setProcessing(true);
+    if (onProcessingChange) onProcessingChange(true);
     setErrorMsg('');
 
     try {
@@ -93,6 +96,7 @@ function ConsultationPaymentForm({
       if (result.error) {
         setErrorMsg(result.error.message || 'Payment confirmation failed.');
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
       } else if (
         result.paymentIntent && 
         (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')
@@ -102,11 +106,13 @@ function ConsultationPaymentForm({
       } else {
         setErrorMsg(result.paymentIntent?.status ? `Payment was not completed (status: ${result.paymentIntent.status}). Please try again.` : 'Payment was not completed. Please try again.');
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
       }
     } catch (err) {
       console.error('Payment confirm error:', err);
       setErrorMsg('Payment could not be confirmed. Please try again.');
       setProcessing(false);
+      if (onProcessingChange) onProcessingChange(false);
     }
   };
 
@@ -139,7 +145,7 @@ function ConsultationPaymentForm({
   );
 }
 
-function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate, paymentIntentId, onSuccess }) {
+function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate, paymentIntentId, onSuccess, onProcessingChange }) {
   const stripe = useStripe();
   const elements = useElements();
   const [errorMsg, setErrorMsg] = useState('');
@@ -149,6 +155,7 @@ function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate
   const handleConfirm = async () => {
     if (!stripe || !elements) return;
     setProcessing(true);
+    if (onProcessingChange) onProcessingChange(true);
     setErrorMsg('');
 
     try {
@@ -156,6 +163,7 @@ function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate
       if (submitError) {
         setErrorMsg(submitError.message || 'Payment submission failed.');
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
         return;
       }
 
@@ -170,8 +178,9 @@ function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate
       if (result.error) {
         setErrorMsg(result.error.message || 'Payment confirmation failed.');
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
       } else if (
-        result.paymentIntent &&
+        result.paymentIntent && 
         (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')
       ) {
         const intentId = result.paymentIntent.id || paymentIntentId;
@@ -183,11 +192,13 @@ function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate
             : 'Payment was not completed. Please try again.'
         );
         setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
       }
     } catch (err) {
       console.error('Apple Pay error:', err);
       setErrorMsg('Apple Pay could not be completed. Please try again.');
       setProcessing(false);
+      if (onProcessingChange) onProcessingChange(false);
     }
   };
 
@@ -276,6 +287,7 @@ function ScheduleConsultationContent() {
   const [clientSecret, setClientSecret] = useState("");
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [isProcessingDepositPayment, setIsProcessingDepositPayment] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState("schedule"); // 'schedule' | 'contribution' | 'deposit'
 
@@ -748,21 +760,26 @@ function ScheduleConsultationContent() {
         type: "consultation",
         isTestMode: Boolean(isTestMode),
         onSuccess: async ({ orderId }) => {
+          setIsProcessingDepositPayment(true);
           await handlePaymentSuccessAndSchedule(orderId);
           setPaypalProcessing(false);
+          setIsProcessingDepositPayment(false);
         },
         onError: (err) => {
           console.error("PayPal deposit error:", err);
           alert(err.message || "PayPal deposit payment could not be completed.");
           setPaypalProcessing(false);
+          setIsProcessingDepositPayment(false);
         },
         onCancel: () => {
           setPaypalProcessing(false);
+          setIsProcessingDepositPayment(false);
         }
       });
     } catch (e) {
       console.error("PayPal flow error:", e);
       setPaypalProcessing(false);
+      setIsProcessingDepositPayment(false);
     }
   };
 
@@ -1589,10 +1606,6 @@ function ScheduleConsultationContent() {
                     : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
                 </strong>
               </div>
-              <div>
-                <span className="text-white/60 block font-medium">Duration</span>
-                <strong className="text-sm text-white font-semibold">15 Minutes</strong>
-              </div>
             </div>
 
             {/* Contribution View */}
@@ -1634,7 +1647,7 @@ function ScheduleConsultationContent() {
               <h3 className="font-bold text-base text-white border-b border-white/10 pb-3">
                 Appointment Summary
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                 <div>
                   <span className="text-white/60 block font-medium">Doctor</span>
                   <strong className="text-sm font-semibold text-white">{doctorDisplayName}</strong>
@@ -1646,10 +1659,6 @@ function ScheduleConsultationContent() {
                       ? "Available Now (Immediate)" 
                       : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
                   </strong>
-                </div>
-                <div>
-                  <span className="text-white/60 block font-medium">Duration</span>
-                  <strong className="text-sm font-semibold text-white">15 Minutes</strong>
                 </div>
                 <div>
                   <span className="text-white/60 block font-medium">Deposit Fee</span>
@@ -1739,6 +1748,7 @@ function ScheduleConsultationContent() {
                         selectedDate={selectedDate}
                         paymentIntentId={paymentIntentId}
                         onSuccess={handlePaymentSuccessAndSchedule}
+                        onProcessingChange={setIsProcessingDepositPayment}
                       />
                     </Elements>
                   )}
@@ -1770,6 +1780,7 @@ function ScheduleConsultationContent() {
                         selectedDate={selectedDate}
                         paymentIntentId={paymentIntentId}
                         onSuccess={handlePaymentSuccessAndSchedule}
+                        onProcessingChange={setIsProcessingDepositPayment}
                       />
                     </Elements>
                   )}
@@ -1817,6 +1828,11 @@ function ScheduleConsultationContent() {
         )}
           </div>
         </div>
+
+        {/* Full-screen Payment Processing Overlay matching mobile app */}
+        {(isProcessingDepositPayment || scheduling) && (
+          <PaymentProcessingOverlay />
+        )}
       </WebLayoutWrapper>
     </ProtectedRoute>
   );
