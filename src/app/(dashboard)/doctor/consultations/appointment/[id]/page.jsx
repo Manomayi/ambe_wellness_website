@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import VideoCall from '@/components/video/VideoCall';
-import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, deleteDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { classifyOutcome } from '@/lib/refundPolicy';
 import BackButton from '@/components/common/BackButton';
@@ -82,59 +82,6 @@ export default function DoctorAppointmentPage() {
 
     const callEndedBy = liveConsultation.call_ended_by || (endedByDoctor ? 'doctor' : 'user');
 
-    // 1. Immediately reset is_consultation_set: false on patient's profile so user can book next appointment
-    if (patientUid) {
-      try {
-        await setDoc(
-          doc(db, 'users', patientUid),
-          {
-            is_consultation_set: false,
-            is_first_consultation_completed: true,
-          },
-          { merge: true }
-        );
-      } catch (error) {
-        console.error('Error resetting is_consultation_set on patient:', error);
-      }
-
-      // 2. Mark upcoming appointment as completed for the patient
-      try {
-        await setDoc(
-          doc(db, 'users', patientUid, 'appointments_upcoming', params.id),
-          {
-            status: outcomeStatus,
-            consultation_outcome: outcomeStatus,
-            doctor_joined: true,
-            doctor_joined_at: serverTimestamp(),
-            call_ended_at: serverTimestamp(),
-            call_ended_by: callEndedBy,
-            ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
-            ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
-            ...(appointment?.doctor_name ? { doctor_name: appointment.doctor_name } : {}),
-          },
-          { merge: true }
-        );
-      } catch (error) {
-        console.error('Error updating patient upcoming appointment:', error);
-      }
-    }
-
-    // 3. Mark upcoming appointment as completed for the doctor
-    try {
-      await setDoc(
-        doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id),
-        {
-          call_ended_at: serverTimestamp(),
-          status: outcomeStatus,
-          consultation_outcome: outcomeStatus,
-          doctor_joined: true,
-        },
-        { merge: true }
-      );
-    } catch (error) {
-      console.error('Error updating doctor upcoming appointment:', error);
-    }
-
     // Calculate joint call duration if both joined
     let callDuration = null;
     let callDurationSeconds = null;
@@ -153,7 +100,51 @@ export default function DoctorAppointmentPage() {
       }
     }
 
-    // 4. Mark consultations collection document as completed
+    // 1. Immediately reset is_consultation_set: false on patient's profile so user can book next appointment
+    if (patientUid) {
+      try {
+        await setDoc(
+          doc(db, 'users', patientUid),
+          {
+            is_consultation_set: false,
+            is_first_consultation_completed: true,
+          },
+          { merge: true }
+        );
+      } catch (error) {
+        console.error('Error resetting is_consultation_set on patient:', error);
+      }
+
+      // 2. Mark appointment as completed for the patient and move to appointments_history
+      try {
+        const patientHistoryData = {
+          ...(appointment || {}),
+          status: outcomeStatus,
+          consultation_outcome: outcomeStatus,
+          user_joined: userJoined,
+          doctor_joined: true,
+          doctor_joined_at: serverTimestamp(),
+          call_status: 'ended',
+          call_ended_at: serverTimestamp(),
+          call_ended_by: callEndedBy,
+          updated_at: serverTimestamp(),
+          ...(callDuration ? { call_duration: callDuration, call_duration_seconds: callDurationSeconds } : {}),
+          ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
+          ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
+          ...(appointment?.doctor_name ? { doctor_name: appointment.doctor_name } : {}),
+        };
+        await setDoc(
+          doc(db, 'users', patientUid, 'appointments_history', params.id),
+          patientHistoryData,
+          { merge: true }
+        );
+        await deleteDoc(doc(db, 'users', patientUid, 'appointments_upcoming', params.id)).catch(() => {});
+      } catch (error) {
+        console.error('Error updating patient appointment records:', error);
+      }
+    }
+
+    // 3. Mark consultations collection document as completed
     try {
       await setDoc(
         doc(db, 'consultations', params.id),
@@ -175,6 +166,55 @@ export default function DoctorAppointmentPage() {
       );
     } catch (error) {
       console.error('Error updating consultation doc:', error);
+    }
+
+    // 4. Update doctor records: move from upcoming to reports_to_finish (or history)
+    try {
+      const doctorReportData = {
+        ...(appointment || {}),
+        appointment_id: params.id,
+        original_appointment_id: params.id,
+        consultation_id: params.id,
+        document_id: params.id,
+        user_id: patientUid || '',
+        user_name: appointment?.user_name || '',
+        doctor_id: user.uid,
+        doctor_name: appointment?.doctor_name || '',
+        time: appointment?.time || serverTimestamp(),
+        status: outcomeStatus,
+        consultation_outcome: outcomeStatus,
+        user_joined: userJoined,
+        doctor_joined: true,
+        call_status: 'ended',
+        call_ended_by: callEndedBy,
+        call_ended_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+        ...(callDuration ? { call_duration: callDuration, call_duration_seconds: callDurationSeconds } : {}),
+        ...(appointment?.payment_id ? { payment_id: appointment.payment_id } : {}),
+        ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
+      };
+
+      if (outcomeStatus === 'completed') {
+        await setDoc(
+          doc(db, 'doctors', user.uid, 'appointments_reports_to_finish', params.id),
+          doctorReportData,
+          { merge: true }
+        );
+        await setDoc(
+          doc(db, 'doctors', user.uid),
+          { pending: { finish_report: increment(1) } },
+          { merge: true }
+        );
+      } else {
+        await setDoc(
+          doc(db, 'doctors', user.uid, 'appointments_history', params.id),
+          doctorReportData,
+          { merge: true }
+        );
+      }
+      await deleteDoc(doc(db, 'doctors', user.uid, 'appointments_upcoming', params.id)).catch(() => {});
+    } catch (error) {
+      console.error('Error updating doctor appointment records:', error);
     }
 
     const timeMillis = appointment?.time?.toMillis ? appointment.time.toMillis() : Date.now();

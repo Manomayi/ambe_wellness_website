@@ -233,6 +233,11 @@ export default function CompleteReportPage() {
 
   // Lock body scroll in Step 3 so ONLY the products grid is scrollable
   useEffect(() => {
+    // Always instantly reset window scroll on any step change to prevent mobile Safari viewport clipping
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
     if (step === 3) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
@@ -612,26 +617,34 @@ export default function CompleteReportPage() {
       return;
     }
     setError('');
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNextFromStep2 = () => {
     setError('');
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     setStep(3);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNextFromStep3 = () => {
     setError('');
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     setStep(4);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBack = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     if (step > 1) {
       setStep((prev) => prev - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       router.push('/doctor/consultations');
     }
@@ -976,34 +989,42 @@ export default function CompleteReportPage() {
         <div
           className={`max-w-2xl mx-auto w-full relative ${
             step === 3
-              ? 'h-[calc(100dvh-5rem)] md:h-[calc(100dvh-5.5rem)] flex flex-col overflow-hidden px-2 sm:px-4 pt-1'
-              : 'space-y-4 pb-40 md:pb-28 pt-2 px-4 sm:px-6 min-h-screen'
+              ? 'h-[calc(100dvh-6rem)] md:h-[calc(100dvh-6.5rem)] flex flex-col overflow-hidden px-2 sm:px-4'
+              : 'space-y-4 pb-40 md:pb-28 min-h-screen'
           }`}
         >
-          {/* Top Bar */}
-          <div className={`shrink-0 flex items-center justify-between ${step === 3 ? 'pt-1 pb-2 mb-1' : 'pt-2 pb-2 mb-2'} relative`}>
-            <AmbeBackButton onClick={handleBack} />
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-wide text-center flex-1">
-              {getPageTitle()}
-            </h1>
-            {step === 3 ? (
-              <button
-                type="button"
-                onClick={handleNextFromStep3}
-                className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-[#FFD3AC] transition cursor-pointer flex items-center justify-center shrink-0"
-                title="View Cart"
-                aria-label="View Cart"
-              >
-                <ShoppingCartIcon className="w-6 h-6 text-[#FFD3AC]" />
-                {totalCartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-[#FFD3AC] text-[#1E1E1E] text-xs font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                    {totalCartCount}
-                  </span>
-                )}
-              </button>
-            ) : (
-              <div className="w-10 h-10 shrink-0" />
-            )}
+          {/* Top Bar (Sticky) */}
+          <div
+            className={`sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md border-b border-white/10 shadow-sm transition-all ${
+              step === 3
+                ? '-mx-2 sm:-mx-4 px-2 sm:px-4 pt-3.5 pb-2.5 mb-1 shrink-0'
+                : '-mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-2 shrink-0'
+            }`}
+          >
+            <div className="relative flex items-center justify-between">
+              <AmbeBackButton onClick={handleBack} />
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-wide text-center flex-1">
+                {getPageTitle()}
+              </h1>
+              {step === 3 ? (
+                <button
+                  type="button"
+                  onClick={handleNextFromStep3}
+                  className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-[#FFD3AC] transition cursor-pointer flex items-center justify-center shrink-0"
+                  title="View Cart"
+                  aria-label="View Cart"
+                >
+                  <ShoppingCartIcon className="w-6 h-6 text-[#FFD3AC]" />
+                  {totalCartCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-[#FFD3AC] text-[#1E1E1E] text-xs font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                      {totalCartCount}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <div className="w-10 h-10 shrink-0" />
+              )}
+            </div>
           </div>
 
           {error && (

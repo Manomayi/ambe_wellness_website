@@ -122,12 +122,15 @@ export default function UserRefundsPage() {
 
         if (!existingConsultIds.has(hId) && !existingConsultIds.has(apptId)) {
           const targetKey = apptId || hId;
+          const isDepositWaived = hData.deposit_waived === true;
+          const depositAmt = isDepositWaived ? 0.0 : (hData.deposit_amount ?? 50.0);
           await setDoc(doc(db, 'consultations', targetKey), {
             ...hData,
             user_id: uid,
             appointment_id: targetKey,
             consultation_id: targetKey,
-            deposit_amount: hData.deposit_amount ?? 50.0,
+            deposit_waived: isDepositWaived,
+            deposit_amount: depositAmt,
             payment_id: hData.payment_id || hData.payment_intent_id || targetKey,
             payment_status: hData.payment_status || 'succeeded',
             status: hData.status || 'missed',
@@ -248,7 +251,17 @@ export default function UserRefundsPage() {
       }
     }
 
-    const items = Object.values(consolidatedDocs).map((c) => {
+    const items = Object.values(consolidatedDocs)
+      .filter((c) => {
+        const isDepositWaived = c.deposit_waived === true;
+        const rawAmount = c.deposit_amount;
+        const parsedAmount = (rawAmount !== undefined && rawAmount !== null) ? Number(rawAmount) : null;
+        if (isDepositWaived || (parsedAmount !== null && parsedAmount <= 0)) {
+          return false;
+        }
+        return true;
+      })
+      .map((c) => {
       const consultationId = c.id || c.appointment_id || c.consultation_id;
       const doctorName = c.doctor_name || 'Assigned Doctor';
       const formattedDoctor = (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr '))

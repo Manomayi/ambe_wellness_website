@@ -338,9 +338,10 @@ export default function ConsultationReportPage() {
     return (
       <WebLayoutWrapper>
         <div className="space-y-6 pb-24">
-          <div className="flex items-center gap-4 pt-2">
+          {/* Sticky Header with AmbeBackButton and Title */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm flex items-center gap-4">
             <AmbeBackButton onClick={() => router.push('/user/consult')} />
-            <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-serif">
               Your Report
             </h1>
           </div>
@@ -388,8 +389,8 @@ export default function ConsultationReportPage() {
   return (
     <WebLayoutWrapper>
       <div className="space-y-6 pb-24">
-        {/* App Bar / Back */}
-        <div className="flex items-center gap-4 pt-2">
+        {/* Sticky Header with AmbeBackButton and Title */}
+        <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm flex items-center gap-4">
           <AmbeBackButton onClick={() => router.push('/user/consult')} />
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-serif">
             Your Report
@@ -506,8 +507,11 @@ export default function ConsultationReportPage() {
           <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-md shadow-xl">
             <ClockIcon className="h-16 w-16 text-[#FFD3AC] mx-auto mb-4 animate-pulse" />
             <h2 className="text-xl font-bold text-white mb-2">Report Pending</h2>
-            <p className="text-sm text-white/70 max-w-md mx-auto mb-6 leading-relaxed">
-              It takes up to 24 hours for your doctor to prepare your personalized wellness protocol. Please check back soon.
+            <p className="text-sm text-white/70 max-w-md mx-auto mb-2 leading-relaxed">
+              Please allow your doctor some time (up to 48 hours) to write your result. Please wait.
+            </p>
+            <p className="text-xs text-white/50 max-w-md mx-auto mb-6">
+              If it has been more than 48 hours, you can contact support.
             </p>
             <Link
               href="/user/menu/support"

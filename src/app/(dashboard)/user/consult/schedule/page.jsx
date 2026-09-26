@@ -39,6 +39,8 @@ import {
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
+import ContributionView from '@/components/consult/ContributionView';
+import { consumePendingContribution } from '@/lib/contributionService';
 
 
 // Health field mapping
@@ -275,6 +277,7 @@ function ScheduleConsultationContent() {
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [showContributionStep, setShowContributionStep] = useState(true);
 
 
   // Safe doctor UID resolution
@@ -742,9 +745,12 @@ function ScheduleConsultationContent() {
   };
 
 
-  const handlePaymentSuccessAndSchedule = async (intentId) => {
+  const handlePaymentSuccessAndSchedule = async (intentId, options = {}) => {
     if (!selectedSlot || !user) return;
     setScheduling(true);
+
+    const isWaived = Boolean(options.waivedDeposit);
+    const contribAmount = options.contributionAmount || 0;
 
     try {
       const appointmentTimeMillis = selectedSlot.time.getTime();
@@ -793,7 +799,10 @@ function ScheduleConsultationContent() {
           time: Timestamp.fromMillis(appointmentTimeMillis),
           status: 'scheduled',
           is_instant: Boolean(selectedSlot.isInstant),
-          deposit_paid: 50.00,
+          deposit_paid: isWaived ? 0.0 : 50.00,
+          deposit_waived: isWaived,
+          contribution_id: isWaived ? (intentId || '') : null,
+          contribution_amount: isWaived ? contribAmount : null,
           payment_id: intentId || paymentIntentId || '',
           payment_intent_id: intentId || paymentIntentId || '',
           created_at: serverTimestamp()
@@ -811,7 +820,7 @@ function ScheduleConsultationContent() {
         await batch.commit();
       }
 
-      // 3. Record $50 Purchase in users/{uid}/purchases/{intentId}
+      // 3. Record $50 Purchase in users/{uid}/purchases/{intentId} if not waived
       let effectiveIntentId = intentId || paymentIntentId;
       if (!effectiveIntentId && user) {
         try {
@@ -831,6 +840,8 @@ function ScheduleConsultationContent() {
             payment_id: finalIntentId,
             payment_intent_id: finalIntentId,
             doctor_name: finalDocName,
+            deposit_waived: isWaived,
+            ...(isWaived ? { contribution_id: finalIntentId, contribution_amount: contribAmount } : {}),
           },
           { merge: true }
         );
@@ -842,6 +853,8 @@ function ScheduleConsultationContent() {
               payment_id: finalIntentId,
               payment_intent_id: finalIntentId,
               doctor_name: finalDocName,
+              deposit_waived: isWaived,
+              ...(isWaived ? { contribution_id: finalIntentId, contribution_amount: contribAmount } : {}),
             },
             { merge: true }
           );
@@ -860,7 +873,9 @@ function ScheduleConsultationContent() {
             status: 'scheduled',
             payment_id: finalIntentId,
             payment_intent_id: finalIntentId,
-            deposit_amount: 50.00,
+            deposit_amount: isWaived ? 0.0 : 50.00,
+            deposit_waived: isWaived,
+            ...(isWaived ? { contribution_id: finalIntentId, contribution_amount: contribAmount } : {}),
             created_at: serverTimestamp(),
           },
           { merge: true }
@@ -869,32 +884,37 @@ function ScheduleConsultationContent() {
         console.warn('Error linking payment_id to appointment:', linkErr);
       }
 
-      try {
-        const purchaseRef = doc(db, 'users', user.uid, 'purchases', finalIntentId);
-        const pSnap = await getDoc(purchaseRef);
-        const purchaseData = {
-          id: finalIntentId,
-          amount: 50.00,
-          currency: 'USD',
-          status: 'succeeded',
-          type: 'consultation',
-          description: `Consultation Deposit - ${finalDocName}`,
-          appointment_time: Timestamp.fromMillis(appointmentTimeMillis),
-          consultation_id: finalApptId,
-          appointment_id: finalApptId,
-          doctor_id: resolvedDoctorUid || '',
-          doctor_name: finalDocName,
-          refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
-          payment_intent_id: finalIntentId,
-        };
-        if (!pSnap.exists() || (!pSnap.data()?.created && !pSnap.data()?.created_at)) {
-          purchaseData.created = serverTimestamp();
-          purchaseData.created_at = serverTimestamp();
+      if (!isWaived) {
+        try {
+          const purchaseRef = doc(db, 'users', user.uid, 'purchases', finalIntentId);
+          const pSnap = await getDoc(purchaseRef);
+          const purchaseData = {
+            id: finalIntentId,
+            amount: 50.00,
+            currency: 'USD',
+            status: 'succeeded',
+            type: 'consultation',
+            description: `Consultation Deposit - ${finalDocName}`,
+            appointment_time: Timestamp.fromMillis(appointmentTimeMillis),
+            consultation_id: finalApptId,
+            appointment_id: finalApptId,
+            doctor_id: resolvedDoctorUid || '',
+            doctor_name: finalDocName,
+            refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
+            payment_intent_id: finalIntentId,
+          };
+          if (!pSnap.exists() || (!pSnap.data()?.created && !pSnap.data()?.created_at)) {
+            purchaseData.created = serverTimestamp();
+            purchaseData.created_at = serverTimestamp();
+          }
+          await setDoc(purchaseRef, purchaseData, { merge: true });
+        } catch (pErr) {
+          console.error('Error saving purchase record:', pErr);
         }
-        await setDoc(purchaseRef, purchaseData, { merge: true });
-      } catch (pErr) {
-        console.error('Error saving purchase record:', pErr);
       }
+
+      // Consume pending contribution record
+      await consumePendingContribution(user.uid, finalApptId);
 
       setBookingSuccess(true);
       router.replace('/user/consult');
@@ -1512,8 +1532,53 @@ function ScheduleConsultationContent() {
                       </button>
                     </div>
                   </div>
+                ) : profile?.pending_contribution && (profile.pending_contribution.waivedDeposit || Number(profile.pending_contribution.amount) >= 20) ? (
+                  /* Existing Pending Contribution >= $20: Deposit Waived */
+                  <div className="space-y-6 pt-2">
+                    <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-5 space-y-2 text-xs text-white">
+                      <div className="flex items-center gap-2 font-bold text-sm text-emerald-400">
+                        <ShieldCheckIcon className="w-5 h-5" />
+                        Consultation Deposit Waived
+                      </div>
+                      <p className="leading-relaxed text-white/85">
+                        You have already made a contribution of <strong>${profile.pending_contribution.amount}</strong> for your consultation. Your deposit is waived and no additional payment is required!
+                      </p>
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handlePaymentSuccessAndSchedule(
+                            profile.pending_contribution.id || profile.pending_contribution.paymentId,
+                            { waivedDeposit: true, contributionAmount: profile.pending_contribution.amount }
+                          )
+                        }
+                        disabled={scheduling}
+                        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer"
+                      >
+                        {scheduling ? "Confirming Appointment..." : "Confirm & Book Consultation"}
+                      </button>
+                    </div>
+                  </div>
+                ) : showContributionStep ? (
+                  /* Contribution Screen 1: Choose Your Contribution */
+                  <ContributionView
+                    user={user}
+                    doctorInfo={doctorInfo}
+                    selectedSlot={selectedSlot}
+                    isTestMode={isTestMode}
+                    stripePromise={stripePromise}
+                    onSuccessSchedule={(paymentId, amount) =>
+                      handlePaymentSuccessAndSchedule(paymentId, { waivedDeposit: true, contributionAmount: amount })
+                    }
+                    onProceedToDeposit={() => {
+                      setShowContributionStep(false);
+                    }}
+                    onBack={() => setSelectedSlot(null)}
+                  />
                 ) : (
-                  /* New Booking Mode: Stripe $50 Deposit Payment Sheet */
+                  /* Standard $50 Deposit Flow (when contribution <= 20) */
                   <>
                     {/* Deposit & Refund Policy Card */}
                     <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">

@@ -12,12 +12,30 @@ import {
   useElements
 } from '@stripe/react-stripe-js';
 import { doc, getDoc, onSnapshot, deleteDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db, functions } from '@/lib/firebase/config';
+import { httpsCallable } from 'firebase/functions';
 import { useRemotePaymentConfig } from '@/lib/remoteConfig';
 import BackButton from '@/components/common/BackButton';
 
 // Set to false in .env (or Vercel environment variables) if you only want backend Stripe webhooks to write to Firestore
 const ENABLE_CLIENT_SIDE_FALLBACK_WRITE = process.env.NEXT_PUBLIC_ENABLE_CLIENT_PURCHASE_WRITE !== 'false';
+
+async function runReferralCompletion(orderId) {
+  try {
+    let creditsUsed = 0;
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      creditsUsed = Number(urlParams.get('credits_used')) || Number(sessionStorage.getItem('referralCreditsToUse')) || 0;
+    }
+    const completeReferralFn = httpsCallable(functions, 'completeReferralForOrder');
+    await completeReferralFn({
+      orderId: orderId,
+      creditsUsed: creditsUsed,
+    });
+  } catch (refErr) {
+    console.warn('⚠️ completeReferralForOrder warning:', refErr);
+  }
+}
 
 
 function CheckoutForm({ clientSecret, paymentIntentId }) {
@@ -69,37 +87,14 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
           }, { merge: true });
         }
 
-        // 3. Mark user as having made a purchase & update referral credits
+        // 3. Mark user purchase status & complete referral bookkeeping via backend Cloud Function
         const userDocRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userDocRef);
-        const userData = userSnap.exists() ? userSnap.data() : {};
+        await updateDoc(userDocRef, {
+          has_made_purchase: true,
+        }).catch(() => {});
 
-        // If user used a referral credit, deduct it and record the order
-        if ((userData.referral_credits || 0) > 0) {
-          await updateDoc(userDocRef, {
-            referral_credits: Math.max(0, (userData.referral_credits || 1) - 1),
-            referral_credit_orders: arrayUnion(paymentIntentId || String(Date.now())),
-            has_made_purchase: true
-          }).catch(() => {});
-        } else {
-          await updateDoc(userDocRef, {
-            has_made_purchase: true
-          }).catch(() => {});
-        }
-
-        // If this user was referred by someone and this is their first order, reward the referrer
-        if (userData.referred_by && !userData.referral_reward_granted) {
-          await updateDoc(userDocRef, {
-            referral_reward_granted: true,
-            referral_status: 'completed'
-          }).catch(() => {});
-
-          const referrerDocRef = doc(db, 'users', userData.referred_by);
-          await updateDoc(referrerDocRef, {
-            referral_credits: increment(1),
-            referral_count: increment(1)
-          }).catch(() => {});
-        }
+        // Safely complete referral bookkeeping (credits referrer & spends credit) via Cloud Function
+        await runReferralCompletion(paymentIntentId);
 
         // 4. Clear cart
         const deletePromises = cartSnapshot.docs.map(doc => deleteDoc(doc.ref));
@@ -256,34 +251,14 @@ function ApplePayCheckoutForm({ clientSecret, paymentIntentId }) {
           }, { merge: true });
         }
 
+        // 3. Mark user purchase status & complete referral bookkeeping via backend Cloud Function
         const userDocRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userDocRef);
-        const userData = userSnap.exists() ? userSnap.data() : {};
+        await updateDoc(userDocRef, {
+          has_made_purchase: true,
+        }).catch(() => {});
 
-        if ((userData.referral_credits || 0) > 0) {
-          await updateDoc(userDocRef, {
-            referral_credits: Math.max(0, (userData.referral_credits || 1) - 1),
-            referral_credit_orders: arrayUnion(paymentIntentId || String(Date.now())),
-            has_made_purchase: true
-          }).catch(() => {});
-        } else {
-          await updateDoc(userDocRef, {
-            has_made_purchase: true
-          }).catch(() => {});
-        }
-
-        if (userData.referred_by && !userData.referral_reward_granted) {
-          await updateDoc(userDocRef, {
-            referral_reward_granted: true,
-            referral_status: 'completed'
-          }).catch(() => {});
-
-          const referrerDocRef = doc(db, 'users', userData.referred_by);
-          await updateDoc(referrerDocRef, {
-            referral_credits: increment(1),
-            referral_count: increment(1)
-          }).catch(() => {});
-        }
+        // Safely complete referral bookkeeping (credits referrer & spends credit) via Cloud Function
+        await runReferralCompletion(paymentIntentId);
 
         const deletePromises = cartSnapshot.docs.map(doc => deleteDoc(doc.ref));
         await Promise.all(deletePromises);

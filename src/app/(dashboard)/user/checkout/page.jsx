@@ -426,11 +426,12 @@ export default function UserCheckoutPage() {
         }
       }
 
-      // Store payment intent ID for monitoring
+      // Store payment intent ID and referral credits used for monitoring
       sessionStorage.setItem('paymentIntentId', paymentIntentId);
+      sessionStorage.setItem('referralCreditsToUse', String(referralCreditsToUse || 0));
       
       // Redirect to payment page
-      router.push(`/user/checkout/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}&test_mode=${isTestMode}&method=${paymentMethod}`);
+      router.push(`/user/checkout/payment?client_secret=${clientSecret}&payment_intent=${paymentIntentId}&test_mode=${isTestMode}&method=${paymentMethod}&credits_used=${referralCreditsToUse}`);
     } catch (error) {
       console.error('Checkout error:', error);
       alert(error.message || 'Failed to process checkout. Please try again.');

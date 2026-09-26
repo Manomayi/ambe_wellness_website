@@ -165,7 +165,7 @@ export default function DoctorHomePage() {
           <div className="flex items-center justify-between mb-4">
             <Link href="/doctor/home" className="inline-block">
               <Image
-                src="/images/logo/ambe_logo.png"
+                src="/images/logos/ambe_logo.png"
                 alt="Ambe Logo"
                 width={100}
                 height={32}

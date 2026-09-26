@@ -16,6 +16,7 @@ import {
   deleteDoc,
   writeBatch,
   serverTimestamp,
+  increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import {
@@ -80,9 +81,19 @@ export default function DoctorConsultationsPage() {
       };
 
       const docUpcomingRef = doc(db, 'doctors', doctorUid, 'appointments_upcoming', appointmentId);
-      const docHistoryRef = doc(db, 'doctors', doctorUid, 'appointments_history', appointmentId);
       batch.delete(docUpcomingRef);
-      batch.set(docHistoryRef, historyData, { merge: true });
+
+      if (resolvedStatus === "completed") {
+        const docReportsRef = doc(db, 'doctors', doctorUid, 'appointments_reports_to_finish', appointmentId);
+        batch.set(docReportsRef, historyData, { merge: true });
+        const doctorDocRef = doc(db, 'doctors', doctorUid);
+        batch.set(doctorDocRef, {
+          pending: { finish_report: increment(1) }
+        }, { merge: true });
+      } else {
+        const docHistoryRef = doc(db, 'doctors', doctorUid, 'appointments_history', appointmentId);
+        batch.set(docHistoryRef, historyData, { merge: true });
+      }
 
       if (userUid) {
         const userUpcomingRef = doc(db, 'users', userUid, 'appointments_upcoming', appointmentId);
@@ -183,43 +194,17 @@ export default function DoctorConsultationsPage() {
 
     const unsubscribeReports = onSnapshot(
       reportsCol,
-      async (snapshot) => {
+      (snapshot) => {
         const activeReports = [];
-        for (const docSnap of snapshot.docs) {
+        snapshot.docs.forEach((docSnap) => {
           const repData = docSnap.data();
           const repId = docSnap.id;
-          const candidateHistoryIds = [
-            repId,
-            decodeURIComponent(repId),
-            repData.appointment_id,
-            repData.original_appointment_id,
-            repData.consultation_id,
-            repData.document_id,
-          ].filter(Boolean);
-
-          let alreadyInHistory = repData.status === 'completed' || repData.consultation_outcome === 'completed';
-          if (!alreadyInHistory) {
-            for (const hId of candidateHistoryIds) {
-              try {
-                const hSnap = await getDoc(doc(db, 'doctors', user.uid, 'appointments_history', String(hId)));
-                if (hSnap.exists()) {
-                  alreadyInHistory = true;
-                  break;
-                }
-              } catch (_) {}
-            }
+          // Only filter out if the medical report was actually submitted
+          if (repData.report_submitted === true || repData.has_report === true) {
+            return;
           }
-
-          if (alreadyInHistory) {
-            // Self-healing: remove completed report left behind in appointments_reports_to_finish
-            console.log(`Auto-cleaning already completed report ${repId} from appointments_reports_to_finish`);
-            try {
-              await deleteDoc(doc(db, 'doctors', user.uid, 'appointments_reports_to_finish', repId));
-            } catch (_) {}
-          } else {
-            activeReports.push({ id: repId, ...repData });
-          }
-        }
+          activeReports.push({ id: repId, ...repData });
+        });
         setReportsToFinish(activeReports);
         setLoading(false);
       },

@@ -195,7 +195,12 @@ export default function PurchaseHistoryPage() {
 
     const now = new Date();
 
-    const items = purchasesRaw.map((data) => {
+    const items = purchasesRaw
+      .filter((data) => {
+        const t = (data.type || '').toLowerCase();
+        return !t.includes('contribution');
+      })
+      .map((data) => {
       const orderType = data.type || 'store';
       const rawTime = data.created_at || data.createdAt || data.created || data.timestamp;
       const date = parseDate(rawTime) || new Date();
