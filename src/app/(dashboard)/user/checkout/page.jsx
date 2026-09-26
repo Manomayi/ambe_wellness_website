@@ -456,14 +456,17 @@ export default function UserCheckoutPage() {
   return (
     <ProtectedRoute userType="user">
       <WebLayoutWrapper maxWidth="680px">
-        <div className="space-y-6 pb-36">
-          <div className="flex items-center gap-3 pt-1">
+        {/* Sticky Top Bar with Back Button and Checkout title */}
+        <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-6 border-b border-white/10 shadow-sm">
+          <div className="flex items-center gap-3">
             <AmbeBackButton href="/user/cart" />
             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
               Checkout
             </h1>
           </div>
+        </div>
 
+        <div className="space-y-6 pb-36">
           {/* Delivery Address Section */}
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white mb-2.5 font-sans">

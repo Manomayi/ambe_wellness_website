@@ -315,8 +315,19 @@ function ApplePayCheckoutForm({ clientSecret, paymentIntentId }) {
   return (
     <div className="space-y-4">
       {!applePayAvailable && (
-        <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-xs">
-          Apple Pay requires Safari on an Apple device (iPhone, iPad, or Mac) with an active card in Apple Wallet.
+        <div className="p-4 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-xs space-y-3">
+          <p>Apple Pay requires Safari on an Apple device (iPhone, iPad, or Mac) with an active card in Apple Wallet.</p>
+          <button
+            type="button"
+            onClick={() => {
+              const url = new URL(window.location.href);
+              url.searchParams.set("method", "stripe");
+              window.location.href = url.toString();
+            }}
+            className="w-full py-2.5 bg-[#FFD3AC] text-[#1E1E1E] font-semibold rounded-lg text-xs hover:bg-[#ffe0c4] transition cursor-pointer"
+          >
+            Pay with Credit / Debit Card Instead
+          </button>
         </div>
       )}
 

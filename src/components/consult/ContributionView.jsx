@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckIcon, ChevronLeftIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -102,6 +102,18 @@ export default function ContributionView({
   const [paypalProcessing, setPaypalProcessing] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showCheckoutModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showCheckoutModal]);
 
   const handleStartContribution = async (amount) => {
     if (!amount || amount <= 0) {
@@ -354,9 +366,18 @@ export default function ContributionView({
 
       {/* Payment Selection Modal */}
       {showCheckoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1E1E1E] border border-white/15 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-6">
-            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+        <div
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowCheckoutModal(false);
+          }}
+        >
+          <div
+            className="bg-[#1E1E1E] border border-white/15 rounded-t-3xl sm:rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] my-0 sm:my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-white/10 pb-4 shrink-0">
               <div>
                 <h3 className="font-serif text-2xl font-bold text-white">
                   Select Payment Method
@@ -368,88 +389,92 @@ export default function ContributionView({
               <button
                 type="button"
                 onClick={() => setShowCheckoutModal(false)}
-                className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10"
+                className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition"
+                aria-label="Close"
               >
                 ✕
               </button>
             </div>
 
-            {/* Method Tabs */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("card")}
-                className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
-                  paymentMethod === "card"
-                    ? "bg-[#FFD3AC] text-black font-semibold"
-                    : "bg-[#282828] text-white/70 hover:text-white"
-                }`}
-              >
-                Credit / Debit Card
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("paypal")}
-                className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
-                  paymentMethod === "paypal"
-                    ? "bg-[#FFD3AC] text-black font-semibold"
-                    : "bg-[#282828] text-white/70 hover:text-white"
-                }`}
-              >
-                PayPal
-              </button>
-            </div>
-
-            {paymentMethod === "card" ? (
-              loadingIntent || !clientSecret ? (
-                <div className="py-8 flex flex-col items-center justify-center gap-3 text-white/70">
-                  <ArrowPathIcon className="w-8 h-8 animate-spin text-[#FFD3AC]" />
-                  <p className="text-sm">Preparing secure checkout...</p>
-                </div>
-              ) : (
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret,
-                    appearance: {
-                      theme: "night",
-                      variables: {
-                        colorPrimary: "#FFD3AC",
-                        colorBackground: "#282828",
-                        colorText: "#ffffff",
-                      },
-                    },
-                  }}
-                >
-                  <StripeContributionCheckoutForm
-                    amount={activeAmount}
-                    paymentIntentId={paymentIntentId}
-                    user={user}
-                    doctorInfo={doctorInfo}
-                    onSuccess={(intentId) => handlePaymentCompleted(intentId, "card")}
-                    onError={(err) => setErrorMessage(err)}
-                  />
-                </Elements>
-              )
-            ) : (
-              <div className="space-y-4 py-4">
+            {/* Scrollable Modal Content */}
+            <div className="overflow-y-auto space-y-5 flex-1 pr-1 -mr-1 mt-4">
+              {/* Method Tabs */}
+              <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={handlePayPalCheckout}
-                  disabled={paypalProcessing}
-                  className="w-full bg-[#0070BA] hover:bg-[#005ea6] text-white font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2 shadow-lg"
+                  onClick={() => setPaymentMethod("card")}
+                  className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
+                    paymentMethod === "card"
+                      ? "bg-[#FFD3AC] text-black font-semibold"
+                      : "bg-[#282828] text-white/70 hover:text-white"
+                  }`}
                 >
-                  {paypalProcessing ? (
-                    <>
-                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      Connecting to PayPal...
-                    </>
-                  ) : (
-                    "Pay with PayPal"
-                  )}
+                  Credit / Debit Card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("paypal")}
+                  className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
+                    paymentMethod === "paypal"
+                      ? "bg-[#FFD3AC] text-black font-semibold"
+                      : "bg-[#282828] text-white/70 hover:text-white"
+                  }`}
+                >
+                  PayPal
                 </button>
               </div>
-            )}
+
+              {paymentMethod === "card" ? (
+                loadingIntent || !clientSecret ? (
+                  <div className="py-8 flex flex-col items-center justify-center gap-3 text-white/70">
+                    <ArrowPathIcon className="w-8 h-8 animate-spin text-[#FFD3AC]" />
+                    <p className="text-sm">Preparing secure checkout...</p>
+                  </div>
+                ) : (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret,
+                      appearance: {
+                        theme: "night",
+                        variables: {
+                          colorPrimary: "#FFD3AC",
+                          colorBackground: "#282828",
+                          colorText: "#ffffff",
+                        },
+                      },
+                    }}
+                  >
+                    <StripeContributionCheckoutForm
+                      amount={activeAmount}
+                      paymentIntentId={paymentIntentId}
+                      user={user}
+                      doctorInfo={doctorInfo}
+                      onSuccess={(intentId) => handlePaymentCompleted(intentId, "card")}
+                      onError={(err) => setErrorMessage(err)}
+                    />
+                  </Elements>
+                )
+              ) : (
+                <div className="space-y-4 py-4">
+                  <button
+                    type="button"
+                    onClick={handlePayPalCheckout}
+                    disabled={paypalProcessing}
+                    className="w-full bg-[#0070BA] hover:bg-[#005ea6] text-white font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    {paypalProcessing ? (
+                      <>
+                        <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                        Connecting to PayPal...
+                      </>
+                    ) : (
+                      "Pay with PayPal"
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -277,7 +277,29 @@ function ScheduleConsultationContent() {
   const [paymentIntentId, setPaymentIntentId] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [showContributionStep, setShowContributionStep] = useState(true);
+  const [currentStep, setCurrentStep] = useState("schedule"); // 'schedule' | 'contribution' | 'deposit'
+
+  const goToStep = (step, pushHistory = true) => {
+    setCurrentStep(step);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (pushHistory) {
+        window.history.pushState({ step }, "", window.location.href);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (e.state?.step) {
+        setCurrentStep(e.state.step);
+      } else {
+        setCurrentStep("schedule");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
 
   // Safe doctor UID resolution
@@ -476,12 +498,12 @@ function ScheduleConsultationContent() {
     }
   }, [selectedDate, doctorSchedule, bookedSlots, doctorTimezone, userTimezone, isInstantAvailable]);
 
-  // Load / create PaymentIntent whenever a slot is selected (only when not rescheduling)
+  // Load / create PaymentIntent whenever in deposit step (only when not rescheduling)
   useEffect(() => {
-    if (selectedSlot && user && !clientSecret && !isRescheduleParam) {
+    if (currentStep === "deposit" && selectedSlot && user && !clientSecret && !isRescheduleParam) {
       initializePaymentIntent();
     }
-  }, [selectedSlot, user, isRescheduleParam, clientSecret]);
+  }, [currentStep, selectedSlot, user, isRescheduleParam, clientSecret]);
 
   const loadDoctorInfo = async (docUid) => {
     try {
@@ -833,6 +855,14 @@ function ScheduleConsultationContent() {
       const finalIntentId = effectiveIntentId || `deposit_${Date.now()}`;
 
       // 4. Ensure payment_id is linked back to the upcoming appointment and shared consultation doc
+      const pendingContrib = profile?.pending_contribution;
+      const effectiveContribId = isWaived
+        ? (intentId || '')
+        : (pendingContrib?.id || pendingContrib?.paymentId || null);
+      const effectiveContribAmount = isWaived
+        ? contribAmount
+        : (pendingContrib?.amount ? Number(pendingContrib.amount) : null);
+
       try {
         await setDoc(
           doc(db, 'users', user.uid, 'appointments_upcoming', finalApptId),
@@ -841,7 +871,8 @@ function ScheduleConsultationContent() {
             payment_intent_id: finalIntentId,
             doctor_name: finalDocName,
             deposit_waived: isWaived,
-            ...(isWaived ? { contribution_id: finalIntentId, contribution_amount: contribAmount } : {}),
+            deposit_amount: isWaived ? 0.0 : 50.00,
+            ...(effectiveContribId ? { contribution_id: effectiveContribId, contribution_amount: effectiveContribAmount } : {}),
           },
           { merge: true }
         );
@@ -854,7 +885,8 @@ function ScheduleConsultationContent() {
               payment_intent_id: finalIntentId,
               doctor_name: finalDocName,
               deposit_waived: isWaived,
-              ...(isWaived ? { contribution_id: finalIntentId, contribution_amount: contribAmount } : {}),
+              deposit_amount: isWaived ? 0.0 : 50.00,
+              ...(effectiveContribId ? { contribution_id: effectiveContribId, contribution_amount: effectiveContribAmount } : {}),
             },
             { merge: true }
           );
@@ -875,7 +907,7 @@ function ScheduleConsultationContent() {
             payment_intent_id: finalIntentId,
             deposit_amount: isWaived ? 0.0 : 50.00,
             deposit_waived: isWaived,
-            ...(isWaived ? { contribution_id: finalIntentId, contribution_amount: contribAmount } : {}),
+            ...(effectiveContribId ? { contribution_id: effectiveContribId, contribution_amount: effectiveContribAmount } : {}),
             created_at: serverTimestamp(),
           },
           { merge: true }
@@ -1023,6 +1055,37 @@ function ScheduleConsultationContent() {
     } finally {
       setScheduling(false);
     }
+  };
+
+  const handleProceedFromSchedule = async () => {
+    if (!selectedSlot) return;
+
+    if (isRescheduleParam) {
+      await handleConfirmReschedule();
+      return;
+    }
+
+    // Check if user already has a pending contribution
+    const pendingContrib = profile?.pending_contribution;
+    if (pendingContrib) {
+      const amount = Number(pendingContrib.amount) || 0;
+      const waived = Boolean(pendingContrib.waivedDeposit || amount >= 20);
+      if (waived) {
+        // Amount >= 20: Deposit waived! Book directly
+        await handlePaymentSuccessAndSchedule(
+          pendingContrib.id || pendingContrib.paymentId,
+          { waivedDeposit: true, contributionAmount: amount }
+        );
+        return;
+      } else {
+        // Amount < 20: Contribution already paid, open deposit page directly
+        goToStep("deposit");
+        return;
+      }
+    }
+
+    // Fresh booking: Open contribution page
+    goToStep("contribution");
   };
 
   const handleCheckInstantAvailability = async () => {
@@ -1301,13 +1364,28 @@ function ScheduleConsultationContent() {
         <div className="space-y-6 pb-16">
           {/* Sticky Header with AmbeBackButton */}
           <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm flex items-center gap-4">
-            <AmbeBackButton onClick={() => router.push('/user/consult')} />
+            <AmbeBackButton
+              onClick={() => {
+                if (currentStep === "schedule") {
+                  router.push('/user/consult');
+                } else {
+                  goToStep("schedule");
+                }
+              }}
+            />
             <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-              {isRescheduleParam ? "Reschedule Consultation" : "Schedule Consultation"}
+              {currentStep === "deposit"
+                ? "Consultation Deposit"
+                : isRescheduleParam
+                ? "Reschedule Consultation"
+                : "Schedule Consultation"}
             </h1>
           </div>
 
           <div className="max-w-xl mx-auto space-y-6">
+            {/* SCREEN 1: Date & Slot Selection */}
+            {currentStep === "schedule" && (
+              <div className="space-y-6">
             {/* Sleek Doctor Info Pill */}
             {doctorDisplayName && (
               <div className="flex items-center justify-between px-1 text-xs text-white/70">
@@ -1425,13 +1503,7 @@ function ScheduleConsultationContent() {
                         <button
                           key="instant"
                           type="button"
-                          onClick={() => {
-                            setSelectedSlot(slot);
-                            setTimeout(() => {
-                              const el = document.getElementById('payment-section');
-                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }, 100);
-                          }}
+                          onClick={() => setSelectedSlot(slot)}
                           className={`h-12 rounded-2xl flex items-center justify-center gap-1.5 transition font-semibold text-xs border-2 cursor-pointer ${
                             isSelected
                               ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]'
@@ -1448,13 +1520,7 @@ function ScheduleConsultationContent() {
                       <button
                         key={index}
                         type="button"
-                        onClick={() => {
-                          setSelectedSlot(slot);
-                          setTimeout(() => {
-                            const el = document.getElementById('payment-section');
-                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 100);
-                        }}
+                        onClick={() => setSelectedSlot(slot)}
                         className={`h-12 rounded-2xl flex flex-col items-center justify-center transition border cursor-pointer ${
                           isSelected
                             ? 'bg-[#FFD3AC] border-2 border-[#FFD3AC] text-[#1E1E1E] font-bold shadow-[0_0_14px_rgba(255,211,172,0.45)]'
@@ -1478,253 +1544,277 @@ function ScheduleConsultationContent() {
               )}
             </div>
 
-            {/* Booking / Payment / Reschedule Section */}
-            {selectedSlot && (
-              <div id="payment-section" className="scroll-mt-24 bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-md space-y-6 text-white">
-                <h3 className="font-bold text-xl text-white">
-                  {isRescheduleParam ? "Confirm Rescheduled Slot" : "Confirm Consultation & Pay Deposit"}
-                </h3>
-
-                {/* Summary Details */}
-                <div className="grid sm:grid-cols-3 gap-4 p-4 bg-black/30 border border-white/10 rounded-xl text-xs text-white">
-                  <div>
-                    <span className="text-white/60 block font-medium">Doctor</span>
-                    <strong className="text-sm font-semibold">{doctorDisplayName}</strong>
-                  </div>
-                  <div>
-                    <span className="text-white/60 block font-medium">
-                      {isRescheduleParam ? "New Date & Time" : "Date & Time"}
-                    </span>
-                    <strong className="text-sm font-semibold text-[#FFD3AC]">
-                      {selectedSlot.isInstant 
-                        ? "Available Now (Immediate)" 
-                        : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-white/60 block font-medium">Deposit Fee</span>
-                    <strong className={`text-sm font-semibold ${isRescheduleParam ? "text-emerald-400" : "text-[#FFD3AC]"}`}>
-                      {isRescheduleParam ? "Previously Paid ($50.00)" : "$50.00 USD"}
-                    </strong>
-                  </div>
-                </div>
-
-                {isRescheduleParam ? (
-                  /* Reschedule Mode: No New Deposit Charged */
-                  <div className="space-y-6 pt-2">
-                    <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">
-                      <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
-                        <ShieldCheckIcon className="w-5 h-5" />
-                        Reschedule Policy
-                      </div>
-                      <p className="leading-relaxed text-white/80">
-                        Your original <strong>$50 deposit</strong> remains securely applied to this appointment. You do not need to pay anything additional to reschedule your slot.
-                      </p>
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        onClick={handleConfirmReschedule}
-                        disabled={scheduling}
-                        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer"
-                      >
-                        {scheduling ? "Updating Appointment..." : "Confirm Rescheduled Slot"}
-                      </button>
-                    </div>
-                  </div>
-                ) : profile?.pending_contribution && (profile.pending_contribution.waivedDeposit || Number(profile.pending_contribution.amount) >= 20) ? (
-                  /* Existing Pending Contribution >= $20: Deposit Waived */
-                  <div className="space-y-6 pt-2">
-                    <div className="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-5 space-y-2 text-xs text-white">
-                      <div className="flex items-center gap-2 font-bold text-sm text-emerald-400">
-                        <ShieldCheckIcon className="w-5 h-5" />
-                        Consultation Deposit Waived
-                      </div>
-                      <p className="leading-relaxed text-white/85">
-                        You have already made a contribution of <strong>${profile.pending_contribution.amount}</strong> for your consultation. Your deposit is waived and no additional payment is required!
-                      </p>
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handlePaymentSuccessAndSchedule(
-                            profile.pending_contribution.id || profile.pending_contribution.paymentId,
-                            { waivedDeposit: true, contributionAmount: profile.pending_contribution.amount }
-                          )
-                        }
-                        disabled={scheduling}
-                        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer"
-                      >
-                        {scheduling ? "Confirming Appointment..." : "Confirm & Book Consultation"}
-                      </button>
-                    </div>
-                  </div>
-                ) : showContributionStep ? (
-                  /* Contribution Screen 1: Choose Your Contribution */
-                  <ContributionView
-                    user={user}
-                    doctorInfo={doctorInfo}
-                    selectedSlot={selectedSlot}
-                    isTestMode={isTestMode}
-                    stripePromise={stripePromise}
-                    onSuccessSchedule={(paymentId, amount) =>
-                      handlePaymentSuccessAndSchedule(paymentId, { waivedDeposit: true, contributionAmount: amount })
-                    }
-                    onProceedToDeposit={() => {
-                      setShowContributionStep(false);
-                    }}
-                    onBack={() => setSelectedSlot(null)}
-                  />
-                ) : (
-                  /* Standard $50 Deposit Flow (when contribution <= 20) */
+            {/* Bottom Action Button: Schedule Appointment */}
+            <div className="pt-4 pb-6">
+              <button
+                type="button"
+                disabled={!selectedSlot || scheduling}
+                onClick={handleProceedFromSchedule}
+                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm tracking-wider uppercase transition shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {scheduling ? (
                   <>
-                    {/* Deposit & Refund Policy Card */}
-                    <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-xl p-5 space-y-2 text-xs text-white">
-                      <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
-                        <ShieldCheckIcon className="w-5 h-5" />
-                        Deposit & Refund Policy
-                      </div>
-                      <p className="leading-relaxed text-white/80">
-                        A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-white/70 pt-1">
-                        <li>
-                          <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
-                          <a 
-                            href="mailto:info@ambewellness.com" 
-                            className="font-semibold text-[#FFD3AC] underline hover:text-white"
-                          >
-                            info@ambewellness.com
-                          </a>{' '}
-                          within 30 days of the appointment date.
-                        </li>
-                        <li>
-                          <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
-                        </li>
-                      </ul>
-                    </div>
-
-                    {/* Payment Method Selector */}
-                    <div className="pt-4 border-t border-white/10">
-                      <PaymentMethodSelector
-                        selectedMethod={paymentMethod}
-                        onSelectMethod={(method) => {
-                          setPaymentMethod(method);
-                          if ((method === "stripe" || method === "apple_pay") && !clientSecret && !paymentLoading) {
-                            initializePaymentIntent();
-                          }
-                        }}
-                        isTestMode={isTestMode}
-                        disabled={scheduling || paymentLoading || paypalProcessing}
-                      />
-                    </div>
-
-                    {paymentMethod === "stripe" ? (
-                      /* Stripe Card Payment Sheet */
-                      <div className="pt-3">
-                        <h4 className="font-sans font-semibold text-sm text-white mb-3">Enter Card Details</h4>
-                        {paymentLoading || !clientSecret || !stripePromise ? (
-                          <div className="py-8 flex flex-col items-center justify-center space-y-2">
-                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
-                            <p className="text-xs text-white/60">Loading secure payment sheet...</p>
-                          </div>
-                        ) : (
-                          <Elements
-                            stripe={stripePromise}
-                            options={{
-                              clientSecret,
-                              appearance: {
-                                theme: 'night',
-                                variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
-                              }
-                            }}
-                          >
-                            <ConsultationPaymentForm
-                              user={user}
-                              doctorInfo={doctorInfo}
-                              selectedSlot={selectedSlot}
-                              selectedDate={selectedDate}
-                              paymentIntentId={paymentIntentId}
-                              onSuccess={handlePaymentSuccessAndSchedule}
-                            />
-                          </Elements>
-                        )}
-                      </div>
-                    ) : paymentMethod === "apple_pay" ? (
-                      /* Apple Pay Flow */
-                      <div className="pt-3">
-                        <h4 className="font-sans font-semibold text-sm text-white mb-3">Pay with Apple Pay</h4>
-                        {paymentLoading || !clientSecret || !stripePromise ? (
-                          <div className="py-8 flex flex-col items-center justify-center space-y-2">
-                            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
-                            <p className="text-xs text-white/60">Loading Apple Pay...</p>
-                          </div>
-                        ) : (
-                          <Elements
-                            stripe={stripePromise}
-                            options={{
-                              clientSecret,
-                              appearance: {
-                                theme: 'night',
-                                variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
-                              }
-                            }}
-                          >
-                            <ConsultationApplePayForm
-                              user={user}
-                              doctorInfo={doctorInfo}
-                              selectedSlot={selectedSlot}
-                              selectedDate={selectedDate}
-                              paymentIntentId={paymentIntentId}
-                              onSuccess={handlePaymentSuccessAndSchedule}
-                            />
-                          </Elements>
-                        )}
-                      </div>
-                    ) : (
-                      /* PayPal Deposit Flow */
-                      <div className="pt-3 space-y-4">
-                        <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between text-xs text-white">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center font-bold text-lg">
-                              <span className="font-serif italic">P</span>
-                            </div>
-                            <div>
-                              <p className="font-semibold text-sm text-white">PayPal Checkout</p>
-                              <p className="text-white/60">Secure $50 deposit via your PayPal account or PayPal card</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={handlePayPalDeposit}
-                          disabled={scheduling || paypalProcessing}
-                          className="w-full bg-[#0070BA] hover:bg-[#003087] text-white py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          {paypalProcessing ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                              Processing with PayPal...
-                            </>
-                          ) : (
-                            "Pay $50 Deposit with PayPal"
-                          )}
-                        </button>
-                      </div>
-                    )}
+                    <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                    Processing...
                   </>
+                ) : isRescheduleParam ? (
+                  "Confirm Rescheduled Slot"
+                ) : (
+                  "SCHEDULE APPOINTMENT"
                 )}
+              </button>
+              {!selectedSlot && (
+                <p className="text-center text-xs text-white/40 mt-2">
+                  Please select a time slot above to continue
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
-                {bookingSuccess && (
-                  <div className="p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-center text-emerald-300 text-sm font-semibold">
-                    ✓ {isRescheduleParam ? "Consultation rescheduled successfully! Redirecting to your dashboard..." : "Consultation booked successfully! Redirecting to your dashboard..."}
-                  </div>
-                )}
+        {/* SCREEN 2: Dedicated Contribution Page */}
+        {currentStep === "contribution" && selectedSlot && (
+          <div className="space-y-6">
+            {/* Appointment Summary Strip */}
+            <div className="bg-[#2D2D30]/80 border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
+              <div>
+                <span className="text-white/60 block font-medium">Doctor</span>
+                <strong className="text-sm text-white font-semibold">{doctorDisplayName}</strong>
+              </div>
+              <div>
+                <span className="text-white/60 block font-medium">Selected Slot</span>
+                <strong className="text-sm text-[#FFD3AC] font-semibold">
+                  {selectedSlot.isInstant 
+                    ? "Available Now (Immediate)" 
+                    : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
+                </strong>
+              </div>
+              <div>
+                <span className="text-white/60 block font-medium">Duration</span>
+                <strong className="text-sm text-white font-semibold">15 Minutes</strong>
+              </div>
+            </div>
+
+            {/* Contribution View */}
+            <ContributionView
+              user={user}
+              doctorInfo={doctorInfo}
+              selectedSlot={selectedSlot}
+              isTestMode={isTestMode}
+              stripePromise={stripePromise}
+              onSuccessSchedule={(paymentId, amount) =>
+                handlePaymentSuccessAndSchedule(paymentId, { waivedDeposit: true, contributionAmount: amount })
+              }
+              onProceedToDeposit={() => {
+                goToStep("deposit");
+              }}
+              onBack={() => goToStep("schedule")}
+            />
+          </div>
+        )}
+
+        {/* SCREEN 3: Dedicated Deposit Page */}
+        {currentStep === "deposit" && selectedSlot && (
+          <div className="space-y-6">
+            {/* Notice if pre-consultation contribution was paid */}
+            {profile?.pending_contribution && (
+              <div className="bg-[#FFD3AC]/10 border border-[#FFD3AC]/30 rounded-2xl p-4 sm:p-5 flex items-start gap-3 text-xs sm:text-sm text-white">
+                <ShieldCheckIcon className="w-5 h-5 text-[#FFD3AC] shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-[#FFD3AC]">Contribution Received</p>
+                  <p className="text-white/80 mt-0.5 leading-relaxed">
+                    Your pre-consultation contribution of <strong>${profile.pending_contribution.amount} USD</strong> has been received. Please complete the $50 refundable deposit below to hold your appointment.
+                  </p>
+                </div>
               </div>
             )}
+
+            {/* Appointment Summary Details Card */}
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md space-y-4">
+              <h3 className="font-bold text-base text-white border-b border-white/10 pb-3">
+                Appointment Summary
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span className="text-white/60 block font-medium">Doctor</span>
+                  <strong className="text-sm font-semibold text-white">{doctorDisplayName}</strong>
+                </div>
+                <div>
+                  <span className="text-white/60 block font-medium">Date & Time</span>
+                  <strong className="text-sm font-semibold text-[#FFD3AC]">
+                    {selectedSlot.isInstant 
+                      ? "Available Now (Immediate)" 
+                      : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-white/60 block font-medium">Duration</span>
+                  <strong className="text-sm font-semibold text-white">15 Minutes</strong>
+                </div>
+                <div>
+                  <span className="text-white/60 block font-medium">Deposit Fee</span>
+                  <strong className="text-sm font-semibold text-[#FFD3AC]">$50.00 USD</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Deposit & Refund Policy Card */}
+            <div className="bg-white/5 border border-[#FFD3AC]/30 rounded-2xl p-5 space-y-2 text-xs text-white">
+              <div className="flex items-center gap-2 font-bold text-sm text-[#FFD3AC]">
+                <ShieldCheckIcon className="w-5 h-5" />
+                Deposit & Refund Policy
+              </div>
+              <p className="leading-relaxed text-white/80">
+                A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-white/70 pt-1">
+                <li>
+                  <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
+                  <a 
+                    href="mailto:info@ambewellness.com" 
+                    className="font-semibold text-[#FFD3AC] underline hover:text-white"
+                  >
+                    info@ambewellness.com
+                  </a>{' '}
+                  within 30 days of the appointment date.
+                </li>
+                <li>
+                  <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.
+                </li>
+                <li>
+                  Remedies and custom products are chosen separately after your consultation — nothing else is charged today.
+                </li>
+              </ul>
+            </div>
+
+            {/* Security Badge */}
+            <div className="flex items-center gap-3 p-4 bg-black/20 border border-white/5 rounded-2xl text-xs text-white/70">
+              <div className="w-9 h-9 rounded-full bg-[#FFD3AC]/15 flex items-center justify-center shrink-0">
+                <ShieldCheckIcon className="w-5 h-5 text-[#FFD3AC]" />
+              </div>
+              <div>
+                <p className="font-semibold text-white">Processed Securely</p>
+                <p className="text-white/60">Your payment details are encrypted and never stored on our servers.</p>
+              </div>
+            </div>
+
+            {/* Payment Section */}
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md space-y-6">
+              <PaymentMethodSelector
+                selectedMethod={paymentMethod}
+                onSelectMethod={(method) => {
+                  setPaymentMethod(method);
+                  if ((method === "stripe" || method === "apple_pay") && !clientSecret && !paymentLoading) {
+                    initializePaymentIntent();
+                  }
+                }}
+                isTestMode={isTestMode}
+                disabled={scheduling || paymentLoading || paypalProcessing}
+              />
+
+              {paymentMethod === "stripe" ? (
+                /* Stripe Card Payment Sheet */
+                <div className="pt-3">
+                  <h4 className="font-sans font-semibold text-sm text-white mb-3">Enter Card Details</h4>
+                  {paymentLoading || !clientSecret || !stripePromise ? (
+                    <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
+                      <p className="text-xs text-white/60">Loading secure payment sheet...</p>
+                    </div>
+                  ) : (
+                    <Elements
+                      stripe={stripePromise}
+                      options={{
+                        clientSecret,
+                        appearance: {
+                          theme: 'night',
+                          variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
+                        }
+                      }}
+                    >
+                      <ConsultationPaymentForm
+                        user={user}
+                        doctorInfo={doctorInfo}
+                        selectedSlot={selectedSlot}
+                        selectedDate={selectedDate}
+                        paymentIntentId={paymentIntentId}
+                        onSuccess={handlePaymentSuccessAndSchedule}
+                      />
+                    </Elements>
+                  )}
+                </div>
+              ) : paymentMethod === "apple_pay" ? (
+                /* Apple Pay Flow */
+                <div className="pt-3">
+                  <h4 className="font-sans font-semibold text-sm text-white mb-3">Pay with Apple Pay</h4>
+                  {paymentLoading || !clientSecret || !stripePromise ? (
+                    <div className="py-8 flex flex-col items-center justify-center space-y-2">
+                      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
+                      <p className="text-xs text-white/60">Loading Apple Pay...</p>
+                    </div>
+                  ) : (
+                    <Elements
+                      stripe={stripePromise}
+                      options={{
+                        clientSecret,
+                        appearance: {
+                          theme: 'night',
+                          variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
+                        }
+                      }}
+                    >
+                      <ConsultationApplePayForm
+                        user={user}
+                        doctorInfo={doctorInfo}
+                        selectedSlot={selectedSlot}
+                        selectedDate={selectedDate}
+                        paymentIntentId={paymentIntentId}
+                        onSuccess={handlePaymentSuccessAndSchedule}
+                      />
+                    </Elements>
+                  )}
+                </div>
+              ) : (
+                /* PayPal Deposit Flow */
+                <div className="pt-3 space-y-4">
+                  <div className="p-4 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between text-xs text-white">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#003087] text-white flex items-center justify-center font-bold text-lg">
+                        <span className="font-serif italic">P</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-white">PayPal Checkout</p>
+                        <p className="text-white/60">Secure $50 deposit via your PayPal account or PayPal card</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handlePayPalDeposit}
+                    disabled={scheduling || paypalProcessing}
+                    className="w-full bg-[#0070BA] hover:bg-[#003087] text-white py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {paypalProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        Processing with PayPal...
+                      </>
+                    ) : (
+                      "Pay $50 Deposit with PayPal"
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {bookingSuccess && (
+              <div className="p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-center text-emerald-300 text-sm font-semibold">
+                ✓ Consultation booked successfully! Redirecting to your dashboard...
+              </div>
+            )}
+          </div>
+        )}
           </div>
         </div>
       </WebLayoutWrapper>
