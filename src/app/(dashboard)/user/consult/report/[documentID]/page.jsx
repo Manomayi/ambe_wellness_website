@@ -130,6 +130,24 @@ export default function ConsultationReportPage() {
           } catch (e) {}
         }
 
+        // If deposit metadata is missing from history doc, merge from root consultations
+        if (foundData && foundData.deposit_waived === undefined && foundData.deposit_amount === undefined) {
+          const masterId = foundData.appointment_id || foundData.consultation_id || documentID;
+          try {
+            const consultSnap = await getDoc(doc(db, 'consultations', masterId));
+            if (consultSnap.exists() && consultSnap.data()) {
+              const cData = consultSnap.data();
+              foundData = {
+                ...foundData,
+                deposit_waived: cData.deposit_waived,
+                deposit_amount: cData.deposit_amount,
+                deposit_paid: cData.deposit_paid,
+                contribution_amount: cData.contribution_amount,
+              };
+            }
+          } catch (_) {}
+        }
+
         setData(foundData);
       } catch (err) {
         console.error('Error fetching consultation report:', err);
@@ -386,6 +404,20 @@ export default function ConsultationReportPage() {
 
   const statusInfo = getConsultationStatusInfo(data);
 
+  const hasDepositPaid = (item) => {
+    if (!item) return false;
+    if (item.deposit_waived === true) return false;
+    const rawAmount = item.deposit_amount ?? item.deposit_paid;
+    if (typeof rawAmount === 'number' && rawAmount <= 0) return false;
+    const contribAmount = Number(item.contribution_amount);
+    if (!isNaN(contribAmount) && contribAmount >= 20 && item.deposit_waived !== false) {
+      if (rawAmount === undefined || rawAmount === null || Number(rawAmount) <= 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   return (
     <WebLayoutWrapper>
       <div className="space-y-6 pb-24">
@@ -447,24 +479,29 @@ export default function ConsultationReportPage() {
             <h2 className="text-xl font-bold text-white mb-2">Consultation Cancelled</h2>
             <p className="text-sm text-white/70 max-w-lg mx-auto mb-6 leading-relaxed">
               {statusInfo.statusKey === 'cancelled_by_doctor'
-                ? 'This consultation was cancelled by the healthcare provider. You are eligible for a 100% full refund on your deposit or you may schedule a new consultation with another doctor.'
-                : 'This consultation was cancelled by you. No clinical report or wellness protocol is generated for cancelled consultations. If eligible under our cancellation policy, you can view and claim your deposit refund in the Refunds section.'}
+                ? hasDepositPaid(data)
+                  ? 'This consultation was cancelled by the healthcare provider. You are eligible for a 100% full refund on your deposit.'
+                  : 'This consultation was cancelled by the healthcare provider.'
+                : hasDepositPaid(data)
+                  ? 'This consultation was cancelled by you. No clinical report or wellness protocol is generated for cancelled consultations. If eligible under our cancellation policy, you can view and claim your deposit refund in the Refunds section.'
+                  : 'This consultation was cancelled. No clinical report or wellness protocol is generated for cancelled consultations.'}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
+              {hasDepositPaid(data) && (
+                <Link
+                  href="/user/menu/refunds"
+                  style={{ color: '#1E1E1E' }}
+                  className="inline-flex items-center gap-2 bg-[#FFD3AC] hover:bg-[#ffe0c4] !text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold transition shadow-md"
+                >
+                  <InformationCircleIcon className="w-4 h-4 !text-[#1E1E1E]" />
+                  <span className="!text-[#1E1E1E] font-bold">View Refund Status</span>
+                </Link>
+              )}
               <Link
-                href="/user/menu/refunds"
-                style={{ color: '#1E1E1E' }}
-                className="inline-flex items-center gap-2 bg-[#FFD3AC] hover:bg-[#ffe0c4] !text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold transition shadow-md"
+                href="/user/consult"
+                className="inline-flex items-center gap-2 bg-white/10 border border-white/15 hover:border-[#FFD3AC] text-white px-5 py-2.5 rounded-full text-xs font-bold transition"
               >
-                <InformationCircleIcon className="w-4 h-4 !text-[#1E1E1E]" />
-                <span className="!text-[#1E1E1E] font-bold">View Refund Status</span>
-              </Link>
-              <Link
-                href="/user/consult/schedule"
-                className="inline-flex items-center gap-2 bg-white/10 border border-white/15 hover:border-[#FFD3AC] px-5 py-2.5 rounded-full text-xs font-bold text-white transition"
-              >
-                <CalendarDaysIcon className="w-4 h-4 text-[#FFD3AC]" />
-                Book New Consultation
+                Return to Consultations
               </Link>
             </div>
           </div>
@@ -479,24 +516,31 @@ export default function ConsultationReportPage() {
             </h2>
             <p className="text-sm text-white/70 max-w-lg mx-auto mb-6 leading-relaxed">
               {statusInfo.statusKey === 'doctor_absent'
-                ? 'Your assigned doctor was unable to attend the scheduled video consultation. Under our policy, you are entitled to a 100% full refund of your deposit, or you can reschedule at your convenience.'
-                : 'This video consultation was missed because the session was not attended. As per our missed consultation policy, no personalized wellness protocol is generated, and you are eligible for a 50% deposit refund ($25.00 USD).'}
+                ? hasDepositPaid(data)
+                  ? 'Your assigned doctor was unable to attend the scheduled video consultation. Under our policy, you are entitled to a 100% full refund of your deposit.'
+                  : 'Your assigned doctor was unable to attend the scheduled video consultation.'
+                : hasDepositPaid(data)
+                  ? 'This video consultation was missed because the session was not attended. As per our missed consultation policy, no personalized wellness protocol is generated, and you are eligible for a 50% deposit refund ($25.00 USD).'
+                  : 'This video consultation was missed because the session was not attended. Under our consultation policy, no personalized wellness protocol is generated.'}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
+              {hasDepositPaid(data) && (
+                <Link
+                  href="/user/menu/refunds"
+                  style={{ color: '#1E1E1E' }}
+                  className="inline-flex items-center gap-2 bg-[#FFD3AC] hover:bg-[#ffe0c4] !text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold transition shadow-md"
+                >
+                  <InformationCircleIcon className="w-4 h-4 !text-[#1E1E1E]" />
+                  <span className="!text-[#1E1E1E] font-bold">
+                    {statusInfo.statusKey === 'doctor_absent' ? 'Claim 100% Refund' : 'Claim 50% Refund'}
+                  </span>
+                </Link>
+              )}
               <Link
-                href="/user/menu/refunds"
-                style={{ color: '#1E1E1E' }}
-                className="inline-flex items-center gap-2 bg-[#FFD3AC] hover:bg-[#ffe0c4] !text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold transition shadow-md"
+                href="/user/consult"
+                className="inline-flex items-center gap-2 bg-white/10 border border-white/15 hover:border-[#FFD3AC] text-white px-5 py-2.5 rounded-full text-xs font-bold transition"
               >
-                <InformationCircleIcon className="w-4 h-4 !text-[#1E1E1E]" />
-                <span className="!text-[#1E1E1E] font-bold">Claim 50% Refund</span>
-              </Link>
-              <Link
-                href="/user/consult/schedule"
-                className="inline-flex items-center gap-2 bg-white/10 border border-white/15 hover:border-[#FFD3AC] px-5 py-2.5 rounded-full text-xs font-bold text-white transition"
-              >
-                <CalendarDaysIcon className="w-4 h-4 text-[#FFD3AC]" />
-                Schedule Consultation
+                Return to Consultations
               </Link>
             </div>
           </div>

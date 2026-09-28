@@ -18,6 +18,7 @@ import {
   VideoCameraSlashIcon,
 } from '@heroicons/react/24/outline';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
+import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverlay';
 
 // Agora requires a numeric UID, but Firebase Auth UIDs are strings — this
 // deterministically derives a stable positive integer from a UID string
@@ -68,6 +69,7 @@ export default function VideoCall({
   const [isRetryingPermissions, setIsRetryingPermissions] = useState(false);
   const [showEndCallModal, setShowEndCallModal] = useState(false);
   const [showBackModal, setShowBackModal] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -137,6 +139,7 @@ export default function VideoCall({
   const handleRemoteCallEnd = async (remoteData = {}) => {
     if (callEndedRef.current) return;
     callEndedRef.current = true;
+    setIsLeaving(true);
     console.log('[VideoCall] Terminating session and navigating away');
     await releaseLocalResources();
     const endedByDoctor = remoteData?.call_ended_by ? remoteData.call_ended_by === 'doctor' : !isDoctor;
@@ -147,6 +150,7 @@ export default function VideoCall({
   const endCall = async () => {
     if (callEndedRef.current) return;
     callEndedRef.current = true;
+    setIsLeaving(true);
 
     try {
       await setDoc(
@@ -547,6 +551,16 @@ export default function VideoCall({
       }
     }
   };
+
+  if (isLeaving) {
+    return (
+      <PaymentProcessingOverlay
+        icon="call"
+        title="Ending Consultation"
+        subtitle="Please wait..."
+      />
+    );
+  }
 
   const callContent = (
     <div className="fixed inset-0 bg-black z-[9999] flex flex-col overflow-hidden select-none">

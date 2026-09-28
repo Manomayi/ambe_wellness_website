@@ -11,6 +11,7 @@ import { db } from '@/lib/firebase/config';
 import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
+import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverlay';
 
 export default function UserAppointmentPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function UserAppointmentPage() {
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inCall, setInCall] = useState(false);
+  const [isEndingCall, setIsEndingCall] = useState(false);
 
   useEffect(() => {
     if (user && params.id) {
@@ -59,6 +61,7 @@ export default function UserAppointmentPage() {
   };
 
   const handleCallEnd = async ({ endedByDoctor } = {}) => {
+    setIsEndingCall(true);
     setInCall(false);
 
     // Resolve doctor UID from appointment or user profile
@@ -203,25 +206,30 @@ export default function UserAppointmentPage() {
           ...(appointment?.payment_intent_id ? { payment_intent_id: appointment.payment_intent_id } : {}),
         };
 
+        // 1. Delete upcoming appointment for doctor FIRST (patient is authorized to delete their own upcoming appointment)
+        await deleteDoc(doc(db, 'doctors', doctorUid, 'appointments_upcoming', params.id)).catch((err) => {
+          console.warn('Could not delete doctor upcoming appointment:', err);
+        });
+
+        // 2. Patient also attempts to write reports_to_finish or history (safely catch permission errors)
         if (outcomeStatus === 'completed') {
           await setDoc(
             doc(db, 'doctors', doctorUid, 'appointments_reports_to_finish', params.id),
             doctorReportData,
             { merge: true }
-          );
+          ).catch(() => {});
           await setDoc(
             doc(db, 'doctors', doctorUid),
             { pending: { finish_report: increment(1) } },
             { merge: true }
-          );
+          ).catch(() => {});
         } else {
           await setDoc(
             doc(db, 'doctors', doctorUid, 'appointments_history', params.id),
             doctorReportData,
             { merge: true }
-          );
+          ).catch(() => {});
         }
-        await deleteDoc(doc(db, 'doctors', doctorUid, 'appointments_upcoming', params.id)).catch(() => {});
       } catch (error) {
         console.warn('Error updating doctor appointment records:', error);
       }
@@ -232,7 +240,7 @@ export default function UserAppointmentPage() {
     if (doctorName) query.set('doctorName', doctorName);
     if (params.id) query.set('appointmentId', params.id);
 
-    router.push(`/user/consult/feedback?${query.toString()}`);
+    router.replace(`/user/consult/feedback?${query.toString()}`);
   };
 
   const formatAppointmentTime = (timestamp) => {
@@ -276,6 +284,18 @@ export default function UserAppointmentPage() {
             </button>
           </div>
         </WebLayoutWrapper>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isEndingCall) {
+    return (
+      <ProtectedRoute userType="user">
+        <PaymentProcessingOverlay
+          icon="call"
+          title="Ending Consultation"
+          subtitle="Finalizing consultation details..."
+        />
       </ProtectedRoute>
     );
   }

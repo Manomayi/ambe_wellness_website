@@ -12,6 +12,7 @@ import BackButton from '@/components/common/BackButton';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import { ClockIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
+import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverlay';
 
 export default function DoctorAppointmentPage() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function DoctorAppointmentPage() {
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inCall, setInCall] = useState(false);
+  const [isEndingCall, setIsEndingCall] = useState(false);
 
   useEffect(() => {
     if (user && params.id) {
@@ -60,6 +62,7 @@ export default function DoctorAppointmentPage() {
   };
 
   const handleCallEnd = async ({ endedByDoctor } = {}) => {
+    setIsEndingCall(true);
     setInCall(false);
 
     const patientUid = appointment?.user_id || appointment?.user_uid || appointment?.userId;
@@ -223,7 +226,7 @@ export default function DoctorAppointmentPage() {
       userName: appointment?.user_name || '',
       time: String(timeMillis),
     });
-    router.push(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
+    router.replace(`/doctor/consultations/complete-report/${params.id}?${query.toString()}`);
   };
 
   const formatAppointmentTime = (timestamp) => {
@@ -265,6 +268,18 @@ export default function DoctorAppointmentPage() {
             Back to Consultations
           </button>
         </div>
+      </ProtectedRoute>
+    );
+  }
+
+  if (isEndingCall) {
+    return (
+      <ProtectedRoute userType="doctor">
+        <PaymentProcessingOverlay
+          icon="call"
+          title="Ending Consultation"
+          subtitle="Redirecting to consultation report..."
+        />
       </ProtectedRoute>
     );
   }

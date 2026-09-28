@@ -984,21 +984,21 @@ export default function CompleteReportPage() {
     <ProtectedRoute userType="doctor">
       <WebLayoutWrapper
         className={step === 3 ? 'h-full overflow-hidden' : ''}
-        contentClassName={step === 3 ? 'h-full !py-0 flex flex-col' : ''}
+        contentClassName={step === 3 ? 'h-full !py-0 flex flex-col md:pt-14' : ''}
       >
         <div
           className={`max-w-2xl mx-auto w-full relative ${
             step === 3
-              ? 'h-[calc(100dvh-6rem)] md:h-[calc(100dvh-6.5rem)] flex flex-col overflow-hidden px-2 sm:px-4'
+              ? 'h-[calc(100dvh-5.5rem)] md:h-[calc(100dvh-7.5rem)] flex flex-col overflow-hidden px-2 sm:px-4'
               : 'space-y-4 pb-40 md:pb-28 min-h-screen'
           }`}
         >
-          {/* Top Bar (Sticky) */}
+          {/* Top Bar */}
           <div
-            className={`sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md border-b border-white/10 shadow-sm transition-all ${
+            className={`z-30 bg-[#1E1E1E]/95 backdrop-blur-md border-b border-white/10 shadow-sm transition-all ${
               step === 3
-                ? '-mx-2 sm:-mx-4 px-2 sm:px-4 pt-3.5 pb-2.5 mb-1 shrink-0'
-                : '-mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-2 shrink-0'
+                ? 'relative shrink-0 -mx-2 sm:-mx-4 px-2 sm:px-4 pt-3 pb-2.5 mb-2'
+                : 'sticky top-0 md:top-16 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-2 shrink-0'
             }`}
           >
             <div className="relative flex items-center justify-between">
@@ -1262,24 +1262,26 @@ export default function CompleteReportPage() {
              ═════════════════════════════════════════════════════════════════════ */}
           {step === 3 && (
             <div className="flex-1 min-h-0 flex flex-col space-y-2.5 overflow-hidden">
-              <p className="shrink-0 text-white/60 text-xs sm:text-sm text-center -mt-1">
-                Recommend products for your patient from the store
-              </p>
-
-              {/* Search Bar */}
-              <div className="shrink-0 relative">
-                <MagnifyingGlassIcon className="w-5 h-5 text-white/40 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              {/* Search Bar - Prominent white pill matching Flutter & Store */}
+              <div className="shrink-0 bg-white rounded-full flex items-center px-4 py-2 sm:py-2.5 shadow-md border border-white/20">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 shrink-0 mr-2.5 pointer-events-none" />
                 <input
                   type="text"
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   placeholder="Search products to recommend..."
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    color: '#ffffff',
-                  }}
-                  className="w-full rounded-xl border border-white/20 pl-11 pr-4 py-2.5 sm:py-3 text-white placeholder:text-zinc-500 text-sm focus:outline-none focus:border-[#FFD3AC] focus:ring-1 focus:ring-[#FFD3AC] transition"
+                  className="w-full bg-transparent text-gray-900 placeholder:text-gray-500 text-sm focus:outline-none"
                 />
+                {productSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setProductSearch('')}
+                    className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer shrink-0"
+                    aria-label="Clear search"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               {/* Category Filter Pills & Expandable Subcategories */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckIcon, ChevronLeftIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { startPayPalCheckout } from "@/lib/paypal";
@@ -231,16 +231,6 @@ export default function ContributionView({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 text-white">
-      {/* Back Button */}
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-white/80 hover:text-white mb-6 text-sm font-medium transition"
-      >
-        <ChevronLeftIcon className="w-5 h-5" />
-        Back
-      </button>
-
       {/* Header Tag & Title */}
       <div className="mb-8">
         <p className="text-[#D89B62] text-xs font-bold tracking-[0.2em] uppercase mb-2">

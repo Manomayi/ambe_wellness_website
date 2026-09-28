@@ -35,12 +35,21 @@ export default function DoctorConsultationsPage() {
   const { user, profile } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pendingAppointments, setPendingAppointments] = useState([]);
-  const [currentAppointment, setCurrentAppointment] = useState(null);
+  const [currentAppointments, setCurrentAppointments] = useState([]);
+  const [rawAppointments, setRawAppointments] = useState([]);
+  const [tick, setTick] = useState(0);
   const [reportsToFinish, setReportsToFinish] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
   const [cancelAppointment, setCancelAppointment] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick((t) => t + 1);
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const resolvingSetRef = useRef(new Set());
 
@@ -58,7 +67,7 @@ export default function DoctorConsultationsPage() {
 
     let resolvedStatus = "no_show";
     let isNoShow = true;
-    if (userJoined && doctorJoined) {
+    if (apt.status === "completed" || apt.consultation_outcome === "completed" || (userJoined && doctorJoined)) {
       resolvedStatus = "completed";
       isNoShow = false;
     } else if (userJoined && !doctorJoined) {
@@ -147,36 +156,7 @@ export default function DoctorConsultationsPage() {
           return timeA - timeB;
         });
 
-        const nowDate = new Date();
-        let current = null;
-        const pending = [];
-        const upcoming = [];
-
-        appointments.forEach((apt) => {
-          const aptDate = apt.time?.toDate
-            ? apt.time.toDate()
-            : apt.time
-            ? new Date(apt.time)
-            : null;
-          if (!aptDate) {
-            upcoming.push(apt);
-            return;
-          }
-          const diffMinutes = (aptDate.getTime() - nowDate.getTime()) / (1000 * 60);
-
-          if (diffMinutes >= -60 && diffMinutes <= 15 && !current) {
-            current = apt;
-          } else if (diffMinutes < -60) {
-            // Expired past 60m: auto-resolve to history and do not show in pending
-            autoResolveExpiredConsultation(apt, apt.id);
-          } else {
-            upcoming.push(apt);
-          }
-        });
-
-        setCurrentAppointment(current);
-        setPendingAppointments(pending);
-        setUpcomingAppointments(upcoming);
+        setRawAppointments(appointments);
       },
       (error) => {
         if (error?.code === 'permission-denied') return;
@@ -220,6 +200,52 @@ export default function DoctorConsultationsPage() {
       unsubscribeReports();
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!rawAppointments || rawAppointments.length === 0) {
+      setCurrentAppointments([]);
+      setPendingAppointments([]);
+      setUpcomingAppointments([]);
+      return;
+    }
+
+    const nowDate = new Date();
+    const current = [];
+    const pending = [];
+    const upcoming = [];
+
+    rawAppointments.forEach((apt) => {
+      // If consultation is already ended or completed, do not show in upcoming/happening now
+      if (apt.call_status === 'ended' || apt.status === 'completed' || apt.status === 'finished') {
+        autoResolveExpiredConsultation(apt, apt.id);
+        return;
+      }
+
+      const aptDate = apt.time?.toDate
+        ? apt.time.toDate()
+        : apt.time
+        ? new Date(apt.time)
+        : null;
+      if (!aptDate) {
+        upcoming.push(apt);
+        return;
+      }
+      const diffMinutes = (aptDate.getTime() - nowDate.getTime()) / (1000 * 60);
+
+      if (diffMinutes >= -60 && diffMinutes <= 15) {
+        current.push(apt);
+      } else if (diffMinutes < -60) {
+        // Expired past 60m: auto-resolve to history and do not show in pending
+        autoResolveExpiredConsultation(apt, apt.id);
+      } else {
+        upcoming.push(apt);
+      }
+    });
+
+    setCurrentAppointments(current);
+    setPendingAppointments(pending);
+    setUpcomingAppointments(upcoming);
+  }, [rawAppointments, tick]);
 
   const formatAppointmentTime = (timestamp) => {
     if (!timestamp) return '';
@@ -334,29 +360,38 @@ export default function DoctorConsultationsPage() {
           </div>
         )}
 
-        {/* Current Appointment (Happening Now) matching Flutter */}
-        {currentAppointment && (
+        {/* Current Appointments (Happening Now) matching Flutter */}
+        {currentAppointments.length > 0 && (
           <div className="space-y-2.5">
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#FFD3AC] font-sans">
               HAPPENING NOW
             </h2>
-            <div className="bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl p-5 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold text-lg font-sans">{currentAppointment.user_name || 'Patient'}</h3>
-                  <p className="text-black/75 flex items-center mt-1 text-sm font-sans">
-                    <ClockIcon className="h-4 w-4 mr-1 text-[#1E1E1E]" />
-                    {formatAppointmentTime(currentAppointment.time)}
-                  </p>
-                </div>
-                <button
-                  onClick={() => router.push(`/doctor/consultations/appointment/${currentAppointment.id}`)}
-                  className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm hover:bg-black transition shadow cursor-pointer"
+            <div className="space-y-3">
+              {currentAppointments.map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl p-5 shadow-xl"
                 >
-                  <VideoCameraIcon className="h-4 w-4" />
-                  JOIN CALL
-                </button>
-              </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="font-semibold text-lg font-sans">
+                        {appointment.user_name || 'Patient'}
+                      </h3>
+                      <p className="text-black/75 flex items-center mt-1 text-sm font-sans">
+                        <ClockIcon className="h-4 w-4 mr-1 text-[#1E1E1E]" />
+                        {formatAppointmentTime(appointment.time)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                      className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm hover:bg-black transition shadow cursor-pointer"
+                    >
+                      <VideoCameraIcon className="h-4 w-4" />
+                      JOIN CALL
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -465,7 +500,7 @@ export default function DoctorConsultationsPage() {
         )}
 
         {/* Empty State matching Flutter Image 2 */}
-        {!currentAppointment && upcomingAppointments.length === 0 && pendingAppointments.length === 0 && !loading && (
+        {currentAppointments.length === 0 && upcomingAppointments.length === 0 && pendingAppointments.length === 0 && !loading && (
           <div className="py-16 sm:py-24 text-center">
             <svg
               className="w-20 h-20 text-white/30 mx-auto"
