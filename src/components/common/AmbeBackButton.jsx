@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function AmbeBackButton({
   onClick,
+  href,
   className = "",
   size = 40,
   iconSize = 24,
@@ -14,6 +15,8 @@ export default function AmbeBackButton({
   const handleClick = () => {
     if (onClick) {
       onClick();
+    } else if (href) {
+      router.push(href);
     } else {
       router.back();
     }

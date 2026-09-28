@@ -133,34 +133,18 @@ export default function OnDemandCoursesPage() {
     <ProtectedRoute allowedRoles={["user"]}>
       <WebLayoutWrapper maxWidth="1000px">
         <div className="space-y-6 pb-20">
-          {/* Top Bar matching Flutter */}
-          <div className="flex items-center gap-3 pt-1">
-            <AmbeBackButton href="/user/courses" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
-              Wellness Courses
-            </h1>
-          </div>
-
-          {!coursesActive && courses.length === 0 ? (
-            /* Courses Coming Soon fallback (Flutter parity) */
-            <div className="py-20 text-center space-y-4 max-w-md mx-auto">
-              <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-white font-sans">
-                Courses Coming Soon
-              </h2>
-              <p className="text-sm text-gray-400 font-sans leading-relaxed">
-                Our wellness courses are currently being curated.
-                <br />
-                Please check back later.
-              </p>
+          {/* Sticky Header: Back Button, Title, Search & Filters */}
+          <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mt-4 sm:-mt-6 pt-4 sm:pt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 space-y-3.5 border-b border-white/10 shadow-sm transition-all">
+            {/* Top Bar matching Flutter */}
+            <div className="flex items-center gap-3 pt-1">
+              <AmbeBackButton href="/user/courses" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-sans">
+                Wellness Courses
+              </h1>
             </div>
-          ) : (
-            <>
-              {/* Search & Filter Section matching Flutter CoursesPage */}
+
+            {/* Search & Filter Section matching Flutter CoursesPage */}
+            {(coursesActive || courses.length > 0) && (
               <div className="space-y-3.5">
                 {/* Search Bar */}
                 <div className="relative">
@@ -217,7 +201,28 @@ export default function OnDemandCoursesPage() {
                   })}
                 </div>
               </div>
+            )}
+          </div>
 
+          {!coursesActive && courses.length === 0 ? (
+            /* Courses Coming Soon fallback (Flutter parity) */
+            <div className="py-20 text-center space-y-4 max-w-md mx-auto">
+              <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white font-sans">
+                Courses Coming Soon
+              </h2>
+              <p className="text-sm text-gray-400 font-sans leading-relaxed">
+                Our wellness courses are currently being curated.
+                <br />
+                Please check back later.
+              </p>
+            </div>
+          ) : (
+            <>
               {/* Course Cards Grid */}
               {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-3">
