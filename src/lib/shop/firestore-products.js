@@ -166,6 +166,8 @@ function parseStoreDocuments(snapshot) {
 
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
+    if (!isActive(data)) return;
+
     const nested = Array.isArray(data.products) ? data.products : [];
 
     if (nested.length > 0) {
@@ -176,8 +178,6 @@ function parseStoreDocuments(snapshot) {
       });
       return;
     }
-
-    if (!isActive(data)) return;
 
     const hasFlatFields =
       data.product_name ||

@@ -1,29 +1,75 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { isDisclaimerPending, acknowledgeDisclaimer } from "@/lib/consent";
+import { useAuth } from "@/contexts/AuthContext";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase/config";
+import {
+  isBookingRoute,
+  acknowledgeDisclaimer,
+  DISCLAIMER_VERSION,
+  DISCLAIMER_FIELD,
+  DISCLAIMER_ACK_KEY,
+  DISCLAIMER_LEGACY_KEY,
+} from "@/lib/consent";
 
-// Ayurveda Disclaimer Modal (item 68): full-screen overlay shown once, when the
-// visitor enters the booking flow — not on a general first visit, so browsing
-// the marketing site isn't gated by a medical acknowledgement. The continue
-// button stays disabled until the checkbox is checked, and acknowledgement is
-// remembered in localStorage (ambe_disclaimer_v1).
+// Full-screen, one-time Ayurvedic Wellness agreement matching Flutter WellnessNoticePage.
+// Shows when a user enters the consultation/scheduling flow (e.g. /user/consult/schedule).
+// Cannot be dismissed without ticking the checkbox and clicking Continue.
+// Persists acceptance to Firestore (`users/{uid}.ayurvedic_wellness_notice`) and localStorage.
 export default function AyurvedaDisclaimerModal() {
   const pathname = usePathname();
-  const [mounted, setMounted] = React.useState(false);
-  const [open, setOpen] = React.useState(false);
-  const [agreed, setAgreed] = React.useState(false);
+  const { user, profile, userType, loading: authLoading } = useAuth();
+  const [mounted, setMounted] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
-    // Re-checked per navigation: the visitor may land on the marketing site and
-    // only later click through into booking.
-    setOpen(isDisclaimerPending(pathname));
-  }, [pathname]);
+  }, []);
 
-  // Lock body scroll while the overlay is up.
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Doctors never see the patient wellness notice
+    if (userType === "doctor") {
+      setOpen(false);
+      return;
+    }
+
+    // Only consultation / booking routes show the disclaimer (e.g. /user/consult/schedule)
+    if (!isBookingRoute(pathname)) {
+      setOpen(false);
+      return;
+    }
+
+    // While auth is still initializing, don't flash or make premature decisions
+    if (authLoading) return;
+
+    if (user?.uid) {
+      // Authenticated user: Check their Firestore user profile (synced across App and Web)
+      if (profile === undefined) return; // Wait until profile has resolved
+
+      const record = profile?.[DISCLAIMER_FIELD];
+      const hasAccepted =
+        Boolean(record) &&
+        record.accepted === true &&
+        record.version === DISCLAIMER_VERSION;
+
+      setOpen(!hasAccepted);
+    } else {
+      // Unauthenticated visitor check (device-level)
+      const localAccepted =
+        localStorage.getItem(DISCLAIMER_ACK_KEY) === DISCLAIMER_VERSION ||
+        localStorage.getItem(DISCLAIMER_LEGACY_KEY) === "true";
+      setOpen(!localAccepted);
+    }
+  }, [mounted, pathname, user, profile, userType, authLoading]);
+
+  // Lock body scroll while the overlay is up
+  useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -34,43 +80,63 @@ export default function AyurvedaDisclaimerModal() {
 
   if (!mounted || !open) return null;
 
-  const handleContinue = () => {
-    if (!agreed) return;
-    acknowledgeDisclaimer();
-    setOpen(false);
+  const handleContinue = async () => {
+    if (!agreed || saving) return;
+    setSaving(true);
+    try {
+      if (user?.uid) {
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            [DISCLAIMER_FIELD]: {
+              accepted: true,
+              version: DISCLAIMER_VERSION,
+              accepted_at: serverTimestamp(),
+            },
+          },
+          { merge: true }
+        );
+      }
+      acknowledgeDisclaimer();
+      setOpen(false);
+    } catch (err) {
+      console.error("Error saving ayurvedic wellness disclaimer:", err);
+      // Fallback: still record locally and dismiss so user is not permanently trapped
+      acknowledgeDisclaimer();
+      setOpen(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[110] flex items-center justify-center p-4 overflow-y-auto"
-      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-sm select-none"
       role="dialog"
       aria-modal="true"
-      aria-label="A note about Ayurvedic wellness"
+      aria-label="A Note About Ayurvedic Wellness"
     >
-      <div className="relative w-full max-w-xl bg-white rounded-lg p-8 sm:p-10 my-8">
-        <div
-          className="text-xs font-semibold tracking-widest uppercase mb-3"
-          style={{ color: "#C2691C" }}
-        >
-          Before You Begin
-        </div>
-        <div
-          className="font-heading text-2xl sm:text-3xl font-medium mb-5 leading-tight"
-          style={{ color: "#353535" }}
-        >
-          A Note About Ayurvedic Wellness
+      <div className="relative w-full max-w-[520px] bg-[#1E1E1E] border border-white/10 rounded-2xl p-6 sm:p-8 my-auto shadow-2xl">
+        {/* BEFORE YOU BEGIN */}
+        <div className="text-xs font-semibold tracking-[0.16em] uppercase text-[#FFD3AC] font-sans">
+          BEFORE YOU BEGIN
         </div>
 
-        <div className="space-y-4 text-sm sm:text-base leading-relaxed" style={{ color: "#353535" }}>
+        {/* Heading */}
+        <h2 className="font-serif text-2xl sm:text-3xl font-medium sm:font-normal text-white mt-3 mb-5 leading-tight tracking-tight">
+          A Note About<br />Ayurvedic Wellness
+        </h2>
+
+        {/* Informative paragraphs matching Flutter WellnessNoticePage */}
+        <div className="space-y-4 text-sm sm:text-[15px] leading-relaxed text-white/70 font-sans">
           <p>
-            Ambé connects you with practitioners trained in Ayurveda — one of the
-            world&apos;s oldest systems of traditional medicine, originating in
-            India over 5,000 years ago.
+            Ambe’ connects you with practitioners trained in Ayurveda — one of the
+            world’s oldest systems of traditional medicine, originating in India
+            over 5,000 years ago.
           </p>
           <p>
             Our practitioners hold BAMS degrees from institutions accredited by
-            India&apos;s Central Council of Indian Medicine. Ayurveda is not a
+            India’s Central Council of Indian Medicine. Ayurveda is not a
             state-licensed medical practice in the United States.
           </p>
           <p>
@@ -81,39 +147,66 @@ export default function AyurvedaDisclaimerModal() {
           </p>
         </div>
 
-        <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(0,0,0,0.1)" }}>
-          <label className="flex items-start gap-3 cursor-pointer">
+        {/* Divider */}
+        <div className="my-6 border-t border-white/10" />
+
+        {/* Checkbox item */}
+        <label className="flex items-start gap-3.5 cursor-pointer group select-none">
+          <div className="relative flex items-center justify-center mt-0.5 shrink-0">
             <input
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 h-4 w-4 flex-shrink-0 cursor-pointer accent-[#FFD3AC]"
+              className="peer sr-only"
             />
-            <span className="text-sm leading-relaxed" style={{ color: "#535353" }}>
-              I understand that Ambé provides traditional Ayurvedic wellness
-              support, not licensed medical care, and is not a substitute for my
-              primary care physician.
-            </span>
-          </label>
+            <div
+              className={`w-5 h-5 rounded border transition-colors flex items-center justify-center ${
+                agreed
+                  ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]"
+                  : "bg-white/5 border-white/30 group-hover:border-white/50"
+              }`}
+            >
+              {agreed && (
+                <svg className="w-3.5 h-3.5 stroke-[2.5]" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+          <span className="text-sm sm:text-[14px] leading-relaxed text-white/90 font-sans">
+            I understand that Ambe’ provides traditional Ayurvedic wellness support, not licensed medical care, and is not a substitute for my primary care physician.
+          </span>
+        </label>
 
-          <button
-            type="button"
-            onClick={handleContinue}
-            disabled={!agreed}
-            aria-disabled={!agreed}
-            className={
-              "mt-5 w-full py-3 rounded-md text-sm font-semibold tracking-wider uppercase transition-all duration-200 " +
-              (agreed ? "cursor-pointer" : "cursor-not-allowed")
-            }
-            style={
-              agreed
-                ? { backgroundColor: "#FFD3AC", color: "#353535" }
-                : { backgroundColor: "#E5E5E5", color: "#9A9A9A" }
-            }
-          >
-            I Understand — Continue to Ambé
-          </button>
-        </div>
+        {/* Submit Button */}
+        <button
+          type="button"
+          onClick={handleContinue}
+          disabled={!agreed || saving}
+          className={`mt-6 w-full py-3.5 px-4 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-200 font-sans flex items-center justify-center gap-2 ${
+            agreed && !saving
+              ? "bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe2c7] shadow-lg cursor-pointer active:scale-[0.99]"
+              : "bg-[#2D2D30] text-white/35 cursor-not-allowed border border-white/5"
+          }`}
+        >
+          {saving ? (
+            <>
+              <div className="w-4 h-4 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+              <span>SAVING...</span>
+            </>
+          ) : (
+            "I UNDERSTAND — CONTINUE"
+          )}
+        </button>
+
+        {/* Footnote */}
+        <p className="text-[11px] sm:text-xs text-white/40 text-center mt-3 font-sans">
+          Confirmation required to continue
+        </p>
       </div>
     </div>,
     document.body

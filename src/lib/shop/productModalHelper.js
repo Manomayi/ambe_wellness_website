@@ -137,6 +137,7 @@ export async function fetchProductForModal(productId, productName, fallbackData 
       const allStore = await getDocs(query(collection(db, 'store'), limit(50)));
       for (const dSnap of allStore.docs) {
         const d = dSnap.data();
+        if (d.is_active === false || d.isActive === false) continue;
         if (Array.isArray(d.products)) {
           const found = d.products.find(
             p => (p.product_name || p.name || '').toLowerCase().trim() === cleanName.toLowerCase().trim()
