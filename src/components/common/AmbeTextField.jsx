@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 
-export default function AmbeTextField({
+const AmbeTextField = forwardRef(function AmbeTextField({
   type = "text",
   name,
   value,
@@ -18,7 +18,8 @@ export default function AmbeTextField({
   containerClassName = "",
   showPasswordToggle = false,
   onKeyDown,
-}) {
+  inputMode,
+}, ref) {
   const [obscure, setObscure] = useState(type === "password");
 
   const effectiveType = showPasswordToggle ? (obscure ? "password" : "text") : type;
@@ -33,6 +34,7 @@ export default function AmbeTextField({
         )}
 
         <input
+          ref={ref}
           type={effectiveType}
           name={name}
           value={value}
@@ -41,6 +43,7 @@ export default function AmbeTextField({
           required={required}
           autoComplete={autoComplete}
           disabled={disabled}
+          inputMode={inputMode}
           onKeyDown={onKeyDown}
           className={`
             w-full bg-white text-[#1E1E1E] placeholder:text-gray-400
@@ -105,4 +108,6 @@ export default function AmbeTextField({
       )}
     </div>
   );
-}
+});
+
+export default AmbeTextField;

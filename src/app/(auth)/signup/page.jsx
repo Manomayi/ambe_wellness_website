@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { httpsCallable } from 'firebase/functions';
@@ -27,6 +27,10 @@ export default function SignUpPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showDoctorAgreementsModal, setShowDoctorAgreementsModal] = useState(false);
 
+  const addressInputRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const GOOGLE_PLACES_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY || 'AIzaSyAAtJdwmMY3CwRUye-9tud_RjUhJ5lDC1A';
+
   // Form data
   const [formData, setFormData] = useState({
     userType: '',
@@ -40,6 +44,10 @@ export default function SignUpPage() {
     dobMonth: '',
     dobYear: '',
     genderAtBirth: '',
+    address: null,
+    addressSearch: '',
+    apartmentNumber: '',
+    doesNotApplyApartment: false,
     specializations: [],
     customSpecialization: '',
     practiceStartYear: '',
@@ -49,6 +57,97 @@ export default function SignUpPage() {
     bio: '',
     referralCode: '',
   });
+
+  useEffect(() => {
+    if (step !== 2 || formData.userType !== 'doctor') return;
+
+    let isSubscribed = true;
+
+    const initAutocomplete = () => {
+      if (!isSubscribed || !addressInputRef.current || !window.google?.maps?.places) return;
+      if (autocompleteRef.current) return;
+
+      try {
+        const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+          types: ['address'],
+          componentRestrictions: { country: 'us' },
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (!place || !place.address_components) return;
+
+          let streetNumber = '';
+          let streetName = '';
+          let city = '';
+          let state = '';
+          let zipCode = '';
+          let country = 'USA';
+
+          for (const comp of place.address_components) {
+            const types = comp.types;
+            if (types.includes('street_number')) {
+              streetNumber = comp.long_name;
+            } else if (types.includes('route')) {
+              streetName = comp.long_name;
+            } else if (types.includes('locality')) {
+              city = comp.long_name;
+            } else if (types.includes('administrative_area_level_1')) {
+              state = comp.short_name || comp.long_name;
+            } else if (types.includes('postal_code')) {
+              zipCode = comp.long_name;
+            } else if (types.includes('country')) {
+              country = comp.long_name;
+            }
+          }
+
+          const combinedStreet = [streetNumber, streetName].filter(Boolean).join(' ');
+          const formattedAddress = place.formatted_address || [combinedStreet, city, state, zipCode, country].filter(Boolean).join(', ');
+
+          setFormData(prev => ({
+            ...prev,
+            addressSearch: formattedAddress,
+            address: {
+              street_number: streetNumber,
+              street_name: streetName || combinedStreet,
+              city,
+              state,
+              zip_code: zipCode,
+              country,
+            },
+          }));
+          setErrors(prev => ({ ...prev, address: '' }));
+        });
+
+        autocompleteRef.current = autocomplete;
+      } catch (e) {
+        console.warn('Could not initialize Google Places autocomplete:', e);
+      }
+    };
+
+    if (window.google?.maps?.places) {
+      setTimeout(initAutocomplete, 100);
+    } else {
+      const scriptId = 'google-maps-places-script';
+      let script = document.getElementById(scriptId);
+      if (!script) {
+        script = document.createElement('script');
+        script.id = scriptId;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_PLACES_KEY}&libraries=places`;
+        script.async = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', () => setTimeout(initAutocomplete, 100));
+    }
+
+    return () => {
+      isSubscribed = false;
+      if (autocompleteRef.current && window.google?.maps?.event) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+        autocompleteRef.current = null;
+      }
+    };
+  }, [step, formData.userType]);
 
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -195,6 +294,15 @@ export default function SignUpPage() {
         newErrors.email = 'Email is required';
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = 'Invalid email address';
+      }
+
+      if (isDoctor) {
+        if (!formData.addressSearch?.trim()) {
+          newErrors.address = 'Please search and select your address';
+        }
+        if (!formData.doesNotApplyApartment && !formData.apartmentNumber?.trim()) {
+          newErrors.apartmentNumber = "Enter an apartment number or check 'Does not apply'";
+        }
       }
     } else if (step === 3) {
       if (!formData.phone.trim()) {
@@ -388,6 +496,33 @@ export default function SignUpPage() {
       const isDoctor = formData.userType === 'doctor';
       const documentsPayload = isDoctor ? await buildDocumentsPayload() : [];
 
+      let doctorAddress = null;
+      let doctorApartment = null;
+      if (isDoctor) {
+        if (formData.address) {
+          doctorAddress = {
+            street_number: formData.address.street_number || '',
+            street_name: formData.address.street_name || '',
+            city: formData.address.city || '',
+            state: formData.address.state || '',
+            country: formData.address.country || 'USA',
+            zip_code: formData.address.zip_code || '',
+          };
+        } else if (formData.addressSearch?.trim()) {
+          doctorAddress = {
+            street_number: '',
+            street_name: formData.addressSearch.trim(),
+            city: '',
+            state: '',
+            country: 'USA',
+            zip_code: '',
+          };
+        }
+        doctorApartment = formData.doesNotApplyApartment
+          ? 'N/A'
+          : (formData.apartmentNumber?.trim() || null);
+      }
+
       const createUser = httpsCallable(functions, 'createUser');
       const result = await createUser({
         email: formData.email.trim(),
@@ -405,6 +540,8 @@ export default function SignUpPage() {
         customSpecialization: formData.customSpecialization,
         ...(isDoctor
           ? {
+              address: doctorAddress,
+              apartment_number: doctorApartment,
               doctor_fields: (() => {
                 const fields = [...formData.specializations];
                 if (showCustomSpecialization && formData.customSpecialization.trim() && !fields.includes('general_health')) {
@@ -481,6 +618,12 @@ export default function SignUpPage() {
             if (formData.medicalSchool?.trim()) {
               termsData.education = formData.medicalSchool.trim();
             }
+            if (doctorAddress) {
+              termsData.address = doctorAddress;
+            }
+            if (doctorApartment) {
+              termsData.apartment_number = doctorApartment;
+            }
           }
 
           await setDoc(
@@ -489,13 +632,20 @@ export default function SignUpPage() {
             { merge: true }
           );
 
-          if (isDoctor && formData.bio?.trim()) {
+          if (isDoctor) {
+            const doctorProfileData = {
+              bio: formData.bio?.trim() || '',
+              education: formData.medicalSchool?.trim() || '',
+            };
+            if (doctorAddress) {
+              doctorProfileData.address = doctorAddress;
+            }
+            if (doctorApartment) {
+              doctorProfileData.apartment_number = doctorApartment;
+            }
             await setDoc(
               doc(db, 'doctors', result.data.uid),
-              {
-                bio: formData.bio.trim(),
-                education: formData.medicalSchool?.trim() || '',
-              },
+              doctorProfileData,
               { merge: true }
             );
           }
@@ -750,6 +900,39 @@ export default function SignUpPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
           </div>
+
+          {/* Address (Doctor only) */}
+          {isDoctor && (formData.addressSearch || formData.address) && (
+            <div
+              onClick={() => handleJumpToStep(2)}
+              className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
+                <span className="text-black font-medium text-[15px] truncate">
+                  {(() => {
+                    const apt = formData.doesNotApplyApartment ? '' : (formData.apartmentNumber ? ` Apt ${formData.apartmentNumber}` : '');
+                    if (formData.address) {
+                      const street = [formData.address.street_number, formData.address.street_name].filter(Boolean).join(' ');
+                      const parts = [
+                        street ? `${street}${apt}` : null,
+                        formData.address.city,
+                        formData.address.state,
+                        formData.address.zip_code,
+                      ].filter(Boolean);
+                      return parts.length > 0 ? parts.join(', ') : `${formData.addressSearch}${apt}`;
+                    }
+                    return `${formData.addressSearch}${apt}`;
+                  })()}
+                </span>
+              </div>
+              <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+              </svg>
+            </div>
+          )}
 
           {/* Doctor Professional Profile Fields */}
           {isDoctor && (
@@ -1034,30 +1217,106 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <div className="pt-2">
-              <label className="block text-white text-[17px] font-semibold font-sans mb-3 tracking-tight">
-                Sex Assigned at Birth (Optional)
-              </label>
-              <div className="relative">
-                <select
-                  value={formData.genderAtBirth}
-                  onChange={(e) => updateFormData("genderAtBirth", e.target.value)}
-                  className={`w-full bg-white font-sans text-sm sm:text-[15px] font-medium rounded-full pl-5 pr-10 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm transition-all duration-200 ${
-                    formData.genderAtBirth ? "text-[#1E1E1E]" : "text-gray-500"
-                  }`}
-                >
-                  <option value="" className="text-gray-500">Select</option>
-                  <option value="Male" className="text-[#1E1E1E]">Male</option>
-                  <option value="Female" className="text-[#1E1E1E]">Female</option>
-                  <option value="Other" className="text-[#1E1E1E]">Other</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#1E1E1E]">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
+            {/* Sex Assigned at Birth - User/Client only */}
+            {formData.userType !== "doctor" && (
+              <div className="pt-2">
+                <label className="block text-white text-[17px] font-semibold font-sans mb-3 tracking-tight">
+                  Sex Assigned at Birth (Optional)
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.genderAtBirth}
+                    onChange={(e) => updateFormData("genderAtBirth", e.target.value)}
+                    className={`w-full bg-white font-sans text-sm sm:text-[15px] font-medium rounded-full pl-5 pr-10 py-3.5 outline-none border border-transparent focus:border-[#FFD3AC] cursor-pointer appearance-none shadow-sm transition-all duration-200 ${
+                      formData.genderAtBirth ? "text-[#1E1E1E]" : "text-gray-500"
+                    }`}
+                  >
+                    <option value="" className="text-gray-500">Select</option>
+                    <option value="Male" className="text-[#1E1E1E]">Male</option>
+                    <option value="Female" className="text-[#1E1E1E]">Female</option>
+                    <option value="Other" className="text-[#1E1E1E]">Other</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#1E1E1E]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Doctor Address Section */}
+            {formData.userType === "doctor" && (
+              <div className="pt-2 space-y-4">
+                <label className="block text-white text-[17px] font-semibold font-sans tracking-tight">
+                  Address
+                </label>
+
+                {/* Address Search */}
+                <AmbeTextField
+                  ref={addressInputRef}
+                  placeholder="Search for your address"
+                  value={formData.addressSearch}
+                  onChange={(e) => {
+                    updateFormData("addressSearch", e.target.value);
+                    if (!e.target.value) {
+                      updateFormData("address", null);
+                    }
+                  }}
+                  error={errors.address}
+                  leadingIcon={
+                    <svg className="w-5 h-5 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                    </svg>
+                  }
+                />
+
+                {/* Apartment Number */}
+                <AmbeTextField
+                  placeholder={
+                    formData.doesNotApplyApartment
+                      ? "Apartment Number (Does not apply)"
+                      : "Apartment Number"
+                  }
+                  value={formData.apartmentNumber}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, "");
+                    updateFormData("apartmentNumber", val);
+                  }}
+                  error={errors.apartmentNumber}
+                  disabled={formData.doesNotApplyApartment}
+                  inputMode="numeric"
+                  leadingIcon={
+                    <svg className="w-5 h-5 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17 11V3H7v4H3v14h8v-4h2v4h8V11h-4zM7 19H5v-2h2v2zm0-4H5v-2h2v2zm0-4H5V9h2v2zm4 4H9v-2h2v2zm0-4H9V9h2v2zm0-4H9V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2zm0-4h-2V5h2v2zm4 12h-2v-2h2v2zm0-4h-2v-2h2v2z" />
+                    </svg>
+                  }
+                />
+
+                {/* Does not apply Checkbox */}
+                <label className="flex items-center gap-3 cursor-pointer group select-none px-1">
+                  <input
+                    type="checkbox"
+                    checked={formData.doesNotApplyApartment}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setFormData((prev) => ({
+                        ...prev,
+                        doesNotApplyApartment: checked,
+                        apartmentNumber: checked ? "" : prev.apartmentNumber,
+                      }));
+                      if (checked) {
+                        setErrors((prev) => ({ ...prev, apartmentNumber: "" }));
+                      }
+                    }}
+                    className="w-5 h-5 rounded border-2 border-white/60 checked:bg-[#FFD3AC] checked:border-[#FFD3AC] text-[#1E1E1E] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#FFD3AC]"
+                  />
+                  <span className="text-white text-sm font-sans">
+                    Does not apply (standalone building / house)
+                  </span>
+                </label>
+              </div>
+            )}
 
             {/* Referral Code - matches Flutter StepPersonalInfoUser placement */}
             {formData.userType !== "doctor" && (
@@ -1100,12 +1359,6 @@ export default function SignUpPage() {
         );
 
       case 4: {
-        const pwd = formData.password || "";
-        const hasMinLen = pwd.length >= 8;
-        const hasUpper = /[A-Z]/.test(pwd);
-        const hasNum = /[0-9]/.test(pwd);
-        const hasSpecial = /[@#$%^&+=!._*~-]/.test(pwd);
-
         return (
           <div className="space-y-4 py-2">
             <h2 className="text-white text-xl font-semibold text-center mb-1 font-sans">
@@ -1157,59 +1410,6 @@ export default function SignUpPage() {
                 </svg>
               }
             />
-
-            {/* Password Requirements Guidance */}
-            <div className="bg-white/95 border border-[#FFD3AC]/80 rounded-2xl p-4 shadow-md backdrop-blur-xs space-y-2.5">
-              <p className="text-neutral-800 font-semibold text-xs tracking-wide flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#F5B880]" />
-                Password Requirements:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                <div className={`flex items-center gap-2 transition-colors ${hasMinLen ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
-                  {hasMinLen ? (
-                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
-                  )}
-                  <span>At least 8 characters</span>
-                </div>
-
-                <div className={`flex items-center gap-2 transition-colors ${hasUpper ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
-                  {hasUpper ? (
-                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
-                  )}
-                  <span>At least one uppercase (A-Z)</span>
-                </div>
-
-                <div className={`flex items-center gap-2 transition-colors ${hasNum ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
-                  {hasNum ? (
-                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
-                  )}
-                  <span>At least one number (0-9)</span>
-                </div>
-
-                <div className={`flex items-center gap-2 transition-colors ${hasSpecial ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
-                  {hasSpecial ? (
-                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
-                  )}
-                  <span>Special character (@, #, $, etc.)</span>
-                </div>
-              </div>
-            </div>
 
             <AmbeTextField
               type="password"

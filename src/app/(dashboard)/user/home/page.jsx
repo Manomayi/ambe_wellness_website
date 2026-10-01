@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
@@ -12,6 +13,7 @@ export default function UserHomePage() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const [pendingRecommendation, setPendingRecommendation] = useState(null);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   const isMember = Boolean(profile?.subscription?.active);
   const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "there";
@@ -114,6 +116,23 @@ export default function UserHomePage() {
     }
   };
 
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = onSnapshot(
+      collection(db, "users", user.uid, "notifications"),
+      (snapshot) => {
+        const unread = snapshot.docs.filter((d) => !d.data()?.is_read).length;
+        setUnreadNotifCount(unread);
+      },
+      (err) => {
+        if (err?.code !== "permission-denied") {
+          console.warn("Error fetching unread notifications count:", err);
+        }
+      }
+    );
+    return () => unsub();
+  }, [user?.uid]);
+
   return (
     <ProtectedRoute allowedRoles={["user"]}>
       <div className="w-full space-y-7 pb-10">
@@ -133,11 +152,29 @@ export default function UserHomePage() {
             </p>
           </div>
 
-          {isMember && (
-            <div className="px-3.5 py-1 rounded-full bg-[#FFD3AC]/20 border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-wider font-sans uppercase">
-              MEMBER
-            </div>
-          )}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {isMember && (
+              <div className="px-3.5 py-1 rounded-full bg-[#FFD3AC]/20 border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-wider font-sans uppercase">
+                MEMBER
+              </div>
+            )}
+
+            {/* Notification Bell (mobile view matching Flutter) */}
+            <Link
+              href="/user/notifications"
+              className="md:hidden relative w-11 h-11 rounded-full bg-[#1B1A18]/80 border border-white/15 flex items-center justify-center text-[#FFD3AC] hover:bg-white/10 transition shadow-sm active:scale-95 shrink-0"
+              aria-label="Notifications"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+              </svg>
+              {unreadNotifCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm">
+                  {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
 
         {/* DOCTOR RECOMMENDATION Card (Appears above Book your consultation) */}

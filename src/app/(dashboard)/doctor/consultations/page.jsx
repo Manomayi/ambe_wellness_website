@@ -29,10 +29,11 @@ import {
 } from "@heroicons/react/24/outline";
 import CancelConsultationModal from "@/components/doctor/CancelConsultationModal";
 import RescheduleConsultationModal from "@/components/doctor/RescheduleConsultationModal";
+import AccountVerificationRequired from "@/components/doctor/AccountVerificationRequired";
 
 export default function DoctorConsultationsPage() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, isVerifiedDoctor, loading: authLoading } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pendingAppointments, setPendingAppointments] = useState([]);
   const [currentAppointments, setCurrentAppointments] = useState([]);
@@ -317,7 +318,14 @@ export default function DoctorConsultationsPage() {
           </div>
         )}
 
-        {/* Reports to Finish Alert matching Flutter Image 2 */}
+        {!isVerifiedDoctor && !authLoading ? (
+          <AccountVerificationRequired
+            title="Account Verification Required"
+            message="Your account is currently under review. You will be able to view and manage consultations once your account has been verified."
+          />
+        ) : (
+          <>
+            {/* Reports to Finish Alert matching Flutter Image 2 */}
         {reportsToFinish.length > 0 && (
           <div className="space-y-2.5">
             <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 font-sans">
@@ -527,6 +535,8 @@ export default function DoctorConsultationsPage() {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-2 border-[#FFD3AC] border-t-transparent"></div>
           </div>
+        )}
+          </>
         )}
 
         {/* Cancel Modal */}

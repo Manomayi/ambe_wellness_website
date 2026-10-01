@@ -21,9 +21,12 @@ import {
   MagnifyingGlassIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
+import { useAuth } from '@/contexts/AuthContext';
+import AccountVerificationRequired from '@/components/doctor/AccountVerificationRequired';
 
 export default function DoctorUserProfilesPage() {
   const router = useRouter();
+  const { user: authUser, isVerifiedDoctor, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [patients, setPatients] = useState([]);
   const [upcomingUserIds, setUpcomingUserIds] = useState(new Set());
@@ -240,8 +243,15 @@ export default function DoctorUserProfilesPage() {
         </p>
       </div>
 
-      {/* Search Bar & Filter Chips matching Flutter */}
-      <div className="bg-[#1B1A18]/80 backdrop-blur-md rounded-2xl border border-white/10 p-4 space-y-3.5 shadow-lg">
+      {!isVerifiedDoctor && !authLoading ? (
+        <AccountVerificationRequired
+          title="Account Verification Required"
+          message="Your account is currently under review. You will be able to view client profiles once your account has been verified."
+        />
+      ) : (
+        <>
+          {/* Search Bar & Filter Chips matching Flutter */}
+          <div className="bg-[#1B1A18]/80 backdrop-blur-md rounded-2xl border border-white/10 p-4 space-y-3.5 shadow-lg">
         {/* Search Input */}
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FFD3AC]" />
@@ -356,6 +366,8 @@ export default function DoctorUserProfilesPage() {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

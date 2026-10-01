@@ -378,7 +378,7 @@ export default function ChatWindow({
   }, {});
 
   return (
-    <div className="flex flex-col h-full bg-transparent overflow-hidden">
+    <div className="flex flex-col h-full flex-1 min-h-0 bg-transparent overflow-hidden">
       {/* Optional Inner Header */}
       {!hideHeader && (
         <div className="p-4 border-b border-white/10 bg-[#1E1E1E]/80 backdrop-blur-md shrink-0">
@@ -505,7 +505,11 @@ export default function ChatWindow({
       
       {/* Input */}
       {canSendMessage ? (
-        <form onSubmit={sendMessage} className="p-3 sm:p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md shrink-0 sticky bottom-0 z-20">
+        <form 
+          onSubmit={sendMessage} 
+          className="p-3 sm:p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md shrink-0 sticky bottom-0 z-20"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+        >
           <input
             ref={fileInputRef}
             type="file"
@@ -536,7 +540,7 @@ export default function ChatWindow({
                 }
               }}
               placeholder={selectedImage ? "Add a caption..." : "Type a message..."}
-              className="flex-1 px-4 py-2.5 text-sm bg-white/10 border border-white/15 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-white placeholder-white/50 leading-relaxed"
+              className="flex-1 px-4 py-2.5 text-base sm:text-sm bg-white/10 border border-white/15 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-white placeholder-white/50 leading-relaxed"
               rows={1}
             />
             <button
@@ -554,7 +558,10 @@ export default function ChatWindow({
           </div>
         </form>
       ) : (
-        <div className="p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md text-center shrink-0 sticky bottom-0 z-20">
+        <div 
+          className="p-4 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md text-center shrink-0 sticky bottom-0 z-20"
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+        >
           <p className="text-xs text-white/60 font-medium">
             {isDoctor 
               ? 'This conversation is currently locked' 

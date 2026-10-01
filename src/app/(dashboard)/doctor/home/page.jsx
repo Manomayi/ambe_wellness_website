@@ -28,6 +28,24 @@ export default function DoctorHomePage() {
   });
   const [reportsToFinish, setReportsToFinish] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = onSnapshot(
+      collection(db, "doctors", user.uid, "notifications"),
+      (snapshot) => {
+        const unread = snapshot.docs.filter((d) => !d.data()?.is_read).length;
+        setUnreadNotifCount(unread);
+      },
+      (err) => {
+        if (err?.code !== "permission-denied") {
+          console.warn("Error fetching doctor unread notifications count:", err);
+        }
+      }
+    );
+    return () => unsub();
+  }, [user?.uid]);
 
 
   // Current week generator (Monday to Sunday) matching Flutter DoctorCalendarStrip
@@ -201,8 +219,8 @@ export default function DoctorHomePage() {
               </div>
             </div>
 
-            {/* Verified status badge on the right - NO checkmark */}
-            <div>
+            {/* Verified status badge & Notification bell on the right */}
+            <div className="flex items-center gap-2.5 shrink-0">
               {isVerifiedDoctor ? (
                 <span className="inline-flex items-center px-4 py-1.5 rounded-full border border-[#C8996A] text-[#FFD3AC] text-xs font-sans font-medium tracking-wide">
                   Verified
@@ -215,6 +233,22 @@ export default function DoctorHomePage() {
                   Pending
                 </Link>
               )}
+
+              {/* Notification Bell (mobile view matching Flutter) */}
+              <Link
+                href="/doctor/notifications"
+                className="md:hidden relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1B1A18]/80 border border-white/15 flex items-center justify-center text-[#FFD3AC] hover:bg-white/10 transition shadow-sm active:scale-95 shrink-0"
+                aria-label="Notifications"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                </svg>
+                {unreadNotifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm">
+                    {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
         </div>

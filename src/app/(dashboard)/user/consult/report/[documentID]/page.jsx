@@ -657,13 +657,6 @@ export default function ConsultationReportPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Link
-                  href="/user/cart"
-                  className="inline-flex items-center gap-1.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-3.5 py-1.5 rounded-full text-xs font-bold transition shadow-sm"
-                >
-                  <ShoppingBagIcon className="w-3.5 h-3.5" />
-                  GO TO CART
-                </Link>
-                <Link
                   href="/user/store"
                   className="text-xs font-semibold text-[#FFD3AC] hover:text-white inline-flex items-center gap-1 transition"
                 >

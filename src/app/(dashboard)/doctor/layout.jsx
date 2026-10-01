@@ -13,7 +13,7 @@ export default function DoctorLayout({ children }) {
   return (
     <div
       className={`relative bg-[#1E1E1E] text-white font-sans antialiased flex flex-col selection:bg-[#FFD3AC] selection:text-[#1E1E1E] ${
-        isChatPage ? 'h-screen overflow-hidden' : 'min-h-[100dvh]'
+        isChatPage ? 'h-dvh h-[100dvh] overflow-hidden md:pt-16' : 'min-h-[100dvh]'
       }`}
     >
       {/* Background Video matching Flutter App */}
@@ -24,16 +24,16 @@ export default function DoctorLayout({ children }) {
 
       {/* Main Content Area */}
       <main
-        className={`relative z-10 flex-1 w-full ${
+        className={`relative z-10 flex-1 min-h-0 w-full ${
           isChatPage
-            ? 'h-[calc(100vh-4rem)] overflow-hidden pb-0 flex flex-col'
+            ? 'h-full overflow-hidden pb-0 flex flex-col'
             : 'pb-24 md:pb-12'
         }`}
       >
         <div
           className={
             isChatPage
-              ? 'h-full w-full max-w-5xl mx-auto p-0 flex flex-col overflow-hidden'
+              ? 'h-full flex-1 min-h-0 w-full max-w-5xl mx-auto p-0 flex flex-col overflow-hidden'
               : `max-w-4xl mx-auto ${
                   pathname === '/doctor/home'
                     ? 'px-0 sm:px-6 md:px-8 py-0 sm:py-6'

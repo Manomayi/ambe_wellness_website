@@ -172,7 +172,7 @@ export default function MessageDoctorClient() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="h-[calc(100vh-64px)] flex flex-col bg-transparent">
+      <div className="h-[calc(100dvh-64px)] flex-1 min-h-0 flex flex-col bg-transparent">
         {/* Modern Doctor Chat Header */}
         <div className="bg-[#1E1E1E]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between z-10">
           <div className="flex items-center gap-3.5">

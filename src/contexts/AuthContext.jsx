@@ -170,11 +170,15 @@ export function AuthProvider({ children }) {
 
   const isDoctor = userType === 'doctor';
   const isVerifiedDoctor = isDoctor && (
+    profile?.verified === true ||
+    profile?.is_verified === true ||
+    profile?.isVerified === true ||
     isStatusVerified(profile?.verification_status) ||
     isStatusVerified(profile?.overall_status) ||
     isStatusVerified(profile?.status) ||
-    profile?.is_verified === true ||
-    profile?.isVerified === true ||
+    verification?.verified === true ||
+    verification?.is_verified === true ||
+    verification?.isVerified === true ||
     isStatusVerified(verification?.overall_status) ||
     isStatusVerified(verification?.status) ||
     isStatusVerified(verification?.verification_status)

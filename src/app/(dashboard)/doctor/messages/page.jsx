@@ -12,10 +12,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { ChatBubbleLeftRightIcon, UserIcon } from '@heroicons/react/24/outline';
+import AccountVerificationRequired from '@/components/doctor/AccountVerificationRequired';
 
 export default function DoctorMessagesPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isVerifiedDoctor, loading: authLoading } = useAuth();
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,7 +167,12 @@ export default function DoctorMessagesPage() {
           </h1>
         </div>
 
-        {chats.length === 0 ? (
+        {!isVerifiedDoctor && !authLoading ? (
+          <AccountVerificationRequired
+            title="Account Verification Required"
+            message="Your account is currently under review. You will be able to send and receive messages once your account has been verified."
+          />
+        ) : chats.length === 0 ? (
           <div className="bg-[#2D2D30] border border-white/10 rounded-[20px] p-12 text-center shadow-lg">
             <ChatBubbleLeftRightIcon className="h-14 w-14 text-gray-500 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-white mb-1 font-sans">No Messages Yet</h3>
