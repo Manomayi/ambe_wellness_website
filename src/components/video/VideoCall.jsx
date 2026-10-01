@@ -4,21 +4,26 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import { doc, setDoc, onSnapshot, serverTimestamp, deleteField } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, serverTimestamp, deleteField, collection, query, where } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/config';
 import {
   MicrophoneIcon,
   VideoCameraIcon,
   PhoneXMarkIcon,
   ArrowLeftIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/solid';
 import {
   MicrophoneIcon as MicrophoneOutlineIcon,
   SlashIcon,
   VideoCameraSlashIcon,
+  ChatBubbleLeftRightIcon as ChatOutlineIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverlay';
+import ChatWindow from '@/components/chat/ChatWindow';
+import PatientHealthProfilePanel from '@/components/doctor/PatientHealthProfilePanel';
 
 // Agora requires a numeric UID, but Firebase Auth UIDs are strings — this
 // deterministically derives a stable positive integer from a UID string
@@ -32,6 +37,24 @@ function stableAgoraUid(input) {
     hash = Math.imul(hash, fnvPrime) & 0x7fffffff;
   }
   return hash === 0 ? 1 : hash;
+}
+
+function MedicalServicesIcon({ className = "w-6 h-6", filled = false }) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 7h-3V4.5C16 3.67 15.33 3 14.5 3h-5C8.67 3 8 3.67 8 4.5V7H5C3.9 7 3 7.9 3 9v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-9.5-2.5h5V7h-5V4.5zM15 14h-2v2c0 .55-.45 1-1 1s-1-.45-1-1v-2H9c-.55 0-1-.45-1-1s.45-1 1-1h2v-2c0-.55.45-1 1-1s1 .45 1 1v2h2c.55 0 1 .45 1 1s-.45 1-1 1z" />
+      </svg>
+    );
+  }
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V7" />
+      <path d="M12 11v6" />
+      <path d="M9 14h6" />
+    </svg>
+  );
 }
 
 export default function VideoCall({
@@ -63,6 +86,7 @@ export default function VideoCall({
   const [isJoined, setIsJoined] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isRemoteVideoOff, setIsRemoteVideoOff] = useState(false);
   const [error, setError] = useState('');
   const [permissionStatus, setPermissionStatus] = useState('prompt'); // 'prompt' | 'granted' | 'denied'
   const [permissionErrorDetail, setPermissionErrorDetail] = useState('');
@@ -70,6 +94,13 @@ export default function VideoCall({
   const [showEndCallModal, setShowEndCallModal] = useState(false);
   const [showBackModal, setShowBackModal] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [activePanel, setActivePanel] = useState(null); // null | 'chat' | 'profile'
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [counterpartName, setCounterpartName] = useState(isDoctor ? 'Client' : 'Practitioner');
+
+  const patientUid = isDoctor ? otherPartyUid : userId;
+  const doctorUid = isDoctor ? userId : otherPartyUid;
+  const chatId = patientUid && doctorUid ? `${patientUid}_${doctorUid}` : null;
 
   useEffect(() => {
     setMounted(true);
@@ -79,6 +110,93 @@ export default function VideoCall({
       document.body.style.overflow = originalOverflow;
     };
   }, []);
+
+  useEffect(() => {
+    if (!appointmentId) return;
+    const unsub = onSnapshot(doc(db, 'consultations', appointmentId), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() || {};
+        if (isDoctor && data.user_name) {
+          setCounterpartName(data.user_name);
+        } else if (!isDoctor && data.doctor_name) {
+          setCounterpartName(data.doctor_name);
+        }
+      }
+    });
+    return () => unsub();
+  }, [appointmentId, isDoctor]);
+
+  const lastSeenChatTimeRef = useRef(0);
+
+  useEffect(() => {
+    if (activePanel === 'chat') {
+      lastSeenChatTimeRef.current = Date.now();
+      setUnreadChatCount(0);
+    }
+  }, [activePanel]);
+
+  // Sync last read time from Firestore chats metadata doc
+  useEffect(() => {
+    if (!chatId || !userId) return;
+    const unsub = onSnapshot(
+      doc(db, 'chats', chatId),
+      (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data() || {};
+        const lastReadTime = isDoctor
+          ? data.last_read_by_doctor_time?.toMillis?.()
+          : data.last_read_by_user_time?.toMillis?.();
+        if (lastReadTime && lastReadTime > (lastSeenChatTimeRef.current || 0)) {
+          lastSeenChatTimeRef.current = lastReadTime;
+        }
+        if (activePanel === 'chat') {
+          setUnreadChatCount(0);
+        }
+      },
+      (err) => {
+        if (err?.code !== 'permission-denied') {
+          console.warn('[VideoCall] chat meta listener:', err);
+        }
+      }
+    );
+    return () => unsub();
+  }, [chatId, userId, isDoctor, activePanel]);
+
+  useEffect(() => {
+    if (!chatId || !userId) return;
+    const q = query(
+      collection(db, 'chats', chatId, 'messages'),
+      where('read', '==', false)
+    );
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        if (activePanel === 'chat') {
+          lastSeenChatTimeRef.current = Date.now();
+          setUnreadChatCount(0);
+          return;
+        }
+        const unreadFromOther = snapshot.docs.filter((d) => {
+          const data = d.data();
+          if (data.sender_uid === userId) return false;
+          if (data.read === true) return false;
+          if (lastSeenChatTimeRef.current && data.timestamp?.toMillis) {
+            if (data.timestamp.toMillis() <= lastSeenChatTimeRef.current) {
+              return false;
+            }
+          }
+          return true;
+        }).length;
+        setUnreadChatCount(unreadFromOther);
+      },
+      (err) => {
+        if (err?.code !== 'permission-denied') {
+          console.warn('[VideoCall] unread chat listener:', err);
+        }
+      }
+    );
+    return () => unsub();
+  }, [chatId, userId, activePanel]);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -174,7 +292,8 @@ export default function VideoCall({
     onCallEndRef.current?.({ endedByDoctor: isDoctor });
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    await releaseLocalResources();
     if (onBack) {
       onBack();
     } else {
@@ -197,8 +316,11 @@ export default function VideoCall({
       hadRemoteJoinedRef.current = true;
       await client.subscribe(user, mediaType);
 
-      if (mediaType === 'video' && remoteVideoRef.current) {
-        user.videoTrack?.play(remoteVideoRef.current);
+      if (mediaType === 'video') {
+        setIsRemoteVideoOff(false);
+        if (remoteVideoRef.current) {
+          user.videoTrack?.play(remoteVideoRef.current);
+        }
       }
 
       if (mediaType === 'audio') {
@@ -215,19 +337,33 @@ export default function VideoCall({
     };
 
     const handleUserUnpublished = (user, mediaType) => {
-      if (mediaType === 'video' && remoteVideoRef.current) {
-        remoteVideoRef.current.innerHTML = '';
+      if (mediaType === 'video') {
+        setIsRemoteVideoOff(true);
+        try {
+          user.videoTrack?.stop();
+        } catch (_) {}
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.innerHTML = '';
+        }
       }
     };
 
     let hasObservedActiveCall = false;
     const handleUserLeft = (user) => {
       console.log('[VideoCall] Remote user left channel:', user.uid);
-      setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
-      // In a 1-on-1 consultation, if the remote party leaves, terminate the call immediately
-      if (!callEndedRef.current) {
-        handleRemoteCallEnd({ call_ended_by: isDoctor ? 'user' : 'doctor' });
+      setIsRemoteVideoOff(false);
+      try {
+        user.videoTrack?.stop();
+      } catch (_) {}
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.innerHTML = '';
       }
+      setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
+      // Do NOT terminate or complete the consultation here.
+      // A participant may have stepped back or disconnected temporarily,
+      // and is permitted to re-join. Actual call termination is controlled
+      // by the Firestore call_status == 'ended' listener when either party
+      // explicitly clicks the End Call button.
     };
 
     // Listen to shared consultation doc for remote call end signal
@@ -574,38 +710,57 @@ export default function VideoCall({
       {/* Video Container */}
       <div className="flex-1 relative">
         {/* Remote Video - Full Screen */}
-        <div 
-          ref={remoteVideoRef}
-          className="w-full h-full bg-gray-900 flex items-center justify-center"
-        >
+        <div className="relative w-full h-full bg-gray-900 flex items-center justify-center overflow-hidden">
+          {/* Dedicated container purely for Agora remote video track playback. React never renders children here. */}
+          <div 
+            ref={remoteVideoRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          />
+
+          {/* Sibling React-managed overlay when remote user has not joined or left */}
           {remoteUsers.length === 0 && (
-            <div className="text-white text-center">
+            <div className="relative z-10 text-white text-center pointer-events-none">
               <div className="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                 <VideoCameraSlashIcon className="w-12 h-12" />
               </div>
-              <p className="text-lg">Waiting for {isDoctor ? 'user' : 'doctor'} to join...</p>
+              <p className="text-lg">
+                {isDoctor
+                  ? 'Please wait for the client to join'
+                  : 'Please wait for the practitioner to join'}
+              </p>
+            </div>
+          )}
+
+          {/* Sibling React-managed overlay when remote user's camera is off */}
+          {remoteUsers.length > 0 && isRemoteVideoOff && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900 text-white text-center pointer-events-none">
+              <div className="w-24 h-24 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <VideoCameraSlashIcon className="w-12 h-12" />
+              </div>
+              <p className="text-lg">
+                {isDoctor ? "Client's camera is off" : "Practitioner's camera is off"}
+              </p>
             </div>
           )}
         </div>
 
         {/* Local Video - Picture in Picture */}
-        <div className="absolute top-4 right-4 w-40 sm:w-48 h-32 sm:h-36 bg-gray-800 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-20">
-          {/* relative wrapper: Agora plays the local video track directly
-              into this div and leaves the last frame frozen (not removed)
-              when the track is disabled, so the "camera is off" placeholder
-              below is absolutely positioned to actually cover it, rather
-              than rendering as an inline sibling that never became visible. */}
+        <div className={`absolute top-4 w-40 sm:w-48 h-32 sm:h-36 bg-gray-800 rounded-xl overflow-hidden shadow-2xl border border-white/10 z-20 transition-all duration-300 ${
+          activePanel ? 'right-4 sm:right-[440px] md:right-[480px]' : 'right-4'
+        }`}>
+          {/* Dedicated container purely for Agora local video track playback. React never renders children here. */}
           <div
             ref={localVideoRef}
-            className="relative w-full h-full"
-          >
-            {isVideoOff && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-gray-700">
-                <VideoCameraSlashIcon className="w-8 h-8 text-white" />
-                <p className="text-white text-xs">Your camera is off</p>
-              </div>
-            )}
-          </div>
+            className="absolute inset-0 w-full h-full"
+          />
+
+          {/* Sibling React-managed overlay when local camera is off */}
+          {isVideoOff && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-gray-700 pointer-events-none">
+              <VideoCameraSlashIcon className="w-8 h-8 text-white" />
+              <p className="text-white text-xs">Your camera is off</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -616,7 +771,7 @@ export default function VideoCall({
           paddingBottom: 'max(2.5rem, calc(env(safe-area-inset-bottom, 0px) + 2rem))'
         }}
       >
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
           {/* Mute/Unmute */}
           <button
             type="button"
@@ -665,6 +820,58 @@ export default function VideoCall({
           >
             <PhoneXMarkIcon className="w-6 h-6 text-white" />
           </button>
+
+          {/* In-Call Chat (Visible to both doctor and patient) */}
+          <button
+            type="button"
+            onClick={() => {
+              if (activePanel !== 'chat') {
+                lastSeenChatTimeRef.current = Date.now();
+                setUnreadChatCount(0);
+                setActivePanel('chat');
+              } else {
+                setActivePanel(null);
+              }
+            }}
+            aria-label="Toggle In-Call Chat"
+            title="In-Call Chat"
+            className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-xl cursor-pointer active:scale-95 ${
+              activePanel === 'chat'
+                ? 'bg-[#FFD3AC] text-[#1E1E1E] ring-2 ring-[#FFD3AC]/60'
+                : 'bg-gray-700/90 hover:bg-gray-600 text-white ring-1 ring-white/15'
+            }`}
+          >
+            {activePanel === 'chat' ? (
+              <ChatBubbleLeftRightIcon className="w-6 h-6" />
+            ) : (
+              <ChatOutlineIcon className="w-6 h-6" />
+            )}
+            {unreadChatCount > 0 && activePanel !== 'chat' && (
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-black animate-pulse">
+                {unreadChatCount}
+              </span>
+            )}
+          </button>
+
+          {/* Client's Health Profile (Doctor Only) */}
+          {isDoctor && (
+            <button
+              type="button"
+              onClick={() => setActivePanel(activePanel === 'profile' ? null : 'profile')}
+              aria-label="Toggle Client Health Profile"
+              title="Client's Health Profile"
+              className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-xl cursor-pointer active:scale-95 ${
+                activePanel === 'profile'
+                  ? 'bg-[#FFD3AC] text-[#1E1E1E] ring-2 ring-[#FFD3AC]/60'
+                  : 'bg-gray-700/90 hover:bg-gray-600 text-[#FFD3AC] ring-1 ring-white/15'
+              }`}
+            >
+              <MedicalServicesIcon 
+                className="w-6 h-6" 
+                filled={activePanel === 'profile'} 
+              />
+            </button>
+          )}
         </div>
       </div>
 
@@ -676,9 +883,90 @@ export default function VideoCall({
         />
         <div className="text-white drop-shadow-md">
           <p className="text-sm sm:text-base font-semibold leading-tight">Video Consultation</p>
-          <p className="text-[11px] sm:text-xs text-white/70">Appointment ID: {appointmentId}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-white/70">Appointment ID: {appointmentId}</p>
+            {isDoctor && (
+              <button
+                type="button"
+                onClick={() => setActivePanel(activePanel === 'profile' ? null : 'profile')}
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[#FFD3AC] text-[11px] font-medium border border-[#FFD3AC]/30 transition cursor-pointer"
+              >
+                <MedicalServicesIcon className="w-3.5 h-3.5" />
+                Health Profile
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Side Panel Drawer (In-Call Chat or Client Profile) */}
+      {activePanel && (
+        <div 
+          className="fixed top-0 bottom-0 right-0 w-full sm:w-[420px] md:w-[460px] z-40 bg-[#181818] shadow-2xl border-l border-white/10 flex flex-col"
+          style={{
+            maxHeight: '100vh',
+          }}
+        >
+          {activePanel === 'chat' && (
+            <div className="flex flex-col h-full bg-[#181818]">
+              {/* Chat Drawer Header */}
+              <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 bg-[#1E1E1E] shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-[#FFD3AC]/20 flex items-center justify-center text-[#FFD3AC] shrink-0">
+                    <ChatOutlineIcon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-white truncate">
+                      Consultation Chat
+                    </h3>
+                    <p className="text-[11px] text-[#FFD3AC] truncate">
+                      with {counterpartName}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActivePanel(null)}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
+                  aria-label="Close Chat"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Embedded ChatWindow */}
+              <div className="flex-1 min-h-0 relative overflow-hidden">
+                {chatId ? (
+                  <ChatWindow
+                    chatId={chatId}
+                    recipientName={counterpartName}
+                    recipientId={otherPartyUid}
+                    canSendMessage={true}
+                    isDoctor={isDoctor}
+                    hideHeader={true}
+                    onMessagesSeen={(ts) => {
+                      lastSeenChatTimeRef.current = ts || Date.now();
+                      setUnreadChatCount(0);
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-white/60 text-sm">
+                    Connecting to chat...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activePanel === 'profile' && isDoctor && (
+            <PatientHealthProfilePanel
+              userUid={patientUid}
+              userName={counterpartName}
+              onClose={() => setActivePanel(null)}
+            />
+          )}
+        </div>
+      )}
 
       {/* End Call Confirmation Modal */}
       {showEndCallModal && (

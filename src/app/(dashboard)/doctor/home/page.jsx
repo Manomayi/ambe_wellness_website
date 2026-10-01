@@ -14,6 +14,7 @@ import {
   Timestamp 
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import DoctorUpcomingConsultationsSection from '@/components/doctor/DoctorUpcomingConsultationsSection';
 
 export default function DoctorHomePage() {
   const router = useRouter();
@@ -363,6 +364,9 @@ export default function DoctorHomePage() {
               </div>
             </div>
           </div>
+
+          {/* Upcoming Consultations Section */}
+          <DoctorUpcomingConsultationsSection />
         </div>
       </div>
     </ProtectedRoute>

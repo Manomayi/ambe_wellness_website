@@ -48,7 +48,7 @@ export function getConsultationStatusInfo(appointment, role = 'user') {
     if (isDocCancel) {
       return {
         statusKey: 'cancelled_by_doctor',
-        label: isDoctor ? 'Cancelled by You' : 'Cancelled by Doctor',
+        label: isDoctor ? 'Cancelled by You' : 'Cancelled by Practitioner',
         badgeClass: 'bg-stone-100 text-stone-700 border border-stone-300',
         dotClass: 'bg-stone-500',
         isCancelled: true,
@@ -61,7 +61,7 @@ export function getConsultationStatusInfo(appointment, role = 'user') {
 
     return {
       statusKey: 'cancelled_by_user',
-      label: isDoctor ? 'Cancelled by Patient' : 'Cancelled by You',
+      label: isDoctor ? 'Cancelled by Client' : 'Cancelled by You',
       badgeClass: 'bg-red-50 text-red-700 border border-red-200',
       dotClass: 'bg-red-500',
       isCancelled: true,
@@ -81,7 +81,7 @@ export function getConsultationStatusInfo(appointment, role = 'user') {
     if (rawStatus.includes('doctor')) {
       return {
         statusKey: 'doctor_absent',
-        label: 'Doctor Absent',
+        label: 'Practitioner Absent',
         badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
         dotClass: 'bg-amber-500',
         isCancelled: false,
@@ -123,7 +123,7 @@ export function getConsultationStatusInfo(appointment, role = 'user') {
   if (userJoined && !doctorJoined) {
     return {
       statusKey: 'doctor_absent',
-      label: 'Doctor Absent',
+      label: 'Practitioner Absent',
       badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
       dotClass: 'bg-amber-500',
       isCancelled: false,

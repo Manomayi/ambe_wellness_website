@@ -3,27 +3,60 @@
 import React from "react";
 import Image from "next/image";
 import { submitEmailCapture } from "@/components/common/EmailCaptureModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ResourcesStarterGuide() {
+  const authContext = useAuth();
+  const user = authContext?.user;
+  const profile = authContext?.profile;
+
   const [email, setEmail] = React.useState("");
   const [error, setError] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
 
+  React.useEffect(() => {
+    if (user?.email && user.email.trim()) {
+      setEmail(user.email.trim());
+      return;
+    }
+    if (profile?.email && profile.email.trim()) {
+      setEmail(profile.email.trim());
+      return;
+    }
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const saved =
+          localStorage.getItem("saved_user_email") ||
+          localStorage.getItem("user_email") ||
+          localStorage.getItem("auth_email");
+        if (saved && saved.trim()) {
+          setEmail(saved.trim());
+        }
+      }
+    } catch (_) {}
+  }, [user?.email, profile?.email]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!EMAIL_RE.test(email.trim())) {
+    const cleanEmail = email.trim();
+    if (!EMAIL_RE.test(cleanEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
     setError("");
     setSubmitting(true);
     try {
-      await submitEmailCapture(email.trim(), {
+      await submitEmailCapture(cleanEmail, {
         guideTitle: "Ambé Wellness Starter Guide",
       });
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("saved_user_email", cleanEmail.toLowerCase());
+        }
+      } catch (_) {}
       setSuccess(true);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -68,12 +101,22 @@ export default function ResourcesStarterGuide() {
             ) : (
               <form
                 onSubmit={handleSubmit}
+                autoComplete="on"
                 className="flex flex-col sm:flex-row gap-3"
               >
                 <input
                   type="email"
+                  inputMode="email"
+                  name="email"
+                  id="starter-guide-email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck="false"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                  }}
                   placeholder="Your email address"
                   className="flex-1 px-4 py-3 rounded-sm bg-transparent border text-ambe-cream placeholder:text-ambe-cream/40 text-sm outline-none focus:border-ambe-gold"
                   style={{ borderColor: "rgba(244, 241, 234, 0.35)" }}

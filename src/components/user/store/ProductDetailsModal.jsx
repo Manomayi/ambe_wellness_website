@@ -15,6 +15,7 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { generateCartItemId } from '@/lib/cartUtils';
 import {
   ShoppingCartIcon,
   PlusIcon,
@@ -163,7 +164,10 @@ export default function ProductDetailsModal({
           product_id: product.id,
           productName: productName,
           product_name: productName,
-          addedAt: new Date()
+          shopId: product.shop_id || product.shopId || '',
+          shop_id: product.shop_id || product.shopId || '',
+          addedAt: new Date().toISOString(),
+          added_at: new Date().toISOString()
         });
         setInternalWishlist(true);
       }
@@ -204,6 +208,7 @@ export default function ProductDetailsModal({
       const cartRef = collection(db, 'users', user.uid, 'cart');
       const varId = selectedVariant || selectedVariantData?.id || 'default';
       const varName = selectedVariantData?.name || 'Standard';
+      const itemId = generateCartItemId(productName, varName, product.id);
 
       const q = query(
         cartRef,
@@ -223,6 +228,8 @@ export default function ProductDetailsModal({
         });
       } else {
         await addDoc(cartRef, {
+          itemId: itemId,
+          item_id: itemId,
           productId: product.id,
           product_id: product.id,
           shop_id: product.shop_id || product.shopId || null,

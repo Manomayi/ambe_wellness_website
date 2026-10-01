@@ -30,7 +30,7 @@ export async function recordContribution({
   if (!user || !user.uid) return false;
 
   const isBefore = type === "before_consultation";
-  const waivedDeposit = isBefore && Number(amount) >= 20.0;
+  const waivedDeposit = isBefore && Number(amount) >= 49.0;
   const numAmount = Number(amount);
 
   const payload = {

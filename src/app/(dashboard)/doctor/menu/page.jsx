@@ -66,6 +66,11 @@ export default function DoctorMenuPage() {
     if (!user) return;
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (JPEG, PNG, WebP, HEIC)");
+      e.target.value = "";
+      return;
+    }
     const storage = getStorage();
     const picRef = storageRef(
       storage,
@@ -136,7 +141,7 @@ export default function DoctorMenuPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/*"
           className="hidden"
           onChange={handlePhotoChange}
         />
@@ -224,7 +229,7 @@ export default function DoctorMenuPage() {
           }
         />
         <UserMenuItem
-          title="Patient Reviews"
+          title="Client Reviews"
           href="/doctor/menu/feedback"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">

@@ -40,7 +40,7 @@ import {
   useElements
 } from '@stripe/react-stripe-js';
 import ContributionView from '@/components/consult/ContributionView';
-import { consumePendingContribution } from '@/lib/contributionService';
+import { consumePendingContribution, recordContribution } from '@/lib/contributionService';
 import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverlay';
 
 
@@ -80,6 +80,12 @@ function ConsultationPaymentForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!stripe || !elements) return;
+
+    if (!selectedSlot?.isInstant && selectedSlot?.time && selectedSlot.time.getTime() < Date.now() + 5 * 60 * 1000) {
+      setErrorMsg('This time slot has expired while waiting. Please go back and select a new time slot.');
+      return;
+    }
+
     setProcessing(true);
     if (onProcessingChange) onProcessingChange(true);
     setErrorMsg('');
@@ -290,6 +296,7 @@ function ScheduleConsultationContent() {
   const [isProcessingDepositPayment, setIsProcessingDepositPayment] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState("schedule"); // 'schedule' | 'contribution' | 'deposit'
+  const [selectedContributionAmount, setSelectedContributionAmount] = useState(0);
 
   const goToStep = (step, pushHistory = true) => {
     setCurrentStep(step);
@@ -702,12 +709,14 @@ function ScheduleConsultationContent() {
     setPaymentLoading(true);
     try {
       const docName = doctorInfo ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() : "Healthcare Provider";
+      const totalAmount = 50.0 + (Number(selectedContributionAmount) || 0);
+      const amountInCents = Math.round(totalAmount * 100);
 
       // 1. Try Firebase Cloud Function createPaymentIntent (dynamically switches test/live key based on isTestMode)
       try {
         const fn = httpsCallable(functions, "createPaymentIntent");
         const fbRes = await fn({
-          amount: 5000,
+          amount: amountInCents,
           currency: "usd",
           type: "consultation",
           isTestMode: Boolean(isTestMode),
@@ -727,13 +736,15 @@ function ScheduleConsultationContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: 5000, // $50.00
+          amount: amountInCents,
           currency: "usd",
           userId: user.uid,
           doctorId: resolvedDoctorUid || "",
           doctorName: docName,
           appointmentTime: selectedSlot?.time ? selectedSlot.time.getTime() : Date.now(),
-          description: `Consultation Deposit - ${docName}`,
+          description: selectedContributionAmount > 0
+            ? `Consultation Deposit ($50) + Contribution ($${selectedContributionAmount}) - ${docName}`
+            : `Consultation Deposit - ${docName}`,
           isTestMode: Boolean(isTestMode),
         })
       });
@@ -752,11 +763,20 @@ function ScheduleConsultationContent() {
 
   const handlePayPalDeposit = async () => {
     if (!selectedSlot || !user || paypalProcessing) return;
+
+    if (!selectedSlot.isInstant && selectedSlot.time.getTime() < Date.now() + 5 * 60 * 1000) {
+      alert("This time slot has expired while waiting. Please select a new time slot.");
+      return;
+    }
+
     setPaypalProcessing(true);
 
     try {
+      const totalAmount = 50.0 + (Number(selectedContributionAmount) || 0);
+      const amountInCents = Math.round(totalAmount * 100);
+
       await startPayPalCheckout({
-        amountCents: 5000,
+        amountCents: amountInCents,
         type: "consultation",
         isTestMode: Boolean(isTestMode),
         onSuccess: async ({ orderId }) => {
@@ -792,7 +812,10 @@ function ScheduleConsultationContent() {
     const contribAmount = options.contributionAmount || 0;
 
     try {
-      const appointmentTimeMillis = selectedSlot.time.getTime();
+      const isInstantSlot = Boolean(selectedSlot?.isInstant);
+      const appointmentTimeMillis = isInstantSlot 
+        ? Date.now() + 2 * 60 * 1000 
+        : selectedSlot.time.getTime();
       const docName = doctorInfo 
         ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() 
         : (profile?.doctor_name || "Healthcare Provider");
@@ -875,10 +898,14 @@ function ScheduleConsultationContent() {
       const pendingContrib = profile?.pending_contribution;
       const effectiveContribId = isWaived
         ? (intentId || '')
-        : (pendingContrib?.id || pendingContrib?.paymentId || null);
+        : (selectedContributionAmount > 0
+            ? finalIntentId
+            : (pendingContrib?.id || pendingContrib?.paymentId || null));
       const effectiveContribAmount = isWaived
         ? contribAmount
-        : (pendingContrib?.amount ? Number(pendingContrib.amount) : null);
+        : (selectedContributionAmount > 0
+            ? selectedContributionAmount
+            : (pendingContrib?.amount ? Number(pendingContrib.amount) : null));
 
       try {
         await setDoc(
@@ -959,6 +986,24 @@ function ScheduleConsultationContent() {
           await setDoc(purchaseRef, purchaseData, { merge: true });
         } catch (pErr) {
           console.error('Error saving purchase record:', pErr);
+        }
+
+        // If combined contribution was paid alongside deposit, record contribution
+        if (selectedContributionAmount > 0) {
+          try {
+            await recordContribution({
+              user,
+              amount: selectedContributionAmount,
+              type: "before_consultation",
+              paymentMethod: paymentMethod === "paypal" ? "paypal" : "stripe",
+              paymentId: finalIntentId,
+              doctorUid: resolvedDoctorUid || null,
+              doctorName: finalDocName || null,
+              consultationId: finalApptId,
+            });
+          } catch (cErr) {
+            console.warn('Error recording combined contribution:', cErr);
+          }
         }
       }
 
@@ -1077,6 +1122,11 @@ function ScheduleConsultationContent() {
   const handleProceedFromSchedule = async () => {
     if (!selectedSlot) return;
 
+    if (!selectedSlot.isInstant && selectedSlot.time.getTime() < Date.now() + 5 * 60 * 1000) {
+      alert("This time slot has expired. Please select a future time slot.");
+      return;
+    }
+
     if (isRescheduleParam) {
       await handleConfirmReschedule();
       return;
@@ -1086,16 +1136,16 @@ function ScheduleConsultationContent() {
     const pendingContrib = profile?.pending_contribution;
     if (pendingContrib) {
       const amount = Number(pendingContrib.amount) || 0;
-      const waived = Boolean(pendingContrib.waivedDeposit || amount >= 20);
+      const waived = Boolean(pendingContrib.waivedDeposit || amount >= 49);
       if (waived) {
-        // Amount >= 20: Deposit waived! Book directly
+        // Amount >= 49: Deposit waived! Book directly
         await handlePaymentSuccessAndSchedule(
           pendingContrib.id || pendingContrib.paymentId,
           { waivedDeposit: true, contributionAmount: amount }
         );
         return;
       } else {
-        // Amount < 20: Contribution already paid, open deposit page directly
+        // Amount < 49: Contribution already paid, open deposit page directly
         goToStep("deposit");
         return;
       }
@@ -1618,7 +1668,10 @@ function ScheduleConsultationContent() {
               onSuccessSchedule={(paymentId, amount) =>
                 handlePaymentSuccessAndSchedule(paymentId, { waivedDeposit: true, contributionAmount: amount })
               }
-              onProceedToDeposit={() => {
+              onProceedToDeposit={(contribAmt) => {
+                setSelectedContributionAmount(Number(contribAmt || 0));
+                setClientSecret("");
+                setPaymentIntentId("");
                 goToStep("deposit");
               }}
               onBack={() => goToStep("schedule")}
@@ -1647,7 +1700,7 @@ function ScheduleConsultationContent() {
               <h3 className="font-bold text-base text-white border-b border-white/10 pb-3">
                 Appointment Summary
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
                   <span className="text-white/60 block font-medium">Doctor</span>
                   <strong className="text-sm font-semibold text-white">{doctorDisplayName}</strong>
@@ -1660,9 +1713,24 @@ function ScheduleConsultationContent() {
                       : `${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at ${selectedSlot.userDisplay}`}
                   </strong>
                 </div>
-                <div>
-                  <span className="text-white/60 block font-medium">Deposit Fee</span>
-                  <strong className="text-sm font-semibold text-[#FFD3AC]">$50.00 USD</strong>
+              </div>
+
+              <div className="border-t border-white/10 pt-3 space-y-2 text-xs">
+                {selectedContributionAmount > 0 && (
+                  <div className="flex justify-between items-center text-white/70">
+                    <span>Contribution Amount</span>
+                    <span className="font-semibold text-white">${selectedContributionAmount.toFixed(2)} USD</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center text-white/70">
+                  <span>Refundable Deposit</span>
+                  <span className="font-semibold text-white">$50.00 USD</span>
+                </div>
+                <div className="border-t border-white/15 pt-2 flex justify-between items-center">
+                  <span className="font-bold text-sm text-white">Total</span>
+                  <span className="font-bold text-base text-[#FFD3AC]">
+                    ${(50 + (selectedContributionAmount || 0)).toFixed(2)} USD
+                  </span>
                 </div>
               </div>
             </div>
@@ -1674,9 +1742,22 @@ function ScheduleConsultationContent() {
                 Deposit & Refund Policy
               </div>
               <p className="leading-relaxed text-white/80">
-                A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+                {selectedContributionAmount > 0 ? (
+                  <>
+                    Your payment includes a <strong>${selectedContributionAmount.toFixed(2)} contribution</strong> to support accessible care, plus a <strong>$50 refundable deposit</strong> to hold your appointment.
+                  </>
+                ) : (
+                  <>
+                    A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+                  </>
+                )}
               </p>
               <ul className="list-disc list-inside space-y-1 text-white/70 pt-1">
+                {selectedContributionAmount > 0 && (
+                  <li>
+                    <strong>Contribution:</strong> ${selectedContributionAmount.toFixed(2)} contribution supports our mission to provide accessible integrative care.
+                  </li>
+                )}
                 <li>
                   <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
                   <a 

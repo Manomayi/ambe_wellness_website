@@ -318,7 +318,7 @@ export default function UserRefundsPage() {
         } else if (isCancelled) {
           calculatedRefund = 50.0;
           policyText = isCancelledByDoctor
-            ? 'Full deposit refund eligible (Appointment was cancelled by doctor).'
+            ? 'Full deposit refund eligible (Appointment was cancelled by practitioner).'
             : 'Full deposit refund eligible (Appointment was cancelled).';
         } else if (!windowPassed && consultationDate) {
           // Session is still ongoing/active. Lock refund even if user joined.
@@ -330,7 +330,7 @@ export default function UserRefundsPage() {
           policyText = 'Full deposit refund eligible (Consultation completed).';
         } else if (userJoined && !doctorJoined) {
           calculatedRefund = 50.0;
-          policyText = 'Full deposit refund eligible (Doctor was absent).';
+          policyText = 'Full deposit refund eligible (Practitioner was absent).';
         } else {
           isNoShow = true;
           calculatedRefund = 25.0;
@@ -697,7 +697,7 @@ export default function UserRefundsPage() {
                     {item.isCancelled ? (
                       <p className="text-orange-400 font-medium sm:col-span-2">
                         <span className="text-white/50 font-medium">Consultation Status:</span>{' '}
-                        Cancelled by {item.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
+                        Cancelled by {item.cancelledBy === 'doctor' ? 'Practitioner' : 'You'}
                         {item.cancelledAt && (
                           <span className="text-white/50 font-normal ml-1">
                             (on {formatConsultationDate(item.cancelledAt)})
@@ -717,7 +717,7 @@ export default function UserRefundsPage() {
                     ) : item.userJoined && !item.doctorJoined && !item.isUpcoming ? (
                       <p className="text-amber-400 font-medium sm:col-span-2">
                         <span className="text-white/50 font-medium">Video Call Attendance:</span>{' '}
-                        Doctor Absent
+                        Practitioner Absent
                       </p>
                     ) : item.isNoShow ? (
                       <p className="text-amber-400 font-medium sm:col-span-2">
@@ -874,7 +874,7 @@ export default function UserRefundsPage() {
               {/* Consultation Details */}
               <div className="text-xs text-white/80 space-y-1.5 bg-black/20 p-4 rounded-xl border border-white/10">
                 <p>
-                  <span className="font-semibold text-white">Doctor:</span>{' '}
+                  <span className="font-semibold text-white">Practitioner:</span>{' '}
                   {selectedItem.doctorName}
                 </p>
                 {selectedItem.consultationDate && (
@@ -886,7 +886,7 @@ export default function UserRefundsPage() {
                 {selectedItem.isCancelled && (
                   <p className="text-orange-400 font-medium">
                     <span className="font-semibold text-white">Status:</span>{' '}
-                    Cancelled by {selectedItem.cancelledBy === 'doctor' ? 'Doctor' : 'You'}
+                    Cancelled by {selectedItem.cancelledBy === 'doctor' ? 'Practitioner' : 'You'}
                     {selectedItem.cancelledAt && (
                       <span className="text-white/50 font-normal ml-1">
                         (on {formatConsultationDate(selectedItem.cancelledAt)})

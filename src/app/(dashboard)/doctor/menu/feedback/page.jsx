@@ -130,10 +130,10 @@ export default function DoctorFeedbackPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
-                Patient Reviews
+                Client Reviews
               </h1>
               <p className="text-sm text-gray-400 mt-1 font-sans">
-                Feedback and ratings submitted by your patients following consultations.
+                Feedback and ratings submitted by your clients following consultations.
               </p>
             </div>
             {stats.total > 0 && (
@@ -152,7 +152,7 @@ export default function DoctorFeedbackPage() {
             </div>
             <h2 className="text-xl font-bold text-white font-sans">No Reviews Yet</h2>
             <p className="text-sm text-gray-400 mt-2 max-w-md mx-auto font-sans">
-              Patient reviews will appear here once patients complete their post-consultation feedback.
+              Client reviews will appear here once clients complete their post-consultation feedback.
             </p>
           </div>
         ) : (

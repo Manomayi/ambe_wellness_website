@@ -375,7 +375,7 @@ export default function DoctorConsultationsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <h3 className="font-semibold text-lg font-sans">
-                        {appointment.user_name || 'Patient'}
+                        {appointment.user_name || 'Client'}
                       </h3>
                       <p className="text-black/75 flex items-center mt-1 text-sm font-sans">
                         <ClockIcon className="h-4 w-4 mr-1 text-[#1E1E1E]" />
@@ -383,7 +383,7 @@ export default function DoctorConsultationsPage() {
                       </p>
                     </div>
                     <button
-                      onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
+                      onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}?autoJoin=true`)}
                       className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm hover:bg-black transition shadow cursor-pointer"
                     >
                       <VideoCameraIcon className="h-4 w-4" />
@@ -416,7 +416,7 @@ export default function DoctorConsultationsPage() {
                       onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
                     >
                       <h3 className="font-semibold text-base text-white hover:text-[#FFD3AC] transition font-sans">
-                        {appointment.user_name || 'Patient'}
+                        {appointment.user_name || 'Client'}
                       </h3>
                       <p className="text-gray-400 flex items-center mt-1 text-xs font-sans">
                         <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC]" />
@@ -465,7 +465,7 @@ export default function DoctorConsultationsPage() {
                       onClick={() => router.push(`/doctor/consultations/appointment/${appointment.id}`)}
                     >
                       <h3 className="font-semibold text-base text-white hover:text-[#FFD3AC] transition font-sans">
-                        {appointment.user_name || 'Patient'}
+                        {appointment.user_name || 'Client'}
                       </h3>
                       <p className="text-gray-400 flex items-center mt-1 text-xs font-sans">
                         <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC]" />
@@ -517,7 +517,7 @@ export default function DoctorConsultationsPage() {
             <p className="text-gray-400 text-sm sm:text-base font-sans mt-3 max-w-sm mx-auto leading-relaxed">
               You don&apos;t have any consultations scheduled yet.
               <br />
-              They will appear here once patients book appointments.
+              They will appear here once clients book appointments.
             </p>
           </div>
         )}

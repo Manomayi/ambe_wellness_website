@@ -65,7 +65,13 @@ export default function UserWishlistPage() {
     const unsubWishlist = onSnapshot(
       collection(db, 'users', user.uid, 'wishlist'),
       (snapshot) => {
-        const ids = new Set(snapshot.docs.map(doc => doc.id));
+        const ids = new Set();
+        snapshot.docs.forEach((docSnap) => {
+          ids.add(docSnap.id);
+          const data = docSnap.data();
+          const pid = data?.productId || data?.product_id;
+          if (pid) ids.add(pid);
+        });
         setWishlistIds(ids);
       },
       (error) => {
@@ -236,7 +242,13 @@ export default function UserWishlistPage() {
 
   // Filter to wishlisted products
   const wishlistProducts = useMemo(() => {
-    return products.filter(p => wishlistIds.has(p.id));
+    return products.filter((p) => {
+      if (wishlistIds.has(p.id)) return true;
+      if (p.product_id && wishlistIds.has(p.product_id)) return true;
+      if (p.productId && wishlistIds.has(p.productId)) return true;
+      if (p.shop_id && p.name && wishlistIds.has(`${p.shop_id}_${p.name}`)) return true;
+      return false;
+    });
   }, [products, wishlistIds]);
 
   // Toggle wishlist (remove item)
@@ -246,10 +258,16 @@ export default function UserWishlistPage() {
     // Optimistic removal
     const nextSet = new Set(wishlistIds);
     nextSet.delete(product.id);
+    if (product.product_id) nextSet.delete(product.product_id);
+    if (product.productId) nextSet.delete(product.productId);
+    if (product.shop_id && product.name) nextSet.delete(`${product.shop_id}_${product.name}`);
     setWishlistIds(nextSet);
 
     try {
       await deleteDoc(doc(db, 'users', user.uid, 'wishlist', product.id));
+      if (product.shop_id && product.name && product.id !== `${product.shop_id}_${product.name}`) {
+        await deleteDoc(doc(db, 'users', user.uid, 'wishlist', `${product.shop_id}_${product.name}`)).catch(() => {});
+      }
     } catch (e) {
       console.error('Error removing from wishlist:', e);
     }

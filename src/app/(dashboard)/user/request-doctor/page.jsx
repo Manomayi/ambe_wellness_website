@@ -235,15 +235,15 @@ export default function RequestDoctorPage() {
           <div className="w-12 h-12 rounded-full bg-[#FAF8F5] border border-[#E7E2D9] flex items-center justify-center mx-auto text-[#C8996A]">
             <UserPlusIcon className="h-6 w-6" />
           </div>
-          <h2 className="text-2xl font-bold text-[#1A1A1A]">No Doctor Assigned</h2>
+          <h2 className="text-2xl font-bold text-[#1A1A1A]">No Practitioner Assigned</h2>
           <p className="text-sm text-[#6B6862] max-w-md mx-auto">
-            You do not currently have a doctor assigned. You can select your health preferences and match with a healthcare provider now.
+            You do not currently have a practitioner assigned. You can select your health preferences and match with a healthcare provider now.
           </p>
           <button
             onClick={() => router.push('/user/get-matched')}
             className="mt-2 bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white px-6 py-3 rounded-xl text-sm font-semibold uppercase tracking-wider shadow-sm transition"
           >
-            Match With a Doctor
+            Match With a Practitioner
           </button>
         </div>
       </div>
@@ -261,7 +261,7 @@ export default function RequestDoctorPage() {
           </div>
           <h2 className="text-2xl font-bold text-[#1A1A1A]">Eligibility Requirement</h2>
           <p className="text-sm text-[#6B6862] max-w-md mx-auto leading-relaxed">
-            You can request a new doctor after you have completed your first consultation with your currently assigned practitioner.
+            You can request a new practitioner after you have completed your first consultation with your currently assigned practitioner.
           </p>
           <div className="pt-2">
             <button
@@ -287,7 +287,7 @@ export default function RequestDoctorPage() {
           </div>
           <h2 className="text-2xl font-bold text-[#1A1A1A]">Upcoming Appointment Scheduled</h2>
           <p className="text-sm text-[#6B6862] max-w-md mx-auto leading-relaxed">
-            You cannot request a new doctor while you have scheduled appointments. Please complete or reschedule them first from your consult dashboard.
+            You cannot request a new practitioner while you have scheduled appointments. Please complete or reschedule them first from your consult dashboard.
           </p>
           <div className="pt-2">
             <button
@@ -313,7 +313,7 @@ export default function RequestDoctorPage() {
           </div>
           <h2 className="text-2xl font-bold text-[#1A1A1A]">Request Under Review</h2>
           <p className="text-sm text-[#6B6862] max-w-md mx-auto leading-relaxed">
-            You already have a pending request to change your doctor. Our clinical coordination team is reviewing your request and will notify you soon.
+            You already have a pending request to change your practitioner. Our clinical coordination team is reviewing your request and will notify you soon.
           </p>
           <div className="pt-2">
             <button
@@ -360,7 +360,7 @@ export default function RequestDoctorPage() {
         <div className="flex items-center gap-4">
           <BackButton />
           <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif">
-            Request a New Doctor
+            Request a New Practitioner
           </h1>
         </div>
       </div>
@@ -372,12 +372,12 @@ export default function RequestDoctorPage() {
           </p>
         </div>
 
-        {/* Current Doctor Card */}
+        {/* Current Practitioner Card */}
         {currentDoctor && (
           <div className="p-4 bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl flex items-center justify-between">
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#8C827A]">
-                Current Doctor
+                Current Practitioner
               </span>
               <p className="font-bold text-base text-[#1A1A1A] mt-0.5">
                 {currentDoctor.name}
@@ -386,16 +386,16 @@ export default function RequestDoctorPage() {
           </div>
         )}
 
-        {/* Suggested by previous doctor banner if referral exists */}
+        {/* Suggested by previous practitioner banner if referral exists */}
         {referredDoctor && (
           <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-xl space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-800">
               <SparklesIcon className="h-4 w-4" />
-              <span>Suggested by Previous Doctor</span>
+              <span>Suggested by Previous Practitioner</span>
             </div>
             <p className="font-bold text-sm text-[#1A1A1A]">{referredDoctor}</p>
             <p className="text-xs text-[#6B6862]">
-              This doctor was recommended specifically for your care needs.
+              This practitioner was recommended specifically for your care needs.
             </p>
           </div>
         )}
@@ -415,7 +415,7 @@ export default function RequestDoctorPage() {
             <textarea
               rows={4}
               required
-              placeholder="Please tell us why you would like to change your doctor..."
+              placeholder="Please tell us why you would like to change your practitioner..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full p-3.5 border border-[#E7E2D9] bg-[#FAF8F5] text-sm text-[#1A1A1A] rounded-xl focus:outline-none focus:border-[#C8996A] placeholder-[#8C827A] resize-none"

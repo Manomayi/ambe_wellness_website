@@ -133,7 +133,7 @@ export default function UserCartPage() {
 
   const getReferralDiscount = (subtotal) => {
     if (referralInfo.isFirstTimeReferred || referralInfo.credits > 0) {
-      return subtotal * 0.20; // 20% discount
+      return subtotal * 0.10; // 10% discount
     }
     return 0;
   };
@@ -333,8 +333,8 @@ export default function UserCartPage() {
                       <div className="flex justify-between text-xs sm:text-sm text-[#FFD3AC]">
                         <span>
                           {referralInfo.isFirstTimeReferred 
-                            ? "Referral Discount (20%)" 
-                            : "Referral Credit (20%)"}
+                            ? "Referral Discount (10%)" 
+                            : "Referral Credit (10%)"}
                         </span>
                         <span>-${referralDiscount.toFixed(2)}</span>
                       </div>

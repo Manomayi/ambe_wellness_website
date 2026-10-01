@@ -68,7 +68,7 @@ export default function ReferFriendPage() {
   }
 
   function shareReferralCode() {
-    const message = `Join Ambe Wellness and get 20% off your first order! Use my referral code: ${referralCode}\n\nSign up and start your wellness journey today!`;
+    const message = `Join Ambe Wellness and get 10% off your first order! Use my referral code: ${referralCode}\n\nVisit https://ambewellness.com or download the app to start your wellness journey today!`;
     
     if (navigator.share) {
       navigator.share({
@@ -113,17 +113,17 @@ export default function ReferFriendPage() {
             {/* Badge */}
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-black/10 text-black/80 mb-4">
               <GiftIcon className="w-4 h-4" />
-              GIVE 20% · GET 20%
+              GIVE 10% · GET 10%
             </span>
 
             <h2 className="text-3xl sm:text-4xl font-bold text-black leading-tight mb-1">
-              Get 20% OFF
+              Get 10% OFF
             </h2>
             <p className="text-lg text-black/80 font-medium">
               Your Next Order
             </p>
             <p className="text-sm text-black/60 max-w-md mx-auto leading-relaxed mt-3">
-              Share your referral code with friends. They get 20% off their first order, and you get 20% off when they make their first purchase.
+              Share your referral code with friends. They get 10% off their first order, and you get 10% off when they make their first purchase.
             </p>
           </div>
 
@@ -182,9 +182,9 @@ export default function ReferFriendPage() {
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-5">How It Works</h3>
             <div className="space-y-4">
               <StepWidget number="1" text="Share your unique referral code with friends." />
-              <StepWidget number="2" text="Your friend signs up and gets 20% off their first order." />
-              <StepWidget number="3" text="When your friend places their first order, you receive a 20% discount credit for your next order!" />
-              <StepWidget number="4" text="Refer 3 friends and you get 20% off each of your next 3 orders — one credit per order, no limit on earnings!" />
+              <StepWidget number="2" text="Your friend signs up and gets 10% off their first order." />
+              <StepWidget number="3" text="When your friend places their first order, you receive a 10% discount credit for your next order!" />
+              <StepWidget number="4" text="Refer 3 friends and you get 10% off each of your next 3 orders — one credit per order, no limit on earnings!" />
             </div>
           </div>
         </div>

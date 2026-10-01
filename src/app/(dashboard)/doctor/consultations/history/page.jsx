@@ -39,7 +39,7 @@ function getStatusBadge(appointment) {
       };
     }
     return {
-      label: "Cancelled by Patient",
+      label: "Cancelled by Client",
       className: "bg-[#E57373]/15 text-[#EF5350]",
     };
   }
@@ -52,7 +52,7 @@ function getStatusBadge(appointment) {
   ) {
     if (rawStatus.includes("doctor")) {
       return {
-        label: "Doctor Absent",
+        label: "Practitioner Absent",
         className: "bg-[#FF9800]/15 text-[#FFA726]",
       };
     }
@@ -361,7 +361,7 @@ export default function DoctorConsultationHistoryPage() {
                   <UserAvatarIcon />
                   <div className="min-w-0">
                     <p className="text-white font-semibold font-sans text-base truncate">
-                      {appt.user_name || "Patient"}
+                      {appt.user_name || "Client"}
                     </p>
                     <p className="text-white/50 text-[13px] font-sans mt-0.5">
                       {formatTime(timeVal)}

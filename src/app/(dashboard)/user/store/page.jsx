@@ -90,7 +90,14 @@ export default function UserStorePage() {
     const unsubWishlist = onSnapshot(
       collection(db, 'users', user.uid, 'wishlist'),
       (snapshot) => {
-        setWishlistIds(new Set(snapshot.docs.map(doc => doc.id)));
+        const ids = new Set();
+        snapshot.docs.forEach((docSnap) => {
+          ids.add(docSnap.id);
+          const data = docSnap.data();
+          const pid = data?.productId || data?.product_id;
+          if (pid) ids.add(pid);
+        });
+        setWishlistIds(ids);
       },
       (error) => {
         if (error?.code === 'permission-denied') return;
@@ -314,8 +321,13 @@ export default function UserStorePage() {
       } else {
         await setDoc(docRef, {
           productId: product.id,
+          product_id: product.id,
           productName: product.name,
-          addedAt: new Date().toISOString()
+          product_name: product.name,
+          shopId: product.shop_id || product.shopId || '',
+          shop_id: product.shop_id || product.shopId || '',
+          addedAt: new Date().toISOString(),
+          added_at: new Date().toISOString()
         });
       }
     } catch (e) {

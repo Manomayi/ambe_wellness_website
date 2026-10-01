@@ -206,15 +206,15 @@ export default function DoctorUserProfilesPage() {
     if (selectedFilter === 'Upcoming') {
       return upcomingUserIds.has(patient.uid);
     } else if (selectedFilter === 'New') {
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - 30);
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
       const matchedDate = patient.matched_at?.toDate
         ? patient.matched_at.toDate()
         : patient.matched_at
         ? new Date(patient.matched_at)
         : null;
       if (!matchedDate) return false;
-      return matchedDate >= cutoff;
+      return matchedDate >= startOfToday;
     }
 
     return true;
@@ -233,10 +233,10 @@ export default function DoctorUserProfilesPage() {
       {/* Title */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
-          Patients
+          Clients
         </h1>
         <p className="text-gray-400 text-sm mt-1 font-sans">
-          View and manage all your matched patients
+          View and manage all your matched clients
         </p>
       </div>
 
@@ -249,7 +249,7 @@ export default function DoctorUserProfilesPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search patients..."
+            placeholder="Search clients..."
             className="w-full pl-11 pr-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] transition font-sans"
           />
         </div>
@@ -282,17 +282,17 @@ export default function DoctorUserProfilesPage() {
           <UserGroupIcon className="h-14 w-14 text-gray-500 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-white font-sans">
             {searchQuery
-              ? 'No matching patients found'
+              ? 'No matching clients found'
               : selectedFilter === 'Upcoming'
-              ? 'No patients with upcoming consultations'
+              ? 'No clients with upcoming consultations'
               : selectedFilter === 'New'
-              ? 'No new patients in the last 30 days'
-              : 'No patients yet'}
+              ? 'No new clients today'
+              : 'No clients yet'}
           </h3>
           <p className="text-gray-400 text-sm mt-1 font-sans max-w-md mx-auto">
             {searchQuery
               ? 'Try adjusting your search query or clear the filter.'
-              : 'When patients are matched or complete consultations with you, they will appear here.'}
+              : 'When clients are matched or complete consultations with you, they will appear here.'}
           </p>
         </div>
       ) : (
@@ -313,7 +313,7 @@ export default function DoctorUserProfilesPage() {
                 onClick={() =>
                   router.push(
                     `/doctor/users/${patient.uid}?name=${encodeURIComponent(
-                      patient.name || 'Patient'
+                      patient.name || 'Client'
                     )}`
                   )
                 }
@@ -323,7 +323,7 @@ export default function DoctorUserProfilesPage() {
                   {patient.profile_picture ? (
                     <img
                       src={patient.profile_picture}
-                      alt={patient.name || 'Patient'}
+                      alt={patient.name || 'Client'}
                       className="h-12 w-12 rounded-full object-cover border-2 border-[#FFD3AC] shrink-0"
                     />
                   ) : (

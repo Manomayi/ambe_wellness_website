@@ -434,7 +434,7 @@ export default function RescheduleConsultationModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7E2D9] bg-[#FAF8F5]">
           <div>
             <h3 className="text-lg font-bold text-[#1A1A1A]">Reschedule Consultation</h3>
-            <p className="text-xs text-[#6B6862]">Select a new date and time for the patient</p>
+            <p className="text-xs text-[#6B6862]">Select a new date and time for the client</p>
           </div>
           <button
             onClick={onClose}
@@ -447,15 +447,15 @@ export default function RescheduleConsultationModal({
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* Patient & Current Schedule Info */}
+          {/* Client & Current Schedule Info */}
           <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-full bg-[#FFD3AC] flex items-center justify-center text-[#1A1A1A] font-bold text-sm">
-                {(appointment.user_name || "P").charAt(0).toUpperCase()}
+                {(appointment.user_name || "C").charAt(0).toUpperCase()}
               </div>
               <div>
                 <p className="font-semibold text-sm text-[#1A1A1A]">
-                  {appointment.user_name || "Patient"}
+                  {appointment.user_name || "Client"}
                 </p>
                 <p className="text-xs text-[#6B6862] flex items-center mt-0.5">
                   <ClockIcon className="w-3.5 h-3.5 mr-1 text-[#C8996A]" />

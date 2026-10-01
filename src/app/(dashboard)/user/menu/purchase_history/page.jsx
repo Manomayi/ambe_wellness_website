@@ -886,7 +886,7 @@ export default function PurchaseHistoryPage() {
                 Review {reviewingProduct.product_name || reviewingProduct.name || 'Product'}
               </h2>
               <p className="text-xs text-white/60 mb-5">
-                Share your honest feedback to help our doctors and community.
+                Share your honest feedback to help our practitioners and community.
               </p>
 
               {reviewSuccess ? (
@@ -1025,7 +1025,7 @@ export default function PurchaseHistoryPage() {
                   {/* Consultation / Payment Details */}
                   <div className="text-xs text-white/80 space-y-1.5 bg-black/20 p-4 rounded-xl border border-white/10">
                     <p>
-                      <span className="font-semibold text-white">Doctor:</span>{' '}
+                      <span className="font-semibold text-white">Practitioner:</span>{' '}
                       {selectedRefundItem.refundEligibility?.doctorName || 'Assigned Doctor'}
                     </p>
                     {selectedRefundItem.refundEligibility?.consultationDate && (

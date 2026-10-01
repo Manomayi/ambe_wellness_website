@@ -86,7 +86,7 @@ export default function UserCompleteProfilePage() {
     profile?.name ||
     profile?.display_name ||
     (profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '') ||
-    'Patient Profile';
+    'Client Profile';
 
   let dosha = 'N/A';
   if (doshaData?.dosha_scores) {
@@ -109,7 +109,7 @@ export default function UserCompleteProfilePage() {
         <div className="flex items-center gap-4 pt-2">
           <AmbeBackButton onClick={() => router.push('/doctor/users')} />
           <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
-            Patient Profile
+            Client Profile
           </h1>
         </div>
 

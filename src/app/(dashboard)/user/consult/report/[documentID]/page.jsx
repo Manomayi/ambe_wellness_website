@@ -410,7 +410,7 @@ export default function ConsultationReportPage() {
     const rawAmount = item.deposit_amount ?? item.deposit_paid;
     if (typeof rawAmount === 'number' && rawAmount <= 0) return false;
     const contribAmount = Number(item.contribution_amount);
-    if (!isNaN(contribAmount) && contribAmount >= 20 && item.deposit_waived !== false) {
+    if (!isNaN(contribAmount) && contribAmount >= 49 && item.deposit_waived !== false) {
       if (rawAmount === undefined || rawAmount === null || Number(rawAmount) <= 0) {
         return false;
       }
@@ -443,7 +443,7 @@ export default function ConsultationReportPage() {
                 {statusInfo.isCancelled
                   ? 'Cancelled Consultation'
                   : statusInfo.isMissed
-                  ? (statusInfo.statusKey === 'doctor_absent' ? 'Doctor Absent' : 'Missed Consultation')
+                  ? (statusInfo.statusKey === 'doctor_absent' ? 'Practitioner Absent' : 'Missed Consultation')
                   : 'Consultation Report'}
               </h2>
               <p className="text-xs sm:text-sm text-white/60 mt-1">
@@ -451,7 +451,7 @@ export default function ConsultationReportPage() {
                   ? 'This scheduled consultation was cancelled.'
                   : statusInfo.isMissed
                   ? (statusInfo.statusKey === 'doctor_absent'
-                      ? 'The assigned doctor was absent for the scheduled video session.'
+                      ? 'The assigned practitioner was absent for the scheduled video session.'
                       : 'This scheduled video consultation was not attended.')
                   : 'Personalized wellness protocol and treatment guidance.'}
               </p>
@@ -512,13 +512,13 @@ export default function ConsultationReportPage() {
           <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-md shadow-xl">
             <ClockIcon className="h-16 w-16 text-amber-400 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">
-              {statusInfo.statusKey === 'doctor_absent' ? 'Doctor Absent' : 'Missed Consultation'}
+              {statusInfo.statusKey === 'doctor_absent' ? 'Practitioner Absent' : 'Missed Consultation'}
             </h2>
             <p className="text-sm text-white/70 max-w-lg mx-auto mb-6 leading-relaxed">
               {statusInfo.statusKey === 'doctor_absent'
                 ? hasDepositPaid(data)
-                  ? 'Your assigned doctor was unable to attend the scheduled video consultation. Under our policy, you are entitled to a 100% full refund of your deposit.'
-                  : 'Your assigned doctor was unable to attend the scheduled video consultation.'
+                  ? 'Your assigned practitioner was unable to attend the scheduled video consultation. Under our policy, you are entitled to a 100% full refund of your deposit.'
+                  : 'Your assigned practitioner was unable to attend the scheduled video consultation.'
                 : hasDepositPaid(data)
                   ? 'This video consultation was missed because the session was not attended. As per our missed consultation policy, no personalized wellness protocol is generated, and you are eligible for a 50% deposit refund ($25.00 USD).'
                   : 'This video consultation was missed because the session was not attended. Under our consultation policy, no personalized wellness protocol is generated.'}
@@ -572,7 +572,7 @@ export default function ConsultationReportPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FFD3AC] px-1">
               <ChatBubbleLeftEllipsisIcon className="w-4 h-4 text-[#FFD3AC]" />
-              Doctor's Summary & Observations
+              Practitioner's Summary & Observations
             </div>
             <div className="bg-[#2D2D30]/85 border border-white/10 border-l-4 border-l-[#FFD3AC] rounded-2xl p-6 backdrop-blur-md shadow-xl">
               <p className="text-sm text-white/90 leading-relaxed italic font-normal">

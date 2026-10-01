@@ -3,6 +3,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/lib/firebase/config";
+import { useAuth } from "@/contexts/AuthContext";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -11,6 +12,12 @@ export async function submitEmailCapture(email, { guideTitle } = {}) {
   const cleanEmail = (email || "").trim().toLowerCase();
   let sent = false;
   let lastError = null;
+
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      localStorage.setItem("saved_user_email", cleanEmail);
+    }
+  } catch (_) {}
 
   // 1. Try Next.js API route first
   try {
@@ -48,23 +55,50 @@ export async function submitEmailCapture(email, { guideTitle } = {}) {
   return { ok: true, email: cleanEmail, guideTitle };
 }
 
-export default function EmailCaptureModal({ open, onClose, guideTitle }) {
+export default function EmailCaptureModal({ open, onClose, guideTitle, initialEmail }) {
   const [mounted, setMounted] = React.useState(false);
+  const authContext = useAuth();
+  const user = authContext?.user;
+  const profile = authContext?.profile;
+
+  const getSavedEmail = React.useCallback(() => {
+    if (initialEmail && initialEmail.trim()) return initialEmail.trim();
+    if (user?.email && user.email.trim()) return user.email.trim();
+    if (profile?.email && profile.email.trim()) return profile.email.trim();
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const saved =
+          localStorage.getItem("saved_user_email") ||
+          localStorage.getItem("user_email") ||
+          localStorage.getItem("auth_email");
+        if (saved && saved.trim()) return saved.trim();
+      }
+    } catch (_) {}
+    return "";
+  }, [initialEmail, user?.email, profile?.email]);
+
   const [email, setEmail] = React.useState("");
   const [error, setError] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
 
+  const inputRef = React.useRef(null);
+
   React.useEffect(() => setMounted(true), []);
 
   React.useEffect(() => {
     if (open) {
-      setEmail("");
+      setEmail(getSavedEmail());
       setError("");
       setSubmitting(false);
       setSuccess(false);
+
+      // Focus input on desktop only (avoid forced mobile keyboard shifts)
+      if (typeof window !== "undefined" && window.matchMedia("(min-width: 769px)").matches) {
+        setTimeout(() => inputRef.current?.focus(), 150);
+      }
     }
-  }, [open]);
+  }, [open, getSavedEmail]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -84,14 +118,20 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!EMAIL_RE.test(email.trim())) {
+    const cleanEmail = email.trim();
+    if (!EMAIL_RE.test(cleanEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
     setError("");
     setSubmitting(true);
     try {
-      await submitEmailCapture(email.trim(), { guideTitle });
+      await submitEmailCapture(cleanEmail, { guideTitle });
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("saved_user_email", cleanEmail.toLowerCase());
+        }
+      } catch (_) {}
       setSuccess(true);
     } catch (err) {
       setError(err?.message || "Something went wrong. Please try again.");
@@ -102,9 +142,8 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
       style={{ backgroundColor: "rgba(26, 26, 26, 0.55)" }}
-      onClick={onClose}
       role="presentation"
     >
       <div
@@ -171,18 +210,32 @@ export default function EmailCaptureModal({ open, onClose, guideTitle }) {
               style={{ color: "#535353" }}
             >
               {guideTitle
-                ? "Written by our integrative doctors — practical Ayurvedic guidance you can start using today. Tell us where to send it."
-                : "Clean body care, seasonal detox, anti-inflammatory eating, everyday herbs, and more — eight guides from our integrative doctors, rooted in traditional Ayurveda and written for modern life."}
+                ? "Written by our integrative practitioners — practical Ayurvedic guidance you can start using today. Tell us where to send it."
+                : "Clean body care, seasonal detox, anti-inflammatory eating, everyday herbs, and more — eight guides from our integrative practitioners, rooted in traditional Ayurveda and written for modern life."}
             </p>
 
-            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3" noValidate>
+            <form
+              onSubmit={handleSubmit}
+              className="max-w-md mx-auto space-y-3"
+              autoComplete="on"
+              noValidate
+            >
               <input
+                ref={inputRef}
                 type="email"
+                inputMode="email"
+                name="email"
+                id="guide-email"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck="false"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError("");
+                }}
                 placeholder="Your email address"
                 aria-label="Your email address"
-                autoFocus
                 className="w-full px-5 py-3.5 rounded-full border text-sm outline-none transition-colors focus:border-[#C8996A]"
                 style={{
                   borderColor: "#E7E2D9",

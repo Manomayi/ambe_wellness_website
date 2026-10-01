@@ -87,7 +87,7 @@ function AmbeDifferenceCarousel() {
     {
       title: "1. Clinical Precision",
       icon: "/images/icons/clinic.png",
-      whatWeDo: "Doctors trained in traditional and Ayurvedic Medicine and allopathic, modern medicine integrative science. Recognize interactions between herbal and pharmaceutical protocols.",
+      whatWeDo: "Practitioners trained in traditional and Ayurvedic Medicine and allopathic, modern medicine integrative science. Recognize interactions between herbal and pharmaceutical protocols.",
       whyItMatters: "Prevents serious side effects from poor combinations (e.g., SSRIs + Brahmi, beta-blockers + Ashwagandha, blood thinners + turmeric)."
     },
     {
@@ -111,7 +111,7 @@ function AmbeDifferenceCarousel() {
     {
       title: "5. Regulatory Integrity",
       icon: "/images/icons/clinic.png",
-      whatWeDo: "No consultation fees. Practitioners are doctors with added biomedical training—not licensed MDs.",
+      whatWeDo: "No consultation fees. Practitioners are experts with added biomedical training—not licensed MDs.",
       whyItMatters: "Maintains legal compliance while delivering high-quality, informed care."
     },
     {
@@ -232,12 +232,12 @@ export default function Home() {
     },
     'personalize': {
       title: 'Precision Formulated rooted in You',
-      text: 'Every formula is crafted from the ground up using your unique constitution, energetic state, symptoms, and subtle pulse readings. Our doctors blend herbs, minerals, and natural compounds using both ancient rasayana principles and modern botanical intelligence. There are no mass formulations—only tailored wellness.',
+      text: 'Every formula is crafted from the ground up using your unique constitution, energetic state, symptoms, and subtle pulse readings. Our practitioners blend herbs, minerals, and natural compounds using both ancient rasayana principles and modern botanical intelligence. There are no mass formulations—only tailored wellness.',
       image: '/images/education/precision_formula.png'
     },
     'prevent': {
       title: 'Safe Use Across All Systems',
-      text: "We take your pharmaceutical use seriously. Every formula is screened against known herb-drug contraindications using a global reference database. We'll never suggest anything that interferes with your prescriptions. Our doctors are trained in integrative pharmacognosy and will advise gently, with respect for allopathic care plans.",
+      text: "We take your pharmaceutical use seriously. Every formula is screened against known herb-drug contraindications using a global reference database. We'll never suggest anything that interferes with your prescriptions. Our practitioners are trained in integrative pharmacognosy and will advise gently, with respect for allopathic care plans.",
       image: '/images/education/safe_use.png'
     },
     'mislabeled': {
@@ -279,7 +279,7 @@ export default function Home() {
                 </div>
 
                 <h1 className="font-heading !text-3xl sm:!text-4xl md:!text-4xl lg:!text-[2.75rem] !text-ambe-cream font-normal leading-[1.2] mb-4 sm:mb-5 not-italic">
-                  Holistic-Doctor{" "}
+                  Holistic-Practitioner{" "}
                   <em className="italic !text-ambe-cream font-normal">led care.</em>
                   <br />
                   <span className="text-[#FFD3AC]">
@@ -300,7 +300,7 @@ export default function Home() {
                   {[
                     "Ancient wisdom. Modern science.",
                     "Vetted practitioners with accredited Ayurveda degrees and allopathic training.",
-                    "Doctor-led. Deeply personal.",
+                    "Practitioner-led. Deeply personal.",
                     "Available anywhere, anytime.",
                   ].map((item) => (
                     <li
@@ -760,7 +760,7 @@ export default function Home() {
                     Precision You Can Trust
                   </div>
                   <p className="text-sm" style={{ color: "#353535" }}>
-                    Doctors cross-trained in time-tested and modern science
+                    Practitioners cross-trained in time-tested and modern science
                   </p>
                 </div>
               </div>
@@ -858,7 +858,7 @@ export default function Home() {
               {/* Semi-transparent backdrop with white text for clear visibility over video background */}
               <div className="max-w-3xl mx-auto text-center mb-8 sm:mb-12 md:mb-16 bg-black/40 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-white/10 shadow-lg">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-white font-heading not-italic mb-3 sm:mb-4 drop-shadow-sm">
-                  Meet the Experts
+                  Meet the Practitioners
                 </h2>
                 <p className="text-base sm:text-lg text-white/90 leading-relaxed font-light sm:font-normal drop-shadow-xs">
                   Guided by science. Every Ambé practitioner is
@@ -928,7 +928,7 @@ export default function Home() {
                       });
                     }}
                     className="flex-shrink-0 -ml-1"
-                    aria-label="Previous expert"
+                    aria-label="Previous practitioner"
                   >
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
                       <path d="M15 18l-6-6 6-6" />
@@ -1004,7 +1004,7 @@ export default function Home() {
                       });
                     }}
                     className="flex-shrink-0 -mr-1"
-                    aria-label="Next expert"
+                    aria-label="Next practitioner"
                   >
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#353535" strokeWidth="2">
                       <path d="M9 18l6-6-6-6" />
@@ -1160,7 +1160,7 @@ export default function Home() {
                       className="text-sm sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-4"
                       style={{ color: "#353535" }}
                     >
-                      We&apos;re doctors, entrepreneurs and researchers with
+                      We&apos;re practitioners, entrepreneurs and researchers with
                       decades of experience. Ambé is built for the soul of the modern human.
                     </p>
 

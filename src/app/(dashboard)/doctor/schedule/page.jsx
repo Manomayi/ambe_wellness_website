@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -96,6 +96,7 @@ export default function DoctorSchedulePage() {
   const [useSameHours, setUseSameHours] = useState(true);
   const [commonStartTime, setCommonStartTime] = useState('09:00');
   const [commonEndTime, setCommonEndTime] = useState('17:00');
+  const daySlotsRef = useRef(null);
 
   useEffect(() => {
     async function loadDoctorSchedule() {
@@ -201,6 +202,15 @@ export default function DoctorSchedulePage() {
         });
         return updated;
       });
+    } else {
+      // When turning OFF, smoothly scroll down so day-specific slots are clearly visible
+      setTimeout(() => {
+        if (daySlotsRef.current) {
+          daySlotsRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          window.scrollBy({ top: 220, behavior: 'smooth' });
+        }
+      }, 100);
     }
   };
 
@@ -588,7 +598,7 @@ export default function DoctorSchedulePage() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div ref={daySlotsRef} className="space-y-3">
                 {DAYS_OF_WEEK.filter((day) => schedule[day]?.isAvailable).map((day) => (
                   <div key={day} className="bg-[#2A2A2E] border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3">
                     <h4 className="font-bold text-sm sm:text-base text-white capitalize">{day}</h4>

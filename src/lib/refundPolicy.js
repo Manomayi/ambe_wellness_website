@@ -141,10 +141,10 @@ function isCancelledStatus(status) {
 }
 
 const POLICY_TEXT = {
-  CANCELLED_BY_DOCTOR: "Full deposit refund eligible (Appointment was cancelled by doctor).",
+  CANCELLED_BY_DOCTOR: "Full deposit refund eligible (Appointment was cancelled by practitioner).",
   CANCELLED: "Full deposit refund eligible (Appointment was cancelled).",
   COMPLETED: "Full deposit refund eligible (Consultation completed).",
-  DOCTOR_ABSENT: "Full deposit refund eligible (Doctor was absent).",
+  DOCTOR_ABSENT: "Full deposit refund eligible (Practitioner was absent).",
   MISSED: "50% refund because the consultation was missed.",
   UPCOMING: "Refund locked until the consultation ends or is cancelled.",
   EXPIRED: "Refund period expired (exceeded 30 days).",

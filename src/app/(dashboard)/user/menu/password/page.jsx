@@ -38,7 +38,12 @@ export default function EditPasswordPage() {
   const [confirmPwd, setConfirmPwd] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    currentPwd: "",
+    newPwd: "",
+    confirmPwd: "",
+    general: "",
+  });
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -50,55 +55,90 @@ export default function EditPasswordPage() {
   }, [router]);
 
   const validate = () => {
-    if (!currentPwd || !newPwd || !confirmPwd) {
-      setError("All fields are required.");
-      return false;
+    const errors = {
+      currentPwd: "",
+      newPwd: "",
+      confirmPwd: "",
+      general: "",
+    };
+    let isValid = true;
+
+    if (!currentPwd.trim()) {
+      errors.currentPwd = "Please enter your current password.";
+      isValid = false;
     }
-    if (newPwd.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return false;
+
+    if (!newPwd.trim()) {
+      errors.newPwd = "Please enter a new password.";
+      isValid = false;
+    } else if (newPwd.trim().length < 8) {
+      errors.newPwd = "Password must be at least 8 characters long.";
+      isValid = false;
+    } else if (!/[A-Z]/.test(newPwd)) {
+      errors.newPwd = "Password must include at least one uppercase letter.";
+      isValid = false;
+    } else if (!/[0-9]/.test(newPwd)) {
+      errors.newPwd = "Password must include at least one number.";
+      isValid = false;
+    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPwd)) {
+      errors.newPwd = "Password must include at least one special character.";
+      isValid = false;
     }
-    if (!/[A-Z]/.test(newPwd)) {
-      setError("Password must include at least one uppercase letter.");
-      return false;
+
+    if (!confirmPwd.trim()) {
+      errors.confirmPwd = "Please confirm your new password.";
+      isValid = false;
+    } else if (newPwd.trim() !== confirmPwd.trim()) {
+      errors.confirmPwd = "Confirmation password does not match.";
+      isValid = false;
     }
-    if (!/[0-9]/.test(newPwd)) {
-      setError("Password must include at least one number.");
-      return false;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPwd)) {
-      setError("Password must include at least one special character.");
-      return false;
-    }
-    if (newPwd !== confirmPwd) {
-      setError("Passwords do not match.");
-      return false;
-    }
-    return true;
+
+    setFieldErrors(errors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setFieldErrors({ currentPwd: "", newPwd: "", confirmPwd: "", general: "" });
     if (!validate()) return;
     setSubmitting(true);
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("Not authenticated");
-      const cred = EmailAuthProvider.credential(user.email, currentPwd);
+      const cred = EmailAuthProvider.credential(user.email, currentPwd.trim());
       await reauthenticateWithCredential(user, cred);
-      await updatePassword(user, newPwd);
+      await updatePassword(user, newPwd.trim());
       setSuccess(true);
       setTimeout(() => {
         router.back();
       }, 1500);
     } catch (e) {
       console.error(e);
-      setError(
-        e.code === "auth/wrong-password"
-          ? "Current password is incorrect."
-          : "Failed to update password. Please try again."
-      );
+      if (
+        e.code === "auth/wrong-password" ||
+        e.code === "auth/invalid-credential" ||
+        e.code?.includes("invalid-credential")
+      ) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          currentPwd: "Current password is incorrect.",
+        }));
+      } else if (e.code === "auth/weak-password") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          newPwd: "New password is too weak.",
+        }));
+      } else if (e.code === "auth/requires-recent-login") {
+        setFieldErrors((prev) => ({
+          ...prev,
+          general: "Please log out and log back in before changing password.",
+        }));
+      } else {
+        setFieldErrors((prev) => ({
+          ...prev,
+          general: "Failed to update password. Please try again.",
+        }));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +166,7 @@ export default function EditPasswordPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+      <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-2">
         {/* Title & Subtitle matching App (Image 2) */}
         <div className="pb-3">
           <h2 className="text-white text-2xl sm:text-[26px] font-semibold font-sans tracking-tight mb-1.5">
@@ -137,9 +177,9 @@ export default function EditPasswordPage() {
           </p>
         </div>
 
-        {error && (
+        {fieldErrors.general && (
           <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center">
-            <p className="text-xs sm:text-sm text-red-300 font-sans">{error}</p>
+            <p className="text-xs sm:text-sm text-red-300 font-sans">{fieldErrors.general}</p>
           </div>
         )}
 
@@ -151,31 +191,53 @@ export default function EditPasswordPage() {
           </div>
         )}
 
+        {/* Hidden username input for password manager auto-save linking */}
+        <input
+          type="text"
+          name="username"
+          value={auth.currentUser?.email || ""}
+          autoComplete="username"
+          readOnly
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+
         {/* Current Password Field */}
         <AmbeTextField
           type="password"
+          name="current-password"
           value={currentPwd}
           onChange={(e) => {
             setCurrentPwd(e.target.value);
-            if (error) setError("");
+            if (fieldErrors.currentPwd || fieldErrors.general) {
+              setFieldErrors((prev) => ({ ...prev, currentPwd: "", general: "" }));
+            }
           }}
           placeholder="Current Password"
+          autoComplete="current-password"
           leadingIcon={<LockIcon />}
           showPasswordToggle
+          error={fieldErrors.currentPwd}
           required
         />
 
         {/* New Password Field */}
         <AmbeTextField
           type="password"
+          name="new-password"
           value={newPwd}
           onChange={(e) => {
             setNewPwd(e.target.value);
-            if (error) setError("");
+            if (fieldErrors.newPwd || fieldErrors.general) {
+              setFieldErrors((prev) => ({ ...prev, newPwd: "", general: "" }));
+            }
           }}
           placeholder="New Password"
+          autoComplete="new-password"
           leadingIcon={<LockIcon />}
           showPasswordToggle
+          error={fieldErrors.newPwd}
           required
         />
 
@@ -235,14 +297,19 @@ export default function EditPasswordPage() {
         {/* Confirm New Password Field */}
         <AmbeTextField
           type="password"
+          name="confirm-new-password"
           value={confirmPwd}
           onChange={(e) => {
             setConfirmPwd(e.target.value);
-            if (error) setError("");
+            if (fieldErrors.confirmPwd || fieldErrors.general) {
+              setFieldErrors((prev) => ({ ...prev, confirmPwd: "", general: "" }));
+            }
           }}
           placeholder="Confirm New Password"
+          autoComplete="new-password"
           leadingIcon={<LockIcon />}
           showPasswordToggle
+          error={fieldErrors.confirmPwd}
           required
         />
 

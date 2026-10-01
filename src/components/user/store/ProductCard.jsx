@@ -12,6 +12,7 @@ import {
   updateDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { generateCartItemId } from '@/lib/cartUtils';
 import {
   PlusIcon,
   CheckIcon,
@@ -27,6 +28,7 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
   const [adding, setAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const addingRef = useRef(false);
+  const wishlistLockRef = useRef(false);
 
   useEffect(() => {
     if (variants.length > 0 && !selectedVariant) {
@@ -57,6 +59,7 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
       const cartRef = collection(db, 'users', user.uid, 'cart');
       const varId = selectedVariant || selectedVariantData?.id || 'default';
       const varName = selectedVariantData?.name || 'Standard';
+      const itemId = generateCartItemId(product.name, varName, product.id);
 
       const q = query(
         cartRef,
@@ -76,6 +79,8 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
         });
       } else {
         await addDoc(cartRef, {
+          itemId: itemId,
+          item_id: itemId,
           productId: product.id,
           product_id: product.id,
           shop_id: product.shop_id || product.shopId || null,
@@ -141,9 +146,17 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            onToggleWishlist();
+            if (wishlistLockRef.current) return;
+            wishlistLockRef.current = true;
+            try {
+              onToggleWishlist?.();
+            } finally {
+              setTimeout(() => {
+                wishlistLockRef.current = false;
+              }, 300);
+            }
           }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center transition cursor-pointer z-10"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center transition cursor-pointer z-10 active:scale-90"
           aria-label="Toggle Wishlist"
           title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
         >
@@ -204,8 +217,6 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist, o
               e.stopPropagation();
               addToCart();
             }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 shadow-md cursor-pointer shrink-0 active:scale-90 ${
               justAdded
                 ? 'bg-emerald-500 text-white scale-105 shadow-emerald-500/30'

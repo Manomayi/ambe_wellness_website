@@ -390,7 +390,7 @@ export default function DoctorConsultationReportPage() {
 
   const patientFirstName = userName
     ? userName.trim().split(" ")[0]
-    : (report?.user_name || report?.userName || "Patient").trim().split(" ")[0];
+    : (report?.user_name || report?.userName || "Client").trim().split(" ")[0];
   const pageTitle = `${patientFirstName}'s Report`;
 
   const IGNORED_METADATA_KEYS = new Set([
@@ -505,7 +505,7 @@ export default function DoctorConsultationReportPage() {
       {displayDoctorName && (
         <div className="space-y-2">
           <p className="text-xs sm:text-sm uppercase font-semibold text-white/50 tracking-wider">
-            DOCTOR
+            PRACTITIONER
           </p>
           <div className="bg-white/[0.08] border border-white/10 rounded-2xl p-4 sm:p-5 flex items-center gap-3.5 backdrop-blur-md">
             <div className="w-10 h-10 rounded-xl bg-[#FFD3AC]/15 border border-[#FFD3AC]/25 flex items-center justify-center shrink-0">
@@ -664,7 +664,7 @@ export default function DoctorConsultationReportPage() {
               <svg className="w-5 h-5 text-[#FFD3AC]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
-              <span className="text-sm font-semibold text-[#FFD3AC]">Doctor's Notes</span>
+              <span className="text-sm font-semibold text-[#FFD3AC]">Practitioner Notes</span>
             </div>
             <div className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">
               {notes}
@@ -712,10 +712,10 @@ export default function DoctorConsultationReportPage() {
             </div>
             <div>
               <p className="text-xs font-semibold text-white/70 uppercase tracking-wider">
-                Doctor Recommendation
+                Practitioner Recommendation
               </p>
               <p className="text-sm sm:text-[15px] font-semibold text-white mt-1">
-                For requesting new doctor you can refer to {report.referral.referred_to_doctor_name || report.referral.doctor_name || report.referral.referred_specialty_label || report.referral.specialty || "Specialist"}
+                For requesting a new practitioner you can refer to {report.referral.referred_to_doctor_name || report.referral.doctor_name || report.referral.referred_specialty_label || report.referral.specialty || "Specialist"}
               </p>
               {report.referral.notes && (
                 <p className="text-xs text-white/70 mt-1">{report.referral.notes}</p>

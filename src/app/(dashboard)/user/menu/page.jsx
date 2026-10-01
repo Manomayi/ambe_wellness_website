@@ -51,6 +51,11 @@ export default function UserMenuPage() {
     if (!user) return;
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (JPEG, PNG, WebP, HEIC)");
+      e.target.value = "";
+      return;
+    }
     const storage = getStorage();
     const picRef = storageRef(storage, `images/${user.uid}/profile_picture.png`);
     try {
@@ -135,7 +140,7 @@ export default function UserMenuPage() {
             type="file"
             ref={fileInputRef}
             onChange={handlePhotoChange}
-            accept="image/*"
+            accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/*"
             className="hidden"
           />
         </div>
@@ -251,7 +256,7 @@ export default function UserMenuPage() {
           }
         />
         <UserMenuItem
-          title="Request a New Doctor"
+          title="Request a New Practitioner"
           href="/user/request-doctor"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">

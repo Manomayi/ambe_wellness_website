@@ -46,6 +46,7 @@ export default function SignUpPage() {
     medicalSchool: '',
     professionalTitles: [],
     customProfessionalTitle: '',
+    bio: '',
     referralCode: '',
   });
 
@@ -154,6 +155,27 @@ export default function SignUpPage() {
     setErrors(prev => ({ ...prev, professionalTitles: '', customProfessionalTitle: '' }));
   };
 
+  const generateStrongPassword = () => {
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    const special = '@#$%^&+=!';
+    const allChars = lowercase + uppercase + numbers + special;
+
+    let pwd = '';
+    pwd += lowercase[Math.floor(Math.random() * lowercase.length)];
+    pwd += uppercase[Math.floor(Math.random() * uppercase.length)];
+    pwd += numbers[Math.floor(Math.random() * numbers.length)];
+    pwd += special[Math.floor(Math.random() * special.length)];
+
+    for (let i = pwd.length; i < 12; i++) {
+      pwd += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    const shuffled = pwd.split('').sort(() => 0.5 - Math.random()).join('');
+    updateFormData('password', shuffled);
+    updateFormData('confirmPassword', shuffled);
+  };
+
   const validateStep = () => {
     const newErrors = {};
     const isDoctor = formData.userType === 'doctor';
@@ -180,12 +202,21 @@ export default function SignUpPage() {
       }
     } else if (step === 4) {
       if (!formData.password) {
-        newErrors.password = 'Password is required';
+        newErrors.password = 'Please enter a password';
       } else if (formData.password.length < 8) {
         newErrors.password = 'Password must be at least 8 characters';
+      } else if (!/[A-Z]/.test(formData.password)) {
+        newErrors.password = 'Password must include at least one uppercase letter';
+      } else if (!/[0-9]/.test(formData.password)) {
+        newErrors.password = 'Password must include at least one number';
+      } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+        newErrors.password = 'Password must include at least one special character';
       }
-      if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
+
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Confirmation password does not match';
       }
     } else if (isDoctor) {
       if (step === 5) {
@@ -215,6 +246,9 @@ export default function SignUpPage() {
           !formData.customProfessionalTitle.trim()
         ) {
           newErrors.customProfessionalTitle = 'Specify your professional title';
+        }
+        if (!formData.bio || !formData.bio.trim()) {
+          newErrors.bio = 'Please enter your professional bio';
         }
       } else if (step === 7) {
         if (!documents.license) {
@@ -287,8 +321,14 @@ export default function SignUpPage() {
   const handleProfilePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, profilePhoto: 'Please select an image file (JPEG, PNG, WebP, HEIC)' }));
+        e.target.value = '';
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         setErrors(prev => ({ ...prev, profilePhoto: 'Image must be under 5MB' }));
+        e.target.value = '';
         return;
       }
       setProfilePhoto(file);
@@ -387,6 +427,7 @@ export default function SignUpPage() {
                 formData.professionalTitles.includes('Other') && formData.customProfessionalTitle.trim()
                   ? formData.customProfessionalTitle.trim()
                   : null,
+              bio: formData.bio?.trim() || null,
               documents: documentsPayload,
             }
           : {}),
@@ -434,6 +475,12 @@ export default function SignUpPage() {
               'Ambe_Independent_Contractor_Agreement.pdf',
               'Ambe_NDA_NCA_Doctors.pdf',
             ];
+            if (formData.bio?.trim()) {
+              termsData.bio = formData.bio.trim();
+            }
+            if (formData.medicalSchool?.trim()) {
+              termsData.education = formData.medicalSchool.trim();
+            }
           }
 
           await setDoc(
@@ -441,6 +488,17 @@ export default function SignUpPage() {
             termsData,
             { merge: true }
           );
+
+          if (isDoctor && formData.bio?.trim()) {
+            await setDoc(
+              doc(db, 'doctors', result.data.uid),
+              {
+                bio: formData.bio.trim(),
+                education: formData.medicalSchool?.trim() || '',
+              },
+              { merge: true }
+            );
+          }
         } catch (termsErr) {
           console.warn("Terms update warning:", termsErr);
         }
@@ -531,7 +589,7 @@ export default function SignUpPage() {
         </h2>
         <p className="text-gray-400 text-xs mb-6">
           {isDoctor
-            ? "Add a professional photo so patients can recognize you."
+            ? "Add a professional photo so clients can recognize you."
             : "Add a photo to personalize your profile (optional)."}
         </p>
 
@@ -554,11 +612,15 @@ export default function SignUpPage() {
             {profilePhotoPreview ? "Change Photo" : "Choose Photo"}
             <input
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/*"
               onChange={handleProfilePhotoChange}
               className="hidden"
             />
           </label>
+
+          {errors.profilePhoto && (
+            <p className="text-xs text-red-400 mt-1">{errors.profilePhoto}</p>
+          )}
 
           {profilePhotoPreview && (
             <button
@@ -688,6 +750,55 @@ export default function SignUpPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
           </div>
+
+          {/* Doctor Professional Profile Fields */}
+          {isDoctor && (
+            <>
+              {/* Professional Title & Medical School */}
+              {(formData.professionalTitles.length > 0 || formData.medicalSchool) && (
+                <div
+                  onClick={() => handleJumpToStep(6)}
+                  className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.364a4.125 4.125 0 00-6.338 0 .375.375 0 01-.266.111h6.87c-.098 0-.193-.04-.266-.111z" />
+                    </svg>
+                    <span className="text-black font-medium text-[15px] truncate">
+                      {[
+                        formData.professionalTitles.filter(t => t !== 'Other').join(', ') +
+                          (formData.customProfessionalTitle ? (formData.professionalTitles.length > 1 ? `, ${formData.customProfessionalTitle}` : formData.customProfessionalTitle) : ''),
+                        formData.medicalSchool,
+                      ].filter(Boolean).join(' • ')}
+                    </span>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                  </svg>
+                </div>
+              )}
+
+              {/* Professional Bio */}
+              {formData.bio && (
+                <div
+                  onClick={() => handleJumpToStep(6)}
+                  className="w-full bg-white rounded-3xl px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <svg className="w-5 h-5 text-[#FFD3AC] shrink-0 self-start mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    <span className="text-black font-medium text-[15px] line-clamp-2">
+                      {formData.bio}
+                    </span>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                  </svg>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Agreements / Terms Checkbox */}
@@ -772,7 +883,7 @@ export default function SignUpPage() {
                   </svg>
                 </div>
                 <span className="font-semibold text-sm sm:text-base font-sans tracking-tight">
-                  I&apos;m a Patient
+                  I&apos;m a Client
                 </span>
               </div>
 
@@ -800,7 +911,7 @@ export default function SignUpPage() {
                   </svg>
                 </div>
                 <span className="font-semibold text-sm sm:text-base font-sans tracking-tight">
-                  I&apos;m a Doctor
+                  I&apos;m a Practitioner
                 </span>
               </div>
             </div>
@@ -988,16 +1099,53 @@ export default function SignUpPage() {
           </div>
         );
 
-      case 4:
+      case 4: {
+        const pwd = formData.password || "";
+        const hasMinLen = pwd.length >= 8;
+        const hasUpper = /[A-Z]/.test(pwd);
+        const hasNum = /[0-9]/.test(pwd);
+        const hasSpecial = /[@#$%^&+=!._*~-]/.test(pwd);
+
         return (
           <div className="space-y-4 py-2">
-            <h2 className="text-white text-xl font-semibold text-center mb-6 font-sans">
-              Set Your Password
+            <h2 className="text-white text-xl font-semibold text-center mb-1 font-sans">
+              Create a Password
             </h2>
+            <p className="text-gray-400 text-xs sm:text-sm text-center mb-4 font-sans">
+              Your password must be at least 8 characters and include uppercase, numbers, and special characters.
+            </p>
+
+            {/* Generate Strong Password Button */}
+            <div className="flex justify-center mb-2">
+              <button
+                type="button"
+                onClick={generateStrongPassword}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#FFD3AC]/70 text-[#FFD3AC] hover:bg-[#FFD3AC]/10 text-xs font-semibold tracking-wide transition cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Generate Strong Password
+              </button>
+            </div>
+
+            {/* Hidden username input for password manager auto-save linking */}
+            <input
+              type="text"
+              name="username"
+              value={formData.email}
+              autoComplete="username"
+              readOnly
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden="true"
+            />
 
             <AmbeTextField
               type="password"
+              name="new-password"
               placeholder="Password (min 8 characters)"
+              autoComplete="new-password"
               value={formData.password}
               onChange={(e) => updateFormData("password", e.target.value)}
               error={errors.password}
@@ -1010,9 +1158,64 @@ export default function SignUpPage() {
               }
             />
 
+            {/* Password Requirements Guidance */}
+            <div className="bg-white/95 border border-[#FFD3AC]/80 rounded-2xl p-4 shadow-md backdrop-blur-xs space-y-2.5">
+              <p className="text-neutral-800 font-semibold text-xs tracking-wide flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#F5B880]" />
+                Password Requirements:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className={`flex items-center gap-2 transition-colors ${hasMinLen ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
+                  {hasMinLen ? (
+                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
+                  )}
+                  <span>At least 8 characters</span>
+                </div>
+
+                <div className={`flex items-center gap-2 transition-colors ${hasUpper ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
+                  {hasUpper ? (
+                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
+                  )}
+                  <span>At least one uppercase (A-Z)</span>
+                </div>
+
+                <div className={`flex items-center gap-2 transition-colors ${hasNum ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
+                  {hasNum ? (
+                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
+                  )}
+                  <span>At least one number (0-9)</span>
+                </div>
+
+                <div className={`flex items-center gap-2 transition-colors ${hasSpecial ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
+                  {hasSpecial ? (
+                    <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <span className="w-3.5 h-3.5 rounded-full border border-neutral-300 bg-neutral-100 shrink-0 inline-block" />
+                  )}
+                  <span>Special character (@, #, $, etc.)</span>
+                </div>
+              </div>
+            </div>
+
             <AmbeTextField
               type="password"
+              name="confirm-password"
               placeholder="Confirm Password"
+              autoComplete="new-password"
               value={formData.confirmPassword}
               onChange={(e) => updateFormData("confirmPassword", e.target.value)}
               error={errors.confirmPassword}
@@ -1026,6 +1229,7 @@ export default function SignUpPage() {
             />
           </div>
         );
+      }
 
       case 5:
         if (formData.userType !== "doctor") {
@@ -1232,6 +1436,27 @@ export default function SignUpPage() {
                 />
               </div>
             )}
+
+            {/* Professional Bio */}
+            <div className="pt-2">
+              <label className="block text-white text-[17px] font-semibold font-sans mb-2 tracking-tight">
+                Professional Bio
+              </label>
+              <div className="relative">
+                <textarea
+                  rows={4}
+                  placeholder="Tell patients about yourself, your background, and approach to care..."
+                  value={formData.bio || ''}
+                  onChange={(e) => updateFormData('bio', e.target.value)}
+                  className={`w-full bg-white text-[#1E1E1E] font-sans text-sm sm:text-[15px] font-medium rounded-2xl p-4 outline-none border transition-all duration-200 resize-none shadow-sm placeholder:text-gray-400 ${
+                    errors.bio ? 'border-red-400 focus:border-red-500' : 'border-transparent focus:border-[#FFD3AC]'
+                  }`}
+                />
+              </div>
+              {errors.bio && (
+                <p className="text-xs text-red-400 mt-1.5 px-2">{errors.bio}</p>
+              )}
+            </div>
           </div>
         );
 
@@ -1355,7 +1580,7 @@ export default function SignUpPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-[#1E1E1E] border border-white/20 rounded-3xl p-6 w-full max-w-md shadow-2xl relative text-left">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-white">Doctor Agreements</h3>
+              <h3 className="text-lg font-semibold text-white">Practitioner Agreements</h3>
               <button
                 type="button"
                 onClick={() => setShowDoctorAgreementsModal(false)}

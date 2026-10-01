@@ -22,8 +22,16 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      setError("Please enter both email and password.");
+    if (!email.trim() && !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Please enter your email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
       return;
     }
 
@@ -58,7 +66,17 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error(err);
-      setError("Invalid email address or password. Please try again.");
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/wrong-password" ||
+        err.code === "auth/user-not-found"
+      ) {
+        setError("Invalid email address or password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many failed attempts. Please try again later or reset your password.");
+      } else {
+        setError(err.message || "Failed to sign in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

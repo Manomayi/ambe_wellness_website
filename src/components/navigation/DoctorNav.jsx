@@ -45,7 +45,7 @@ export default function DoctorNav() {
     { label: 'Home', href: '/doctor/home' },
     { label: 'Consult', href: '/doctor/consultations' },
     { label: 'Messages', href: '/doctor/messages' },
-    { label: 'Patients', href: '/doctor/users' },
+    { label: 'Clients', href: '/doctor/users' },
     { label: 'Menu', href: '/doctor/menu' },
   ];
 
@@ -87,7 +87,7 @@ export default function DoctorNav() {
               priority
             />
             <span className="text-[11px] font-sans font-semibold tracking-wider text-[#FFD3AC] uppercase bg-[#FFD3AC]/15 px-2 py-0.5 rounded-full border border-[#FFD3AC]/30">
-              Doctor
+              Practitioner
             </span>
           </Link>
 

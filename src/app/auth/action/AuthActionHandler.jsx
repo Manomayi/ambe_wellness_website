@@ -237,7 +237,7 @@ export default function AuthActionHandler() {
       return;
     }
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError("Confirmation password does not match.");
       return;
     }
     setSubmitting(true);

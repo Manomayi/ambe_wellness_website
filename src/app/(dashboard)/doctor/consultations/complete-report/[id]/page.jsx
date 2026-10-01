@@ -110,7 +110,7 @@ export default function CompleteReportPage() {
   const { user } = useAuth();
 
   const rawUserUid = searchParams.get('userUid') || searchParams.get('user_uid') || searchParams.get('userId') || '';
-  const rawUserName = searchParams.get('userName') || searchParams.get('user_name') || 'Patient';
+  const rawUserName = searchParams.get('userName') || searchParams.get('user_name') || 'Client';
   const rawTimeMillis = searchParams.get('time') || '';
 
   const [appointmentData, setAppointmentData] = useState(null);
@@ -120,7 +120,7 @@ export default function CompleteReportPage() {
 
   // Derived effective values that always stay up-to-date
   const userUid = resolvedUserUid || rawUserUid || appointmentData?.user_id || appointmentData?.userId || appointmentData?.user_uid || appointmentData?.patient_id || appointmentData?.patient_uid || '';
-  const userName = (resolvedUserName && resolvedUserName !== 'Patient') ? resolvedUserName : (rawUserName && rawUserName !== 'Patient' ? rawUserName : (appointmentData?.user_name || appointmentData?.userName || appointmentData?.patient_name || 'Patient'));
+  const userName = (resolvedUserName && resolvedUserName !== 'Client' && resolvedUserName !== 'Patient') ? resolvedUserName : (rawUserName && rawUserName !== 'Client' && rawUserName !== 'Patient' ? rawUserName : (appointmentData?.user_name || appointmentData?.userName || appointmentData?.patient_name || 'Client'));
   const timeMillis = rawTimeMillis || (resolvedTime?.toMillis ? String(resolvedTime.toMillis()) : (appointmentData?.time?.toMillis ? String(appointmentData.time.toMillis()) : ''));
 
   // Effect to resolve appointment data if not fully provided in query params
@@ -214,7 +214,7 @@ export default function CompleteReportPage() {
           }
           const foundName = apptDoc.user_name || apptDoc.userName || apptDoc.patient_name;
           if (foundName) {
-            setResolvedUserName((prev) => (!prev || prev === 'Patient') ? foundName : prev);
+            setResolvedUserName((prev) => (!prev || prev === 'Patient' || prev === 'Client') ? foundName : prev);
           }
           if (apptDoc.time) {
             setResolvedTime(apptDoc.time);
@@ -431,20 +431,28 @@ export default function CompleteReportPage() {
     loadProducts();
   }, []);
 
-  // Load doctors for referral modal
+  // Load practitioners for referral modal
   useEffect(() => {
     if (!showReferralModal || allDoctors.length > 0) return;
     const loadDoctors = async () => {
       setLoadingDoctors(true);
       try {
         const snap = await getDocs(collection(db, 'doctors'));
-        const docsList = snap.docs.map((d) => ({
-          uid: d.id,
-          ...d.data(),
-        })).filter((d) => d.uid !== user?.uid); // Don't refer to oneself
+        const isApprovedPractitioner = (d) => {
+          if (d.verified === true || d.is_verified === true || d.isVerified === true) return true;
+          const s = String(d.overall_status || d.verification_status || d.status || '').toLowerCase().trim();
+          return s === 'approved' || s === 'verified';
+        };
+
+        const docsList = snap.docs
+          .map((d) => ({
+            uid: d.id,
+            ...d.data(),
+          }))
+          .filter((d) => d.uid !== user?.uid && isApprovedPractitioner(d)); // Don't refer to oneself, only approved practitioners
         setAllDoctors(docsList);
       } catch (err) {
-        console.error('Error loading doctors:', err);
+        console.error('Error loading practitioners:', err);
       } finally {
         setLoadingDoctors(false);
       }
@@ -572,12 +580,62 @@ export default function CompleteReportPage() {
 
   const filteredDoctors = useMemo(() => {
     if (!referralSearch.trim()) return allDoctors;
-    const q = referralSearch.toLowerCase();
+    const q = referralSearch.toLowerCase().trim();
+
+    // Check if query starts with "dr." or "dr "
+    let cleanQuery = q;
+    if (cleanQuery.startsWith('dr. ')) {
+      cleanQuery = cleanQuery.substring(4).trim();
+    } else if (cleanQuery.startsWith('dr ')) {
+      cleanQuery = cleanQuery.substring(3).trim();
+    }
+
+    const isJustDr = q === 'dr' || q === 'dr.';
+
     return allDoctors.filter((docItem) => {
-      const name = `${docItem.first_name || ''} ${docItem.last_name || ''} ${docItem.name || ''}`.toLowerCase();
-      const specialty = (docItem.field || []).join(' ').toLowerCase();
+      if (isJustDr) return true;
+
+      const fName = (docItem.first_name || '').toLowerCase();
+      const lName = (docItem.last_name || '').toLowerCase();
+      const fullName = `${fName} ${lName}`.trim();
+      const customName = (docItem.name || '').toLowerCase();
+      const withDr = `dr. ${fullName}`;
+      const withDrNoDot = `dr ${fullName}`;
+
+      // Specialties (keys + human readable labels)
+      const rawFields = Array.isArray(docItem.field) ? docItem.field : [];
+      const fieldsString = rawFields.join(' ').toLowerCase();
+      const fieldLabels = rawFields
+        .map((fKey) => {
+          const found = HEALTH_FIELDS.find((hf) => hf.key === fKey);
+          return found ? found.label.toLowerCase() : fKey.replace(/_/g, ' ').toLowerCase();
+        })
+        .join(' ');
+
+      // School / Education
+      const school = (docItem.medical_school || '').toLowerCase();
+      const education = (docItem.education || '').toLowerCase();
+
+      // Title / Degrees
       const title = (docItem.professional_title || docItem.title || '').toLowerCase();
-      return name.includes(q) || specialty.includes(q) || title.includes(q);
+      const degrees = (docItem.degrees || docItem.degree || '').toLowerCase();
+
+      return (
+        fullName.includes(q) ||
+        withDr.includes(q) ||
+        withDrNoDot.includes(q) ||
+        customName.includes(q) ||
+        (cleanQuery.length > 0 && (
+          fullName.includes(cleanQuery) ||
+          customName.includes(cleanQuery)
+        )) ||
+        fieldsString.includes(q) ||
+        fieldLabels.includes(q) ||
+        school.includes(q) ||
+        education.includes(q) ||
+        title.includes(q) ||
+        degrees.includes(q)
+      );
     });
   }, [allDoctors, referralSearch]);
 
@@ -822,11 +880,11 @@ export default function CompleteReportPage() {
           { merge: true }
         );
 
-        // 5b. Create notification for the patient in users/{userUid}/notifications
+        // 5b. Create notification for the client in users/{userUid}/notifications
         const notifRef = doc(collection(db, 'users', effectiveUserUid, 'notifications'));
         batch.set(notifRef, {
-          title: "Doctor's Recommendations Ready",
-          body: `Please review your doctor's recommendations from your consultation with ${doctorName}.`,
+          title: "Practitioner's Recommendations Ready",
+          body: `Please review your practitioner's recommendations from your consultation with ${doctorName}.`,
           type: 'doctor_recommendation',
           report_id: documentId,
           document_id: documentId,
@@ -974,7 +1032,7 @@ export default function CompleteReportPage() {
       case 3:
         return 'Store Recommendations';
       case 4:
-        return `${userName?.split(' ')?.[0] || 'Patient'}'s Cart`;
+        return `${userName?.split(' ')?.[0] || 'Client'}'s Cart`;
       default:
         return 'Recommendations';
     }
@@ -1129,7 +1187,7 @@ export default function CompleteReportPage() {
                     </button>
                   </div>
                   <p className="text-white/60 text-xs mt-1 mb-3">
-                    This patient will be referred to this specialist upon submitting the consultation.
+                    This client will be referred to this practitioner upon submitting the consultation.
                   </p>
                   <button
                     type="button"
@@ -1148,7 +1206,7 @@ export default function CompleteReportPage() {
                   <div className="flex items-center justify-center gap-3 py-1">
                     <UserPlusIcon className="w-5 h-5 text-[#FFD3AC] group-hover:scale-110 transition-transform" />
                     <span className="text-white font-bold text-base tracking-wide font-sans">
-                      Refer to Another Doctor
+                      Refer to Another Practitioner
                     </span>
                   </div>
                 </div>
@@ -1219,7 +1277,7 @@ export default function CompleteReportPage() {
                     </span>
                   </div>
                   <p className="text-white/70 text-xs font-sans mt-0.5">
-                    Only visible to you. Not visible to the patient.
+                    Only visible to you. Not visible to the client.
                   </p>
                 </div>
               </div>
@@ -1552,7 +1610,7 @@ export default function CompleteReportPage() {
                     className="border border-white/20 rounded-2xl p-8 text-center backdrop-blur-md"
                   >
                     <p className="text-white/70 font-medium text-base">The cart is empty</p>
-                    <p className="text-white/40 text-xs mt-1">No products recommended for this patient</p>
+                    <p className="text-white/40 text-xs mt-1">No products recommended for this client</p>
                   </div>
                 ) : (
                   recommendedProducts.map((item) => (
@@ -1583,13 +1641,13 @@ export default function CompleteReportPage() {
                 )}
               </div>
 
-              {/* Patient Info */}
+              {/* Client Info */}
               <div
                 style={{ backgroundColor: 'rgba(0, 0, 0, 0.45)' }}
                 className="border border-white/20 rounded-[18px] p-5 shadow-sm backdrop-blur-md"
               >
                 <h3 className="text-xs font-bold text-[#FFD3AC] uppercase tracking-wider mb-2">
-                  Patient & Consultation
+                  Client & Consultation
                 </h3>
                 <p className="font-serif text-xl font-bold text-white">{userName}</p>
                 <p className="text-xs text-white/60 mt-0.5">Appointment ID: {params.id}</p>
@@ -1619,7 +1677,7 @@ export default function CompleteReportPage() {
                 className="border border-white/20 rounded-[18px] p-5 shadow-sm backdrop-blur-md"
               >
                 <h3 className="text-xs font-bold text-[#FFD3AC] uppercase tracking-wider mb-2">
-                  Doctor Notes
+                  Practitioner Notes
                 </h3>
                 <p className="text-xs sm:text-sm text-white/70 whitespace-pre-wrap">
                   {overallNotes || <span className="italic text-white/40">No additional notes</span>}
@@ -1701,7 +1759,7 @@ export default function CompleteReportPage() {
                 {/* Modal Header */}
                 <div className="p-5 border-b border-white/10 flex items-center justify-between">
                   <div>
-                    <h3 className="font-serif text-xl font-bold text-white">Refer to Specialist</h3>
+                    <h3 className="font-serif text-xl font-bold text-white">Refer to Practitioner</h3>
                     <p className="text-xs text-white/60 mt-0.5">Referring {userName}</p>
                   </div>
                   <button
@@ -1721,7 +1779,7 @@ export default function CompleteReportPage() {
                       type="text"
                       value={referralSearch}
                       onChange={(e) => setReferralSearch(e.target.value)}
-                      placeholder="Search specialties or doctors..."
+                      placeholder="Search by name, specialty, or school..."
                       style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.08)',
                         color: '#ffffff',
@@ -1751,7 +1809,7 @@ export default function CompleteReportPage() {
                           : 'text-white/60 hover:text-white'
                       }`}
                     >
-                      By Doctor
+                      By Practitioner
                     </button>
                   </div>
                 </div>
@@ -1777,26 +1835,50 @@ export default function CompleteReportPage() {
                       ))}
                     </div>
                   ) : loadingDoctors ? (
-                    <p className="text-center text-xs text-white/60 py-6">Loading doctors...</p>
+                    <p className="text-center text-xs text-white/60 py-6">Loading practitioners...</p>
                   ) : filteredDoctors.length === 0 ? (
-                    <p className="text-center text-xs text-white/60 py-6">No doctors found.</p>
+                    <p className="text-center text-xs text-white/60 py-6">No practitioners found.</p>
                   ) : (
                     <div className="space-y-2">
                       {filteredDoctors.map((docItem) => {
                         const dName = docItem.name || `Dr. ${docItem.first_name || ''} ${docItem.last_name || ''}`.trim();
                         const title = docItem.professional_title || docItem.title || 'Specialist';
+                        const rawFields = Array.isArray(docItem.field) ? docItem.field : [];
+                        const specialtyLabels = rawFields.map((fKey) => {
+                          const found = HEALTH_FIELDS.find((hf) => hf.key === fKey);
+                          return found ? found.label : fKey.replace(/_/g, ' ');
+                        });
+                        const specialtyDisplay = specialtyLabels.length > 0
+                          ? specialtyLabels.slice(0, 2).join(', ') + (specialtyLabels.length > 2 ? ` +${specialtyLabels.length - 2} more` : '')
+                          : '';
+                        const schoolDisplay = docItem.medical_school || docItem.education || '';
+
                         return (
                           <div
                             key={docItem.uid}
                             className="p-3.5 rounded-xl border border-white/10 flex items-center justify-between gap-3 hover:border-[#FFD3AC] transition"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/20 border border-[#FFD3AC]/40 flex items-center justify-center text-[#FFD3AC] font-bold text-sm shrink-0">
-                                {dName.charAt(0) || 'D'}
-                              </div>
+                              {docItem.profile_picture ? (
+                                <img
+                                  src={docItem.profile_picture}
+                                  alt={dName}
+                                  className="w-10 h-10 rounded-full object-cover border border-[#FFD3AC]/40 shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-[#FFD3AC]/20 border border-[#FFD3AC]/40 flex items-center justify-center text-[#FFD3AC] font-bold text-sm shrink-0">
+                                  {dName.replace(/^Dr\.\s*/i, '').charAt(0) || 'P'}
+                                </div>
+                              )}
                               <div>
                                 <h4 className="font-bold text-white text-sm">{dName}</h4>
                                 <p className="text-xs text-white/60">{title}</p>
+                                {specialtyDisplay && (
+                                  <p className="text-[11px] text-[#FFD3AC] mt-0.5">{specialtyDisplay}</p>
+                                )}
+                                {schoolDisplay && (
+                                  <p className="text-[11px] text-white/50">{schoolDisplay}</p>
+                                )}
                               </div>
                             </div>
                             <button

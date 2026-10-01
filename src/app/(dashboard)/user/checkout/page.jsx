@@ -10,6 +10,9 @@ import {
   onSnapshot,
   getDoc,
   updateDoc,
+  setDoc,
+  deleteDoc,
+  serverTimestamp,
   addDoc,
   getDocs,
   query
@@ -24,6 +27,183 @@ import { useRemotePaymentConfig } from '@/lib/remoteConfig';
 import { startPayPalCheckout } from '@/lib/paypal';
 import { getItemUnitPrice } from '@/lib/cartUtils';
 import { calculateOrderTax } from '@/lib/taxService';
+import {
+  Elements,
+  ExpressCheckoutElement,
+  useStripe,
+  useElements
+} from '@stripe/react-stripe-js';
+
+const ENABLE_CLIENT_SIDE_FALLBACK_WRITE = process.env.NEXT_PUBLIC_ENABLE_CLIENT_PURCHASE_WRITE !== 'false';
+
+async function runReferralCompletion(orderId, creditsUsed = 0) {
+  try {
+    const completeReferralFn = httpsCallable(functions, 'completeReferralForOrder');
+    await completeReferralFn({
+      orderId: orderId,
+      creditsUsed: Number(creditsUsed) || 0,
+    });
+  } catch (refErr) {
+    console.warn('⚠️ completeReferralForOrder warning:', refErr);
+  }
+}
+
+function ApplePayCheckoutInline({
+  clientSecret,
+  paymentIntentId,
+  user,
+  cartItems,
+  referralCreditsToUse,
+  onSuccess,
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [applePayAvailable, setApplePayAvailable] = useState(true);
+
+  const completeOrderAndRedirect = async (amount = null, currency = 'USD') => {
+    if (!user) return;
+
+    if (ENABLE_CLIENT_SIDE_FALLBACK_WRITE) {
+      try {
+        const cartSnapshot = await getDocs(collection(db, 'users', user.uid, 'cart'));
+        const items = cartSnapshot.docs.map(d => {
+          const data = d.data();
+          const prodName = data.productName || data.product_name || data.name || 'Product';
+          const prodId = data.productId || data.product_id || data.id || d.id;
+          return {
+            id: d.id,
+            product_id: prodId,
+            productId: prodId,
+            product_name: prodName,
+            productName: prodName,
+            name: prodName,
+            price: data.mrp || data.price || 0,
+            quantity: data.quantity || 1,
+            size: data.size || data.variantName || 'Standard',
+            shop_id: data.shop_id || data.shopId || null,
+            imageUrl: data.imageUrl || data.image_url || null,
+          };
+        });
+
+        if (paymentIntentId) {
+          const purchaseRef = doc(db, 'users', user.uid, 'purchases', paymentIntentId);
+          await setDoc(purchaseRef, {
+            id: paymentIntentId,
+            amount: amount !== null ? amount : (items.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0)),
+            currency: currency.toUpperCase(),
+            status: 'succeeded',
+            type: 'store',
+            items: items,
+            created: serverTimestamp(),
+            payment_intent_id: paymentIntentId,
+          }, { merge: true });
+        }
+
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, {
+          has_made_purchase: true,
+        }).catch(() => {});
+
+        await runReferralCompletion(paymentIntentId, referralCreditsToUse);
+
+        const deletePromises = cartSnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+      } catch (err) {
+        console.error('Error recording purchase fallback:', err);
+      }
+    }
+
+    if (onSuccess) onSuccess();
+  };
+
+  const handleConfirm = async () => {
+    if (!stripe || !elements) return;
+    setIsProcessing(true);
+    setMessage(null);
+
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        setMessage(submitError.message);
+        setIsProcessing(false);
+        return;
+      }
+
+      const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/user/checkout/success`,
+        },
+        redirect: 'if_required'
+      });
+
+      if (result.error) {
+        setMessage(result.error.message || "Apple Pay payment failed.");
+        setIsProcessing(false);
+      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+        setMessage("Payment successful! Completing your order...");
+        const finalAmount = result.paymentIntent.amount ? (result.paymentIntent.amount / 100) : null;
+        const finalCurrency = result.paymentIntent.currency || 'USD';
+        await completeOrderAndRedirect(finalAmount, finalCurrency);
+      } else {
+        setMessage("Payment was not completed.");
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      console.error('Apple Pay confirm error:', err);
+      setMessage("Payment failed. Please try again.");
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {!applePayAvailable && (
+        <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-xs">
+          Apple Pay requires Safari on an Apple device (iPhone, iPad, or Mac) with an active card in Apple Wallet.
+        </div>
+      )}
+
+      <ExpressCheckoutElement
+        onConfirm={handleConfirm}
+        onReady={({ availablePaymentMethods }) => {
+          if (!availablePaymentMethods || !availablePaymentMethods.applePay) {
+            setApplePayAvailable(false);
+          } else {
+            setApplePayAvailable(true);
+          }
+        }}
+        options={{
+          wallets: {
+            applePay: 'always',
+            googlePay: 'never',
+          },
+          buttonType: {
+            applePay: 'plain',
+          },
+          buttonTheme: {
+            applePay: 'white',
+          },
+          buttonHeight: 48,
+        }}
+      />
+
+      {isProcessing && (
+        <div className="text-center py-2 text-xs text-white/60">
+          Processing Apple Pay...
+        </div>
+      )}
+
+      {message && (
+        <div className={`text-center p-3 rounded-lg text-sm ${message.includes('successful') ? 'bg-[#FFD3AC]/15 text-[#FFD3AC] border border-[#FFD3AC]/30' : 'bg-red-500/15 text-red-300 border border-red-500/30'}`}>
+          {message}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function UserCheckoutPage() {
   const router = useRouter();
@@ -37,11 +217,14 @@ export default function UserCheckoutPage() {
   const [addressForm, setAddressForm] = useState({
     streetNumber: '',
     streetName: '',
+    apartmentNumber: '',
     city: '',
     state: '',
     zipCode: '',
     country: 'USA'
   });
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
 
   // Order calculation values
   const [subtotal, setSubtotal] = useState(0);
@@ -54,9 +237,78 @@ export default function UserCheckoutPage() {
   const [subscriptionDiscount, setMembershipDiscount] = useState(0);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [total, setTotal] = useState(0);
-  const { isTestMode } = useRemotePaymentConfig();
+  const { isTestMode, stripePromise, loading: configLoading } = useRemotePaymentConfig();
   const [paymentMethod, setPaymentMethod] = useState('stripe');
   const [referralCreditsToUse, setReferralCreditsToUse] = useState(0);
+
+  const [applePayClientSecret, setApplePayClientSecret] = useState('');
+  const [applePayPaymentIntentId, setApplePayPaymentIntentId] = useState('');
+  const [loadingApplePayIntent, setLoadingApplePayIntent] = useState(false);
+
+  const initApplePayIntent = async () => {
+    if (!user || total <= 0 || !deliveryAddress.trim() || isTaxCalculating) return;
+    setLoadingApplePayIntent(true);
+    let secret = "";
+    let pId = "";
+    try {
+      const createPaymentIntentStore = httpsCallable(functions, 'createPaymentIntentStore');
+      const result = await createPaymentIntentStore({
+        amount: Math.round(total * 100),
+        currency: 'usd',
+        type: 'store',
+        referral_credits_to_use: referralCreditsToUse,
+        tax_amount: Number(tax.toFixed(2)),
+        shipping_amount: Number(shipping.toFixed(2)),
+        tax_mode: taxMode,
+        tax_rate: taxRate,
+        tax_calculation_id: taxCalculationId,
+        isTestMode: Boolean(isTestMode),
+      });
+      if (result.data?.clientSecret) {
+        secret = result.data.clientSecret;
+        pId = result.data.paymentIntentId || "";
+      }
+    } catch (e) {
+      console.warn('createPaymentIntentStore failed, falling back to API route:', e);
+    }
+
+    if (!secret) {
+      try {
+        const res = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: Math.round(total * 100),
+            currency: "usd",
+            type: "store",
+            userId: user.uid,
+            tax_amount: Number(tax.toFixed(2)),
+            shipping_amount: Number(shipping.toFixed(2)),
+            tax_mode: taxMode,
+            tax_rate: taxRate,
+            tax_calculation_id: taxCalculationId,
+            description: "Store Product Purchase",
+            isTestMode: Boolean(isTestMode),
+          }),
+        });
+        const data = await res.json();
+        secret = data.clientSecret;
+        pId = data.paymentIntentId || "";
+      } catch (err) {
+        console.error('API create payment intent error:', err);
+      }
+    }
+
+    setApplePayClientSecret(secret);
+    setApplePayPaymentIntentId(pId);
+    setLoadingApplePayIntent(false);
+  };
+
+  useEffect(() => {
+    if (paymentMethod === 'apple_pay' && deliveryAddress.trim() && total > 0 && !isTaxCalculating) {
+      initApplePayIntent();
+    }
+  }, [paymentMethod, total, deliveryAddress, isTaxCalculating, isTestMode]);
 
   const searchInputRef = useRef(null);
   const autocompleteRef = useRef(null);
@@ -106,8 +358,10 @@ export default function UserCheckoutPage() {
             }
           }
 
+          const combinedStreet = [streetNumber, streetName].filter(Boolean).join(' ');
           setAddressForm((prev) => ({
             ...prev,
+            streetAddress: combinedStreet,
             streetNumber: streetNumber || prev.streetNumber,
             streetName: streetName || prev.streetName,
             city: city || prev.city,
@@ -164,12 +418,16 @@ export default function UserCheckoutPage() {
           // Set delivery address
           if (data.delivery_address) {
             const addr = data.delivery_address;
+            const aptStr = addr.apartmentNumber ? ` Apt ${addr.apartmentNumber}` : '';
             const formatted = typeof addr === 'string'
               ? addr
-              : `${[addr.streetNumber, addr.streetName].filter(Boolean).join(' ')}, ${addr.city}, ${addr.state}, ${addr.zipCode}, ${addr.country || 'USA'}`;
+              : `${[addr.streetNumber, addr.streetName].filter(Boolean).join(' ')}${aptStr}, ${addr.city}, ${addr.state}, ${addr.zipCode}, ${addr.country || 'USA'}`;
             setDeliveryAddress(formatted);
             if (typeof addr === 'object') {
-              setAddressForm(addr);
+              setAddressForm({
+                ...addr,
+                apartmentNumber: addr.apartmentNumber || '',
+              });
             }
           }
         }
@@ -229,10 +487,10 @@ export default function UserCheckoutPage() {
     let creditsToUse = 0;
     
     if (isFirstTimeReferred) {
-      refDiscount = sub * 0.20; // 20% off first purchase
+      refDiscount = sub * 0.10; // 10% off first purchase
       creditsToUse = 0;
     } else if (referralCredits > 0) {
-      refDiscount = sub * 0.20; // 20% off using one credit
+      refDiscount = sub * 0.10; // 10% off using one credit
       creditsToUse = 1;
     }
     
@@ -287,8 +545,115 @@ export default function UserCheckoutPage() {
     setTotal(Math.max(0, totalAmount));
   }, [subtotal, tax, shipping, subscriptionDiscount, referralDiscount]);
 
+  const reverseGeocodeCoords = async (lat, lng) => {
+    // 1. Call server-side API route (handles Google Geocoding, Nominatim fallback without CORS or client console errors)
+    try {
+      const res = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success) {
+          return {
+            streetAddress: data.streetAddress || '',
+            streetNumber: data.streetNumber || '',
+            streetName: data.streetName || '',
+            city: data.city || '',
+            state: data.state || '',
+            zipCode: data.zipCode || '',
+            country: data.country || 'USA',
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Server reverse-geocode error, falling back to BigDataCloud:', e);
+    }
+
+    // 2. Direct client fallback to BigDataCloud (supports CORS)
+    try {
+      const bdcRes = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+      );
+      if (bdcRes.ok) {
+        const bdcData = await bdcRes.json();
+        if (bdcData) {
+          const street = bdcData.localityInfo?.administrative?.[0]?.name || bdcData.locality || '';
+          const city = bdcData.city || bdcData.locality || '';
+          const state = bdcData.principalSubdivision || '';
+          const zipCode = bdcData.postcode || '';
+          const country = bdcData.countryName || 'USA';
+
+          return {
+            streetAddress: street,
+            streetNumber: '',
+            streetName: '',
+            city,
+            state,
+            zipCode,
+            country,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('BigDataCloud reverse geocode failed:', e);
+    }
+
+    return null;
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setIsGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const result = await reverseGeocodeCoords(lat, lng);
+          if (result && (result.streetAddress || result.city || result.state || result.zipCode)) {
+            setAddressForm((prev) => ({
+              ...prev,
+              streetAddress: result.streetAddress || prev.streetAddress,
+              streetNumber: result.streetNumber || prev.streetNumber,
+              streetName: result.streetName || prev.streetName,
+              city: result.city || prev.city,
+              state: result.state || prev.state,
+              zipCode: result.zipCode || prev.zipCode,
+              country: result.country || prev.country || 'USA',
+            }));
+            if (searchInputRef.current) {
+              searchInputRef.current.value = result.streetAddress || '';
+            }
+          } else {
+            alert('Could not determine address for your current location.');
+          }
+        } catch (err) {
+          console.error('Error reverse geocoding location:', err);
+          alert('Failed to detect address from current location.');
+        } finally {
+          setIsGettingLocation(false);
+        }
+      },
+      (error) => {
+        console.warn('Geolocation error:', error);
+        alert(
+          error.code === 1
+            ? 'Location permission denied. Please allow location access in your browser settings.'
+            : 'Unable to retrieve location.'
+        );
+        setIsGettingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
   const updateDeliveryAddress = async () => {
-    if (!addressForm.streetNumber?.trim() && !addressForm.streetName?.trim()) {
+    const fullStreet = addressForm.streetAddress !== undefined
+      ? addressForm.streetAddress.trim()
+      : [addressForm.streetNumber, addressForm.streetName].filter(Boolean).join(' ').trim();
+
+    if (!fullStreet) {
       alert('Please enter a street address.');
       return;
     }
@@ -305,16 +670,49 @@ export default function UserCheckoutPage() {
       return;
     }
 
+    setIsSavingAddress(true);
     try {
+      let sNum = addressForm.streetNumber || '';
+      let sName = addressForm.streetName || fullStreet;
+      if (addressForm.streetAddress !== undefined) {
+        const firstSpace = fullStreet.indexOf(' ');
+        if (firstSpace > 0) {
+          const cand = fullStreet.substring(0, firstSpace).trim();
+          if (/^\d+[a-zA-Z]?(?:[-/]\d+[a-zA-Z]?)?$/.test(cand)) {
+            sNum = cand;
+            sName = fullStreet.substring(firstSpace + 1).trim();
+          } else {
+            sNum = '';
+            sName = fullStreet;
+          }
+        } else {
+          sNum = '';
+          sName = fullStreet;
+        }
+      }
+
+      const addressToSave = {
+        streetNumber: sNum,
+        streetName: sName,
+        apartmentNumber: addressForm.apartmentNumber?.trim() || '',
+        city: addressForm.city.trim(),
+        state: addressForm.state.trim(),
+        zipCode: addressForm.zipCode.trim(),
+        country: addressForm.country || 'USA',
+      };
+
       await updateDoc(doc(db, 'users', user.uid), {
-        delivery_address: addressForm
+        delivery_address: addressToSave
       });
-      const formatted = `${[addressForm.streetNumber, addressForm.streetName].filter(Boolean).join(' ')}, ${addressForm.city}, ${addressForm.state}, ${addressForm.zipCode}, ${addressForm.country || 'USA'}`;
+      const aptStr = addressForm.apartmentNumber?.trim() ? ` Apt ${addressForm.apartmentNumber.trim()}` : '';
+      const formatted = `${[sNum, sName].filter(Boolean).join(' ')}${aptStr}, ${addressForm.city}, ${addressForm.state}, ${addressForm.zipCode}, ${addressForm.country || 'USA'}`;
       setDeliveryAddress(formatted);
       setShowAddressModal(false);
     } catch (error) {
       console.error('Error updating address:', error);
       alert('Failed to update address');
+    } finally {
+      setIsSavingAddress(false);
     }
   };
 
@@ -512,8 +910,8 @@ export default function UserCheckoutPage() {
                 <div className="flex justify-between">
                   <span className="text-[#FFD3AC]">
                     {userData?.referred_by && !userData?.has_made_purchase
-                      ? 'First Purchase Referral Discount (20%)'
-                      : `Referral Discount (20% - ${(userData?.referral_credits || 0) - 1} left)`}
+                      ? 'First Purchase Referral Discount (10%)'
+                      : `Referral Discount (10% - ${(userData?.referral_credits || 0) - 1} left)`}
                   </span>
                   <span className="text-[#FFD3AC] font-medium">-${referralDiscount.toFixed(2)}</span>
                 </div>
@@ -565,28 +963,73 @@ export default function UserCheckoutPage() {
           />
         </div>
 
-        {/* Place Order Button */}
-        <button
-          type="button"
-          onClick={handlePlaceOrder}
-          disabled={processing || isTaxCalculating || cartItems.length === 0}
-          className={`w-full py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer active:scale-[0.99] ${
-            paymentMethod === 'paypal'
-              ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
-              : 'bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E]'
-          }`}
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-        >
-          {processing
-            ? 'Processing...'
-            : isTaxCalculating
-            ? 'CALCULATING TAX...'
-            : paymentMethod === 'paypal'
-            ? 'PAY WITH PAYPAL'
-            : paymentMethod === 'apple_pay'
-            ? 'PROCEED TO APPLE PAY'
-            : 'PROCEED TO CARD PAYMENT'}
-        </button>
+        {/* Apple Pay Direct Box (Matches Image 2 design, opens Apple Pay sheet on single click) */}
+        {paymentMethod === 'apple_pay' ? (
+          !deliveryAddress.trim() ? (
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md space-y-3">
+              <h3 className="font-serif text-2xl font-bold text-white">Apple Pay</h3>
+              <p className="text-white/70 text-sm">Please add a delivery address above to proceed with Apple Pay.</p>
+              <button
+                type="button"
+                onClick={() => setShowAddressModal(true)}
+                className="w-full py-3.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-xl font-bold text-sm transition cursor-pointer uppercase tracking-wider"
+              >
+                Add Delivery Address
+              </button>
+            </div>
+          ) : isTaxCalculating || loadingApplePayIntent || !applePayClientSecret ? (
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md flex flex-col items-center justify-center space-y-2 py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#FFD3AC] border-t-transparent" />
+              <p className="text-xs text-white/60">
+                {isTaxCalculating ? "Calculating tax..." : "Loading Apple Pay..."}
+              </p>
+            </div>
+          ) : (
+            <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md space-y-4">
+              <h3 className="font-serif text-2xl font-bold text-white">Apple Pay</h3>
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret: applePayClientSecret,
+                  appearance: {
+                    theme: 'night',
+                    variables: { colorPrimary: '#FFD3AC', colorBackground: '#1E1E1E', colorText: '#ffffff' }
+                  }
+                }}
+              >
+                <ApplePayCheckoutInline
+                  clientSecret={applePayClientSecret}
+                  paymentIntentId={applePayPaymentIntentId}
+                  user={user}
+                  cartItems={cartItems}
+                  referralCreditsToUse={referralCreditsToUse}
+                  onSuccess={() => router.push('/user/checkout/success')}
+                />
+              </Elements>
+              <p className="text-white/40 text-xs">Your payment information is encrypted and secured by Stripe.</p>
+            </div>
+          )
+        ) : (
+          <button
+            type="button"
+            onClick={handlePlaceOrder}
+            disabled={processing || isTaxCalculating || cartItems.length === 0}
+            className={`w-full py-4 rounded-xl font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer active:scale-[0.99] ${
+              paymentMethod === 'paypal'
+                ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
+                : 'bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E]'
+            }`}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          >
+            {processing
+              ? 'Processing...'
+              : isTaxCalculating
+              ? 'CALCULATING TAX...'
+              : paymentMethod === 'paypal'
+              ? 'PAY WITH PAYPAL'
+              : 'PROCEED TO CARD PAYMENT'}
+          </button>
+        )}
 
 
         {/* Address Modal */}
@@ -606,43 +1049,83 @@ export default function UserCheckoutPage() {
                 {/* Google Places Search */}
                 <div>
                   <label className="block text-xs font-semibold text-white/70 mb-1">
-                    Search Address (Google Places)
+                    Search your address
                   </label>
                   <div className="relative">
                     <input
                       ref={searchInputRef}
                       type="text"
-                      placeholder="Search street or place to auto-fill..."
+                      placeholder="Search your address..."
                       className="w-full pl-9 pr-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
                     />
                     <MagnifyingGlassIcon className="w-4 h-4 text-white/40 absolute left-3 top-2.5 pointer-events-none" />
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    <button
+                      type="button"
+                      disabled={isGettingLocation}
+                      onClick={handleUseCurrentLocation}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-[#FFD3AC] hover:text-[#ffe0c4] transition cursor-pointer disabled:opacity-50"
+                    >
+                      <svg
+                        className={`w-3.5 h-3.5 ${isGettingLocation ? 'animate-spin' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {isGettingLocation ? 'Detecting location...' : 'Use Current Location'}
+                    </button>
                   </div>
                   <span className="text-[11px] text-white/50 mt-1 block">
                     Or enter and edit the address details manually below:
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1">
-                  <div>
-                    <label className="block text-[11px] text-white/60 mb-0.5">Street Number *</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 123"
-                      value={addressForm.streetNumber}
-                      onChange={(e) => setAddressForm({...addressForm, streetNumber: e.target.value})}
-                      className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-white/60 mb-0.5">Street Name *</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Main St"
-                      value={addressForm.streetName}
-                      onChange={(e) => setAddressForm({...addressForm, streetName: e.target.value})}
-                      className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-[11px] text-white/60 mb-0.5">Street Address *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 123 Main St"
+                    value={
+                      addressForm.streetAddress !== undefined
+                        ? addressForm.streetAddress
+                        : [addressForm.streetNumber, addressForm.streetName].filter(Boolean).join(' ')
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      let sNum = '';
+                      let sName = val.trim();
+                      const firstSpace = val.trim().indexOf(' ');
+                      if (firstSpace > 0) {
+                        const cand = val.trim().substring(0, firstSpace).trim();
+                        if (/^\d+[a-zA-Z]?(?:[-/]\d+[a-zA-Z]?)?$/.test(cand)) {
+                          sNum = cand;
+                          sName = val.trim().substring(firstSpace + 1).trim();
+                        }
+                      }
+                      setAddressForm((prev) => ({
+                        ...prev,
+                        streetAddress: val,
+                        streetNumber: sNum,
+                        streetName: sName,
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-white/60 mb-0.5">Apartment Number (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Apt 4B"
+                    value={addressForm.apartmentNumber || ''}
+                    onChange={(e) => setAddressForm({ ...addressForm, apartmentNumber: e.target.value })}
+                    className="w-full px-3 py-2 border border-white/15 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] text-sm text-white placeholder-white/40 bg-white/5"
+                  />
                 </div>
                 
                 <div>
@@ -693,16 +1176,31 @@ export default function UserCheckoutPage() {
               
               <div className="flex gap-3 mt-6">
                 <button
+                  type="button"
                   onClick={() => setShowAddressModal(false)}
                   className="flex-1 py-3 border border-white/20 rounded-lg hover:bg-white/10 font-medium text-sm text-white/80 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
+                  disabled={isSavingAddress || isGettingLocation}
                   onClick={updateDeliveryAddress}
-                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-lg font-bold text-sm transition cursor-pointer"
+                  className="flex-1 py-3 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-lg font-bold text-sm transition cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  Save Address
+                  {isGettingLocation ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                      <span>Detecting location...</span>
+                    </>
+                  ) : isSavingAddress ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    'Save Address'
+                  )}
                 </button>
               </div>
             </div>

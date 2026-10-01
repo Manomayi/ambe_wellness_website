@@ -222,7 +222,7 @@ export default function DoctorNotificationsPage() {
               <BellIcon className="h-16 w-16 text-white/30 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-white mb-1">No notifications yet</h3>
               <p className="text-sm text-white/50">
-                You&apos;ll see notifications about new consultations, messages, and patient updates here.
+                You&apos;ll see notifications about new consultations, messages, and client updates here.
               </p>
             </div>
           ) : (

@@ -242,7 +242,7 @@ export default function CancelConsultationModal({
           <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
               <UserIcon className="w-4 h-4 text-[#C8996A]" />
-              <span className="font-semibold">{appointment.user_name || "Patient"}</span>
+              <span className="font-semibold">{appointment.user_name || "Client"}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-[#6B6862]">
               <CalendarIcon className="w-4 h-4 text-[#C8996A]" />
@@ -282,7 +282,7 @@ export default function CancelConsultationModal({
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g., Doctor unavailable, emergency, etc."
+              placeholder="e.g., Practitioner unavailable, emergency, etc."
               rows={2}
               disabled={isSubmitting}
               className="w-full text-sm rounded-xl border border-[#E7E2D9] px-3 py-2 text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:ring-2 focus:ring-[#C8996A] transition resize-none disabled:opacity-50"
@@ -297,7 +297,7 @@ export default function CancelConsultationModal({
           )}
 
           <p className="text-xs text-[#6B6862]">
-            Are you sure you want to cancel? The patient will be notified immediately to choose another slot.
+            Are you sure you want to cancel? The client will be notified immediately to choose another slot.
           </p>
         </div>
 

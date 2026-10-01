@@ -163,7 +163,7 @@ export default function DoctorProfessionalProfilePage() {
           Boost Your Presence
         </h2>
         <p className="text-sm text-gray-400 font-sans mt-1.5 leading-relaxed">
-          Detailed profiles attract more patients. Fill in your professional details to stand out.
+          Detailed profiles attract more clients. Fill in your professional details to stand out.
         </p>
       </div>
 
@@ -221,7 +221,7 @@ export default function DoctorProfessionalProfilePage() {
                 rows={4}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell patients about your medical background, approach to care, and philosophy..."
+                placeholder="Tell clients about your background, approach to care, and philosophy..."
                 className="w-full pl-12 pr-4 py-3 bg-[#2A2A2E] border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FFD3AC] font-sans leading-relaxed"
               />
             </div>
@@ -328,7 +328,7 @@ export default function DoctorProfessionalProfilePage() {
         <div className="p-4 bg-blue-500/10 border border-blue-500/25 rounded-2xl flex items-start gap-3">
           <InformationCircleIcon className="h-5 w-5 text-blue-300 shrink-0 mt-0.5" />
           <p className="text-xs text-blue-100/80 leading-relaxed font-sans">
-            A complete professional profile helps patients make informed decisions and increases your chances of being matched.
+            A complete professional profile helps clients make informed decisions and increases your chances of being matched.
           </p>
         </div>
 

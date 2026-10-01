@@ -26,7 +26,8 @@ export default function ChatWindow({
   recipientId,
   canSendMessage,
   isDoctor,
-  hideHeader = false 
+  hideHeader = false,
+  onMessagesSeen,
 }) {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -39,8 +40,20 @@ export default function ChatWindow({
   const [sending, setSending] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const initialScrollDoneRef = useRef(false);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const scrollToBottom = (behavior = 'auto') => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  };
 
   useEffect(() => {
     if (!chatId || !user) return;
@@ -59,7 +72,6 @@ export default function ChatWindow({
           ...doc.data()
         }));
         setMessages(msgs);
-        scrollToBottom();
         
         // Mark messages as read
         if (msgs.length > 0) {
@@ -75,30 +87,83 @@ export default function ChatWindow({
     return () => unsubscribe();
   }, [chatId, user]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Auto scroll to bottom when messages load or change
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    if (!initialScrollDoneRef.current) {
+      initialScrollDoneRef.current = true;
+      scrollToBottom('auto');
+      const t1 = setTimeout(() => scrollToBottom('auto'), 50);
+      const t2 = setTimeout(() => scrollToBottom('auto'), 150);
+      const t3 = setTimeout(() => scrollToBottom('auto'), 350);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    } else {
+      const t = setTimeout(() => scrollToBottom('smooth'), 50);
+      return () => clearTimeout(t);
+    }
+  }, [messages.length]);
 
   useEffect(() => {
     if (uploadingImage) {
-      scrollToBottom();
+      scrollToBottom('smooth');
     }
   }, [uploadingImage]);
 
   const markMessagesAsRead = async (messagesToMark) => {
     try {
-      if (isDoctor && user?.uid && chatId) {
+      if (!user?.uid || !chatId) return;
+
+      onMessagesSeen?.(Date.now());
+
+      // 1. Update chats metadata doc so global read status is persisted
+      const mainChatRef = doc(db, 'chats', chatId);
+      const mainChatUpdate = isDoctor
+        ? {
+            last_message_read_by_doctor: true,
+            last_read_by_doctor_time: serverTimestamp(),
+          }
+        : {
+            last_message_read_by_user: true,
+            last_read_by_user_time: serverTimestamp(),
+          };
+      await setDoc(mainChatRef, mainChatUpdate, { merge: true }).catch((e) =>
+        console.warn('[ChatWindow] Error updating main chat doc:', e)
+      );
+
+      // 2. Update user / doctor subcollection chat doc
+      if (isDoctor) {
         const chatRef = doc(db, 'doctors', user.uid, 'chats', chatId);
         await setDoc(chatRef, { 
           unread_count: 0,
           last_message_read_by_doctor: true 
-        }, { merge: true });
-      } else if (!isDoctor && user?.uid && chatId) {
+        }, { merge: true }).catch((e) => console.warn(e));
+      } else {
         const chatRef = doc(db, 'users', user.uid, 'chats', chatId);
         await setDoc(chatRef, { 
           unread_count: 0,
           last_message_read_by_user: true 
-        }, { merge: true });
+        }, { merge: true }).catch((e) => console.warn(e));
+      }
+
+      // 3. Mark individual unread message docs as read: true
+      const unreadMsgs = messagesToMark.filter(
+        (m) => m.sender_uid && m.sender_uid !== user.uid && m.read !== true
+      );
+
+      if (unreadMsgs.length > 0) {
+        const batch = writeBatch(db);
+        unreadMsgs.slice(0, 500).forEach((m) => {
+          const mRef = doc(db, 'chats', chatId, 'messages', m.id);
+          batch.update(mRef, { read: true });
+        });
+        await batch.commit().catch((e) =>
+          console.warn('[ChatWindow] Error marking messages batch as read:', e)
+        );
       }
     } catch (error) {
       console.error('Error marking messages as read:', error);
@@ -327,7 +392,10 @@ export default function ChatWindow({
       )}
       
       {/* Messages */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 [scrollbar-width:thin] [scrollbar-color:#3D3D42_transparent]">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 [scrollbar-width:thin] [scrollbar-color:#3D3D42_transparent]"
+      >
         {Object.keys(groupedMessages).length === 0 && !uploadingImage ? (
           <div className="flex items-center justify-center h-full text-center p-6">
             <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 max-w-sm backdrop-blur-md shadow-xl">
@@ -355,6 +423,7 @@ export default function ChatWindow({
                     isOwn={message.sender_uid === user?.uid}
                     time={formatTime(message.timestamp)}
                     onImageClick={(url) => setFullscreenImage(url)}
+                    onImageLoad={() => scrollToBottom('auto')}
                   />
                 ))}
               </div>
@@ -521,7 +590,7 @@ export default function ChatWindow({
 }
 
 // Message Bubble Component with Ambé Theme
-function MessageBubble({ message, isOwn, time, onImageClick }) {
+function MessageBubble({ message, isOwn, time, onImageClick, onImageLoad }) {
   const hasImage = !!message.image_url;
   const hasText = !!(message.text && message.text.trim());
 
@@ -547,6 +616,7 @@ function MessageBubble({ message, isOwn, time, onImageClick }) {
             <img
               src={message.image_url}
               alt="Chat attachment"
+              onLoad={onImageLoad}
               onClick={() => onImageClick?.(message.image_url)}
               className="max-h-72 max-w-[280px] w-full rounded-xl object-cover cursor-pointer hover:opacity-95 transition"
               loading="lazy"
@@ -564,6 +634,7 @@ function MessageBubble({ message, isOwn, time, onImageClick }) {
                 <img
                   src={message.image_url}
                   alt="Chat attachment"
+                  onLoad={onImageLoad}
                   onClick={() => onImageClick?.(message.image_url)}
                   className="max-h-72 max-w-[280px] w-full rounded-xl object-cover cursor-pointer hover:opacity-95 transition"
                   loading="lazy"

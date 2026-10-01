@@ -56,7 +56,7 @@ export default function DoctorBottomNav() {
       ),
     },
     {
-      label: "PATIENTS",
+      label: "CLIENTS",
       href: "/doctor/users",
       iconActive: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
