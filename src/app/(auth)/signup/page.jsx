@@ -918,7 +918,7 @@ export default function SignUpPage() {
               className="mt-1 w-5 h-5 rounded border-2 border-white/60 checked:bg-[#FFD3AC] checked:border-[#FFD3AC] text-[#1E1E1E] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#FFD3AC]"
             />
             <span className="text-white text-sm font-sans leading-relaxed">
-              I accept the{" "}
+              {isDoctor ? "I accept & sign the " : "I accept the "}
               {isDoctor ? (
                 <button
                   type="button"

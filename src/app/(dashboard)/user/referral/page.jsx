@@ -12,7 +12,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import {
-  GiftIcon,
   DocumentDuplicateIcon,
   ShareIcon,
   CheckIcon
@@ -110,12 +109,6 @@ export default function ReferFriendPage() {
 
           {/* Hero Promo Card — peach bg matching Flutter */}
           <div className="bg-[#FFD3AC] rounded-3xl p-6 sm:p-8 text-center shadow-[0_8px_20px_rgba(255,211,172,0.25)]">
-            {/* Badge */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider bg-black/10 text-black/80 mb-4">
-              <GiftIcon className="w-4 h-4" />
-              GIVE 10% · GET 10%
-            </span>
-
             <h2 className="text-3xl sm:text-4xl font-bold text-black leading-tight mb-1">
               Get 10% OFF
             </h2>
