@@ -35,11 +35,11 @@ export default function EarningsPolicyStrip() {
   const items = [
     {
       key: 'consultation',
-      label: 'Consultation',
+      label: 'Per hour',
       amount: `+${formatCents(policy.consultationEarningCents)}`,
       tone: 'text-emerald-400',
       detail:
-        'Paid for each consultation where you and the patient both join and complete the video call.',
+        'Paid per hour for each consultation where you and the patient both join and complete the video call.',
     },
     {
       key: 'no-show',
