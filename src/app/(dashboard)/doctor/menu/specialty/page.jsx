@@ -138,14 +138,18 @@ export default function DoctorSpecialtyPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 pb-12">
-      {/* Top Header */}
-      <div className="flex items-center gap-4 pt-1">
-        <AmbeBackButton onClick={() => router.back()} />
-        <h1 className="text-white text-xl font-heading font-bold flex-1">
-          Specialty
-        </h1>
+    <div className="w-full pb-12">
+      {/* Sticky Top Header */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="max-w-xl mx-auto flex items-center gap-4">
+          <AmbeBackButton onClick={() => router.back()} />
+          <h1 className="text-white text-xl font-heading font-bold flex-1">
+            Specialty
+          </h1>
+        </div>
       </div>
+
+      <div className="max-w-xl mx-auto space-y-6 pt-4">
 
       {/* Sub-header matching App */}
       <div>
@@ -248,6 +252,7 @@ export default function DoctorSpecialtyPage() {
           </AmbeButton>
         </div>
       </form>
+      </div>
     </div>
   );
 }

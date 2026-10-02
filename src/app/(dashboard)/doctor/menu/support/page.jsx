@@ -201,28 +201,31 @@ export default function DoctorSupportPage() {
   }
 
   return (
-    <div className="min-h-screen text-white pb-24 md:pb-12 pt-4 px-4 sm:px-6 max-w-xl mx-auto space-y-6">
-      {/* Top Bar with Centered Title matching Flutter AppBar */}
-      <div className="relative flex items-center justify-center py-2">
-        <div className="absolute left-0">
-          <AmbeBackButton
-            onClick={() => {
-              if (typeof window !== 'undefined' && window.history.length > 1) {
-                router.back();
-              } else {
-                router.push('/doctor/menu');
-              }
-            }}
-          />
+    <div className="w-full pb-24 md:pb-12 text-white">
+      {/* Sticky Top Bar with Centered Title matching Flutter AppBar */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="relative max-w-xl mx-auto flex items-center justify-center">
+          <div className="absolute left-0">
+            <AmbeBackButton
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push('/doctor/menu');
+                }
+              }}
+            />
+          </div>
+          <h1 className="font-serif text-2xl font-normal tracking-wide text-white">
+            Support Chat
+          </h1>
         </div>
-        <h1 className="font-serif text-2xl font-normal tracking-wide text-white">
-          Support Chat
-        </h1>
       </div>
 
-      {openTicket ? (
-        <SupportChatView ticket={openTicket} user={user} />
-      ) : (
+      <div className="max-w-xl mx-auto space-y-6 pt-4 px-4 sm:px-0">
+        {openTicket ? (
+          <SupportChatView ticket={openTicket} user={user} />
+        ) : (
         <div className="pt-2">
           <div className="text-center max-w-md mx-auto mb-8">
             <h2 className="font-serif text-3xl sm:text-4xl font-normal text-white mb-2">
@@ -296,6 +299,7 @@ export default function DoctorSupportPage() {
           </form>
         </div>
       )}
+      </div>
     </div>
   );
 }

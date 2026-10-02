@@ -119,17 +119,24 @@ export default function DoctorNotificationsSettingsPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-6">
-      <BackButton href="/doctor/menu" label="Back to Menu" />
-      <div>
-        <h1 className="text-2xl font-bold text-white">Notification Settings</h1>
-        <p className="text-sm text-white/70 mt-1">
-          Manage your email notification preferences.
-        </p>
+    <div className="w-full pb-12">
+      {/* Sticky Top Bar */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="max-w-lg mx-auto flex items-center gap-4">
+          <BackButton href="/doctor/menu" label="Back to Menu" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex-1">
+            Notification Settings
+          </h1>
+        </div>
       </div>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      {saved && <p className="text-sm text-[#2E7D32]">Preferences saved successfully.</p>}
+      <div className="max-w-lg mx-auto p-4 sm:p-6 space-y-6">
+        <p className="text-sm text-white/70">
+          Manage your email notification preferences.
+        </p>
+
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {saved && <p className="text-sm text-[#2E7D32]">Preferences saved successfully.</p>}
 
       <div className="space-y-4">
         {TOGGLES.map((item) => (
@@ -161,6 +168,7 @@ export default function DoctorNotificationsSettingsPage() {
       >
         {saving ? 'Saving…' : 'Save Preferences'}
       </button>
+      </div>
     </div>
   );
 }

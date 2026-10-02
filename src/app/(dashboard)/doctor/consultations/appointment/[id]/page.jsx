@@ -55,12 +55,7 @@ export default function DoctorAppointmentPage() {
       !hasAutoJoinedRef.current &&
       searchParams?.get('autoJoin') === 'true'
     ) {
-      const aptTime = appointment.time?.toDate
-        ? appointment.time.toDate()
-        : new Date(appointment.time);
-      const diff = (aptTime - new Date()) / (1000 * 60);
-      const isNow = diff >= -60 && diff <= 15;
-      if (isNow && !appointment.needsReport) {
+      if (!appointment.needsReport && !appointment.completed) {
         hasAutoJoinedRef.current = true;
         // Strip ?autoJoin=true from browser URL without reloading so back navigation doesn't loop
         if (typeof window !== 'undefined' && window.history?.replaceState) {

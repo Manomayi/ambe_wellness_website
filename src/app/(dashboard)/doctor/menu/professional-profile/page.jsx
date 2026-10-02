@@ -148,17 +148,20 @@ export default function DoctorProfessionalProfilePage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 pb-12">
-      {/* Top Bar matching app */}
-      <div className="flex items-center gap-4 pt-1">
-        <AmbeBackButton onClick={() => router.back()} />
-        <h1 className="text-white text-xl font-heading font-bold flex-1">
-          Professional Profile
-        </h1>
+    <div className="w-full pb-12">
+      {/* Sticky Top Bar matching app */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="max-w-xl mx-auto flex items-center gap-4">
+          <AmbeBackButton onClick={() => router.back()} />
+          <h1 className="text-white text-xl font-heading font-bold flex-1">
+            Professional Profile
+          </h1>
+        </div>
       </div>
 
-      {/* Header section matching app */}
-      <div>
+      <div className="max-w-xl mx-auto space-y-6 pt-4">
+        {/* Header section matching app */}
+        <div>
         <h2 className="text-white text-2xl sm:text-3xl font-bold font-sans tracking-tight">
           Boost Your Presence
         </h2>
@@ -343,6 +346,7 @@ export default function DoctorProfessionalProfilePage() {
           </AmbeButton>
         </div>
       </form>
+      </div>
     </div>
   );
 }

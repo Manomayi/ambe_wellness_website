@@ -163,16 +163,18 @@ export default function DoctorEarningsPage() {
   return (
     <WebLayoutWrapper>
       <div className="space-y-6 pb-12">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <AmbeBackButton href="/doctor/menu" />
-          <div>
-            <h1 className="font-heading font-bold text-2xl sm:text-3xl text-white">
-              Earnings
-            </h1>
-            <p className="text-white/60 text-xs sm:text-sm mt-0.5">
-              Live overview of your consultation revenue, deductions, and payout history.
-            </p>
+        {/* Sticky Header */}
+        <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+          <div className="flex items-center gap-4">
+            <AmbeBackButton href="/doctor/menu" />
+            <div>
+              <h1 className="font-heading font-bold text-2xl sm:text-3xl text-white">
+                Earnings
+              </h1>
+              <p className="text-white/60 text-xs sm:text-sm mt-0.5">
+                Live overview of your consultation revenue, deductions, and payout history.
+              </p>
+            </div>
           </div>
         </div>
 

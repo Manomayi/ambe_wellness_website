@@ -76,14 +76,18 @@ export default function DoctorEditEmailPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
-      {/* Top Bar */}
-      <div className="flex items-center gap-4 pt-1">
-        <AmbeBackButton onClick={() => router.back()} />
-        <h1 className="text-white text-xl font-bold font-sans flex-1">
-          Edit Email
-        </h1>
+    <div className="w-full pb-12">
+      {/* Sticky Top Bar */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="max-w-md mx-auto flex items-center gap-4">
+          <AmbeBackButton onClick={() => router.back()} />
+          <h1 className="text-white text-xl font-bold font-sans flex-1">
+            Edit Email
+          </h1>
+        </div>
       </div>
+
+      <div className="max-w-md mx-auto space-y-6 pt-4">
 
       {/* Notice Card */}
       <div className="bg-[#2D2D30]/80 border border-white/10 rounded-2xl p-4 text-xs text-gray-300 font-sans leading-relaxed">
@@ -146,6 +150,7 @@ export default function DoctorEditEmailPage() {
           </AmbeButton>
         </div>
       </form>
+      </div>
     </div>
   );
 }

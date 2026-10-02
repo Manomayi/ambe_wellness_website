@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import VideoCall from '@/components/video/VideoCall';
@@ -16,17 +16,53 @@ import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverl
 export default function UserAppointmentPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const { user, profile } = useAuth();
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inCall, setInCall] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
+  const hasAutoJoinedRef = useRef(false);
+
+  const handleJoinCall = async () => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+        const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        probe.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch (_) {}
+        });
+      }
+    } catch (err) {
+      console.warn('Pre-call permission probe note:', err);
+    }
+    setInCall(true);
+  };
 
   useEffect(() => {
     if (user && params.id) {
       loadAppointment();
     }
   }, [user, params.id]);
+
+  useEffect(() => {
+    if (
+      appointment &&
+      !inCall &&
+      !loading &&
+      !hasAutoJoinedRef.current &&
+      searchParams?.get('autoJoin') === 'true'
+    ) {
+      if (!appointment.completed) {
+        hasAutoJoinedRef.current = true;
+        if (typeof window !== 'undefined' && window.history?.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+        handleJoinCall();
+      }
+    }
+  }, [appointment, inCall, loading, searchParams]);
 
   const loadAppointment = async () => {
     try {
@@ -300,6 +336,14 @@ export default function UserAppointmentPage() {
     );
   }
 
+  const handleBackFromCall = () => {
+    hasAutoJoinedRef.current = true;
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    setInCall(false);
+  };
+
   if (inCall) {
     return (
       <VideoCall
@@ -308,26 +352,10 @@ export default function UserAppointmentPage() {
         otherPartyUid={appointment.doctor_id}
         isDoctor={false}
         onCallEnd={handleCallEnd}
-        onBack={() => setInCall(false)}
+        onBack={handleBackFromCall}
       />
     );
   }
-
-  const handleJoinCall = async () => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
-        const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-        probe.getTracks().forEach((track) => {
-          try {
-            track.stop();
-          } catch (_) {}
-        });
-      }
-    } catch (err) {
-      console.warn('Pre-call permission probe note:', err);
-    }
-    setInCall(true);
-  };
 
   const isAppointmentNow = () => {
     if (!appointment?.time) return false;

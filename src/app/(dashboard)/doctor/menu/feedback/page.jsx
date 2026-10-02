@@ -124,23 +124,25 @@ export default function DoctorFeedbackPage() {
   return (
     <WebLayoutWrapper>
       <div className="space-y-6 max-w-2xl mx-auto pb-16">
-        {/* Header matching Flutter */}
-        <div className="space-y-3 pt-2">
-          <AmbeBackButton onClick={() => router.push('/doctor/menu')} />
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
-                Client Reviews
-              </h1>
-              <p className="text-sm text-gray-400 mt-1 font-sans">
-                Feedback and ratings submitted by your clients following consultations.
-              </p>
+        {/* Sticky Header matching Flutter */}
+        <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+          <div className="space-y-2">
+            <AmbeBackButton onClick={() => router.push('/doctor/menu')} />
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
+                  Client Reviews
+                </h1>
+                <p className="text-sm text-gray-400 mt-0.5 font-sans">
+                  Feedback and ratings submitted by your clients following consultations.
+                </p>
+              </div>
+              {stats.total > 0 && (
+                <span className="px-3.5 py-1.5 bg-[#FFD3AC]/15 text-[#FFD3AC] text-xs font-semibold rounded-full border border-[#FFD3AC]/30 font-sans shrink-0">
+                  {stats.total} {stats.total === 1 ? 'Review' : 'Reviews'}
+                </span>
+              )}
             </div>
-            {stats.total > 0 && (
-              <span className="px-3.5 py-1.5 bg-[#FFD3AC]/15 text-[#FFD3AC] text-xs font-semibold rounded-full border border-[#FFD3AC]/30 font-sans">
-                {stats.total} {stats.total === 1 ? 'Review' : 'Reviews'}
-              </span>
-            )}
           </div>
         </div>
 

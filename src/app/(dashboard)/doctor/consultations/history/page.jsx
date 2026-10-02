@@ -306,13 +306,18 @@ export default function DoctorConsultationHistoryPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto px-4 sm:px-6 py-4">
-      <div className="flex items-center gap-3">
-        <AmbeBackButton onClick={() => router.push('/doctor/consultations')} />
-        <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
-          Consultation History
-        </h1>
+    <div className="w-full pb-12">
+      {/* Sticky Top Bar */}
+      <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 border-b border-white/10 shadow-sm">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <AmbeBackButton onClick={() => router.push('/doctor/consultations')} />
+          <h1 className="text-2xl sm:text-3xl font-heading text-white font-normal">
+            Consultation History
+          </h1>
+        </div>
       </div>
+
+      <div className="space-y-6 max-w-4xl mx-auto px-4 sm:px-6 pt-4">
 
       {history.length === 0 ? (
         <div className="bg-white/[0.08] border border-white/[0.12] rounded-[20px] p-10 text-center">
@@ -381,6 +386,7 @@ export default function DoctorConsultationHistoryPage() {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }
