@@ -69,8 +69,7 @@ export default function SignUpPage() {
 
       try {
         const autocomplete = new window.google.maps.places.Autocomplete(addressInputRef.current, {
-          types: ['address'],
-          componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'formatted_address', 'name'],
         });
 
         autocomplete.addListener('place_changed', () => {
@@ -82,16 +81,20 @@ export default function SignUpPage() {
           let city = '';
           let state = '';
           let zipCode = '';
-          let country = 'USA';
+          let country = '';
 
           for (const comp of place.address_components) {
-            const types = comp.types;
+            const types = comp.types || [];
             if (types.includes('street_number')) {
               streetNumber = comp.long_name;
             } else if (types.includes('route')) {
               streetName = comp.long_name;
             } else if (types.includes('locality')) {
               city = comp.long_name;
+            } else if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
+              if (!city) city = comp.long_name;
+            } else if (types.includes('administrative_area_level_2')) {
+              if (!city) city = comp.long_name;
             } else if (types.includes('administrative_area_level_1')) {
               state = comp.short_name || comp.long_name;
             } else if (types.includes('postal_code')) {
@@ -101,7 +104,7 @@ export default function SignUpPage() {
             }
           }
 
-          const combinedStreet = [streetNumber, streetName].filter(Boolean).join(' ');
+          const combinedStreet = [streetNumber, streetName].filter(Boolean).join(' ') || place.name || (place.formatted_address ? place.formatted_address.split(',')[0] : '');
           const formattedAddress = place.formatted_address || [combinedStreet, city, state, zipCode, country].filter(Boolean).join(', ');
 
           setFormData(prev => ({
@@ -113,7 +116,7 @@ export default function SignUpPage() {
               city,
               state,
               zip_code: zipCode,
-              country,
+              country: country || '',
             },
           }));
           setErrors(prev => ({ ...prev, address: '' }));
@@ -505,7 +508,7 @@ export default function SignUpPage() {
             street_name: formData.address.street_name || '',
             city: formData.address.city || '',
             state: formData.address.state || '',
-            country: formData.address.country || 'USA',
+            country: formData.address.country || '',
             zip_code: formData.address.zip_code || '',
           };
         } else if (formData.addressSearch?.trim()) {
@@ -514,7 +517,7 @@ export default function SignUpPage() {
             street_name: formData.addressSearch.trim(),
             city: '',
             state: '',
-            country: 'USA',
+            country: '',
             zip_code: '',
           };
         }

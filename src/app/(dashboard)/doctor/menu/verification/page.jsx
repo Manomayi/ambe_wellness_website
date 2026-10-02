@@ -128,7 +128,9 @@ export default function DoctorVerificationPage() {
           {/* Status Icon */}
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 mr-4 ${
-              overallIsApproved || overallIsRejected
+              overallIsApproved
+                ? 'bg-black/10 text-neutral-900'
+                : overallIsRejected
                 ? 'bg-black/20 text-white'
                 : 'bg-[#3A3A3E] text-[#FFD3AC]'
             }`}
@@ -146,7 +148,9 @@ export default function DoctorVerificationPage() {
           <div className="flex-1 min-w-0">
             <p
               className={`text-sm font-medium ${
-                overallIsApproved || overallIsRejected
+                overallIsApproved
+                  ? 'text-neutral-800'
+                  : overallIsRejected
                   ? 'text-white/90'
                   : 'text-neutral-400'
               }`}
@@ -155,7 +159,9 @@ export default function DoctorVerificationPage() {
             </p>
             <p
               className={`text-2xl font-bold tracking-wide mt-0.5 ${
-                overallIsApproved || overallIsRejected
+                overallIsApproved
+                  ? 'text-neutral-950 font-extrabold'
+                  : overallIsRejected
                   ? 'text-white'
                   : 'text-white'
               }`}

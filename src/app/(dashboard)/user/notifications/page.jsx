@@ -442,6 +442,7 @@ export default function NotificationsPage() {
             </div>
           )}
         </div>
+        </div>
       </WebLayoutWrapper>
     </ProtectedRoute>
   );

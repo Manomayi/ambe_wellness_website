@@ -221,7 +221,7 @@ export default function UserCheckoutPage() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'USA'
+    country: ''
   });
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
@@ -326,8 +326,7 @@ export default function UserCheckoutPage() {
 
       try {
         const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current, {
-          types: ['address'],
-          componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'formatted_address', 'name'],
         });
 
         autocomplete.addListener('place_changed', () => {
@@ -339,16 +338,20 @@ export default function UserCheckoutPage() {
           let city = '';
           let state = '';
           let zipCode = '';
-          let country = 'USA';
+          let country = '';
 
           for (const comp of place.address_components) {
-            const types = comp.types;
+            const types = comp.types || [];
             if (types.includes('street_number')) {
               streetNumber = comp.long_name;
             } else if (types.includes('route')) {
               streetName = comp.long_name;
             } else if (types.includes('locality')) {
               city = comp.long_name;
+            } else if (types.includes('sublocality_level_1') || types.includes('sublocality')) {
+              if (!city) city = comp.long_name;
+            } else if (types.includes('administrative_area_level_2')) {
+              if (!city) city = comp.long_name;
             } else if (types.includes('administrative_area_level_1')) {
               state = comp.short_name || comp.long_name;
             } else if (types.includes('postal_code')) {
@@ -358,16 +361,16 @@ export default function UserCheckoutPage() {
             }
           }
 
-          const combinedStreet = [streetNumber, streetName].filter(Boolean).join(' ');
+          const combinedStreet = [streetNumber, streetName].filter(Boolean).join(' ') || place.name || (place.formatted_address ? place.formatted_address.split(',')[0] : '');
           setAddressForm((prev) => ({
             ...prev,
             streetAddress: combinedStreet,
             streetNumber: streetNumber || prev.streetNumber,
-            streetName: streetName || prev.streetName,
+            streetName: streetName || combinedStreet || prev.streetName,
             city: city || prev.city,
             state: state || prev.state,
             zipCode: zipCode || prev.zipCode,
-            country: country || prev.country || 'USA',
+            country: country || prev.country || '',
           }));
         });
 
@@ -421,7 +424,13 @@ export default function UserCheckoutPage() {
             const aptStr = addr.apartmentNumber ? ` Apt ${addr.apartmentNumber}` : '';
             const formatted = typeof addr === 'string'
               ? addr
-              : `${[addr.streetNumber, addr.streetName].filter(Boolean).join(' ')}${aptStr}, ${addr.city}, ${addr.state}, ${addr.zipCode}, ${addr.country || 'USA'}`;
+              : [
+                  [addr.streetNumber, addr.streetName].filter(Boolean).join(' ') + aptStr,
+                  addr.city,
+                  addr.state,
+                  addr.zipCode,
+                  addr.country
+                ].filter(Boolean).join(', ');
             setDeliveryAddress(formatted);
             if (typeof addr === 'object') {
               setAddressForm({
@@ -559,7 +568,7 @@ export default function UserCheckoutPage() {
             city: data.city || '',
             state: data.state || '',
             zipCode: data.zipCode || '',
-            country: data.country || 'USA',
+            country: data.country || '',
           };
         }
       }
@@ -579,7 +588,7 @@ export default function UserCheckoutPage() {
           const city = bdcData.city || bdcData.locality || '';
           const state = bdcData.principalSubdivision || '';
           const zipCode = bdcData.postcode || '';
-          const country = bdcData.countryName || 'USA';
+          const country = bdcData.countryName || '';
 
           return {
             streetAddress: street,
@@ -620,7 +629,7 @@ export default function UserCheckoutPage() {
               city: result.city || prev.city,
               state: result.state || prev.state,
               zipCode: result.zipCode || prev.zipCode,
-              country: result.country || prev.country || 'USA',
+              country: result.country || prev.country || '',
             }));
             if (searchInputRef.current) {
               searchInputRef.current.value = result.streetAddress || '';
@@ -698,14 +707,20 @@ export default function UserCheckoutPage() {
         city: addressForm.city.trim(),
         state: addressForm.state.trim(),
         zipCode: addressForm.zipCode.trim(),
-        country: addressForm.country || 'USA',
+        country: addressForm.country?.trim() || '',
       };
 
       await updateDoc(doc(db, 'users', user.uid), {
         delivery_address: addressToSave
       });
       const aptStr = addressForm.apartmentNumber?.trim() ? ` Apt ${addressForm.apartmentNumber.trim()}` : '';
-      const formatted = `${[sNum, sName].filter(Boolean).join(' ')}${aptStr}, ${addressForm.city}, ${addressForm.state}, ${addressForm.zipCode}, ${addressForm.country || 'USA'}`;
+      const formatted = [
+        [sNum, sName].filter(Boolean).join(' ') + aptStr,
+        addressForm.city?.trim(),
+        addressForm.state?.trim(),
+        addressForm.zipCode?.trim(),
+        addressForm.country?.trim()
+      ].filter(Boolean).join(', ');
       setDeliveryAddress(formatted);
       setShowAddressModal(false);
     } catch (error) {

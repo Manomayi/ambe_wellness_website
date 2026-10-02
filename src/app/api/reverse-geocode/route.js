@@ -26,7 +26,7 @@ export async function GET(request) {
           let city = '';
           let state = '';
           let zipCode = '';
-          let country = 'USA';
+          let country = '';
 
           for (const comp of first.address_components || []) {
             const types = comp.types || [];
@@ -77,7 +77,7 @@ export async function GET(request) {
         const city = addr.city || addr.town || addr.village || addr.suburb || addr.county || '';
         const state = addr.state || '';
         const zipCode = addr.postcode || '';
-        const country = addr.country || 'USA';
+        const country = addr.country || '';
 
         return NextResponse.json({
           success: true,
@@ -107,7 +107,7 @@ export async function GET(request) {
         const city = bdcData.city || bdcData.locality || '';
         const state = bdcData.principalSubdivision || '';
         const zipCode = bdcData.postcode || '';
-        const country = bdcData.countryName || 'USA';
+        const country = bdcData.countryName || '';
 
         return NextResponse.json({
           success: true,
