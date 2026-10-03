@@ -725,8 +725,8 @@ export default function VideoCall({
               </div>
               <p className="text-lg">
                 {isDoctor
-                  ? 'Please wait for the client to join'
-                  : 'Please wait for the practitioner to join'}
+                  ? 'Please wait up to 5 min for your client to join'
+                  : 'Please wait up to 5 min for your practitioner to join'}
               </p>
             </div>
           )}

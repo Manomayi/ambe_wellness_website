@@ -248,11 +248,13 @@ export default function QuestionnaireResultsPage() {
           setIsConsultationSet(true);
         }
 
-        if (!userData?.is_free_questionnaire_completed) {
-          setDoshaData(null);
-        } else {
-          const snap = await getDoc(doc(db, 'users', user.uid, 'questionnaires', 'dosha_questionnaire'));
+        const snap = await getDoc(doc(db, 'users', user.uid, 'questionnaires', 'dosha_questionnaire'));
+        if (snap.exists()) {
+          setDoshaData(snap.data());
+        } else if (userData?.is_free_questionnaire_completed) {
           setDoshaData(snap.exists() ? snap.data() : null);
+        } else {
+          setDoshaData(null);
         }
       } catch (e) {
         console.error(e);

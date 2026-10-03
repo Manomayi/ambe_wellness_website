@@ -320,7 +320,7 @@ export default function SignUpPage() {
         newErrors.password = 'Password must include at least one uppercase letter';
       } else if (!/[0-9]/.test(formData.password)) {
         newErrors.password = 'Password must include at least one number';
-      } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      } else if (!/[!@#$%^&*(),.?":{}|<>_\-+=~/`[\]\\';]/.test(formData.password)) {
         newErrors.password = 'Password must include at least one special character';
       }
 

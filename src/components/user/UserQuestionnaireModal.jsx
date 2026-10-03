@@ -568,6 +568,7 @@ export default function UserQuestionnaireModal({
   onSkip,
   fromBooking = false,
   returnToHomeOnSkip = false,
+  fromResults = false,
 }) {
   const router = useRouter();
   const { user, profile } = useAuth();
@@ -868,7 +869,7 @@ export default function UserQuestionnaireModal({
 
   // Skip handler: jump to specialty if not selected; otherwise save draft and finish
   const handleSkip = async () => {
-    if (!hasInitialSpecialty && !selectedHealthField) {
+    if (!fromResults && !hasInitialSpecialty && !selectedHealthField && !areAllDoshaAnswered) {
       setShowSpecialtyAlert(true);
       if (specialtyRef.current) {
         specialtyRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -876,13 +877,13 @@ export default function UserQuestionnaireModal({
       return;
     }
 
-    // Specialty is selected! Save draft and finish
+    // Save assessment and finish
     await saveAssessment(false, true);
   };
 
   // Save & Continue handler for bottom sticky bar
   const handleSaveAndContinue = async () => {
-    if (!hasInitialSpecialty && !selectedHealthField) {
+    if (!fromResults && !hasInitialSpecialty && !selectedHealthField && !areAllDoshaAnswered) {
       setShowSpecialtyAlert(true);
       if (specialtyRef.current) {
         specialtyRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -898,7 +899,7 @@ export default function UserQuestionnaireModal({
     setIsSaving(true);
 
     try {
-      const prefHealthKey = selectedHealthField || "general_health";
+      const prefHealthKey = selectedHealthField || profile?.preferred_health || "general_health";
       const userRef = doc(db, "users", user.uid);
       const batch = writeBatch(db);
 
@@ -984,11 +985,15 @@ export default function UserQuestionnaireModal({
         }
       };
 
-      if (areAllDoshaAnswered && areAllExtendedAnswered) {
+      if (areAllDoshaAnswered) {
         userDocUpdate.dosha_draft_answers = deleteField();
-        userDocUpdate.extended_draft_answers = deleteField();
       } else {
         userDocUpdate.dosha_draft_answers = partialDosha;
+      }
+
+      if (areAllExtendedAnswered) {
+        userDocUpdate.extended_draft_answers = deleteField();
+      } else {
         userDocUpdate.extended_draft_answers = {
           answers: extendedAnswers,
           conditions: noneConditions ? ["None"] : Array.from(selectedConditions)
@@ -998,10 +1003,14 @@ export default function UserQuestionnaireModal({
       batch.set(userRef, userDocUpdate, { merge: true });
       await batch.commit();
 
-      // Clear local storage if fully completed
-      if (areAllDoshaAnswered && areAllExtendedAnswered) {
+      // Clear local storage for completed sections
+      if (areAllDoshaAnswered) {
         try {
           localStorage.removeItem(`dosha_answers_${user.uid}`);
+        } catch (e) {}
+      }
+      if (areAllExtendedAnswered) {
+        try {
           localStorage.removeItem(`extended_answers_${user.uid}`);
           localStorage.removeItem(`extended_conditions_${user.uid}`);
         } catch (e) {}
@@ -1033,9 +1042,11 @@ export default function UserQuestionnaireModal({
         );
       }
 
-      // 5. Clean redirect: Once matched, proceed directly to booking (/user/consult/schedule)
+      // 5. Clean redirect: Once matched, proceed directly to booking (/user/consult/schedule) or results (/user/menu/questionnaire/results)
       let targetPath;
-      if (isSkip && returnToHomeOnSkip) {
+      if (fromResults) {
+        targetPath = "/user/menu/questionnaire/results";
+      } else if (isSkip && returnToHomeOnSkip) {
         targetPath = "/user/home";
       } else if (hasAssignedDoctor || Boolean(profile?.doctor?.uid)) {
         targetPath = "/user/consult/schedule";
@@ -1467,7 +1478,13 @@ export default function UserQuestionnaireModal({
             disabled={isSaving}
             className="w-full py-4 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase shadow-md transition cursor-pointer disabled:opacity-50"
           >
-            {isSaving ? "Saving..." : "SAVE & CONTINUE"}
+            {isSaving
+              ? "Saving..."
+              : isFullyCompleted
+              ? "COMPLETE ASSESSMENT"
+              : areAllDoshaAnswered
+              ? "SAVE & VIEW RESULTS"
+              : "SAVE & CONTINUE"}
           </button>
           <p className="text-[11px] sm:text-xs text-white/60">
             There&apos;s no wrong answer — just choose whatever feels most true for you.

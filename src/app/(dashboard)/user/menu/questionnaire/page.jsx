@@ -19,10 +19,11 @@ function QuestionnaireContent() {
   return (
     <div className="min-h-screen">
       <UserQuestionnaireModal
+        fromResults={fromResults}
         returnToHomeOnSkip={returnToHomeOnSkip}
         onSkip={(targetPath) => {
           if (fromResults) {
-            handleBackToMenu();
+            router.push("/user/menu/questionnaire/results");
           } else if (returnToHomeOnSkip) {
             router.push("/user/home");
           } else if (targetPath) {
@@ -32,7 +33,9 @@ function QuestionnaireContent() {
           }
         }}
         onComplete={(redirectUrl) => {
-          if (redirectUrl) {
+          if (fromResults) {
+            router.push("/user/menu/questionnaire/results");
+          } else if (redirectUrl) {
             router.push(redirectUrl);
           } else {
             router.push("/user/consult");
@@ -40,7 +43,7 @@ function QuestionnaireContent() {
         }}
         onClose={() => {
           if (fromResults) {
-            handleBackToMenu();
+            router.push("/user/menu/questionnaire/results");
           } else {
             router.push("/user/home");
           }

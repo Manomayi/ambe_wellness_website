@@ -68,7 +68,7 @@ export default function DoctorEditPasswordPage() {
     } else if (!/[0-9]/.test(newPwd)) {
       errors.newPwd = 'Password must include at least one number';
       isValid = false;
-    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPwd)) {
+    } else if (!/[!@#$%^&*(),.?":{}|<>_\-+=~/`[\]\\';]/.test(newPwd)) {
       errors.newPwd = 'Password must include at least one special character';
       isValid = false;
     }
@@ -288,8 +288,8 @@ export default function DoctorEditPasswordPage() {
                 <span>At least one number (0-9)</span>
               </div>
 
-              <div className={`flex items-center gap-2 transition-colors ${/[!@#$%^&*(),.?":{}|<>]/.test(newPwd) ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
-                {/[!@#$%^&*(),.?":{}|<>]/.test(newPwd) ? (
+              <div className={`flex items-center gap-2 transition-colors ${/[!@#$%^&*(),.?":{}|<>_\-+=~/`[\]\\';]/.test(newPwd) ? 'text-emerald-700 font-semibold' : 'text-neutral-600'}`}>
+                {/[!@#$%^&*(),.?":{}|<>_\-+=~/`[\]\\';]/.test(newPwd) ? (
                   <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
