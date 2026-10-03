@@ -869,7 +869,7 @@ export default function UserQuestionnaireModal({
 
   // Skip handler: jump to specialty if not selected; otherwise save draft and finish
   const handleSkip = async () => {
-    if (!fromResults && !hasInitialSpecialty && !selectedHealthField && !areAllDoshaAnswered) {
+    if (!hasInitialSpecialty && !selectedHealthField) {
       setShowSpecialtyAlert(true);
       if (specialtyRef.current) {
         specialtyRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -883,7 +883,7 @@ export default function UserQuestionnaireModal({
 
   // Save & Continue handler for bottom sticky bar
   const handleSaveAndContinue = async () => {
-    if (!fromResults && !hasInitialSpecialty && !selectedHealthField && !areAllDoshaAnswered) {
+    if (!hasInitialSpecialty && !selectedHealthField) {
       setShowSpecialtyAlert(true);
       if (specialtyRef.current) {
         specialtyRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1483,8 +1483,8 @@ export default function UserQuestionnaireModal({
               : isFullyCompleted
               ? "COMPLETE ASSESSMENT"
               : areAllDoshaAnswered
-              ? "SAVE & VIEW RESULTS"
-              : "SAVE & CONTINUE"}
+              ? (hasInitialSpecialty || selectedHealthField ? "SAVE & VIEW RESULTS" : "SELECT SPECIALTY & CONTINUE")
+              : (hasInitialSpecialty || selectedHealthField ? "SAVE & CONTINUE" : "SELECT SPECIALTY & CONTINUE")}
           </button>
           <p className="text-[11px] sm:text-xs text-white/60">
             There&apos;s no wrong answer — just choose whatever feels most true for you.

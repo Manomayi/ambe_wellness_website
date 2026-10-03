@@ -48,7 +48,7 @@ function VerifyEmailContent() {
         }
       }
       if (!isCompleted) {
-        router.push("/user/menu/questionnaire");
+        router.push("/user/begin-wellness-profile");
       } else {
         router.push("/user/home");
       }

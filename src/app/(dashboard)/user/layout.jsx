@@ -10,7 +10,8 @@ export default function UserLayout({ children }) {
   const isQuestionnaireFullscreen =
     (pathname?.startsWith("/user/menu/questionnaire") &&
       !pathname?.startsWith("/user/menu/questionnaire/results")) ||
-    pathname?.startsWith("/user/consult/extended-questionnaire");
+    pathname?.startsWith("/user/consult/extended-questionnaire") ||
+    pathname?.startsWith("/user/begin-wellness-profile");
 
   if (isQuestionnaireFullscreen) {
     return (
