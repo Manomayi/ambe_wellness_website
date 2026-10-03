@@ -23,9 +23,9 @@ export const PAYOUT_COLLECTION = 'doctorPayouts';
 
 export const LEDGER_TYPE_LABELS = {
   consultation_earning: 'Consultation Completed',
-  no_show_earning: 'Patient No-show',
-  cancellation_deduction: 'Doctor Cancellation',
-  doctor_payout: 'Doctor Payout',
+  no_show_earning: 'Client No-show',
+  cancellation_deduction: 'Practitioner Cancellation',
+  doctor_payout: 'Practitioner Payout',
 };
 
 export const LEDGER_FILTERS = [

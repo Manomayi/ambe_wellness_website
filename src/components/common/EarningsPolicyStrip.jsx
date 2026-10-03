@@ -39,15 +39,15 @@ export default function EarningsPolicyStrip() {
       amount: `+${formatCents(policy.consultationEarningCents)}`,
       tone: 'text-emerald-400',
       detail:
-        'Paid per hour for each consultation where you and the patient both join and complete the video call.',
+        'Paid per hour for each consultation where you and the client both join and complete the video call.',
     },
     {
       key: 'no-show',
-      label: 'Patient no-show',
+      label: 'Client no-show',
       amount: `+${formatCents(policy.noShowEarningCents)}`,
       tone: 'text-sky-400',
       detail:
-        'Paid when you join on time but the patient does not attend. If you do not join, nothing is earned.',
+        'Paid when you join on time but the client does not attend. If you do not join, nothing is earned.',
     },
     {
       key: 'late-cancel',

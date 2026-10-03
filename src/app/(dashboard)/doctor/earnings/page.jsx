@@ -143,7 +143,7 @@ export default function DoctorEarningsPage() {
     if (type === 'no_show_earning') {
       return {
         bg: 'bg-amber-50 text-amber-700 border-amber-200',
-        label: 'Patient No-Show',
+        label: 'Client No-Show',
       };
     }
     return {
@@ -266,7 +266,7 @@ export default function DoctorEarningsPage() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
-              <span className="text-xs text-white/60 font-medium">Patient No-Shows</span>
+              <span className="text-xs text-white/60 font-medium">Client No-Shows</span>
               <p className="text-xl font-bold text-white mt-1">
                 {summary.consultations_no_show}
               </p>
@@ -383,8 +383,8 @@ export default function DoctorEarningsPage() {
 
                         {/* Subtitle / Details */}
                         <p className="text-xs text-white/60 mt-1 break-words">
-                          {metadata.patient_name
-                            ? `Patient: ${metadata.patient_name}`
+                          {metadata.patient_name || metadata.user_name || metadata.client_name
+                            ? `Client: ${metadata.patient_name || metadata.user_name || metadata.client_name}`
                             : metadata.reason || entry.notes || 'Transaction record'}
                           {metadata.duration_seconds ? (
                             <span className="inline-block sm:inline ml-0 sm:ml-2 text-white/40">
@@ -493,11 +493,11 @@ export default function DoctorEarningsPage() {
                   </span>
                 </div>
 
-                {selectedEntry.metadata?.patient_name && (
+                {(selectedEntry.metadata?.patient_name || selectedEntry.metadata?.user_name || selectedEntry.metadata?.client_name) && (
                   <div className="flex justify-between py-2 border-b border-white/10">
-                    <span className="text-white/60">Patient</span>
+                    <span className="text-white/60">Client</span>
                     <span className="font-medium text-white">
-                      {selectedEntry.metadata.patient_name}
+                      {selectedEntry.metadata.patient_name || selectedEntry.metadata.user_name || selectedEntry.metadata.client_name}
                     </span>
                   </div>
                 )}
