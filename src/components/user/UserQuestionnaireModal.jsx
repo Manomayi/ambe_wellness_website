@@ -152,97 +152,173 @@ export const DOSHA_QUESTIONS = [
   {
     category: "Digestion, Metabolism & Elimination",
     question: "When there is indigestion",
-    options: ["Tendency to constipation, forms gas", "Causes burning, heartburn, reflux", "Forms mucous"]
+    options: [
+      "Tendency to constipation, forms gas",
+      "Heartburn, acidity, diarrhea",
+      "Vomiting, slow heavy digestion"
+    ]
   },
   {
     category: "Digestion, Metabolism & Elimination",
     question: "Elimination",
-    options: ["Dry", "Loose", "Thick, sluggish"]
+    options: [
+      "Dry, dark, hard",
+      "Loose, foul-smelling, yellow",
+      "Heavy, pale, thick"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Physical activity",
-    options: ["Always active", "Moderate", "Slow, measured"]
+    options: [
+      "Always on the run, restlessness",
+      "Competitive, medium pace",
+      "Slow, steady"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Mental activity",
-    options: ["Always active", "Moderate", "Calm"]
+    options: [
+      "Always on the go, lots of ideas",
+      "Determined, focused, structured",
+      "Calm, slow, reflective"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Personality",
-    options: ["Vivacious, talkative, social, outgoing", "Likes to be in control, intense, ambitious", "Reserved, laid back, concerned"]
+    options: [
+      "Enthusiastic, vivacious",
+      "Ambitious, passionate, intense",
+      "Sweet, compassionate, patient"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Emotional response when stressed",
-    options: ["Anxiety, fear", "Anger, jealousy", "Greedy, possessive, withdrawn"]
+    options: [
+      "Anxious, nervous, fearful",
+      "Irritable, angry, critical",
+      "Withdrawn, stubborn, greedy"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Faith or beliefs",
-    options: ["Variable", "Dedicated/strong", "Consistent"]
+    options: [
+      "Changes with time, variable",
+      "Intense, philosophical",
+      "Steadfast, loyal"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Intellectual response",
-    options: ["Quick, not detailed", "Accurate, timely", "Paced but exact"]
+    options: [
+      "Quick, not detailed",
+      "Critical, analytical",
+      "Slow to learn, but never forgets"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Memory",
-    options: ["Good short term, quick to forget", "Medium but accurate", "Slow to remember but then sustained"]
+    options: [
+      "Recent memory is good, long-term is poor",
+      "Sharp, quick",
+      "Slow to register, retains long-term"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Career, life preference",
-    options: ["Creative arts, designing", "Science or engineering", "Management, human relations, caregiving"]
+    options: [
+      "Freelancing, creative, travel",
+      "Management, leadership, research",
+      "Routine, stable, family-oriented"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Environment",
-    options: ["Easily feels cold", "Intolerant of heat", "Uncomfortable in humidity"]
+    options: [
+      "Loves warm, tropical weather",
+      "Prefers cold or air-conditioned environments",
+      "Dislikes damp, cold climates"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Sleep",
-    options: ["Short, broken up", "Moderate and sound", "Deep and long"]
+    options: [
+      "Light, interrupted, tends to insomnia",
+      "Moderate, wake up alert",
+      "Deep, long, hard to wake up"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Dreams",
-    options: ["Multiple and quick, fearful", "Fiery, often about conflicts", "Slow, romantic"]
+    options: [
+      "Flying, moving, falling, fearful",
+      "Fire, arguments, problem solving",
+      "Water, romance, clouds"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Speech",
-    options: ["Rapid, hither thither", "Precise, articulate", "Slow, monotonous"]
+    options: [
+      "Fast, talks a lot, rambling",
+      "Sharp, clear, persuasive",
+      "Slow, melodious, quiet"
+    ]
   },
   {
     category: "Mind, Temperament & Sleep",
     question: "Financial",
-    options: ["Buy on impulse", "Spends money on luxuries", "Good at saving money"]
+    options: [
+      "Spends quickly on impulse",
+      "Spends on quality, organized budget",
+      "Saves well, spends cautiously"
+    ]
   },
   {
-    category: "Mind, Temperament & Sleep",
+    category: "Physical Sensitivities & Vitals",
     question: "Cravings",
-    options: ["Fried food, hot, sharp, dry, meat or other protein & spicy food", "Sweets, cooling foods & drinks", "Wine or alcohol"]
+    options: [
+      "Warm soups, comforting sweets",
+      "Cool drinks, sweets, salads",
+      "Spicy, dry, warm foods"
+    ]
   },
   {
     category: "Physical Sensitivities & Vitals",
     question: "Pain",
-    options: ["Shifting, tearing", "Excruciating with breathlessness, fear and tachycardia", "Sucking pain with fever, nausea and irritability"]
+    options: [
+      "Sharp, moving, variable",
+      "Burning, intense, localized",
+      "Dull, persistent, deep"
+    ]
   },
   {
     category: "Physical Sensitivities & Vitals",
     question: "Seasonal allergies",
-    options: ["Breathlessness, wheezing, constricted breathing, runny nose, congestion", "Hives, watery eyes, rash, inflammation", "Itching eyes, irritation"]
+    options: [
+      "Fall, wind, dry weather",
+      "Spring, pollen, sun, heat",
+      "Winter, damp cold, snow"
+    ]
   },
   {
     category: "Physical Sensitivities & Vitals",
     question: "Food sensitivity",
-    options: ["Leftovers", "Dry fruits, raw food, hot spicy foods", "Sour foods, fermented foods, dairy products"]
+    options: [
+      "Raw foods, cabbage, beans",
+      "Spicy food, alcohol, citrus",
+      "Dairy, fried food, sweets"
+    ]
   },
   {
     category: "Physical Sensitivities & Vitals",
@@ -265,6 +341,29 @@ export const DOSHA_QUESTIONS = [
     options: ["Cold, poor, anemia", "Hypertension, varicosities", "Edema, fluid retention, and lymphatic stasis"]
   }
 ];
+// Alternate legacy options mapping for backwards compatibility
+export const LEGACY_WEB_DOSHA_OPTIONS = {
+  25: ["Tendency to constipation, forms gas", "Causes burning, heartburn, reflux", "Forms mucous"],
+  26: ["Dry", "Loose", "Thick, sluggish"],
+  27: ["Always active", "Moderate", "Slow, measured"],
+  28: ["Always active", "Moderate", "Calm"],
+  29: ["Vivacious, talkative, social, outgoing", "Likes to be in control, intense, ambitious", "Reserved, laid back, concerned"],
+  30: ["Anxiety, fear", "Anger, jealousy", "Greedy, possessive, withdrawn"],
+  31: ["Variable", "Dedicated/strong", "Consistent"],
+  32: ["Quick, not detailed", "Accurate, timely", "Paced but exact"],
+  33: ["Good short term, quick to forget", "Medium but accurate", "Slow to remember but then sustained"],
+  34: ["Creative arts, designing", "Science or engineering", "Management, human relations, caregiving"],
+  35: ["Easily feels cold", "Intolerant of heat", "Uncomfortable in humidity"],
+  36: ["Short, broken up", "Moderate and sound", "Deep and long"],
+  37: ["Multiple and quick, fearful", "Fiery, often about conflicts", "Slow, romantic"],
+  38: ["Rapid, hither thither", "Precise, articulate", "Slow, monotonous"],
+  39: ["Buy on impulse", "Spends money on luxuries", "Good at saving money"],
+  40: ["Fried food, hot, sharp, dry, meat or other protein & spicy food", "Sweets, cooling foods & drinks", "Wine or alcohol"],
+  41: ["Shifting, tearing", "Excruciating with breathlessness, fear and tachycardia", "Sucking pain with fever, nausea and irritability"],
+  42: ["Breathlessness, wheezing, constricted breathing, runny nose, congestion", "Hives, watery eyes, rash, inflammation", "Itching eyes, irritation"],
+  43: ["Leftovers", "Dry fruits, raw food, hot spicy foods", "Sour foods, fermented foods, dairy products"]
+};
+
 
 // ============================================================================
 // 2. HEALTH SPECIALTY OPTIONS (QUESTION 49 / AREA OF FOCUS)
@@ -574,6 +673,7 @@ export default function UserQuestionnaireModal({
   const { user, profile } = useAuth();
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(true);
   const [showSpecialtyAlert, setShowSpecialtyAlert] = useState(false);
 
   // 1. Dosha Answers state [0..47] -> option index (0, 1, 2)
@@ -645,7 +745,6 @@ export default function UserQuestionnaireModal({
   });
 
   const specialtyRef = useRef(null);
-  const hasLoadedDraftRef = useRef(false);
 
   // Gender filter for women-only questions
   const filteredLifestyleQuestions = useMemo(() => {
@@ -660,13 +759,15 @@ export default function UserQuestionnaireModal({
     return [...ACTIVITY_QUESTIONS, ...filteredLifestyleQuestions];
   }, [filteredLifestyleQuestions]);
 
-  // Load existing draft answers and profile data on mount
+  // Load existing draft answers and completed questionnaire data on mount
   useEffect(() => {
-    if (!user) return;
-    if (hasLoadedDraftRef.current) return;
-    hasLoadedDraftRef.current = true;
+    if (!user?.uid) {
+      setIsLoadingDraft(false);
+      return;
+    }
 
     let isMounted = true;
+    setIsLoadingDraft(true);
 
     const loadDraftData = async () => {
       let restoredDosha = null;
@@ -703,106 +804,192 @@ export default function UserQuestionnaireModal({
         console.warn("Could not read draft from localStorage:", e);
       }
 
-      // 2. Check profile in memory first, then fallback to Firestore with timeout
+      // 2. Fetch Firestore documents in parallel (user, dosha_questionnaire, extended)
       try {
-        const profileData = profile || {};
-        if (profileData.preferred_health) {
-          restoredSpecialty = profileData.preferred_health;
+        const [userSnap, doshaDocSnap, extDocSnap] = await Promise.all([
+          getDoc(doc(db, "users", user.uid)).catch((e) => {
+            console.warn("Could not fetch user doc:", e);
+            return null;
+          }),
+          getDoc(doc(db, "users", user.uid, "questionnaires", "dosha_questionnaire")).catch((e) => {
+            console.warn("Could not fetch dosha_questionnaire:", e);
+            return null;
+          }),
+          getDoc(doc(db, "users", user.uid, "questionnaires", "extended")).catch((e) => {
+            console.warn("Could not fetch extended questionnaire:", e);
+            return null;
+          }),
+        ]);
+
+        const userDocData = { ...(profile || {}), ...(userSnap?.exists() ? userSnap.data() : {}) };
+
+        if (userDocData.preferred_health && !restoredSpecialty) {
+          restoredSpecialty = userDocData.preferred_health;
         }
 
-        // Restore Dosha draft answers from profile
-        if (!restoredDosha && profileData.dosha_draft_answers && typeof profileData.dosha_draft_answers === "object") {
+        // Restore Dosha draft answers from user document
+        if (!restoredDosha && userDocData.dosha_draft_answers && typeof userDocData.dosha_draft_answers === "object") {
           const arr = Array(DOSHA_QUESTIONS.length).fill(null);
-          Object.entries(profileData.dosha_draft_answers).forEach(([idxStr, val]) => {
+          Object.entries(userDocData.dosha_draft_answers).forEach(([idxStr, val]) => {
             const idx = parseInt(idxStr, 10);
             if (!isNaN(idx) && idx >= 0 && idx < arr.length) {
               arr[idx] = val;
             }
           });
-          restoredDosha = arr;
+          if (arr.some((x) => x !== null)) {
+            restoredDosha = arr;
+          }
         }
 
-        // Restore Extended draft answers from profile
-        if (Object.keys(restoredExtended).length === 0 && profileData.extended_draft_answers) {
-          if (profileData.extended_draft_answers.answers) {
-            restoredExtended = profileData.extended_draft_answers.answers;
+        // Restore Dosha answers from completed dosha_questionnaire document
+        const isDoshaIncomplete = !restoredDosha || restoredDosha.some((x) => x === null || x === undefined);
+        if (isDoshaIncomplete && doshaDocSnap && doshaDocSnap.exists()) {
+          const dResults = doshaDocSnap.data()?.results || {};
+          const arr = DOSHA_QUESTIONS.map((q, qIdx) => {
+            if (restoredDosha && restoredDosha[qIdx] !== null && restoredDosha[qIdx] !== undefined) {
+              return restoredDosha[qIdx];
+            }
+
+            let ans = dResults[q.question];
+            if (ans === undefined) {
+              const targetKey = q.question.trim().toLowerCase();
+              const matchedKey = Object.keys(dResults).find(
+                (k) => k.trim().toLowerCase() === targetKey
+              );
+              if (matchedKey) ans = dResults[matchedKey];
+            }
+
+            if (ans !== undefined && ans !== null) {
+              const ansStr = String(ans).trim();
+
+              // Tier 1: Direct exact match in current options
+              let idx = q.options.indexOf(ansStr);
+              if (idx >= 0) return idx;
+
+              // Tier 2: Case-insensitive / trimmed match in current options
+              idx = q.options.findIndex(
+                (opt) => opt.trim().toLowerCase() === ansStr.toLowerCase()
+              );
+              if (idx >= 0) return idx;
+
+              // Tier 3: Match in alternate legacy options
+              const altOpts = LEGACY_WEB_DOSHA_OPTIONS[qIdx];
+              if (altOpts) {
+                const altIdx = altOpts.findIndex(
+                  (opt) => opt.trim().toLowerCase() === ansStr.toLowerCase()
+                );
+                if (altIdx >= 0 && altIdx < q.options.length) return altIdx;
+              }
+
+              // Tier 4: Substring / keyword match
+              idx = q.options.findIndex(
+                (opt) =>
+                  opt.toLowerCase().includes(ansStr.toLowerCase()) ||
+                  ansStr.toLowerCase().includes(opt.toLowerCase())
+              );
+              if (idx >= 0) return idx;
+
+              // Tier 5: Integer index fallback
+              const num = parseInt(ansStr, 10);
+              if (!isNaN(num) && num >= 0 && num < q.options.length) {
+                return num;
+              }
+            }
+
+            return null;
+          });
+
+          if (arr.some((x) => x !== null)) {
+            restoredDosha = arr;
           }
-          if (Array.isArray(profileData.extended_draft_answers.conditions)) {
-            if (profileData.extended_draft_answers.conditions.includes("None")) {
+
+          if (!restoredSpecialty) {
+            const specLabel = dResults["Which area are you looking to improve"];
+            if (specLabel) {
+              const matchedHf = HEALTH_FIELDS.find(
+                (hf) => hf.label.trim().toLowerCase() === String(specLabel).trim().toLowerCase()
+              );
+              if (matchedHf) restoredSpecialty = matchedHf.key;
+            }
+          }
+        }
+
+        // Restore Extended answers from draft
+        if (Object.keys(restoredExtended).length === 0 && userDocData.extended_draft_answers) {
+          if (userDocData.extended_draft_answers.answers) {
+            restoredExtended = userDocData.extended_draft_answers.answers;
+          }
+          if (Array.isArray(userDocData.extended_draft_answers.conditions)) {
+            if (userDocData.extended_draft_answers.conditions.includes("None")) {
               restoredNoneConditions = true;
             } else {
-              restoredConditions = new Set(profileData.extended_draft_answers.conditions);
+              restoredConditions = new Set(userDocData.extended_draft_answers.conditions);
             }
           }
         }
 
-        // Quick fallback to Firestore if needed (max 1.5s timeout)
-        if (!restoredDosha || Object.keys(restoredExtended).length === 0) {
-          const userSnap = await Promise.race([
-            getDoc(doc(db, "users", user.uid)),
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500))
-          ]);
-          if (userSnap && userSnap.exists()) {
-            const data = userSnap.data();
-            if (data.preferred_health && !restoredSpecialty) {
-              restoredSpecialty = data.preferred_health;
-            }
-            if (!restoredDosha && data.dosha_draft_answers && typeof data.dosha_draft_answers === "object") {
-              const arr = Array(DOSHA_QUESTIONS.length).fill(null);
-              Object.entries(data.dosha_draft_answers).forEach(([idxStr, val]) => {
-                const idx = parseInt(idxStr, 10);
-                if (!isNaN(idx) && idx >= 0 && idx < arr.length) {
-                  arr[idx] = val;
-                }
-              });
-              restoredDosha = arr;
-            } else if (!restoredDosha && data.is_free_questionnaire_completed) {
-              try {
-                const doshaDocSnap = await getDoc(doc(db, "users", user.uid, "questionnaires", "dosha_questionnaire"));
-                if (doshaDocSnap.exists()) {
-                  const dResults = doshaDocSnap.data()?.results || {};
-                  const arr = DOSHA_QUESTIONS.map((q) => {
-                    const ans = dResults[q.question];
-                    if (ans !== undefined) {
-                      const idx = q.options.indexOf(ans);
-                      return idx >= 0 ? idx : null;
-                    }
-                    return null;
-                  });
-                  if (arr.some((x) => x !== null)) {
-                    restoredDosha = arr;
-                  }
-                }
-              } catch (_) {}
-            }
-            if (Object.keys(restoredExtended).length === 0 && data.extended_draft_answers) {
-              if (data.extended_draft_answers.answers) {
-                restoredExtended = data.extended_draft_answers.answers;
+        // Restore Extended answers from completed extended document
+        if (extDocSnap && extDocSnap.exists()) {
+          const extResults = extDocSnap.data()?.results || {};
+          if (Object.keys(restoredExtended).length === 0) {
+            const restoredMap = {};
+            allExtendedSingleQuestions.forEach((q) => {
+              const val = extResults[q.question];
+              if (val && val !== "Skipped") {
+                restoredMap[q.id] = val;
               }
-              if (Array.isArray(data.extended_draft_answers.conditions)) {
-                if (data.extended_draft_answers.conditions.includes("None")) {
-                  restoredNoneConditions = true;
-                } else {
-                  restoredConditions = new Set(data.extended_draft_answers.conditions);
-                }
+            });
+            if (Object.keys(restoredMap).length > 0) {
+              restoredExtended = restoredMap;
+            }
+          }
+
+          if (restoredConditions.size === 0 && !restoredNoneConditions) {
+            if (Array.isArray(extResults.medical_conditions)) {
+              if (extResults.medical_conditions.includes("None")) {
+                restoredNoneConditions = true;
+              } else {
+                restoredConditions = new Set(extResults.medical_conditions);
               }
             }
           }
         }
-      } catch (e) {
-        // Non-blocking fallback
+      } catch (err) {
+        console.warn("Could not fetch user questionnaires from Firestore:", err);
       }
 
       if (!isMounted) return;
 
-      if (restoredDosha) setDoshaAnswers(restoredDosha);
+      if (restoredDosha) {
+        setDoshaAnswers(restoredDosha);
+        try {
+          localStorage.setItem(`dosha_answers_${user.uid}`, JSON.stringify(restoredDosha));
+        } catch (_) {}
+      }
       if (restoredSpecialty) {
         setSelectedHealthField(restoredSpecialty);
         setHasInitialSpecialty(true);
       }
-      if (Object.keys(restoredExtended).length > 0) setExtendedAnswers(restoredExtended);
-      if (restoredConditions.size > 0) setSelectedConditions(restoredConditions);
-      if (restoredNoneConditions) setNoneConditions(true);
+      if (Object.keys(restoredExtended).length > 0) {
+        setExtendedAnswers(restoredExtended);
+        try {
+          localStorage.setItem(`extended_answers_${user.uid}`, JSON.stringify(restoredExtended));
+        } catch (_) {}
+      }
+      if (restoredConditions.size > 0) {
+        setSelectedConditions(restoredConditions);
+        try {
+          localStorage.setItem(`extended_conditions_${user.uid}`, JSON.stringify(Array.from(restoredConditions)));
+        } catch (_) {}
+      }
+      if (restoredNoneConditions) {
+        setNoneConditions(true);
+        try {
+          localStorage.setItem(`extended_conditions_${user.uid}`, JSON.stringify(["None"]));
+        } catch (_) {}
+      }
+
+      setIsLoadingDraft(false);
     };
 
     loadDraftData();
@@ -810,7 +997,7 @@ export default function UserQuestionnaireModal({
     return () => {
       isMounted = false;
     };
-  }, [user, profile]);
+  }, [user?.uid, allExtendedSingleQuestions]);
 
   // Handlers for Dosha questions
   const handleSelectDosha = (index, optionIndex) => {
@@ -1094,6 +1281,20 @@ export default function UserQuestionnaireModal({
     "Mind, Temperament & Sleep",
     "Physical Sensitivities & Vitals"
   ];
+
+  if (isLoadingDraft) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#1E1E1E] flex flex-col items-center justify-center text-white font-sans">
+        <BackgroundVideo opacity={0.25} />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-3 border-[#FFD3AC] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-white/80 font-sans tracking-wide">
+            Loading your assessment...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-[#1E1E1E] overflow-y-auto flex flex-col justify-between text-white font-sans">
