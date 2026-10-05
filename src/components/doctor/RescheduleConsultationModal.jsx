@@ -63,7 +63,6 @@ export default function RescheduleConsultationModal({
   );
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [reason, setReason] = useState("Doctor requested change");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -328,7 +327,7 @@ export default function RescheduleConsultationModal({
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    const finalReason = reason.trim() || "Doctor requested change";
+    const finalReason = "Doctor requested change";
     const newUtcTime = selectedSlot.time;
 
     try {
@@ -388,14 +387,14 @@ export default function RescheduleConsultationModal({
           rescheduled_at: serverTimestamp(),
           rescheduled_by: "doctor",
           reschedule_reason: finalReason,
-          reschedule_notification_sent: true,
+          reschedule_notification_sent: false,
         };
 
         const batch = writeBatch(db);
         batch.set(doctorApptRef, updatePayload, { merge: true });
         batch.set(userApptRef, updatePayload, { merge: true });
         batch.set(userNotifRef, {
-          title: "Appointment Rescheduled by Doctor",
+          title: "Appointment Rescheduled by Practitioner",
           body: `Dr. ${appointment.doctor_name || "your doctor"} has rescheduled your appointment to ${moment(newUtcTime).format("MMM D, h:mm A")}.${finalReason ? " Reason: " + finalReason : ""}`,
           type: "appointment_rescheduled",
           is_read: false,
@@ -423,15 +422,15 @@ export default function RescheduleConsultationModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-3 sm:p-4 pb-20 sm:pb-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-[#E7E2D9] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-[#E7E2D9] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7E2D9] bg-[#FAF8F5]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
           <div>
             <h3 className="text-lg font-bold text-[#1A1A1A]">Reschedule Consultation</h3>
             <p className="text-xs text-[#6B6862]">Select a new date and time for the client</p>
@@ -446,7 +445,7 @@ export default function RescheduleConsultationModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1 min-h-0">
           {/* Client & Current Schedule Info */}
           <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -601,20 +600,6 @@ export default function RescheduleConsultationModal({
                     })}
                   </div>
                 )}
-
-                {/* Reason Note */}
-                <div className="mt-4">
-                  <label className="block text-xs font-semibold text-[#1A1A1A] mb-1">
-                    Reason for Reschedule (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    placeholder="e.g. Doctor requested change"
-                    className="w-full text-xs rounded-xl border border-[#E7E2D9] px-3 py-2 text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:ring-2 focus:ring-[#C8996A] transition"
-                  />
-                </div>
               </div>
             </div>
           )}
@@ -638,7 +623,7 @@ export default function RescheduleConsultationModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E7E2D9] bg-[#FAF8F5]">
+        <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
           <button
             type="button"
             onClick={onClose}

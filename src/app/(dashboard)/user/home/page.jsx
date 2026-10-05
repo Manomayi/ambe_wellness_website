@@ -17,7 +17,10 @@ export default function UserHomePage() {
 
   const isMember = Boolean(profile?.subscription?.active);
   const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "there";
-  const isQuestionnaireCompleted = profile?.is_free_questionnaire_completed === true;
+  const isFreeCompleted = profile?.is_free_questionnaire_completed === true;
+  const isExtendedCompleted = profile?.is_extended_questionnaire_completed === true;
+  const bothQuestionnairesCompleted = isFreeCompleted && isExtendedCompleted;
+  const isQuestionnaireCompleted = bothQuestionnairesCompleted;
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -313,7 +316,7 @@ export default function UserHomePage() {
           {/* Constitution Report Card (Flutter _buildMadeForYouSection - Card 2) */}
           <div
             onClick={() => {
-              if (isQuestionnaireCompleted) {
+              if (bothQuestionnairesCompleted) {
                 router.push("/user/menu/questionnaire/results?from=home");
               } else {
                 router.push("/user/menu/questionnaire?returnToHome=true");
@@ -332,19 +335,19 @@ export default function UserHomePage() {
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                 }}
               >
-                {isQuestionnaireCompleted
+                {bothQuestionnairesCompleted
                   ? "Your Constitution Report"
                   : "Complete Your Constitution Assessment"}
               </h3>
               <p className="text-[#B5AFA8] text-xs sm:text-[13px] font-sans leading-relaxed mt-1.5">
-                {isQuestionnaireCompleted
+                {bothQuestionnairesCompleted
                   ? "Review your personalized results and recommendations."
                   : "Complete your questionnaire to unlock your personalized constitution report."}
               </p>
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              {isQuestionnaireCompleted && (
+              {bothQuestionnairesCompleted && (
                 <span className="px-2.5 py-1 rounded-full border border-[#CCA776] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
                   READY
                 </span>

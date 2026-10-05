@@ -190,7 +190,7 @@ export default function DoctorNotificationsPage() {
             doc(db, 'doctors', user.uid, 'appointments_upcoming', consultationId)
           ).catch(() => null);
           if (docUpcoming?.exists()) {
-            router.push(`/doctor/consultations/appointment/${consultationId}?autoJoin=true`);
+            router.push(`/doctor/consultations/appointment/${consultationId}`);
             return;
           }
 
@@ -257,7 +257,7 @@ export default function DoctorNotificationsPage() {
           return;
         }
 
-        router.push(`/doctor/consultations/appointment/${consultationId}?autoJoin=true`);
+        router.push(`/doctor/consultations/appointment/${consultationId}`);
       } catch (err) {
         console.error('Error verifying consultation status:', err);
         showError('Could not verify consultation status. Please try again.');

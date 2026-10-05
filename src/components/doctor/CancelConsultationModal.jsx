@@ -218,15 +218,15 @@ export default function CancelConsultationModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-3 sm:p-4 pb-20 sm:pb-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-[#E7E2D9] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-[#E7E2D9] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7E2D9] bg-[#FAF8F5]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
           <h3 className="text-lg font-bold text-[#1A1A1A]">Cancel Consultation</h3>
           <button
             onClick={onClose}
@@ -237,7 +237,7 @@ export default function CancelConsultationModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 min-h-0">
           {/* Appointment Summary Card */}
           <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
@@ -302,7 +302,7 @@ export default function CancelConsultationModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E7E2D9] bg-[#FAF8F5]">
+        <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
           <button
             type="button"
             onClick={onClose}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import VideoCall from '@/components/video/VideoCall';
@@ -17,13 +17,11 @@ import PaymentProcessingOverlay from '@/components/common/PaymentProcessingOverl
 export default function DoctorAppointmentPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inCall, setInCall] = useState(false);
   const [isEndingCall, setIsEndingCall] = useState(false);
-  const hasAutoJoinedRef = useRef(false);
 
   const handleStartCall = async () => {
     try {
@@ -47,24 +45,6 @@ export default function DoctorAppointmentPage() {
     }
   }, [user, params.id]);
 
-  useEffect(() => {
-    if (
-      appointment &&
-      !inCall &&
-      !loading &&
-      !hasAutoJoinedRef.current &&
-      searchParams?.get('autoJoin') === 'true'
-    ) {
-      if (!appointment.needsReport && !appointment.completed) {
-        hasAutoJoinedRef.current = true;
-        // Strip ?autoJoin=true from browser URL without reloading so back navigation doesn't loop
-        if (typeof window !== 'undefined' && window.history?.replaceState) {
-          window.history.replaceState(null, '', window.location.pathname);
-        }
-        handleStartCall();
-      }
-    }
-  }, [appointment, inCall, loading, searchParams]);
 
   const loadAppointment = async () => {
     try {
@@ -322,10 +302,6 @@ export default function DoctorAppointmentPage() {
   }
 
   const handleBackFromCall = () => {
-    hasAutoJoinedRef.current = true;
-    if (typeof window !== 'undefined' && window.history?.replaceState) {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
     setInCall(false);
   };
 
@@ -454,7 +430,7 @@ export default function DoctorAppointmentPage() {
                   Your appointment is happening now!
                 </p>
                 <p className="text-emerald-300/80 text-xs">
-                  Click the button below to start the video consultation with your client.
+                  Click the button below to join the video consultation with your client.
                 </p>
               </div>
             )}
@@ -468,7 +444,7 @@ export default function DoctorAppointmentPage() {
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                Start Video Call
+                Join Video Call
               </button>
             )}
 

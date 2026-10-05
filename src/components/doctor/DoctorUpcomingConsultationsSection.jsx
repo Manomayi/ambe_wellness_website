@@ -370,7 +370,7 @@ export default function DoctorUpcomingConsultationsSection() {
                       <button
                         onClick={() =>
                           router.push(
-                            `/doctor/consultations/appointment/${appointment.id}?autoJoin=true`
+                            `/doctor/consultations/appointment/${appointment.id}`
                           )
                         }
                         className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm hover:bg-black transition shadow cursor-pointer"

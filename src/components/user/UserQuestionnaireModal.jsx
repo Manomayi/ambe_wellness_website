@@ -756,6 +756,24 @@ export default function UserQuestionnaireModal({
                 }
               });
               restoredDosha = arr;
+            } else if (!restoredDosha && data.is_free_questionnaire_completed) {
+              try {
+                const doshaDocSnap = await getDoc(doc(db, "users", user.uid, "questionnaires", "dosha_questionnaire"));
+                if (doshaDocSnap.exists()) {
+                  const dResults = doshaDocSnap.data()?.results || {};
+                  const arr = DOSHA_QUESTIONS.map((q) => {
+                    const ans = dResults[q.question];
+                    if (ans !== undefined) {
+                      const idx = q.options.indexOf(ans);
+                      return idx >= 0 ? idx : null;
+                    }
+                    return null;
+                  });
+                  if (arr.some((x) => x !== null)) {
+                    restoredDosha = arr;
+                  }
+                }
+              } catch (_) {}
             }
             if (Object.keys(restoredExtended).length === 0 && data.extended_draft_answers) {
               if (data.extended_draft_answers.answers) {
