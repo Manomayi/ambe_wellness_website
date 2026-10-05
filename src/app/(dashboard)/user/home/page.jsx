@@ -314,7 +314,7 @@ export default function UserHomePage() {
           <div
             onClick={() => {
               if (isQuestionnaireCompleted) {
-                router.push("/user/menu/questionnaire/results");
+                router.push("/user/menu/questionnaire/results?from=home");
               } else {
                 router.push("/user/menu/questionnaire?returnToHome=true");
               }

@@ -141,7 +141,7 @@ export default function MessageDoctorClient() {
   if (loading) {
     return (
       <ProtectedRoute userType="user">
-        <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+        <div className="flex-1 h-full min-h-0 flex items-center justify-center py-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD3AC]"></div>
         </div>
       </ProtectedRoute>
@@ -151,7 +151,7 @@ export default function MessageDoctorClient() {
   if (!doctorInfo) {
     return (
       <ProtectedRoute userType="user">
-        <div className="max-w-4xl mx-auto p-8 text-center h-[calc(100vh-120px)] flex items-center justify-center">
+        <div className="flex-1 h-full min-h-0 max-w-4xl mx-auto p-8 text-center flex items-center justify-center">
           <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 sm:p-10 shadow-xl max-w-md w-full backdrop-blur-md">
             <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#FFD3AC]/60 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">No Doctor Assigned</h2>
@@ -172,9 +172,9 @@ export default function MessageDoctorClient() {
 
   return (
     <ProtectedRoute userType="user">
-      <div className="h-[calc(100dvh-64px)] flex-1 min-h-0 flex flex-col bg-transparent">
+      <div className="h-full flex-1 min-h-0 flex flex-col bg-transparent overflow-hidden">
         {/* Modern Doctor Chat Header */}
-        <div className="bg-[#1E1E1E]/90 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between z-10">
+        <div className="bg-[#1E1E1E]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 z-20 sticky top-0 shadow-md">
           <div className="flex items-center gap-3.5">
             <AmbeBackButton onClick={() => router.push('/user/consult')} />
 
@@ -211,7 +211,7 @@ export default function MessageDoctorClient() {
         </div>
 
         {/* Chat Window Container */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {chatId && (
             <ChatWindow
               chatId={chatId}

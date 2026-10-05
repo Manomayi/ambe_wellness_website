@@ -488,11 +488,27 @@ export default function UserConsultPage() {
         const userHistoryRef = doc(db, 'users', user.uid, 'appointments_history', appointment.id);
         const userRef = doc(db, 'users', user.uid);
 
+        const rawTime = appointment.time || appointment.scheduled_at;
+        let formattedDateStr = 'Upcoming Consultation';
+        if (rawTime) {
+          const aDate = rawTime.toDate ? rawTime.toDate() : new Date(rawTime);
+          formattedDateStr = aDate.toLocaleString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          });
+        }
+        const clientName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Client';
+
         batch.delete(userUpcomingRef);
         batch.set(userHistoryRef, {
           ...appointment,
           status: 'cancelled_by_user',
-          cancelled_at: serverTimestamp()
+          cancelled_at: serverTimestamp(),
+          cancel_notification_sent: false,
         }, { merge: true });
         batch.update(userRef, { is_consultation_set: false });
 
@@ -508,6 +524,23 @@ export default function UserConsultPage() {
             cancelled_by: 'user',
             cancelled_at: serverTimestamp()
           }, { merge: true });
+
+          // Create practitioner in-app notification
+          const docNotifRef = doc(collection(db, 'doctors', docId, 'notifications'));
+          batch.set(docNotifRef, {
+            title: 'Consultation Cancelled by Client',
+            body: `Client ${clientName} has cancelled the consultation scheduled for ${formattedDateStr}.`,
+            message: `Client ${clientName} has cancelled the consultation scheduled for ${formattedDateStr}.`,
+            type: 'consultation_cancelled',
+            appointment_id: String(appointment.id),
+            appointmentId: String(appointment.id),
+            user_id: user.uid,
+            user_name: clientName,
+            is_read: false,
+            read: false,
+            created_at: serverTimestamp(),
+            timestamp: serverTimestamp(),
+          });
         }
         await batch.commit();
       }

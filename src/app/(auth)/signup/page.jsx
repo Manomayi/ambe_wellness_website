@@ -414,10 +414,12 @@ export default function SignUpPage() {
     setError('');
     if (editingFromConfirmation) {
       setEditingFromConfirmation(false);
-      setStep(getStepCount());
-      return;
     }
-    setStep(prev => Math.max(1, prev - 1));
+    if (step > 1) {
+      setStep(prev => prev - 1);
+    } else {
+      router.push('/login');
+    }
   };
 
   const handleFileUpload = (type, file) => {
@@ -1764,7 +1766,7 @@ export default function SignUpPage() {
         {/* Top Bar matching Flutter RegistrationScaffold */}
         <div>
           <div className="flex items-center gap-4 pt-2 pb-4">
-            <AmbeBackButton onClick={step > 1 || editingFromConfirmation ? handleBack : () => router.push("/login")} />
+            <AmbeBackButton onClick={handleBack} />
             <h1 className="text-white text-lg sm:text-xl font-semibold tracking-wide font-sans flex-1">
               Register your profile ({step}/{getStepCount()})
             </h1>

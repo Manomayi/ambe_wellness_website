@@ -23,29 +23,29 @@ function QuestionnaireContent() {
         returnToHomeOnSkip={returnToHomeOnSkip}
         onSkip={(targetPath) => {
           if (fromResults) {
-            router.push("/user/menu/questionnaire/results");
+            router.replace("/user/menu/questionnaire/results");
           } else if (returnToHomeOnSkip) {
-            router.push("/user/home");
+            router.replace("/user/home");
           } else if (targetPath) {
-            router.push(targetPath);
+            router.replace(targetPath);
           } else {
-            router.push("/user/consult");
+            router.replace("/user/consult");
           }
         }}
         onComplete={(redirectUrl) => {
           if (fromResults) {
-            router.push("/user/menu/questionnaire/results");
+            router.replace("/user/menu/questionnaire/results");
           } else if (redirectUrl) {
-            router.push(redirectUrl);
+            router.replace(redirectUrl);
           } else {
-            router.push("/user/consult");
+            router.replace("/user/consult");
           }
         }}
         onClose={() => {
           if (fromResults) {
-            router.push("/user/menu/questionnaire/results");
+            router.replace("/user/menu/questionnaire/results");
           } else {
-            router.push("/user/home");
+            router.replace("/user/home");
           }
         }}
       />

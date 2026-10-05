@@ -114,10 +114,11 @@ function StripePostContributionForm({ amount, paymentIntentId, onSuccess }) {
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isReady, setIsReady] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !isReady) return;
     setProcessing(true);
     setErrorMsg("");
 
@@ -152,7 +153,7 @@ function StripePostContributionForm({ amount, paymentIntentId, onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+      <PaymentElement onReady={() => setIsReady(true)} />
       {errorMsg && (
         <div className="bg-red-950/60 border border-red-500/50 text-red-200 text-xs p-3 rounded-xl">
           {errorMsg}
@@ -160,8 +161,8 @@ function StripePostContributionForm({ amount, paymentIntentId, onSuccess }) {
       )}
       <button
         type="submit"
-        disabled={processing || !stripe}
-        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1A1A1A] font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2"
+        disabled={processing || !stripe || !elements || !isReady}
+        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1A1A1A] font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {processing ? (
           <>

@@ -237,6 +237,17 @@ export default function QuestionnaireResultsPage() {
   const [isConsultationSet, setIsConsultationSet] = useState(false);
   const [error, setError] = useState('');
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get('from') === 'home' || searchParams.get('returnTo') === 'home') {
+        router.push('/user/home');
+        return;
+      }
+    }
+    router.push('/user/menu');
+  };
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) return router.push('/login');
@@ -281,7 +292,7 @@ export default function QuestionnaireResultsPage() {
       <WebLayoutWrapper>
         <div className="relative flex items-center justify-center mb-6 pt-1">
           <div className="absolute left-0">
-            <AmbeBackButton onClick={() => router.back()} />
+            <AmbeBackButton onClick={handleBack} />
           </div>
           <h1 className="font-serif text-xl sm:text-2xl font-semibold text-white tracking-tight text-center">
             Questionnaire Result
@@ -297,7 +308,7 @@ export default function QuestionnaireResultsPage() {
       <WebLayoutWrapper>
         <div className="relative flex items-center justify-center mb-8 pt-1">
           <div className="absolute left-0">
-            <AmbeBackButton onClick={() => router.back()} />
+            <AmbeBackButton onClick={handleBack} />
           </div>
           <h1 className="font-serif text-xl sm:text-2xl font-semibold text-white tracking-tight text-center">
             Questionnaire Result
@@ -308,7 +319,7 @@ export default function QuestionnaireResultsPage() {
             Please complete the questionnaire to view your personalized constitution report.
           </p>
           <button
-            onClick={() => router.push('/user/menu/questionnaire?from=results')}
+            onClick={() => router.replace('/user/menu/questionnaire?from=results')}
             className="bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-8 py-3.5 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg transition-transform active:scale-95 cursor-pointer"
           >
             COMPLETE QUESTIONNAIRE
@@ -328,7 +339,7 @@ export default function QuestionnaireResultsPage() {
       <div className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-6 border-b border-white/10 shadow-sm">
         <div className="relative flex items-center justify-center">
           <div className="absolute left-0">
-            <AmbeBackButton onClick={() => router.back()} />
+            <AmbeBackButton onClick={handleBack} />
           </div>
           <h1 className="font-serif text-xl sm:text-2xl font-semibold text-white tracking-tight text-center">
             Questionnaire Result

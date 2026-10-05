@@ -19,6 +19,8 @@ import {
   VideoCameraIcon,
   ExclamationCircleIcon,
   XMarkIcon,
+  ReceiptRefundIcon,
+  LifebuoyIcon,
 } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -257,8 +259,22 @@ export default function NotificationsPage() {
       }
     }
 
+    if (type === 'refund_approved' || type === 'refund_declined' || title.includes('refund')) {
+      router.push('/user/menu/refunds');
+      return;
+    }
+
+    if (type === 'support_reply' || type === 'support_message' || title.includes('support')) {
+      router.push('/user/menu/support');
+      return;
+    }
+
+    if (type === 'new_message' || type === 'chat_message' || title.includes('message')) {
+      router.push('/user/consult/message_doctor');
+      return;
+    }
+
     if (
-      type === 'new_message' || 
       type === 'consultation_scheduled' || 
       type === 'consultation_reminder'
     ) {
@@ -291,6 +307,12 @@ export default function NotificationsPage() {
         return <VideoCameraIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'new_message':
         return <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#FFD3AC]" />;
+      case 'support_reply':
+      case 'support_message':
+        return <LifebuoyIcon className="w-5 h-5 text-[#FFD3AC]" />;
+      case 'refund_approved':
+      case 'refund_declined':
+        return <ReceiptRefundIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'doctor_recommendation':
       case 'consultation_report':
         return <ClipboardDocumentListIcon className="w-5 h-5 text-[#FFD3AC]" />;

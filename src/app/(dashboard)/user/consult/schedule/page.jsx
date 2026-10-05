@@ -76,10 +76,11 @@ function ConsultationPaymentForm({
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isReady, setIsReady] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !isReady) return;
 
     if (!selectedSlot?.isInstant && selectedSlot?.time && selectedSlot.time.getTime() < Date.now() + 5 * 60 * 1000) {
       setErrorMsg('This time slot has expired while waiting. Please go back and select a new time slot.');
@@ -125,6 +126,7 @@ function ConsultationPaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement
+        onReady={() => setIsReady(true)}
         options={{
           layout: "tabs",
           wallets: {
@@ -142,8 +144,8 @@ function ConsultationPaymentForm({
 
       <button
         type="submit"
-        disabled={!stripe || processing}
-        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 shadow-md uppercase tracking-wider cursor-pointer"
+        disabled={!stripe || !elements || !isReady || processing}
+        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer"
       >
         {processing ? "Processing Payment..." : "Pay $50 Deposit & Confirm Appointment"}
       </button>
@@ -1063,11 +1065,21 @@ function ScheduleConsultationContent() {
 
       if (!fnSuccess) {
         const targetDocUid = resolvedDoctorUid || apptData?.doctor_id || apptData?.doctor_uid;
-        const newTimestamp = Timestamp.fromDate(selectedSlot.time);
+        const clientName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Client';
+        const formattedDateStr = selectedSlot.time.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+
         const updatePayload = {
           time: newTimestamp,
           rescheduled_at: serverTimestamp(),
-          rescheduled_by: 'user'
+          rescheduled_by: 'user',
+          reschedule_notification_sent: false,
         };
 
         const batch = writeBatch(db);
@@ -1080,7 +1092,7 @@ function ScheduleConsultationContent() {
             doctor_id: targetDocUid || '',
             doctor_name: doctorDisplayName,
             user_id: user.uid,
-            user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
+            user_name: clientName,
             status: 'scheduled',
             deposit_paid: 50.00,
             ...updatePayload
@@ -1098,23 +1110,40 @@ function ScheduleConsultationContent() {
               doctor_id: targetDocUid,
               doctor_name: doctorDisplayName,
               user_id: user.uid,
-              user_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient',
+              user_name: clientName,
               status: 'scheduled',
               deposit_paid: 50.00,
               ...updatePayload
             }, { merge: true });
           }
+
+          // Create in-app notification for the practitioner
+          const docNotifRef = doc(collection(db, 'doctors', targetDocUid, 'notifications'));
+          batch.set(docNotifRef, {
+            title: 'Consultation Rescheduled',
+            body: `Client ${clientName} has rescheduled their consultation to ${formattedDateStr}.`,
+            message: `Client ${clientName} has rescheduled their consultation to ${formattedDateStr}.`,
+            type: 'appointment_rescheduled',
+            appointment_id: targetApptId,
+            user_id: user.uid,
+            user_name: clientName,
+            timestamp: serverTimestamp(),
+            created_at: serverTimestamp(),
+            read: false,
+            is_read: false,
+          });
         }
 
         await batch.commit();
       }
 
-      setBookingSuccess(true);
+      if (!isRescheduleParam) {
+        setBookingSuccess(true);
+      }
       router.replace('/user/consult');
     } catch (error) {
       console.error('Error rescheduling appointment:', error);
       alert('Could not reschedule your appointment. Please try again or contact support.');
-    } finally {
       setScheduling(false);
     }
   };
@@ -1622,7 +1651,7 @@ function ScheduleConsultationContent() {
                 {scheduling ? (
                   <>
                     <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
-                    Processing...
+                    {isRescheduleParam ? "Rescheduling..." : "Processing..."}
                   </>
                 ) : isRescheduleParam ? (
                   "Confirm Rescheduled Slot"
@@ -1823,6 +1852,7 @@ function ScheduleConsultationContent() {
                       }}
                     >
                       <ConsultationPaymentForm
+                        key={clientSecret}
                         user={user}
                         doctorInfo={doctorInfo}
                         selectedSlot={selectedSlot}
@@ -1911,7 +1941,7 @@ function ScheduleConsultationContent() {
         </div>
 
         {/* Full-screen Payment Processing Overlay matching mobile app */}
-        {(isProcessingDepositPayment || scheduling) && (
+        {(isProcessingDepositPayment || (scheduling && !isRescheduleParam)) && (
           <PaymentProcessingOverlay />
         )}
       </WebLayoutWrapper>

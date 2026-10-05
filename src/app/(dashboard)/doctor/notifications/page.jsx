@@ -19,7 +19,9 @@ import {
   XCircleIcon,
   VideoCameraIcon,
   ExclamationCircleIcon,
-  XMarkIcon
+  XMarkIcon,
+  BanknotesIcon,
+  LifebuoyIcon
 } from '@heroicons/react/24/outline';
 import BackButton from '@/components/common/BackButton';
 
@@ -265,13 +267,26 @@ export default function DoctorNotificationsPage() {
       return;
     }
 
-    if (type === 'new_message') {
-      router.push('/doctor/messages');
+    if (type === 'new_message' || type === 'chat_message' || title.includes('message')) {
+      const chatId = notification.chatId || notification.chat_id || notification.data?.chatId || notification.data?.chat_id;
+      const userName = notification.userName || notification.user_name || notification.senderName || notification.sender_name || notification.data?.userName || notification.data?.user_name || '';
+      if (chatId) {
+        router.push(`/doctor/messages/${chatId}${userName ? `?userName=${encodeURIComponent(userName)}` : ''}`);
+      } else {
+        router.push('/doctor/messages');
+      }
+      return;
+    } else if (type === 'support_reply' || type === 'support_message' || title.includes('support')) {
+      router.push('/doctor/menu/support');
+    } else if (type === 'doctor_payout' || type === 'payout' || title.includes('payout')) {
+      router.push('/doctor/earnings');
     } else if (
       type === 'consultation_scheduled' || 
       type === 'consultation_cancelled' || 
       type === 'consultation_reminder' || 
-      type === 'report_reminder'
+      type === 'report_reminder' ||
+      type === 'appointment_rescheduled' ||
+      type === 'consultation_rescheduled'
     ) {
       router.push('/doctor/consultations');
     } else if (type === 'new_patient') {
@@ -302,8 +317,17 @@ export default function DoctorNotificationsPage() {
         return <VideoCameraIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'new_message':
         return <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#FFD3AC]" />;
+      case 'support_reply':
+      case 'support_message':
+        return <LifebuoyIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'consultation_scheduled':
         return <CalendarDaysIcon className="w-5 h-5 text-[#2E7D32]" />;
+      case 'appointment_rescheduled':
+      case 'consultation_rescheduled':
+        return <ClockIcon className="w-5 h-5 text-[#FFD3AC]" />;
+      case 'doctor_payout':
+      case 'payout':
+        return <BanknotesIcon className="w-5 h-5 text-[#2E7D32]" />;
       case 'consultation_cancelled':
         return <XCircleIcon className="w-5 h-5 text-red-400" />;
       case 'consultation_reminder':

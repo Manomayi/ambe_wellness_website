@@ -45,6 +45,7 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState(null);
+  const [isReady, setIsReady] = useState(false);
 
   const completeOrderAndRedirect = async (amount = null, currency = 'USD') => {
     if (!user) return;
@@ -136,7 +137,7 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
+    if (!stripe || !elements || !isReady) {
       return;
     }
 
@@ -178,6 +179,7 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement
+        onReady={() => setIsReady(true)}
         options={{
           layout: "tabs",
           wallets: {
@@ -188,7 +190,7 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
       />
 
       <button
-        disabled={isProcessing || !stripe || !elements}
+        disabled={isProcessing || !stripe || !elements || !isReady}
         className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-xl font-bold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer"
       >
         {isProcessing ? "Processing..." : "Pay now"}

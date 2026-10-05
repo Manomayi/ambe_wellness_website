@@ -29,10 +29,11 @@ function CheckoutForm({ user, paymentIntentId }) {
   const router = useRouter();
   const [processing, setProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isReady, setIsReady] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !isReady) return;
     setProcessing(true);
     setErrorMsg("");
 
@@ -88,6 +89,7 @@ function CheckoutForm({ user, paymentIntentId }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement
+        onReady={() => setIsReady(true)}
         options={{
           layout: "tabs",
           wallets: {
@@ -105,8 +107,8 @@ function CheckoutForm({ user, paymentIntentId }) {
 
       <button
         type="submit"
-        disabled={!stripe || processing}
-        className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 rounded-xl font-semibold text-base transition disabled:opacity-50 shadow-sm uppercase tracking-wider cursor-pointer"
+        disabled={!stripe || !elements || !isReady || processing}
+        className="w-full bg-[#FFD3AC] hover:bg-[#1A1A1A] text-[#1A1A1A] hover:text-white py-3.5 rounded-xl font-semibold text-base transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm uppercase tracking-wider cursor-pointer"
       >
         {processing ? "Processing…" : "Pay $50 Deposit"}
       </button>

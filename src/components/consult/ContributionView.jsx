@@ -122,10 +122,11 @@ function StripeContributionCheckoutForm({
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isReady, setIsReady] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !isReady) return;
     setProcessing(true);
     if (onProcessingChange) onProcessingChange(true);
     setErrorMsg("");
@@ -165,7 +166,7 @@ function StripeContributionCheckoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+      <PaymentElement onReady={() => setIsReady(true)} />
       {errorMsg && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
           {errorMsg}
@@ -173,8 +174,8 @@ function StripeContributionCheckoutForm({
       )}
       <button
         type="submit"
-        disabled={processing || !stripe}
-        className="w-full bg-[#FFD3AC] text-[#1A1A1A] hover:bg-white font-semibold py-3.5 px-6 rounded-full transition duration-200 flex items-center justify-center gap-2"
+        disabled={processing || !stripe || !elements || !isReady}
+        className="w-full bg-[#FFD3AC] text-[#1A1A1A] hover:bg-white font-semibold py-3.5 px-6 rounded-full transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#FFD3AC]"
       >
         {processing ? (
           <>
@@ -669,6 +670,7 @@ export default function ContributionView({
                     }}
                   >
                     <StripeContributionCheckoutForm
+                      key={clientSecret}
                       amount={activeAmount}
                       paymentIntentId={paymentIntentId}
                       user={user}
