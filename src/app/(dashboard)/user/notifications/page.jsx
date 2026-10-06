@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { 
   BellIcon, 
@@ -54,21 +54,28 @@ export default function NotificationsPage() {
       notificationsQuery = collection(db, 'users', user.uid, 'notifications');
     }
 
+    const mapDocs = (docs) => {
+      const notifs = docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          is_read: data?.is_read === true || data?.read === true,
+        };
+      });
+
+      notifs.sort((a, b) => {
+        const timeA = a.created_at?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+        const timeB = b.created_at?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+        return timeB - timeA;
+      });
+      return notifs;
+    };
+
     const unsubscribe = onSnapshot(
       notificationsQuery,
       (snapshot) => {
-        const notifs = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-
-        notifs.sort((a, b) => {
-          const timeA = a.created_at?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
-          const timeB = b.created_at?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
-          return timeB - timeA;
-        });
-
-        setNotifications(notifs);
+        setNotifications(mapDocs(snapshot.docs));
         setLoading(false);
       },
       (error) => {
@@ -77,16 +84,7 @@ export default function NotificationsPage() {
         const fallbackUnsub = onSnapshot(
           collection(db, 'users', user.uid, 'notifications'),
           (fallbackSnapshot) => {
-            const notifs = fallbackSnapshot.docs.map((d) => ({
-              id: d.id,
-              ...d.data(),
-            }));
-            notifs.sort((a, b) => {
-              const timeA = a.created_at?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
-              const timeB = b.created_at?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
-              return timeB - timeA;
-            });
-            setNotifications(notifs);
+            setNotifications(mapDocs(fallbackSnapshot.docs));
             setLoading(false);
           },
           (fallbackErr) => {
@@ -104,19 +102,34 @@ export default function NotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     if (!user || markingAll) return;
-    const unreadDocs = notifications.filter((n) => !n.is_read);
-    if (unreadDocs.length === 0) return;
 
     setMarkingAll(true);
     try {
-      const batch = writeBatch(db);
-      unreadDocs.forEach((n) => {
-        const ref = doc(db, 'users', user.uid, 'notifications', n.id);
-        batch.update(ref, { is_read: true });
+      const snap = await getDocs(
+        collection(db, 'users', user.uid, 'notifications')
+      );
+      const unreadDocs = snap.docs.filter((d) => {
+        const data = d.data();
+        return data?.is_read !== true && data?.read !== true;
       });
-      await batch.commit();
+
+      if (unreadDocs.length > 0) {
+        for (let i = 0; i < unreadDocs.length; i += 400) {
+          const chunk = unreadDocs.slice(i, i + 400);
+          const batch = writeBatch(db);
+          chunk.forEach((d) => {
+            batch.update(d.ref, { is_read: true, read: true });
+          });
+          await batch.commit();
+        }
+      }
+
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true, read: true }))
+      );
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
+      showError('Failed to mark all notifications as read. Please try again.');
     } finally {
       setMarkingAll(false);
     }
@@ -129,6 +142,7 @@ export default function NotificationsPage() {
       try {
         await updateDoc(doc(db, 'users', user.uid, 'notifications', notification.id), {
           is_read: true,
+          read: true,
         });
       } catch (err) {
         console.error('Error marking notification as read:', err);

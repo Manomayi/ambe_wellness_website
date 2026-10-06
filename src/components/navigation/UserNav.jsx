@@ -1,14 +1,40 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/lib/firebase/config";
+import { collection, onSnapshot } from "firebase/firestore";
 
 export default function UserNav() {
   const pathname = usePathname() || "";
   const { user, profile } = useAuth();
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setUnreadNotifCount(0);
+      return;
+    }
+    const unsub = onSnapshot(
+      collection(db, "users", user.uid, "notifications"),
+      (snapshot) => {
+        const unread = snapshot.docs.filter((d) => {
+          const data = d.data();
+          return !(data?.is_read === true || data?.read === true);
+        }).length;
+        setUnreadNotifCount(unread);
+      },
+      (err) => {
+        if (err?.code !== "permission-denied") {
+          console.warn("Error fetching user unread count in UserNav:", err);
+        }
+      }
+    );
+    return () => unsub();
+  }, [user?.uid]);
 
   const tabs = [
     { label: "Home", href: "/user/home" },
@@ -17,7 +43,6 @@ export default function UserNav() {
     { label: "Courses", href: "/user/courses" },
     { label: "Menu", href: "/user/menu" },
   ];
-
 
   const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "Profile";
   const photoUrl = profile?.profile_picture || user?.photoURL;
@@ -66,12 +91,17 @@ export default function UserNav() {
           <div className="flex items-center gap-3">
             <Link
               href="/user/notifications"
-              className="w-9 h-9 rounded-full bg-[#2D2D30]/80 border border-white/10 flex items-center justify-center text-[#FFD3AC] hover:bg-[#3D3D42] transition"
+              className="relative w-9 h-9 rounded-full bg-[#2D2D30]/80 border border-white/10 flex items-center justify-center text-[#FFD3AC] hover:bg-[#3D3D42] transition"
               aria-label="Notifications"
             >
               <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
+              {unreadNotifCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm">
+                  {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
+                </span>
+              )}
             </Link>
 
             <Link

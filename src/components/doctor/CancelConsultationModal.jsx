@@ -218,20 +218,20 @@ export default function CancelConsultationModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-3 sm:p-4 pb-20 sm:pb-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-3 sm:p-4 pb-20 sm:pb-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-[#E7E2D9] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[90vh]"
+        className="bg-[#1E1E1E] rounded-2xl shadow-2xl w-full max-w-lg border border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[90vh] text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
-          <h3 className="text-lg font-bold text-[#1A1A1A]">Cancel Consultation</h3>
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 bg-[#1E1E1E]/95 shrink-0">
+          <h3 className="text-lg font-bold text-white">Cancel Consultation</h3>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-1 rounded-lg text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#E7E2D9]/40 transition disabled:opacity-50 cursor-pointer"
+            className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition disabled:opacity-50 cursor-pointer"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -239,13 +239,13 @@ export default function CancelConsultationModal({
 
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 min-h-0">
           {/* Appointment Summary Card */}
-          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 space-y-2">
-            <div className="flex items-center gap-2 text-sm text-[#1A1A1A]">
-              <UserIcon className="w-4 h-4 text-[#C8996A]" />
+          <div className="bg-[#2D2D30]/60 border border-white/10 rounded-xl p-4 space-y-2">
+            <div className="flex items-center gap-2.5 text-sm text-white">
+              <UserIcon className="w-4 h-4 text-[#FFD3AC]" />
               <span className="font-semibold">{appointment.user_name || "Client"}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-[#6B6862]">
-              <CalendarIcon className="w-4 h-4 text-[#C8996A]" />
+            <div className="flex items-center gap-2.5 text-sm text-white/70">
+              <CalendarIcon className="w-4 h-4 text-[#FFD3AC]" />
               <span>{formatDateTime(apptDate)}</span>
             </div>
           </div>
@@ -253,30 +253,30 @@ export default function CancelConsultationModal({
           {/* Late Cancellation Notice or Standard Notice */}
           {loadingPolicy ? (
             <div className="h-16 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#C8996A]"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/20 border-t-[#FFD3AC]"></div>
             </div>
           ) : isLateCancellation ? (
-            <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex gap-3 text-amber-900">
-              <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl p-4 flex gap-3 text-amber-200">
+              <ExclamationTriangleIcon className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="text-xs space-y-1">
-                <p className="font-bold text-amber-900 text-sm">Late cancellation fee notice</p>
-                <p className="text-amber-800 leading-relaxed">
+                <p className="font-bold text-amber-300 text-sm">Late cancellation fee notice</p>
+                <p className="text-amber-200/90 leading-relaxed">
                   You are cancelling with less than{" "}
-                  <strong>{lateWindowHours} hours notice</strong>. You will be charged a{" "}
-                  <strong>{finePercent}% fine ({fineLabel})</strong> deducted from your earnings balance.
+                  <strong className="text-white">{lateWindowHours} hours notice</strong>. You will be charged a{" "}
+                  <strong className="text-white">{finePercent}% fine ({fineLabel})</strong> deducted from your earnings balance.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-800 leading-relaxed">
+            <div className="bg-emerald-500/15 border border-emerald-500/30 rounded-xl p-4 text-xs text-emerald-300 leading-relaxed">
               You are cancelling more than {lateWindowHours} hours in advance, so{" "}
-              <strong>no late cancellation fee</strong> applies.
+              <strong className="text-emerald-200">no late cancellation fee</strong> applies.
             </div>
           )}
 
           {/* Cancellation Reason Input */}
           <div>
-            <label className="block text-xs font-semibold text-[#1A1A1A] mb-1">
+            <label className="block text-xs font-semibold text-white/80 mb-1.5">
               Cancellation Reason (Optional)
             </label>
             <textarea
@@ -285,29 +285,29 @@ export default function CancelConsultationModal({
               placeholder="e.g., Practitioner unavailable, emergency, etc."
               rows={2}
               disabled={isSubmitting}
-              className="w-full text-sm rounded-xl border border-[#E7E2D9] px-3 py-2 text-[#1A1A1A] placeholder-[#8C827A] focus:outline-none focus:ring-2 focus:ring-[#C8996A] transition resize-none disabled:opacity-50"
+              className="w-full text-sm rounded-xl border border-white/10 bg-[#2D2D30]/60 px-3.5 py-2.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-transparent transition resize-none disabled:opacity-50"
             />
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-3 rounded-xl">
+            <div className="text-xs text-red-300 bg-red-500/15 border border-red-500/30 p-3 rounded-xl">
               {error}
             </div>
           )}
 
-          <p className="text-xs text-[#6B6862]">
+          <p className="text-xs text-white/60">
             Are you sure you want to cancel? The client will be notified immediately to choose another slot.
           </p>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
+        <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-white/10 bg-[#1E1E1E]/95 shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-semibold text-[#6B6862] hover:text-[#1A1A1A] transition rounded-xl cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 text-sm font-semibold text-white/70 hover:text-white hover:bg-white/5 transition rounded-xl cursor-pointer disabled:opacity-50"
           >
             Keep Appointment
           </button>

@@ -137,10 +137,7 @@ export default function SecurityPage() {
             <StatusPill tone="live" label="Live" /> In place today
           </span>
           <span className="flex items-center gap-2 text-[13px] text-ambe-charcoal/80">
-            <StatusPill tone="progress" label="In Progress" /> Being built now
-          </span>
-          <span className="flex items-center gap-2 text-[13px] text-ambe-charcoal/80">
-            <StatusPill tone="soon" label="Coming Soon" /> Planned, not yet started
+            <StatusPill tone="progress" label="In Progress" /> Actively being built & implemented
           </span>
         </div>
       </div>
@@ -403,7 +400,7 @@ export default function SecurityPage() {
             </p>
             <p className="mt-6 text-xs text-ambe-cream/50">
               A formal bug bounty program is{" "}
-              <span className="font-medium text-ambe-gold">Coming Soon</span>.
+              <span className="font-medium text-amber-300">In Progress</span>.
             </p>
           </div>
         </Section>

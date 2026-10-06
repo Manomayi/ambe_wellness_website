@@ -6,15 +6,21 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
 
 export default function DoctorNav() {
   const pathname = usePathname() || '';
   const [photoURL, setPhotoURL] = useState(null);
   const [displayName, setDisplayName] = useState('Doctor');
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    let notifUnsub = null;
+    const authUnsub = onAuthStateChanged(auth, async (user) => {
+      if (notifUnsub) {
+        notifUnsub();
+        notifUnsub = null;
+      }
       if (user) {
         if (user.displayName) {
           setDisplayName(user.displayName.split(' ').pop() || 'Doctor');
@@ -36,9 +42,41 @@ export default function DoctorNav() {
         } catch (e) {
           // Ignore error
         }
+
+        notifUnsub = onSnapshot(
+          collection(db, 'doctors', user.uid, 'notifications'),
+          (snapshot) => {
+            const unread = snapshot.docs.filter((d) => {
+              const data = d.data();
+              if (data?.is_read === true || data?.read === true) return false;
+              const recipientRole = (data?.recipientRole || data?.recipient_role || '').toString();
+              if (recipientRole === 'user' || recipientRole === 'patient') return false;
+              const title = (data?.title || '').toString();
+              if (
+                title === 'Consultation Confirmed' ||
+                title.includes("Doctor's Recommendations Ready") ||
+                title.includes("Practitioner's Recommendations Ready")
+              ) {
+                return false;
+              }
+              return true;
+            }).length;
+            setUnreadNotifCount(unread);
+          },
+          (err) => {
+            if (err?.code !== 'permission-denied') {
+              console.warn('Error fetching doctor unread count in DoctorNav:', err);
+            }
+          }
+        );
+      } else {
+        setUnreadNotifCount(0);
       }
     });
-    return unsub;
+    return () => {
+      authUnsub();
+      if (notifUnsub) notifUnsub();
+    };
   }, []);
 
   const tabs = [
@@ -118,12 +156,17 @@ export default function DoctorNav() {
           <div className="flex items-center gap-3">
             <Link
               href="/doctor/notifications"
-              className="w-9 h-9 rounded-full bg-[#2D2D30]/80 border border-white/10 flex items-center justify-center text-[#FFD3AC] hover:bg-[#3D3D42] transition"
+              className="relative w-9 h-9 rounded-full bg-[#2D2D30]/80 border border-white/10 flex items-center justify-center text-[#FFD3AC] hover:bg-[#3D3D42] transition"
               aria-label="Notifications"
             >
               <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
+              {unreadNotifCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm">
+                  {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                </span>
+              )}
             </Link>
 
             <Link

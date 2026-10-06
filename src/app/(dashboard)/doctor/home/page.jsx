@@ -35,7 +35,21 @@ export default function DoctorHomePage() {
     const unsub = onSnapshot(
       collection(db, "doctors", user.uid, "notifications"),
       (snapshot) => {
-        const unread = snapshot.docs.filter((d) => !d.data()?.is_read).length;
+        const unread = snapshot.docs.filter((d) => {
+          const data = d.data();
+          if (data?.is_read === true || data?.read === true) return false;
+          const recipientRole = (data?.recipientRole || data?.recipient_role || '').toString();
+          if (recipientRole === 'user' || recipientRole === 'patient') return false;
+          const title = (data?.title || '').toString();
+          if (
+            title === 'Consultation Confirmed' ||
+            title.includes("Doctor's Recommendations Ready") ||
+            title.includes("Practitioner's Recommendations Ready")
+          ) {
+            return false;
+          }
+          return true;
+        }).length;
         setUnreadNotifCount(unread);
       },
       (err) => {

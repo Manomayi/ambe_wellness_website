@@ -16,7 +16,7 @@
 export const TRUST_STATUS = {
   live: { label: "Live", tone: "live" },
   progress: { label: "In Progress", tone: "progress" },
-  soon: { label: "Coming Soon", tone: "soon" },
+  soon: { label: "In Progress", tone: "progress" },
 };
 
 export const LAST_REVIEWED = "September 2, 2026";

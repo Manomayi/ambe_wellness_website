@@ -422,23 +422,23 @@ export default function RescheduleConsultationModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-3 sm:p-4 pb-20 sm:pb-4"
+      className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-3 sm:p-4 pb-20 sm:pb-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl border border-[#E7E2D9] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[90vh]"
+        className="bg-[#1E1E1E] rounded-2xl shadow-2xl w-full max-w-2xl border border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh] sm:max-h-[90vh] text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-white/10 bg-[#1E1E1E]/95 shrink-0">
           <div>
-            <h3 className="text-lg font-bold text-[#1A1A1A]">Reschedule Consultation</h3>
-            <p className="text-xs text-[#6B6862]">Select a new date and time for the client</p>
+            <h3 className="text-lg font-bold text-white">Reschedule Consultation</h3>
+            <p className="text-xs text-white/60">Select a new date and time for the client</p>
           </div>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-1 rounded-lg text-[#8C827A] hover:text-[#1A1A1A] hover:bg-[#E7E2D9]/40 transition disabled:opacity-50 cursor-pointer"
+            className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition disabled:opacity-50 cursor-pointer"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -447,61 +447,61 @@ export default function RescheduleConsultationModal({
         {/* Modal Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1 min-h-0">
           {/* Client & Current Schedule Info */}
-          <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-[#FFD3AC] flex items-center justify-center text-[#1A1A1A] font-bold text-sm">
+          <div className="bg-[#2D2D30]/60 border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-[#FFD3AC] flex items-center justify-center text-[#1E1E1E] font-bold text-sm shadow-sm">
                 {(appointment.user_name || "C").charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="font-semibold text-sm text-[#1A1A1A]">
+                <p className="font-semibold text-sm text-white">
                   {appointment.user_name || "Client"}
                 </p>
-                <p className="text-xs text-[#6B6862] flex items-center mt-0.5">
-                  <ClockIcon className="w-3.5 h-3.5 mr-1 text-[#C8996A]" />
+                <p className="text-xs text-white/60 flex items-center mt-0.5">
+                  <ClockIcon className="w-3.5 h-3.5 mr-1 text-[#FFD3AC]" />
                   Current: {formatCurrentAppointmentTime(appointment.time)}
                 </p>
               </div>
             </div>
-            <span className="text-xs bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full font-medium w-fit">
+            <span className="text-xs bg-[#FFD3AC]/20 text-[#FFD3AC] border border-[#FFD3AC]/40 px-2.5 py-1 rounded-full font-medium w-fit">
               Rescheduling
             </span>
           </div>
 
           {loadingSchedule ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C8996A]" />
-              <p className="text-xs text-[#6B6862]">Loading availability schedule...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-[#FFD3AC]" />
+              <p className="text-xs text-white/60">Loading availability schedule...</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {/* Calendar Column */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                    <CalendarIcon className="w-4 h-4 text-[#C8996A]" />
+                  <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                    <CalendarIcon className="w-4 h-4 text-[#FFD3AC]" />
                     Select Date
                   </h4>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={handlePrevMonth}
-                      className="p-1 rounded-lg hover:bg-[#FAF8F5] text-[#1A1A1A] transition cursor-pointer"
+                      className="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition cursor-pointer"
                     >
                       <ChevronLeftIcon className="w-4 h-4" />
                     </button>
-                    <span className="text-xs font-semibold text-[#1A1A1A] min-w-[100px] text-center">
+                    <span className="text-xs font-semibold text-white min-w-[100px] text-center">
                       {currentMonth.toLocaleString("default", { month: "short", year: "numeric" })}
                     </span>
                     <button
                       onClick={handleNextMonth}
-                      className="p-1 rounded-lg hover:bg-[#FAF8F5] text-[#1A1A1A] transition cursor-pointer"
+                      className="p-1 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition cursor-pointer"
                     >
                       <ChevronRightIcon className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-3">
-                  <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-[#8C827A] mb-1">
+                <div className="bg-[#2D2D30]/60 border border-white/10 rounded-xl p-3">
+                  <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-white/50 mb-1">
                     {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
                       <div key={day} className="py-0.5">{day}</div>
                     ))}
@@ -528,17 +528,17 @@ export default function RescheduleConsultationModal({
                           disabled={!isSelectable}
                           className={`h-8 rounded-lg flex flex-col items-center justify-center text-xs transition relative ${
                             isSelected
-                              ? "bg-[#1A1A1A] text-[#FFD3AC] font-bold shadow-sm"
+                              ? "bg-[#FFD3AC] text-[#1E1E1E] font-bold shadow-md"
                               : isSelectable
-                              ? "bg-white text-[#1A1A1A] hover:bg-[#FFD3AC]/30 cursor-pointer border border-[#E7E2D9]"
+                              ? "bg-[#1E1E1E] text-white hover:bg-[#FFD3AC]/20 hover:border-[#FFD3AC]/50 cursor-pointer border border-white/10"
                               : !item.isCurrentMonth
-                              ? "text-gray-300 bg-transparent cursor-not-allowed"
-                              : "text-gray-400 bg-gray-100/50 cursor-not-allowed"
+                              ? "text-white/20 bg-transparent cursor-not-allowed"
+                              : "text-white/30 bg-white/[0.02] cursor-not-allowed"
                           }`}
                         >
                           <span>{itemDate.getDate()}</span>
                           {isSelectable && !isSelected && (
-                            <span className="w-1 h-1 rounded-full bg-[#C8996A] -mt-0.5" />
+                            <span className="w-1 h-1 rounded-full bg-[#FFD3AC] -mt-0.5" />
                           )}
                         </button>
                       );
@@ -546,29 +546,29 @@ export default function RescheduleConsultationModal({
                   </div>
                 </div>
 
-                <p className="text-[11px] text-[#8C827A] mt-2 flex items-center gap-1">
-                  <ClockIcon className="w-3 h-3 text-[#C8996A]" />
+                <p className="text-[11px] text-white/50 mt-2 flex items-center gap-1">
+                  <ClockIcon className="w-3 h-3 text-[#FFD3AC]" />
                   Times shown in {localTimezone}
                 </p>
               </div>
 
               {/* Time Slots Column */}
               <div>
-                <h4 className="text-sm font-bold text-[#1A1A1A] mb-3 flex items-center gap-1.5">
-                  <ClockIcon className="w-4 h-4 text-[#C8996A]" />
+                <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-1.5">
+                  <ClockIcon className="w-4 h-4 text-[#FFD3AC]" />
                   Available Slots ({selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })})
                 </h4>
 
                 {loadingSlots ? (
-                  <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-8 flex flex-col items-center justify-center space-y-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#C8996A]" />
-                    <p className="text-[11px] text-[#6B6862]">Checking open slots...</p>
+                  <div className="bg-[#2D2D30]/60 border border-white/10 rounded-xl p-8 flex flex-col items-center justify-center space-y-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/20 border-t-[#FFD3AC]" />
+                    <p className="text-[11px] text-white/60">Checking open slots...</p>
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-xl p-8 text-center space-y-2">
-                    <ExclamationCircleIcon className="w-8 h-8 text-[#8C827A] mx-auto" />
-                    <p className="text-xs font-semibold text-[#1A1A1A]">No Slots Available</p>
-                    <p className="text-[11px] text-[#6B6862]">
+                  <div className="bg-[#2D2D30]/60 border border-white/10 rounded-xl p-8 text-center space-y-2">
+                    <ExclamationCircleIcon className="w-8 h-8 text-white/40 mx-auto" />
+                    <p className="text-xs font-semibold text-white">No Slots Available</p>
+                    <p className="text-[11px] text-white/60">
                       There are no open slots on this date according to your availability schedule.
                     </p>
                   </div>
@@ -583,15 +583,15 @@ export default function RescheduleConsultationModal({
                           onClick={() => setSelectedSlot(slot)}
                           className={`py-2 px-3 rounded-xl text-xs font-medium border transition cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
                             isSelected
-                              ? "bg-[#1A1A1A] text-[#FFD3AC] border-[#1A1A1A] shadow-sm ring-2 ring-[#FFD3AC]"
+                              ? "bg-[#FFD3AC] text-[#1E1E1E] border-[#FFD3AC] shadow-md ring-2 ring-[#FFD3AC] font-semibold"
                               : slot.isCurrentSlot
-                              ? "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100"
-                              : "bg-white text-[#1A1A1A] border-[#E7E2D9] hover:border-[#C8996A] hover:bg-[#FAF8F5]"
+                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
+                              : "bg-[#2D2D30] text-white border-white/10 hover:border-[#FFD3AC]/50 hover:bg-[#FFD3AC]/15"
                           }`}
                         >
                           <span>{slot.display}</span>
                           {slot.isCurrentSlot && (
-                            <span className="text-[9px] text-amber-700 font-normal">
+                            <span className="text-[9px] text-amber-300/80 font-normal">
                               (Current Slot)
                             </span>
                           )}
@@ -606,29 +606,29 @@ export default function RescheduleConsultationModal({
 
           {/* Selected Slot Summary */}
           {selectedSlot && (
-            <div className="bg-[#FFF3E8] border border-[#FFD3AC] rounded-xl p-3 flex items-center justify-between text-xs">
-              <span className="text-[#1A1A1A]">
-                New slot: <strong>{moment(selectedSlot.time).format("dddd, MMM D, YYYY [at] h:mm A")}</strong>
+            <div className="bg-[#FFD3AC]/15 border border-[#FFD3AC]/40 rounded-xl p-3 flex items-center justify-between text-xs">
+              <span className="text-white">
+                New slot: <strong className="text-[#FFD3AC]">{moment(selectedSlot.time).format("dddd, MMM D, YYYY [at] h:mm A")}</strong>
               </span>
-              <span className="text-emerald-700 font-bold">Selected</span>
+              <span className="text-[#FFD3AC] font-bold">Selected</span>
             </div>
           )}
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-3 rounded-xl">
+            <div className="text-xs text-red-300 bg-red-500/15 border border-red-500/30 p-3 rounded-xl">
               {errorMessage}
             </div>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-[#E7E2D9] bg-[#FAF8F5] shrink-0">
+        <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-3.5 sm:py-4 border-t border-white/10 bg-[#1E1E1E]/95 shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-semibold text-[#6B6862] hover:text-[#1A1A1A] transition rounded-xl cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 text-sm font-semibold text-white/70 hover:text-white hover:bg-white/5 transition rounded-xl cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
@@ -636,11 +636,11 @@ export default function RescheduleConsultationModal({
             type="button"
             onClick={handleRescheduleConfirm}
             disabled={isSubmitting || !selectedSlot}
-            className="px-5 py-2 text-sm font-semibold text-[#1A1A1A] bg-[#FFD3AC] hover:bg-[#1A1A1A] hover:text-white rounded-xl transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2 text-sm font-semibold text-[#1E1E1E] bg-[#FFD3AC] hover:bg-[#ffe3c9] rounded-xl transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#1A1A1A] border-t-transparent" />
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#1E1E1E] border-t-transparent" />
                 Rescheduling...
               </>
             ) : (

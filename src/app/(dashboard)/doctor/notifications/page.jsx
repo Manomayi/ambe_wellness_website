@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
-import { collection, query, orderBy, onSnapshot, doc, getDoc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, getDoc, getDocs, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { 
   BellIcon, 
@@ -56,10 +56,14 @@ export default function DoctorNotificationsPage() {
     }
 
     const processNotifs = (docs) => {
-      const raw = docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
+      const raw = docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          ...data,
+          is_read: data?.is_read === true || data?.read === true,
+        };
+      });
 
       raw.sort((a, b) => {
         const timeA = a.created_at?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
@@ -73,7 +77,6 @@ export default function DoctorNotificationsPage() {
         const title = (n.title || '').toString();
         const recipientRole = (n.recipientRole || n.recipient_role || '').toString();
 
-        if (type === 'chat_message' || type === 'new_message') return false;
         if (recipientRole === 'user' || recipientRole === 'patient') return false;
         if (title === 'Consultation Confirmed' || 
             title.includes("Doctor's Recommendations Ready") || 
@@ -119,19 +122,34 @@ export default function DoctorNotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     if (!user || markingAll) return;
-    const unreadDocs = notifications.filter((n) => !n.is_read);
-    if (unreadDocs.length === 0) return;
 
     setMarkingAll(true);
     try {
-      const batch = writeBatch(db);
-      unreadDocs.forEach((n) => {
-        const ref = doc(db, 'doctors', user.uid, 'notifications', n.id);
-        batch.update(ref, { is_read: true });
+      const snap = await getDocs(
+        collection(db, 'doctors', user.uid, 'notifications')
+      );
+      const unreadDocs = snap.docs.filter((d) => {
+        const data = d.data();
+        return data?.is_read !== true && data?.read !== true;
       });
-      await batch.commit();
+
+      if (unreadDocs.length > 0) {
+        for (let i = 0; i < unreadDocs.length; i += 400) {
+          const chunk = unreadDocs.slice(i, i + 400);
+          const batch = writeBatch(db);
+          chunk.forEach((d) => {
+            batch.update(d.ref, { is_read: true, read: true });
+          });
+          await batch.commit();
+        }
+      }
+
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true, read: true }))
+      );
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
+      showError('Failed to mark all notifications as read. Please try again.');
     } finally {
       setMarkingAll(false);
     }
@@ -144,6 +162,7 @@ export default function DoctorNotificationsPage() {
       try {
         await updateDoc(doc(db, 'doctors', user.uid, 'notifications', notification.id), {
           is_read: true,
+          read: true,
         });
       } catch (err) {
         console.error('Error marking notification as read:', err);
@@ -316,6 +335,7 @@ export default function DoctorNotificationsPage() {
       case 'consultation_joined':
         return <VideoCameraIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'new_message':
+      case 'chat_message':
         return <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'support_reply':
       case 'support_message':
