@@ -71,12 +71,12 @@ const areasOfCare = [
   {
     icon: "/images/icons/whole_body.png",
     title: "Home & Environment Detox",
-    text: "Your environment heals with you. We give you step-by-step plans for detoxing your space, body care routines, and healing rhythms to keep your inner and outer worlds in sync.",
+    text: "Your environment thrives with you. We give you step-by-step plans for detoxing your space, body care routines, and restorative rhythms to keep your inner and outer worlds in sync.",
   },
   {
     icon: "/images/icons/whole_kitchen.png",
-    title: "Healing Kitchen Guide",
-    text: "What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a healing center, with Ayurvedic and vet-approved tips for feeding those you love.",
+    title: "Nourishing Kitchen Guide",
+    text: "What you eat—and feed your pets—matters. Simple, practical guidance to transform your kitchen into a center for vitality, with Ayurvedic and vet-approved tips for feeding those you love.",
   },
 ];
 

@@ -19,7 +19,33 @@ export function MedicalDirectorBadge({ className = "" }) {
 // Doctor Profile Fine Print — one reusable block with identical text for every
 // practitioner. Appended to the bottom of every doctor profile (View Profile
 // modals and booking-flow doctor cards). `className` overrides the container.
-export default function DoctorProfileFinePrint({ className = "" }) {
+export default function DoctorProfileFinePrint({ className = "", isDark = false }) {
+  if (isDark) {
+    return (
+      <div
+        className={
+          "p-5 bg-[#FFD3AC]/[0.08] border border-[#FFD3AC]/25 rounded-2xl " +
+          className
+        }
+      >
+        <div className="text-xs font-semibold tracking-wider uppercase mb-2 text-[#FFD3AC] font-sans">
+          Practitioner Credentials &amp; Scope
+        </div>
+        <p className="text-xs sm:text-sm leading-relaxed text-gray-300 font-sans">
+          This practitioner holds a BAMS degree (Bachelor of Ayurvedic Medicine
+          and Surgery) from an accredited institution recognized by India&apos;s
+          Central Council of Indian Medicine (CCIM), and has also completed
+          allopathic (Western) medical training. This training is not equivalent
+          to, and does not confer, medical licensure in the United States.
+          Ayurveda is not a state-licensed medical practice in the United States.
+          Consultations through Ambé constitute traditional Ayurvedic wellness
+          education and support — not the diagnosis or treatment of disease under
+          US law. For medical concerns, please consult a licensed physician.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
       className={"pt-5 " + className}

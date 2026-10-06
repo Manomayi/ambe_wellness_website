@@ -335,6 +335,16 @@ export default function DoctorProfessionalProfilePage() {
           </p>
         </div>
 
+        {/* Practitioner credentials & scope notice matching Flutter */}
+        <div className="p-5 bg-[#FFD3AC]/[0.08] border border-[#FFD3AC]/25 rounded-2xl">
+          <h4 className="text-xs font-semibold tracking-wider uppercase text-[#FFD3AC] mb-2 font-sans">
+            Practitioner Credentials &amp; Scope
+          </h4>
+          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-sans">
+            This practitioner holds a BAMS degree (Bachelor of Ayurvedic Medicine and Surgery) from an accredited institution recognized by India&apos;s Central Council of Indian Medicine (CCIM). Ayurveda is not a state-licensed medical practice in the United States. Consultations through Ambé constitute traditional Ayurvedic wellness education and support — not the diagnosis or treatment of disease under US law. For medical concerns, please consult a licensed physician.
+          </p>
+        </div>
+
         {/* Submit Button */}
         <div className="pt-2 flex justify-center">
           <AmbeButton

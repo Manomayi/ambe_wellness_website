@@ -21,6 +21,7 @@ import { matchUserWithDoctor } from "@/lib/doctorMatching";
 import { getConsultationStatusInfo } from "@/lib/consultationStatus";
 import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 import ExtendedQuestionnaireModal from "@/components/user/ExtendedQuestionnaireModal";
+import DoctorProfileModal from "@/components/common/DoctorProfileModal";
 import {
   VideoCameraIcon,
   ChatBubbleLeftRightIcon,
@@ -89,6 +90,7 @@ export default function UserConsultPage() {
   const [showExtendedQuestionnaireModal, setShowExtendedQuestionnaireModal] = useState(false);
   const [showActiveAppointmentModal, setShowActiveAppointmentModal] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+  const [showDoctorModal, setShowDoctorModal] = useState(false);
 
   // Check if patient already has an active appointment (strictly non-expired and not ended)
   const activeAppointment = upcomingAppointments.find((a) => {
@@ -613,6 +615,31 @@ export default function UserConsultPage() {
             />
           )}
 
+          {/* Doctor Profile Modal with BAMS Disclaimer */}
+          {showDoctorModal && (
+            <DoctorProfileModal
+              doctor={{
+                name: doctorDisplayName,
+                professional_title: doctorInfo?.professional_title || doctorInfo?.title,
+                title: doctorInfo?.title || 'BAMS · Integrative Doctor',
+                specialty: doctorInfo?.field && doctorInfo.field.length > 0 
+                  ? getHealthFieldLabels(doctorInfo.field).join(', ') 
+                  : (doctorInfo?.specialty || 'Integrative Health & Wellness'),
+                image: doctorInfo?.profile_picture || null,
+                profile_picture: doctorInfo?.profile_picture || null,
+                bio: doctorInfo?.bio || '',
+                education: doctorInfo?.education || doctorInfo?.medical_school || '',
+                experience: doctorInfo?.years_of_experience 
+                  ? `${doctorInfo.years_of_experience} Years` 
+                  : (doctorInfo?.practice_start_year ? `${new Date().getFullYear() - Number(doctorInfo.practice_start_year)} Years` : ''),
+                certifications: doctorInfo?.certifications || '',
+                languages: doctorInfo?.languages || '',
+                isMedicalDirector: Boolean(doctorInfo?.is_medical_director || doctorInfo?.isMedicalDirector),
+              }}
+              onClose={() => setShowDoctorModal(false)}
+            />
+          )}
+
           {/* Active Consultation Modal (Hold On) */}
           {showActiveAppointmentModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
@@ -883,8 +910,12 @@ export default function UserConsultPage() {
               </h2>
               <div className="bg-[#1B1A18]/65 border border-white/20 rounded-[22px] shadow-lg p-5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-14 h-14 rounded-full border-2 border-[#FFD3AC] bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center">
+                  <div 
+                    onClick={() => setShowDoctorModal(true)}
+                    className="flex items-center gap-3.5 cursor-pointer group transition hover:opacity-90"
+                    title="View Doctor Profile"
+                  >
+                    <div className="w-14 h-14 rounded-full border-2 border-[#FFD3AC] bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center transition group-hover:scale-105">
                       {doctorInfo?.profile_picture ? (
                         <img 
                           src={doctorInfo.profile_picture} 
@@ -898,8 +929,11 @@ export default function UserConsultPage() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-bold text-lg text-white leading-tight truncate">
-                        {doctorDisplayName}
+                      <h3 className="font-bold text-lg text-white leading-tight truncate group-hover:text-[#FFD3AC] transition flex items-center gap-1.5">
+                        <span>{doctorDisplayName}</span>
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FFD3AC]/15 text-[#FFD3AC] font-medium hidden sm:inline-block">
+                          View Profile
+                        </span>
                       </h3>
                       {doctorInfo?.title && (
                         <p className="text-xs text-[#FFD3AC] font-semibold mt-0.5">{doctorInfo.title}</p>
