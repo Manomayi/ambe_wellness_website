@@ -3,6 +3,7 @@
 const ITEMS = [
   "GMP Certified Manufacturing",
   "FDA-Registered Facility",
+  "Wildcrafted",
   "GMO Free & Purest Quality",
   "Prop 65 Compliant",
   "Sustainably & Ethically Sourced",

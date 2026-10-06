@@ -165,7 +165,7 @@ function StripeContributionCheckoutForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 pb-4">
       <PaymentElement onReady={() => setIsReady(true)} />
       {errorMsg && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
@@ -537,22 +537,22 @@ export default function ContributionView({
       {/* Payment Selection Modal */}
       {showCheckoutModal && (
         <div
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all"
+          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6 transition-all"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowCheckoutModal(false);
           }}
         >
           <div
-            className="bg-[#1E1E1E] border border-white/15 rounded-t-3xl sm:rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] my-0 sm:my-auto"
+            className="bg-[#1E1E1E] border border-white/15 rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[85vh] my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-white/10 pb-4 shrink-0">
               <div>
-                <h3 className="font-serif text-2xl font-bold text-white">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
                   Select Payment Method
                 </h3>
-                <p className="text-[#FFD3AC] text-sm font-semibold">
+                <p className="text-[#FFD3AC] text-xs sm:text-sm font-semibold">
                   Total Contribution: ${activeAmount} USD
                 </p>
               </div>
@@ -567,7 +567,7 @@ export default function ContributionView({
             </div>
 
             {/* Scrollable Modal Content */}
-            <div className="overflow-y-auto space-y-5 flex-1 pr-1 -mr-1 mt-4">
+            <div className="overflow-y-auto space-y-5 flex-1 pr-1 -mr-1 mt-4 pb-6 overscroll-contain">
               {/* Method Tabs */}
               <div className="flex gap-2">
                 <button
@@ -708,11 +708,11 @@ export default function ContributionView({
       {/* Under-$49 Combined Payment Notice Modal */}
       {showUnder49Modal && (
         <div
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6"
           onClick={() => setShowUnder49Modal(false)}
         >
           <div
-            className="bg-[#1E1E1E] border border-[#FFD3AC]/30 rounded-t-3xl sm:rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-4"
+            className="bg-[#1E1E1E] border border-[#FFD3AC]/30 rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-4 my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-serif text-2xl font-bold text-[#FFD3AC]">
