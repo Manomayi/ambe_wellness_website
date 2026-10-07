@@ -231,20 +231,11 @@ export default function CompleteReportPage() {
   // Step state: 1: Recommendations, 2: Your Notes, 3: Store Recommendations, 4: Consultation Summary
   const [step, setStep] = useState(1);
 
-  // Lock body scroll in Step 3 so ONLY the products grid is scrollable
+  // Always instantly reset window scroll on any step change to ensure clean viewport transition
   useEffect(() => {
-    // Always instantly reset window scroll on any step change to prevent mobile Safari viewport clipping
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-
-    if (step === 3) {
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prevOverflow;
-      };
-    }
   }, [step]);
 
   // Recommendations state
@@ -1040,24 +1031,11 @@ export default function CompleteReportPage() {
 
   return (
     <ProtectedRoute userType="doctor">
-      <WebLayoutWrapper
-        className={step === 3 ? 'h-full overflow-hidden' : ''}
-        contentClassName={step === 3 ? 'h-full !py-0 flex flex-col md:pt-14' : ''}
-      >
-        <div
-          className={`max-w-2xl mx-auto w-full relative ${
-            step === 3
-              ? 'h-[calc(100dvh-5.5rem)] md:h-[calc(100dvh-7.5rem)] flex flex-col overflow-hidden px-2 sm:px-4'
-              : 'space-y-4 pb-40 md:pb-28 min-h-screen'
-          }`}
-        >
-          {/* Top Bar */}
+      <WebLayoutWrapper contentClassName="py-0 px-0 sm:px-0">
+        <div className="max-w-2xl mx-auto w-full relative space-y-4 pb-40 md:pb-28 min-h-screen">
+          {/* Sticky Top Bar matching Flutter AppBar and doctor navigation */}
           <div
-            className={`z-30 bg-[#1E1E1E]/95 backdrop-blur-md border-b border-white/10 shadow-sm transition-all ${
-              step === 3
-                ? 'relative shrink-0 -mx-2 sm:-mx-4 px-2 sm:px-4 pt-3 pb-2.5 mb-2'
-                : 'sticky top-0 md:top-16 -mx-4 sm:-mx-6 px-4 sm:px-6 -mt-4 sm:-mt-6 pt-4 sm:pt-6 pb-3 mb-2 shrink-0'
-            }`}
+            className="sticky top-0 md:top-16 z-30 bg-[#1E1E1E]/95 backdrop-blur-md border-b border-white/10 shadow-sm -mx-3 sm:-mx-6 md:-mx-8 px-3 sm:px-6 md:px-8 -mt-4 sm:-mt-6 pt-[max(1rem,env(safe-area-inset-top,1rem))] sm:pt-6 pb-3 mb-4 shrink-0 transition-all"
           >
             <div className="relative flex items-center justify-between">
               <AmbeBackButton onClick={handleBack} />
@@ -1319,9 +1297,9 @@ export default function CompleteReportPage() {
               STEP 3: STORE RECOMMENDATIONS
              ═════════════════════════════════════════════════════════════════════ */}
           {step === 3 && (
-            <div className="flex-1 min-h-0 flex flex-col space-y-2.5 overflow-hidden">
+            <div className="space-y-4">
               {/* Search Bar - Prominent white pill matching Flutter & Store */}
-              <div className="shrink-0 bg-white rounded-full flex items-center px-4 py-2 sm:py-2.5 shadow-md border border-white/20">
+              <div className="bg-white rounded-full flex items-center px-4 py-2.5 sm:py-3 shadow-md border border-white/20">
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 shrink-0 mr-2.5 pointer-events-none" />
                 <input
                   type="text"
@@ -1343,7 +1321,7 @@ export default function CompleteReportPage() {
               </div>
 
               {/* Category Filter Pills & Expandable Subcategories */}
-              <div className="shrink-0 space-y-2">
+              <div className="space-y-2">
                 <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar items-center">
                   {/* Tune / Filter button - circular dark icon button matching Flutter */}
                   <button
@@ -1447,14 +1425,8 @@ export default function CompleteReportPage() {
                 )}
               </div>
 
-              {/* Products List - Only this area scrolls! */}
-              <div
-                className="flex-1 min-h-0 overflow-y-auto pr-1 pb-6"
-                style={{
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: 'rgba(255, 211, 172, 0.4) transparent',
-                }}
-              >
+              {/* Products List */}
+              <div className="pb-6">
                 {productsLoading ? (
                   <p className="text-center text-sm text-white/60 py-8">Loading products...</p>
                 ) : filteredProducts.length === 0 ? (
@@ -1590,6 +1562,7 @@ export default function CompleteReportPage() {
                 </div>
               )}
             </div>
+
           </div>
         )}
 

@@ -40,10 +40,11 @@
 /* ── Base ── */
 html {
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
   background: var(--ambe-cream);
   color: var(--ambe-charcoal);
