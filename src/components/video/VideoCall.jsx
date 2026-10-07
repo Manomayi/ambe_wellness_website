@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import { doc, setDoc, onSnapshot, serverTimestamp, deleteField, collection, query, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, serverTimestamp, deleteField, collection, query, where } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/config';
 import {
   MicrophoneIcon,
@@ -474,6 +474,19 @@ export default function VideoCall({
 
         // Signal join on shared consultations doc
         try {
+          let targetOtherPartyUid = otherPartyUid;
+          if (!targetOtherPartyUid && appointmentId) {
+            try {
+              const cSnap = await getDoc(doc(db, 'consultations', appointmentId));
+              if (cSnap.exists()) {
+                const cData = cSnap.data();
+                targetOtherPartyUid = isDoctor
+                  ? (cData.user_id || cData.user_uid || cData.userId || cData.patient_id || cData.patient_uid)
+                  : (cData.doctor_id || cData.doctor_uid || cData.doctorId);
+              }
+            } catch (_) {}
+          }
+
           await setDoc(
             doc(db, 'consultations', appointmentId),
             {
@@ -488,16 +501,16 @@ export default function VideoCall({
                     user_joined_at: serverTimestamp(),
                     user_id: userId,
                   }),
-              ...(otherPartyUid
-                ? (isDoctor ? { user_id: otherPartyUid } : { doctor_id: otherPartyUid })
+              ...(targetOtherPartyUid
+                ? (isDoctor ? { user_id: targetOtherPartyUid } : { doctor_id: targetOtherPartyUid })
                 : {}),
               call_status: 'active',
             },
             { merge: true }
           );
 
-          const patientUid = isDoctor ? otherPartyUid : userId;
-          const docUid = isDoctor ? userId : otherPartyUid;
+          const patientUid = isDoctor ? targetOtherPartyUid : userId;
+          const docUid = isDoctor ? userId : targetOtherPartyUid;
           const joinPayload = isDoctor
             ? { doctor_joined: true, doctor_joined_at: serverTimestamp() }
             : { user_joined: true, user_joined_at: serverTimestamp() };

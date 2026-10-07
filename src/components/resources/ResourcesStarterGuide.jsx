@@ -3,41 +3,14 @@
 import React from "react";
 import Image from "next/image";
 import { submitEmailCapture } from "@/components/common/EmailCaptureModal";
-import { useAuth } from "@/contexts/AuthContext";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ResourcesStarterGuide() {
-  const authContext = useAuth();
-  const user = authContext?.user;
-  const profile = authContext?.profile;
-
   const [email, setEmail] = React.useState("");
   const [error, setError] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
-
-  React.useEffect(() => {
-    if (user?.email && user.email.trim()) {
-      setEmail(user.email.trim());
-      return;
-    }
-    if (profile?.email && profile.email.trim()) {
-      setEmail(profile.email.trim());
-      return;
-    }
-    try {
-      if (typeof window !== "undefined" && window.localStorage) {
-        const saved =
-          localStorage.getItem("saved_user_email") ||
-          localStorage.getItem("user_email") ||
-          localStorage.getItem("auth_email");
-        if (saved && saved.trim()) {
-          setEmail(saved.trim());
-        }
-      }
-    } catch (_) {}
-  }, [user?.email, profile?.email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,11 +25,6 @@ export default function ResourcesStarterGuide() {
       await submitEmailCapture(cleanEmail, {
         guideTitle: "Ambé Wellness Starter Guide",
       });
-      try {
-        if (typeof window !== "undefined" && window.localStorage) {
-          localStorage.setItem("saved_user_email", cleanEmail.toLowerCase());
-        }
-      } catch (_) {}
       setSuccess(true);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -101,7 +69,7 @@ export default function ResourcesStarterGuide() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                autoComplete="on"
+                autoComplete="off"
                 className="flex flex-col sm:flex-row gap-3"
               >
                 <input
@@ -109,7 +77,7 @@ export default function ResourcesStarterGuide() {
                   inputMode="email"
                   name="email"
                   id="starter-guide-email"
-                  autoComplete="email"
+                  autoComplete="off"
                   autoCapitalize="none"
                   spellCheck="false"
                   value={email}

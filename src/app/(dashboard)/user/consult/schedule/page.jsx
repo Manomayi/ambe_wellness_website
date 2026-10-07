@@ -69,6 +69,7 @@ function ConsultationPaymentForm({
   selectedSlot, 
   selectedDate, 
   paymentIntentId, 
+  totalAmount = 50,
   onSuccess,
   onProcessingChange,
 }) {
@@ -123,6 +124,8 @@ function ConsultationPaymentForm({
     }
   };
 
+  const formattedAmount = Number(totalAmount || 50).toFixed(0);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <PaymentElement
@@ -147,7 +150,7 @@ function ConsultationPaymentForm({
         disabled={!stripe || !elements || !isReady || processing}
         className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md uppercase tracking-wider cursor-pointer"
       >
-        {processing ? "Processing Payment..." : "Pay $50 Deposit & Confirm Appointment"}
+        {processing ? "Processing Payment..." : `Pay $${formattedAmount} & Confirm Appointment`}
       </button>
     </form>
   );
@@ -300,15 +303,31 @@ function ScheduleConsultationContent() {
   const [currentStep, setCurrentStep] = useState("schedule"); // 'schedule' | 'contribution' | 'deposit'
   const [selectedContributionAmount, setSelectedContributionAmount] = useState(0);
 
-  const goToStep = (step, pushHistory = true) => {
-    setCurrentStep(step);
+  const scrollToTop = () => {
     if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      if (pushHistory) {
-        window.history.pushState({ step }, "", window.location.href);
-      }
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      // Secondary deferred reset to handle DOM rendering reflow
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 50);
     }
   };
+
+  const goToStep = (step, pushHistory = true) => {
+    setCurrentStep(step);
+    scrollToTop();
+    if (typeof window !== "undefined" && pushHistory) {
+      window.history.pushState({ step }, "", window.location.href);
+    }
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, [currentStep]);
 
   useEffect(() => {
     const handlePopState = (e) => {
@@ -1858,6 +1877,7 @@ function ScheduleConsultationContent() {
                         selectedSlot={selectedSlot}
                         selectedDate={selectedDate}
                         paymentIntentId={paymentIntentId}
+                        totalAmount={50 + (Number(selectedContributionAmount) || 0)}
                         onSuccess={handlePaymentSuccessAndSchedule}
                         onProcessingChange={setIsProcessingDepositPayment}
                       />
@@ -1906,7 +1926,9 @@ function ScheduleConsultationContent() {
                       </div>
                       <div>
                         <p className="font-semibold text-sm text-white">PayPal Checkout</p>
-                        <p className="text-white/60">Secure $50 deposit via your PayPal account or PayPal card</p>
+                        <p className="text-white/60">
+                          Secure ${(50 + (Number(selectedContributionAmount) || 0)).toFixed(0)} payment via your PayPal account or PayPal card
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1923,7 +1945,7 @@ function ScheduleConsultationContent() {
                         Processing with PayPal...
                       </>
                     ) : (
-                      "Pay $50 Deposit with PayPal"
+                      `Pay $${(50 + (Number(selectedContributionAmount) || 0)).toFixed(0)} with PayPal`
                     )}
                   </button>
                 </div>

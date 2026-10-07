@@ -305,12 +305,14 @@ export default function DoctorAppointmentPage() {
     setInCall(false);
   };
 
+  const patientUid = appointment?.user_id || appointment?.user_uid || appointment?.userId || appointment?.patient_id || appointment?.patient_uid;
+
   if (inCall) {
     return (
       <VideoCall
         appointmentId={params.id}
         userId={user.uid}
-        otherPartyUid={appointment.user_id}
+        otherPartyUid={patientUid}
         isDoctor={true}
         onCallEnd={handleCallEnd}
         onBack={handleBackFromCall}

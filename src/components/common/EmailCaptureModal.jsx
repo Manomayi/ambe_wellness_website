@@ -3,7 +3,6 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/lib/firebase/config";
-import { useAuth } from "@/contexts/AuthContext";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -12,12 +11,6 @@ export async function submitEmailCapture(email, { guideTitle } = {}) {
   const cleanEmail = (email || "").trim().toLowerCase();
   let sent = false;
   let lastError = null;
-
-  try {
-    if (typeof window !== "undefined" && window.localStorage) {
-      localStorage.setItem("saved_user_email", cleanEmail);
-    }
-  } catch (_) {}
 
   // 1. Try Next.js API route first
   try {
@@ -55,27 +48,8 @@ export async function submitEmailCapture(email, { guideTitle } = {}) {
   return { ok: true, email: cleanEmail, guideTitle };
 }
 
-export default function EmailCaptureModal({ open, onClose, guideTitle, initialEmail }) {
+export default function EmailCaptureModal({ open, onClose, guideTitle }) {
   const [mounted, setMounted] = React.useState(false);
-  const authContext = useAuth();
-  const user = authContext?.user;
-  const profile = authContext?.profile;
-
-  const getSavedEmail = React.useCallback(() => {
-    if (initialEmail && initialEmail.trim()) return initialEmail.trim();
-    if (user?.email && user.email.trim()) return user.email.trim();
-    if (profile?.email && profile.email.trim()) return profile.email.trim();
-    try {
-      if (typeof window !== "undefined" && window.localStorage) {
-        const saved =
-          localStorage.getItem("saved_user_email") ||
-          localStorage.getItem("user_email") ||
-          localStorage.getItem("auth_email");
-        if (saved && saved.trim()) return saved.trim();
-      }
-    } catch (_) {}
-    return "";
-  }, [initialEmail, user?.email, profile?.email]);
 
   const [email, setEmail] = React.useState("");
   const [error, setError] = React.useState("");
@@ -88,7 +62,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle, initialEm
 
   React.useEffect(() => {
     if (open) {
-      setEmail(getSavedEmail());
+      setEmail("");
       setError("");
       setSubmitting(false);
       setSuccess(false);
@@ -98,7 +72,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle, initialEm
         setTimeout(() => inputRef.current?.focus(), 150);
       }
     }
-  }, [open, getSavedEmail]);
+  }, [open]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -127,11 +101,6 @@ export default function EmailCaptureModal({ open, onClose, guideTitle, initialEm
     setSubmitting(true);
     try {
       await submitEmailCapture(cleanEmail, { guideTitle });
-      try {
-        if (typeof window !== "undefined" && window.localStorage) {
-          localStorage.setItem("saved_user_email", cleanEmail.toLowerCase());
-        }
-      } catch (_) {}
       setSuccess(true);
     } catch (err) {
       setError(err?.message || "Something went wrong. Please try again.");
@@ -217,7 +186,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle, initialEm
             <form
               onSubmit={handleSubmit}
               className="max-w-md mx-auto space-y-3"
-              autoComplete="on"
+              autoComplete="off"
               noValidate
             >
               <input
@@ -226,7 +195,7 @@ export default function EmailCaptureModal({ open, onClose, guideTitle, initialEm
                 inputMode="email"
                 name="email"
                 id="guide-email"
-                autoComplete="email"
+                autoComplete="off"
                 autoCapitalize="none"
                 spellCheck="false"
                 value={email}
