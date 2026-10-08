@@ -58,7 +58,7 @@ export default function BrowserPushSetting() {
   const checked = state === 'on';
   const description = {
     'ios-install':
-      'On iPhone or iPad: tap the Share button, choose “Add to Home Screen”, then open Ambé from your Home Screen and turn this on there. Requires iOS 16.4 or later.',
+      'On iPhone or iPad: tap the Share button, choose “Add to Home Screen”, then open Ambe from your Home Screen and turn this on there. Requires iOS 16.4 or later.',
     unsupported:
       getIosInstallState() === 'installed'
         ? 'Push notifications need iOS 16.4 or later. Update your iPhone or iPad to turn them on.'

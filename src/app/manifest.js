@@ -6,8 +6,8 @@
 export default function manifest() {
   return {
     id: '/',
-    name: 'Ambé Wellness',
-    short_name: 'Ambé',
+    name: 'Ambe Wellness',
+    short_name: 'Ambe',
     description: 'Holistic tele-wellness with integrative doctors trained in Ayurvedic medicine and modern science.',
     // ProtectedRoute sends doctors to /doctor/home and signed-out visitors to /login.
     start_url: '/user/home',

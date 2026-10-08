@@ -273,7 +273,7 @@ export default function WebPushManager() {
         <div className="fixed bottom-24 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-96 z-[90] p-4 rounded-2xl bg-[#2A2A2A]/95 backdrop-blur-md border border-white/10 shadow-xl text-white">
           <p className="font-semibold text-sm">Get notifications on your iPhone</p>
           <p className="text-sm text-white/70 mt-1">
-            Tap the Share button, choose &ldquo;Add to Home Screen&rdquo;, then open Ambé from your Home
+            Tap the Share button, choose &ldquo;Add to Home Screen&rdquo;, then open Ambe from your Home
             Screen to turn on notifications.
           </p>
           <div className="flex justify-end mt-3">

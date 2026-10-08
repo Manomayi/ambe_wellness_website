@@ -35,7 +35,7 @@ export const metadata = {
   // way iOS allows browser push notifications.
   appleWebApp: {
     capable: true,
-    title: "Ambé",
+    title: "Ambe",
     statusBarStyle: "black",
   },
 };
