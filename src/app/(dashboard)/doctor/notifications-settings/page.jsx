@@ -6,6 +6,7 @@ import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import BackButton from '@/components/common/BackButton';
+import BrowserPushSetting from '@/components/notifications/BrowserPushSetting';
 
 const DEFAULT_PREFERENCES = {
   email: true,
@@ -139,6 +140,7 @@ export default function DoctorNotificationsSettingsPage() {
         {saved && <p className="text-sm text-[#2E7D32]">Preferences saved successfully.</p>}
 
       <div className="space-y-4">
+        <BrowserPushSetting />
         {TOGGLES.map((item) => (
           <div
             key={item.key}

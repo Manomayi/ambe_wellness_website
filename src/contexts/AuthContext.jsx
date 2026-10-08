@@ -12,6 +12,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/config';
+import { clearWebPushToken } from '@/lib/firebase/messaging';
 
 const AuthContext = createContext({});
 
@@ -106,6 +107,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signIn = async (email, password) => {
+    // A different account still signed in on this browser: detach its browser
+    // push token first so its notifications don't follow the browser.
+    if (auth.currentUser && auth.currentUser.email !== email.trim()) {
+      await clearWebPushToken(auth.currentUser.uid, userType);
+    }
+
     // Trim the email — leading/trailing whitespace (common with autofill) is
     // rejected by Firebase as INVALID_LOGIN_CREDENTIALS.
     const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -125,6 +132,12 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
+    // Detach this browser's push token while still authenticated (rules need the
+    // signed-in owner). Never throws and is time-capped, so logout can't hang.
+    if (auth.currentUser) {
+      await clearWebPushToken(auth.currentUser.uid, userType);
+    }
+
     // Proactively clean up snapshot listeners before Firebase destroys the auth token
     if (profileUnsubscribeRef.current) {
       profileUnsubscribeRef.current();

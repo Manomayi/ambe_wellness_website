@@ -29,7 +29,14 @@ export const metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/images/favicons/leaf.png",
+    apple: "/images/app-icons/apple-touch-icon.png",
+  },
+  // Lets iPhone/iPad users add the site to the Home Screen as an app — the only
+  // way iOS allows browser push notifications.
+  appleWebApp: {
+    capable: true,
+    title: "Ambé",
+    statusBarStyle: "black",
   },
 };
 

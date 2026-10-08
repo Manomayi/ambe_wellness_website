@@ -6,6 +6,7 @@ import { auth, db } from '@/lib/firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import BackButton from '@/components/common/BackButton';
+import BrowserPushSetting from '@/components/notifications/BrowserPushSetting';
 
 const DEFAULT_PREFERENCES = {
   email: true,
@@ -146,6 +147,10 @@ export default function UserNotificationsSettingsPage() {
           Preferences saved successfully.
         </div>
       )}
+
+      <div className="mb-4">
+        <BrowserPushSetting />
+      </div>
 
       <div className="bg-white rounded-2xl border border-[#E7E2D9] divide-y divide-[#E7E2D9] mb-8">
         {TOGGLES.map(({ key, label, description }) => (
