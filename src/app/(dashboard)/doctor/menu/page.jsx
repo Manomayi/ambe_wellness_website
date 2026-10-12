@@ -50,7 +50,7 @@ export default function DoctorMenuPage() {
         }
 
         setProfile({
-          name: name || user.displayName || 'Dr. Doctor',
+          name: name || user.displayName || 'Practitioner',
           email: user.email || '',
           photoURL: photo || null,
         });

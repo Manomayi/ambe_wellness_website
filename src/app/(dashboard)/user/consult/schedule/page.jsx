@@ -840,7 +840,7 @@ function ScheduleConsultationContent() {
       const docName = doctorInfo 
         ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() 
         : (profile?.doctor_name || "Healthcare Provider");
-      const userFullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Patient';
+      const userFullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Client';
 
       // 1. Schedule Appointment via Cloud Function
       let scheduledSuccessfully = false;
@@ -1216,7 +1216,7 @@ function ScheduleConsultationContent() {
           needs_doctor_assignment: true,
           preferred_health: prefHealth,
         }).catch(() => {});
-        alert('No doctor is currently available for instant consult right now. Our medical team will assign a specialist for you shortly.');
+        alert('No practitioner is currently available for instant consult right now. Our medical team will assign a specialist for you shortly.');
       }
     } catch (err) {
       console.error('Instant matching error:', err);
@@ -1224,7 +1224,7 @@ function ScheduleConsultationContent() {
         needs_doctor_assignment: true,
         preferred_health: profile?.preferred_health || 'general_health',
       }).catch(() => {});
-      alert('Could not check instant availability right now. Your request has been queued for doctor assignment.');
+      alert('Could not check instant availability right now. Your request has been queued for practitioner assignment.');
     } finally {
       setCheckingInstant(false);
     }
@@ -1376,10 +1376,10 @@ function ScheduleConsultationContent() {
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-[#1A1A1A]">Finding your perfect match</h2>
               <p className="text-sm text-[#6B6862] leading-relaxed">
-                We are currently looking for the best doctor specializing in your selected topic for you.
+                We are currently looking for the best practitioner specializing in your selected topic for you.
               </p>
               <p className="text-xs text-[#8C827A] pt-1">
-                You will be notified as soon as a doctor is assigned.
+                You will be notified as soon as a practitioner is assigned.
               </p>
             </div>
             <div className="space-y-3 pt-2">
@@ -1444,7 +1444,7 @@ function ScheduleConsultationContent() {
             {activeAppointment && (
               <div className="bg-[#FAF8F5] border border-[#E7E2D9] rounded-2xl p-5 max-w-md mx-auto text-left space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Doctor</span>
+                  <span className="text-[#8C827A] uppercase tracking-wider font-medium">Practitioner</span>
                   <span className="font-semibold text-[#1A1A1A]">
                     {activeAppointment.doctor_name || doctorDisplayName}
                   </span>
@@ -1654,7 +1654,7 @@ function ScheduleConsultationContent() {
                 </div>
               ) : (
                 <div className="bg-[#2D2D30]/65 border border-white/10 rounded-2xl p-8 text-center text-white/60 text-xs">
-                  No available slots on this day. The doctor may be unavailable or all slots are booked.
+                  No available slots on this day. The practitioner may be unavailable or all slots are booked.
                 </div>
               )}
             </div>
@@ -1693,7 +1693,7 @@ function ScheduleConsultationContent() {
             {/* Appointment Summary Strip */}
             <div className="bg-[#2D2D30]/80 border border-white/10 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
               <div>
-                <span className="text-white/60 block font-medium">Doctor</span>
+                <span className="text-white/60 block font-medium">Practitioner</span>
                 <strong className="text-sm text-white font-semibold">{doctorDisplayName}</strong>
               </div>
               <div>
@@ -1750,7 +1750,7 @@ function ScheduleConsultationContent() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-white/60 block font-medium">Doctor</span>
+                  <span className="text-white/60 block font-medium">Practitioner</span>
                   <strong className="text-sm font-semibold text-white">{doctorDisplayName}</strong>
                 </div>
                 <div>

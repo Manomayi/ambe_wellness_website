@@ -58,7 +58,7 @@ export default function DoctorProfileModal({ doctor, onClose }) {
           {doctor.image || doctor.profile_picture ? (
             <img
               src={doctor.image || doctor.profile_picture}
-              alt={doctor.name || "Doctor"}
+              alt={doctor.name || "Practitioner"}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -69,12 +69,12 @@ export default function DoctorProfileModal({ doctor, onClose }) {
         </div>
 
         <div className="font-heading text-2xl sm:text-3xl font-medium mb-1 text-white">
-          {doctor.name?.startsWith?.("Dr.") ? doctor.name : `Dr. ${doctor.name || "Practitioner"}`}
+          {doctor.name?.startsWith?.("Dr.") ? doctor.name : (doctor.name ? `Dr. ${doctor.name}` : "Practitioner")}
         </div>
         <div className="text-xs font-semibold tracking-widest uppercase mb-3 text-[#FFD3AC]">
           {doctor.professional_title
-            ? `${doctor.professional_title} · Integrative Doctor`
-            : (doctor.title || "BAMS · Integrative Doctor")}
+            ? `${doctor.professional_title} · Integrative Practitioner`
+            : (doctor.title || "BAMS · Integrative Practitioner")}
         </div>
 
         {doctor.specialty && (

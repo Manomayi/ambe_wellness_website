@@ -4,10 +4,10 @@ export const ENTERPRISE_OFFERINGS = [
     label: "Integrative Telemedicine",
     title: "Ambé Telemedicine",
     description:
-      "Deeply personal care that bridges integrated medicine and modern science. Your employees connect with real integrative doctors through secure video consultations — receiving personalized protocols, supplement guidance, and ongoing support.",
+      "Deeply personal care that bridges integrated medicine and modern science. Your employees connect with real integrative practitioners through secure video consultations — receiving personalized protocols, supplement guidance, and ongoing support.",
     bulletsLeft: [
-      "1:1 video consultation with integrative doctors",
-      "Unlimited doctor visits included in membership",
+      "1:1 video consultation with integrative practitioners",
+      "Unlimited practitioner visits included in membership",
       "Pay as you go pricing for maximum flexibility",
     ],
     bulletsRight: [
@@ -88,6 +88,6 @@ export const ORG_BENEFITS = [
   {
     title: "Proven Legacy",
     description:
-      "Over 5,000 employees served since our launch. Our track record speaks — and our latest 4.85 patient score says even more.",
+      "Over 5,000 employees served since our launch. Our track record speaks — and our latest 4.85 client score says even more.",
   },
 ];

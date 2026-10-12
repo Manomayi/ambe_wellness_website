@@ -385,7 +385,7 @@ export default function ConsultationReportPage() {
   const storeRecommendations = data.store_recommendations || data.storeRecommendations || [];
   const notes = data.notes || '';
   const referral = data.referral || null;
-  const doctorName = data.doctor_name || queryDoctorName || 'Integrative Doctor';
+  const doctorName = data.doctor_name || queryDoctorName || 'Integrative Practitioner';
 
   const appointmentTime = data.time || data.appointment_time || data.created_at;
   let formattedDate = null;
@@ -552,7 +552,7 @@ export default function ConsultationReportPage() {
             <ClockIcon className="h-16 w-16 text-[#FFD3AC] mx-auto mb-4 animate-pulse" />
             <h2 className="text-xl font-bold text-white mb-2">Report Pending</h2>
             <p className="text-sm text-white/70 max-w-md mx-auto mb-2 leading-relaxed">
-              Please allow your doctor some time (up to 48 hours) to write your result. Please wait.
+              Please allow your practitioner some time (up to 48 hours) to write your result. Please wait.
             </p>
             <p className="text-xs text-white/50 max-w-md mx-auto mb-6">
               If it has been more than 48 hours, you can contact support.

@@ -56,7 +56,7 @@ export default function MessageDoctorClient() {
       }
 
       // Fetch doctor's full profile from doctors collection
-      let resolvedDoctorName = initialDoctorName || 'Doctor';
+      let resolvedDoctorName = initialDoctorName || 'Practitioner';
       let resolvedDoctorPhoto = null;
       let resolvedTitle = '';
 
@@ -154,9 +154,9 @@ export default function MessageDoctorClient() {
         <div className="flex-1 h-full min-h-0 max-w-4xl mx-auto p-8 text-center flex items-center justify-center">
           <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-8 sm:p-10 shadow-xl max-w-md w-full backdrop-blur-md">
             <ChatBubbleLeftRightIcon className="h-16 w-16 text-[#FFD3AC]/60 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">No Doctor Assigned</h2>
+            <h2 className="text-xl font-bold text-white mb-2">No Practitioner Assigned</h2>
             <p className="text-sm text-white/70 mb-6 leading-relaxed">
-              You need to be matched with an integrative doctor before you can send messages.
+              You need to be matched with an integrative practitioner before you can send messages.
             </p>
             <button
               onClick={() => router.push('/user/get-matched')}
@@ -198,7 +198,7 @@ export default function MessageDoctorClient() {
                 {doctorInfo.name}
               </h1>
               <p className="text-xs text-white/60">
-                {doctorInfo.title || 'Assigned Integrative Doctor'}
+                {doctorInfo.title || 'Assigned Integrative Practitioner'}
               </p>
             </div>
           </div>

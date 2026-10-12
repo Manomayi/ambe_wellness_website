@@ -307,12 +307,12 @@ export default function ShopClient({ products: initialProducts = [] }) {
         <div className="shop-wrap">
           <div className="shop-featured-banner">
             <div>
-              <div className="shop-eyebrow">Doctor&apos;s Picks</div>
+              <div className="shop-eyebrow">Practitioner&apos;s Picks</div>
               <h2>
                 Not sure where to start? <em>We can help.</em>
               </h2>
               <p>
-                Book a free consultation and your integrative doctor will build a personalized
+                Book a free consultation and your integrative practitioner will build a personalized
                 remedy protocol for your specific constitution — no guesswork.
               </p>
             </div>

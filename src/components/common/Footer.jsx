@@ -64,7 +64,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm text-ambe-cream/70 leading-relaxed max-w-xs">
-              Holistic tele-wellness. Real integrative doctors trained in modern
+              Holistic tele-wellness. Real integrative practitioners trained in modern
               science and traditional Vedic medicine. Wellness for Everyone.
             </p>
           </div>

@@ -23,7 +23,7 @@ export const metadata = {
   ...buildPageMetadata({
     title: "Ambé Wellness | Holistic Tele-Wellness",
     description:
-      "Holistic tele-wellness with integrative doctors trained in Ayurvedic medicine and modern science. Membership from $50/month — consultations, medicines, and messaging included.",
+      "Holistic tele-wellness with integrative practitioners trained in Ayurvedic medicine and modern science. Membership from $50/month — consultations, medicines, and messaging included.",
     path: "/",
   }),
   icons: {

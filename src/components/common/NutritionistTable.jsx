@@ -5,7 +5,7 @@ const headers = [
   "Feature/Training Area",
   "Nutritionist",
   "Registered Dietitian (RD)",
-  "Ayurvedic Doctor",
+  "Ayurvedic Practitioner",
 ];
 
 // All 12 rows comparing [feature, nutritionist, rd, ayurvedic]
@@ -105,7 +105,7 @@ export default function NutritionistTable() {
         {/* Role Switcher */}
         <div className="mb-3">
           <p className="text-xs text-[#7A736A] mb-2 text-center font-medium">
-            Compare Ayurvedic Doctor with:
+            Compare Ayurvedic Practitioner with:
           </p>
           <div className="bg-[#F6F1EA] p-1 rounded-xl flex gap-1 border border-[#E9E1D4]">
             <button
@@ -152,7 +152,7 @@ export default function NutritionistTable() {
               <div className="grid grid-cols-2 divide-x divide-[#F5B880]">
                 <div className="bg-[#FFD3AC] px-3 py-3 text-center font-bold text-[13.5px] sm:text-sm text-[#353535] flex items-center justify-center gap-1.5">
                   <span>🌿</span>
-                  <span>Ayurvedic Doctor</span>
+                  <span>Ayurvedic Practitioner</span>
                 </div>
                 <div className="bg-[#F4EFE6] px-3 py-3 text-center font-bold text-[13.5px] sm:text-sm text-[#353535]">
                   {compareMode === "rd" ? "Dietitian (RD)" : "Nutritionist"}

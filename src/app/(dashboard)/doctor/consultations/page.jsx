@@ -332,18 +332,7 @@ export default function DoctorConsultationsPage() {
               REPORTS TO FINISH
             </h2>
             <div
-              onClick={() => {
-                const r = reportsToFinish[0];
-                const userUid = r.user_id || r.user_uid || r.userId || '';
-                const userName = r.user_name || r.userName || '';
-                const timeMillis = r.time?.toMillis ? r.time.toMillis() : (r.time ? new Date(r.time).getTime() : Date.now());
-                const params = new URLSearchParams({
-                  userUid,
-                  userName,
-                  time: String(timeMillis),
-                }).toString();
-                router.push(`/doctor/consultations/complete-report/${encodeURIComponent(r.id)}?${params}`);
-              }}
+              onClick={() => router.push('/doctor/consultations/reports')}
               className="bg-[#2D2D30] border border-red-500/30 rounded-[20px] p-4 sm:p-5 flex items-center justify-between hover:bg-[#353539] transition shadow-md cursor-pointer group"
             >
               <div className="flex items-center gap-3.5">

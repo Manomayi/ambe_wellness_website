@@ -1568,7 +1568,7 @@ export default function SignUpPage() {
               <div className="relative">
                 <textarea
                   rows={4}
-                  placeholder="Tell patients about yourself, your background, and approach to care..."
+                  placeholder="Tell clients about yourself, your background, and approach to care..."
                   value={formData.bio || ''}
                   onChange={(e) => updateFormData('bio', e.target.value)}
                   className={`w-full bg-white text-[#1E1E1E] font-sans text-sm sm:text-[15px] font-medium rounded-2xl p-4 outline-none border transition-all duration-200 resize-none shadow-sm placeholder:text-gray-400 ${

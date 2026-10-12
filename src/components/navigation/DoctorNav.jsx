@@ -11,7 +11,7 @@ import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
 export default function DoctorNav() {
   const pathname = usePathname() || '';
   const [photoURL, setPhotoURL] = useState(null);
-  const [displayName, setDisplayName] = useState('Doctor');
+  const [displayName, setDisplayName] = useState('');
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function DoctorNav() {
       }
       if (user) {
         if (user.displayName) {
-          setDisplayName(user.displayName.split(' ').pop() || 'Doctor');
+          setDisplayName(user.displayName.split(' ').pop() || '');
         }
         if (user.photoURL) {
           setPhotoURL(user.photoURL);
@@ -175,13 +175,13 @@ export default function DoctorNav() {
             >
               <div className="w-9 h-9 rounded-full bg-[#FFD3AC] text-[#1E1E1E] flex items-center justify-center font-bold text-xs overflow-hidden border border-white/20">
                 {photoURL ? (
-                  <img src={photoURL} alt={displayName} className="w-full h-full object-cover" />
+                  <img src={photoURL} alt={displayName || 'Practitioner'} className="w-full h-full object-cover" />
                 ) : (
                   'Dr'
                 )}
               </div>
               <span className="hidden sm:inline text-xs font-medium text-gray-200 group-hover:text-white font-sans max-w-[90px] truncate">
-                Dr. {displayName}
+                {displayName ? `Dr. ${displayName}` : 'Practitioner'}
               </span>
             </Link>
           </div>

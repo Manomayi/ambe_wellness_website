@@ -40,7 +40,7 @@ export default function ResourcesFeaturedGuide({ onDownload }) {
             <p className="text-sm sm:text-base text-charcoal/90 leading-relaxed mb-8">
               What you eat — and feed your pets — matters. Simple, practical
               guidance to transform your kitchen into a healing center, with
-              Ayurvedic and doctor-approved tips for feeding those you love.
+              Ayurvedic and practitioner-approved tips for feeding those you love.
               Covers pantry essentials, spice protocols, seasonal eating, and
               anti-inflammatory meal frameworks.
             </p>

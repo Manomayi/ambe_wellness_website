@@ -89,7 +89,7 @@ export default function Membership() {
                       1:1 Video Sessions with Your Specialist
                     </h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                      Each month, you&apos;ll connect face-to-face with your personal integrative doctor. You can also choose to consult with other practitioners from our multidisciplinary team
+                      Each month, you&apos;ll connect face-to-face with your personal integrative practitioner. You can also choose to consult with other practitioners from our multidisciplinary team
                     </p>
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function Membership() {
                             1:1 Video Sessions with Your Specialist
                           </h3>
                           <p className="text-sm leading-relaxed" style={{ color: '#353535' }}>
-                            Each month, you&apos;ll connect face-to-face with your personal integrative doctor. You can also choose to consult with other practitioners from our multidisciplinary team
+                            Each month, you&apos;ll connect face-to-face with your personal integrative practitioner. You can also choose to consult with other practitioners from our multidisciplinary team
                           </p>
                         </div>
                       </div>

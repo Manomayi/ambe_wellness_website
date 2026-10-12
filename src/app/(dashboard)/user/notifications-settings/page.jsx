@@ -22,7 +22,7 @@ const TOGGLES = [
   {
     key: 'sms',
     label: 'Text / SMS Notifications',
-    description: 'Receive SMS text alerts for appointments, doctor recommendations, and consultations.',
+    description: 'Receive SMS text alerts for appointments, practitioner recommendations, and consultations.',
   },
 ];
 

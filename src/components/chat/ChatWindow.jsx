@@ -565,7 +565,7 @@ export default function ChatWindow({
           <p className="text-xs text-white/60 font-medium">
             {isDoctor 
               ? 'This conversation is currently locked' 
-              : 'Complete your first consultation to start messaging with your doctor.'}
+              : 'Complete your first consultation to start messaging with your practitioner.'}
           </p>
         </div>
       )}

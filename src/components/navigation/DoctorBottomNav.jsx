@@ -87,7 +87,7 @@ export default function DoctorBottomNav() {
 
   return (
     <nav
-      aria-label="Doctor Mobile Navigation"
+      aria-label="Practitioner Mobile Navigation"
       className="fixed bottom-0 left-0 right-0 z-50 bg-[#000000] border-t border-white/10 shadow-2xl safe-area-pb"
       style={{
         transform: "translate3d(0, 0, 0)",

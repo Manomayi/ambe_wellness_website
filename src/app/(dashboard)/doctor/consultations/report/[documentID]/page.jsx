@@ -373,8 +373,11 @@ export default function DoctorConsultationReportPage() {
   const internalNotes = report.internal_notes || report.internalNotes || '';
   const statusInfo = getConsultationStatusInfo(report, "doctor");
   const cancelDate = report.cancelled_at || report.cancelledAt;
-  const reason =
-    report.cancellation_reason || report.cancellationReason || report.note;
+  // Older records saved system default reasons as "Doctor …"; show them with
+  // the Practitioner wording used everywhere now.
+  const reason = (
+    report.cancellation_reason || report.cancellationReason || report.note || ''
+  ).replace(/^Doctor (?=unavailable|cancelled late|requested)/, 'Practitioner ');
   const effectiveTime =
     time || report.scheduled_at || report.cancelled_at || report.created_at;
 

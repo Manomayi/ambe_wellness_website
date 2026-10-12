@@ -327,7 +327,7 @@ export default function RescheduleConsultationModal({
     setIsSubmitting(true);
     setErrorMessage(null);
 
-    const finalReason = "Doctor requested change";
+    const finalReason = "Practitioner requested change";
     const newUtcTime = selectedSlot.time;
 
     try {
@@ -395,7 +395,7 @@ export default function RescheduleConsultationModal({
         batch.set(userApptRef, updatePayload, { merge: true });
         batch.set(userNotifRef, {
           title: "Appointment Rescheduled by Practitioner",
-          body: `Dr. ${appointment.doctor_name || "your doctor"} has rescheduled your appointment to ${moment(newUtcTime).format("MMM D, h:mm A")}.${finalReason ? " Reason: " + finalReason : ""}`,
+          body: `${appointment.doctor_name ? `Dr. ${appointment.doctor_name}` : "Your practitioner"} has rescheduled your appointment to ${moment(newUtcTime).format("MMM D, h:mm A")}.${finalReason ? " Reason: " + finalReason : ""}`,
           type: "appointment_rescheduled",
           is_read: false,
           created_at: serverTimestamp(),

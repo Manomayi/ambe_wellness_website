@@ -7,13 +7,13 @@ const FAQ_ITEMS = [
     category: "Getting Started",
     question: "What is Ambé Wellness?",
     answer:
-      "Ambé Wellness is a holistic tele-wellness platform connecting you with integrative doctors trained in Ayurvedic medicine and modern clinical science — through video consultations, personalized protocols, and ongoing messaging.",
+      "Ambé Wellness is a holistic tele-wellness platform connecting you with integrative practitioners trained in Ayurvedic medicine and modern clinical science — through video consultations, personalized protocols, and ongoing messaging.",
   },
   {
     category: "Getting Started",
     question: "How do I get started?",
     answer:
-      "Book a free consult, complete your wellness intake, and get matched with an integrative doctor. From there, you can choose a membership plan or pay as you can for individual consultations.",
+      "Book a free consult, complete your wellness intake, and get matched with an integrative practitioner. From there, you can choose a membership plan or pay as you can for individual consultations.",
   },
   {
     category: "Plans & Pricing",
@@ -31,37 +31,37 @@ const FAQ_ITEMS = [
     category: "Products & Remedies",
     question: "Are medicines included in membership?",
     answer:
-      "Yes. Your membership includes personalized Ayurvedic remedies and formulations prescribed by your integrative doctor — no hidden fees for the medicines themselves.",
+      "Yes. Your membership includes personalized Ayurvedic remedies and formulations prescribed by your integrative practitioner — no hidden fees for the medicines themselves.",
   },
   {
     category: "Products & Remedies",
     question: "Where do your products come from?",
     answer:
-      "Ambé remedies are sourced from trusted Ayurvedic suppliers and compounded under doctor supervision. All products include required FDA supplement disclaimers.",
+      "Ambé remedies are sourced from trusted Ayurvedic suppliers and compounded under practitioner supervision. All products include required FDA supplement disclaimers.",
   },
   {
-    category: "Your Doctor",
+    category: "Your Practitioner",
     question: "Who are Ambé practitioners?",
     answer:
-      "Ambé practitioners hold BAMS degrees (Bachelor of Ayurvedic Medicine and Surgery) from accredited institutions. They are trained integrative doctors — not generic wellness coaches.",
+      "Ambé practitioners hold BAMS degrees (Bachelor of Ayurvedic Medicine and Surgery) from accredited institutions. They are trained integrative practitioners — not generic wellness coaches.",
   },
   {
-    category: "Your Doctor",
-    question: "Can I message my doctor between visits?",
+    category: "Your Practitioner",
+    question: "Can I message my practitioner between visits?",
     answer:
-      "Yes. Membership includes unlimited messaging with your integrative doctor and care team throughout the month.",
+      "Yes. Membership includes unlimited messaging with your integrative practitioner and care team throughout the month.",
   },
   {
     category: "Your Wellness Plan",
     question: "How is my plan personalized?",
     answer:
-      "Your doctor uses your intake questionnaire, constitutional assessment, lifestyle data, and optional lab biomarkers to build a protocol tailored to your unique mind-body constitution.",
+      "Your practitioner uses your intake questionnaire, constitutional assessment, lifestyle data, and optional lab biomarkers to build a protocol tailored to your unique mind-body constitution.",
   },
   {
     category: "Your Wellness Plan",
     question: "Do I need lab tests?",
     answer:
-      "Labs are optional but recommended for hormone health, metabolic markers, and other areas where biomarkers add clinical precision. Your doctor will advise what is right for you.",
+      "Labs are optional but recommended for hormone health, metabolic markers, and other areas where biomarkers add clinical precision. Your practitioner will advise what is right for you.",
   },
   {
     category: "Privacy & Safety",
@@ -85,13 +85,13 @@ const FAQ_ITEMS = [
     category: "Understanding Ayurveda",
     question: "How does Ayurveda work with modern science?",
     answer:
-      "Ambé integrates time-tested Ayurvedic principles with modern clinical frameworks — including biomarkers, epigenetics, and evidence-based lifestyle medicine — under doctor-supervised protocols.",
+      "Ambé integrates time-tested Ayurvedic principles with modern clinical frameworks — including biomarkers, epigenetics, and evidence-based lifestyle medicine — under practitioner-supervised protocols.",
   },
   {
     category: "Understanding Ayurveda",
     question: "What is a dosha?",
     answer:
-      "In Ayurveda, doshas (Vata, Pitta, Kapha) describe your unique constitutional type. Understanding your dosha helps your integrative doctor personalize diet, remedies, and lifestyle recommendations.",
+      "In Ayurveda, doshas (Vata, Pitta, Kapha) describe your unique constitutional type. Understanding your dosha helps your integrative practitioner personalize diet, remedies, and lifestyle recommendations.",
   },
 ];
 

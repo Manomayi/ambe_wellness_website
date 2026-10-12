@@ -111,7 +111,7 @@ export default function DoctorSupportPage() {
       if (!user) return;
 
       // Fetch doctor profile info from doctors collection
-      let userName = user.displayName || 'Doctor';
+      let userName = user.displayName || 'Practitioner';
       let profilePicture = user.photoURL || null;
 
       try {
@@ -119,14 +119,14 @@ export default function DoctorSupportPage() {
         if (docSnap.exists()) {
           const dData = docSnap.data();
           const fullName = `${dData.first_name || ''} ${dData.last_name || ''}`.trim();
-          userName = fullName || user.displayName || 'Doctor';
+          userName = fullName || user.displayName || 'Practitioner';
           profilePicture = dData.profile_picture || user.photoURL || profilePicture;
         } else {
           // Fallback check in users collection if needed
           const userSnap = await getDoc(doc(db, 'users', user.uid));
           if (userSnap.exists()) {
             const uData = userSnap.data();
-            userName = uData.first_name || uData.name || user.displayName || 'Doctor';
+            userName = uData.first_name || uData.name || user.displayName || 'Practitioner';
             profilePicture = uData.profile_picture || uData.photoURL || profilePicture;
           }
         }

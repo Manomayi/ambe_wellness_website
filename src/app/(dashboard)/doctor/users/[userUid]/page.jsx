@@ -218,7 +218,7 @@ export default function UserCompleteProfilePage() {
                     </div>
                     <div>
                       <p className="font-semibold text-white text-sm sm:text-base">
-                        Dr. {app.doctor_name || 'Doctor'}
+                        {app.doctor_name ? `Dr. ${app.doctor_name}` : 'Practitioner'}
                       </p>
                       <p className="text-xs text-white/60 mt-0.5">
                         {fmt(app.time)}

@@ -439,7 +439,7 @@ export default function UserAppointmentPage() {
                   </p>
                 </div>
                 <p className="text-xs text-white/60 mt-1">
-                  The consultation report will appear in your history once submitted by your doctor.
+                  The consultation report will appear in your history once submitted by your practitioner.
                 </p>
               </div>
             )}
@@ -459,7 +459,7 @@ export default function UserAppointmentPage() {
                   Your appointment is happening now!
                 </p>
                 <p className="text-emerald-300/80 text-xs">
-                  Click the button below to join the video consultation with your doctor.
+                  Click the button below to join the video consultation with your practitioner.
                 </p>
               </div>
             )}

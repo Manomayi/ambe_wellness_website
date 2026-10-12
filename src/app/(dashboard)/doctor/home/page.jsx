@@ -174,7 +174,7 @@ export default function DoctorHomePage() {
     };
   }, [user]);
 
-  const lastName = profile?.last_name || user?.displayName?.split(' ').pop() || 'Doctor';
+  const lastName = profile?.last_name || user?.displayName?.split(' ').pop() || '';
   const photoUrl = profile?.profile_picture || user?.photoURL;
   const isScheduleSet = profile?.is_schedule_set ?? false;
 
@@ -214,7 +214,7 @@ export default function DoctorHomePage() {
               {/* Doctor Avatar with peach circle border */}
               <div className="w-16 h-16 sm:w-[68px] sm:h-[68px] rounded-full border-2 border-[#FFD3AC] overflow-hidden bg-[#1E1E1E] flex items-center justify-center flex-shrink-0 shadow-md">
                 {photoUrl ? (
-                  <img src={photoUrl} alt={lastName} className="w-full h-full object-cover" />
+                  <img src={photoUrl} alt={lastName || 'Practitioner'} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-8 h-8 sm:w-9 sm:h-9 text-[#FFD3AC]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -225,10 +225,10 @@ export default function DoctorHomePage() {
               {/* Greeting Text */}
               <div>
                 <h1 className="font-heading text-2xl sm:text-3xl text-white font-normal tracking-tight">
-                  Hello, Dr. {lastName} !
+                  {lastName ? `Hello, Dr. ${lastName} !` : 'Hello !'}
                 </h1>
                 <p className="text-gray-400 font-sans text-xs sm:text-sm mt-0.5">
-                  Ready to help your patients?
+                  Ready to help your clients?
                 </p>
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function DoctorHomePage() {
               {/* Reports to finish prompt */}
               {reportsToFinish.length > 0 && (
                 <Link
-                  href="/doctor/consultations"
+                  href="/doctor/consultations/reports"
                   className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 hover:bg-[#ffe3c9] transition shadow-md group"
                 >
                   <div className="flex items-center justify-between">
@@ -399,7 +399,7 @@ export default function DoctorHomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   <span className="text-2xl font-bold font-sans mt-2">{stats.patientCount ?? 0}</span>
-                  <span className="text-xs text-gray-500 font-medium mt-0.5">Patients</span>
+                  <span className="text-xs text-gray-500 font-medium mt-0.5">Clients</span>
                 </div>
 
                 <div className="flex flex-col items-center">

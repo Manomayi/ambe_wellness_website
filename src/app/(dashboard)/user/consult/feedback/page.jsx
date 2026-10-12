@@ -247,7 +247,7 @@ function ConsultationFeedbackPageContent() {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!effectiveDoctorUid) {
-      setReviewError("Missing doctor information — please return to Consult.");
+      setReviewError("Missing practitioner information — please return to Consult.");
       return;
     }
     if (rating === 0) {

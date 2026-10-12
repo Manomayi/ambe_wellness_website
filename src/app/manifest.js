@@ -8,7 +8,7 @@ export default function manifest() {
     id: '/',
     name: 'Ambe Wellness',
     short_name: 'Ambe',
-    description: 'Holistic tele-wellness with integrative doctors trained in Ayurvedic medicine and modern science.',
+    description: 'Holistic tele-wellness with integrative practitioners trained in Ayurvedic medicine and modern science.',
     // ProtectedRoute sends doctors to /doctor/home and signed-out visitors to /login.
     start_url: '/user/home',
     scope: '/',

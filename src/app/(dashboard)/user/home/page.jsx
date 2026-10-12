@@ -34,7 +34,7 @@ export default function UserHomePage() {
         if (pending && !pending.reviewed) {
           setPendingRecommendation({
             report_id: pending.report_id || pending.document_id,
-            doctor_name: pending.doctor_name || "Your Doctor",
+            doctor_name: pending.doctor_name || "Your Practitioner",
             reviewed: false,
           });
           return;
@@ -61,7 +61,7 @@ export default function UserHomePage() {
             foundUnreviewed = {
               report_id: d.id,
               document_id: d.id,
-              doctor_name: data.doctor_name || "Your Doctor",
+              doctor_name: data.doctor_name || "Your Practitioner",
               reviewed: false,
               from_history: true,
             };
@@ -210,10 +210,10 @@ export default function UserHomePage() {
                       fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                     }}
                   >
-                    Please review your doctor's recommendations
+                    Please review your practitioner's recommendations
                   </h3>
                   <p className="text-[12px] sm:text-[13px] text-[#B5AFA8] font-sans mt-0.5">
-                    Prepared by {pendingRecommendation.doctor_name || "Your Doctor"}
+                    Prepared by {pendingRecommendation.doctor_name || "Your Practitioner"}
                   </p>
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function UserHomePage() {
                 Book your consultation
               </h3>
               <p className="text-[13px] text-[#7D6553] font-sans mt-0.5">
-                Meet your doctor over video
+                Meet your practitioner over video
               </p>
             </div>
 

@@ -263,8 +263,10 @@ export default function UserRefundsPage() {
       })
       .map((c) => {
       const consultationId = c.id || c.appointment_id || c.consultation_id;
-      const doctorName = c.doctor_name || 'Assigned Doctor';
-      const formattedDoctor = (doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr '))
+      const doctorName = c.doctor_name || '';
+      const formattedDoctor = !doctorName
+        ? 'Assigned Practitioner'
+        : (!doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr '))
         ? `Dr. ${doctorName}`
         : doctorName;
 
@@ -446,14 +448,14 @@ export default function UserRefundsPage() {
         id: reqId,
         userId: currentUser.uid,
         user_id: currentUser.uid,
-        userName: currentUser.displayName || 'Patient',
+        userName: currentUser.displayName || 'Client',
         userEmail: currentUser.email || '',
         paymentId: selectedItem.paymentId,
         payment_id: selectedItem.paymentId,
         consultationId: reqId,
         consultation_id: reqId,
-        doctorName: selectedItem.doctorName || 'Assigned Doctor',
-        doctor_name: selectedItem.doctorName || 'Assigned Doctor',
+        doctorName: selectedItem.doctorName || 'Assigned Practitioner',
+        doctor_name: selectedItem.doctorName || 'Assigned Practitioner',
         consultationDate: consultationDateStr,
         depositAmount: selectedItem.depositAmount,
         refundableAmount: selectedItem.calculatedRefund,
@@ -485,7 +487,7 @@ export default function UserRefundsPage() {
             changedBy: currentUser.uid,
             role: 'patient',
             timestamp: new Date().toISOString(),
-            note: 'Refund request submitted by patient',
+            note: 'Refund request submitted by client',
           },
         ],
       };

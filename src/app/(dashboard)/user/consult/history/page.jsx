@@ -101,7 +101,7 @@ export default function ConsultationHistoryPage() {
               const statusInfo = getConsultationStatusInfo(appt);
               const doctorName = appt.doctor_name?.startsWith("Dr.")
                 ? appt.doctor_name
-                : `Dr. ${appt.doctor_name || "Assigned Doctor"}`;
+                : (appt.doctor_name ? `Dr. ${appt.doctor_name}` : "Assigned Practitioner");
 
               return (
                 <Link

@@ -695,7 +695,7 @@ export default function CompleteReportPage() {
     if (step > 1) {
       setStep((prev) => prev - 1);
     } else {
-      router.push('/doctor/consultations');
+      router.push('/doctor/consultations/reports');
     }
   };
 
@@ -716,7 +716,7 @@ export default function CompleteReportPage() {
 
     try {
       const doctorUid = user.uid;
-      const doctorName = user.displayName || 'Doctor';
+      const doctorName = user.displayName || 'Practitioner';
       const oldAppointmentId = params.id;
       const documentId = oldAppointmentId;
 

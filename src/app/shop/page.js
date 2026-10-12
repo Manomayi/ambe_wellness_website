@@ -9,7 +9,7 @@ import "./shop.css";
 export const metadata = buildPageMetadata({
   title: "Shop | Ambé Wellness",
   description:
-    "Doctor-curated Ayurvedic formulas, herbal supplements, and wellness essentials. Order directly and ship to your door — no consultation required.",
+    "Practitioner-curated Ayurvedic formulas, herbal supplements, and wellness essentials. Order directly and ship to your door — no consultation required.",
   path: "/shop",
 });
 
@@ -35,7 +35,7 @@ export default function ShopPage() {
                 Remedies <em>made for you.</em>
               </h1>
               <p className="shop-hero-sub">
-                Doctor-curated Ayurvedic formulas, herbal supplements, and wellness essentials.
+                Practitioner-curated Ayurvedic formulas, herbal supplements, and wellness essentials.
                 No consultation required — order directly and ship to your door.
               </p>
             </div>
@@ -66,7 +66,7 @@ export default function ShopPage() {
             quality benchmarks. Third-party tested for purity, potency, microbial safety, heavy
             metals, and pesticides. For personalized guidance on which products are right for your
             constitution,{" "}
-            <Link href={CONSULT_HREF}>book a free consultation</Link> with an Ambé doctor.
+            <Link href={CONSULT_HREF}>book a free consultation</Link> with an Ambé practitioner.
           </p>
         </div>
       </footer>

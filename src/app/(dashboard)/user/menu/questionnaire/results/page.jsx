@@ -357,7 +357,7 @@ export default function QuestionnaireResultsPage() {
             Your Personalized Plan
           </h2>
           <p className="text-xs text-white/70">
-            Based on your answers — review with your doctor anytime.
+            Based on your answers — review with your practitioner anytime.
           </p>
         </div>
 
@@ -380,7 +380,7 @@ export default function QuestionnaireResultsPage() {
                 This is a starting point, not a final plan.{' '}
               </strong>
               <span className="text-white/85">
-                These results reflect your general constitution — your doctor will refine them based on your specific health history, sensitivities, and any conditions that call for adjustment. This is especially true for tridoshic constitutions, which often respond differently than a single-dosha profile suggests. Always follow your doctor's personalized guidance over any general recommendation here.
+                These results reflect your general constitution — your practitioner will refine them based on your specific health history, sensitivities, and any conditions that call for adjustment. This is especially true for tridoshic constitutions, which often respond differently than a single-dosha profile suggests. Always follow your practitioner's personalized guidance over any general recommendation here.
               </span>
             </p>
           </div>

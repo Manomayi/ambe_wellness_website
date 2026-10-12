@@ -87,7 +87,7 @@ export default function CancelConsultationModal({
     setIsSubmitting(true);
     setError(null);
 
-    const cancelReason = reason.trim() || (isLateCancellation ? "Doctor cancelled late" : "Doctor unavailable");
+    const cancelReason = reason.trim() || (isLateCancellation ? "Practitioner cancelled late" : "Practitioner unavailable");
 
     try {
       // 1. Try Cloud Function
@@ -155,8 +155,8 @@ export default function CancelConsultationModal({
             cancelled_by: "doctor",
             cancellation_reason: cancelReason,
             note: isLateCancellation
-              ? "Doctor cancelled late. Please reschedule."
-              : "Doctor requested cancellation. Please reschedule.",
+              ? "Practitioner cancelled late. Please reschedule."
+              : "Practitioner requested cancellation. Please reschedule.",
             cancelled_at: serverTimestamp(),
           },
           { merge: true }
@@ -169,15 +169,15 @@ export default function CancelConsultationModal({
             cancelled_by: "doctor",
             cancellation_reason: cancelReason,
             note: isLateCancellation
-              ? "Doctor cancelled late. Please reschedule."
-              : "Doctor requested cancellation. Please reschedule.",
+              ? "Practitioner cancelled late. Please reschedule."
+              : "Practitioner requested cancellation. Please reschedule.",
             cancelled_at: serverTimestamp(),
           },
           { merge: true }
         );
         batch.set(userNotifRef, {
           title: "Appointment Cancelled",
-          body: `Your doctor has cancelled the consultation scheduled for ${formatDateTime(apptDate)}. Please choose a new slot.`,
+          body: `Your practitioner has cancelled the consultation scheduled for ${formatDateTime(apptDate)}. Please choose a new slot.`,
           type: "appointment_cancelled",
           is_read: false,
           created_at: serverTimestamp(),

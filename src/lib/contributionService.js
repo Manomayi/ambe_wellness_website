@@ -36,7 +36,7 @@ export async function recordContribution({
   const payload = {
     id: paymentId,
     userId: user.uid,
-    userName: user.displayName || "Patient",
+    userName: user.displayName || "Client",
     userEmail: user.email || "",
     amount: numAmount,
     currency: "USD",

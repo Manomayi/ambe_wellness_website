@@ -63,7 +63,7 @@ export default function UserMembershipPage() {
               &ldquo;Quality holistic care shouldn&apos;t be a luxury — it should be within reach of everyone.&rdquo;
             </p>
             <p className="text-xs sm:text-sm text-white/80 leading-relaxed max-w-xl mx-auto font-sans">
-              We&apos;re building a membership that makes doctor-led, deeply personal wellness affordable and accessible, no matter your budget. Everyone deserves care that sees the whole person.
+              We&apos;re building a membership that makes practitioner-led, deeply personal wellness affordable and accessible, no matter your budget. Everyone deserves care that sees the whole person.
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default function UserMembershipPage() {
                     Everything included, one price
                   </h4>
                   <p className="text-xs sm:text-sm text-white/70 font-sans mt-0.5">
-                    Consultations, remedies, and unlimited messaging with your doctor.
+                    Consultations, remedies, and unlimited messaging with your practitioner.
                   </p>
                 </div>
               </div>
@@ -99,7 +99,7 @@ export default function UserMembershipPage() {
                     Member pricing on remedies
                   </h4>
                   <p className="text-xs sm:text-sm text-white/70 font-sans mt-0.5">
-                    Save on the products your doctor recommends for you.
+                    Save on the products your practitioner recommends for you.
                   </p>
                 </div>
               </div>

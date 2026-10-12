@@ -192,7 +192,7 @@ export default function AmbeHealthTechnologyContent() {
             </h1>
             <p className="aht-hero-sub">
               Clinically validated technologies — integrated into one
-              doctor-guided protocol that makes ancient wisdom measurable.
+              practitioner-guided protocol that makes ancient wisdom measurable.
             </p>
             <div className="aht-hero-stats-inline">
               <div className="aht-hero-stat">
@@ -213,7 +213,7 @@ export default function AmbeHealthTechnologyContent() {
               <p>
                 &ldquo;These are not supplements, apps, or generic wellness programs. These are{" "}
                 <em>systemic health technologies</em> — each with a documented clinical mechanism,
-                independently studied, and brought together under doctor-supervised integrative
+                independently studied, and brought together under practitioner-supervised integrative
                 protocols designed for real health outcomes.&rdquo;
               </p>
             </div>
@@ -274,7 +274,7 @@ export default function AmbeHealthTechnologyContent() {
           </h2>
           <p className="aht-collectively-sub">
             No single modality works in isolation. Together, these five form a coherent systemic
-            protocol — each one amplifying the others under the guidance of a doctor trained in
+            protocol — each one amplifying the others under the guidance of a practitioner trained in
             both modern science and Ayurvedic medicine.
           </p>
           <div className="aht-collectively-grid">
@@ -308,7 +308,7 @@ export default function AmbeHealthTechnologyContent() {
             The health technologies described on this page are presented for educational and
             informational purposes. Clinical claims referenced reflect published research on the
             technology category and do not constitute a medical claim by Ambé Wellness. These
-            modalities are integrated into Ambé&apos;s doctor-supervised wellness protocols and are
+            modalities are integrated into Ambé&apos;s practitioner-supervised wellness protocols and are
             not intended to diagnose, treat, cure, or prevent any disease. Individual outcomes
             vary.
           </p>

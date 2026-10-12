@@ -241,7 +241,7 @@ export default function UserConsultPage() {
           needs_doctor_assignment: true,
           preferred_health: prefHealth,
         }).catch(() => {});
-        alert('No doctor is currently available for instant consult right now. Our medical team will assign a specialist for you shortly.');
+        alert('No practitioner is currently available for instant consult right now. Our medical team will assign a specialist for you shortly.');
       }
     } catch (err) {
       console.error('Instant availability error:', err);
@@ -249,7 +249,7 @@ export default function UserConsultPage() {
         needs_doctor_assignment: true,
         preferred_health: profile?.preferred_health || 'general_health',
       }).catch(() => {});
-      alert('Could not check instant availability right now. Your request has been queued for doctor assignment.');
+      alert('Could not check instant availability right now. Your request has been queued for practitioner assignment.');
     } finally {
       setCheckingInstant(false);
     }
@@ -580,7 +580,7 @@ export default function UserConsultPage() {
               ? (profile.doctor_name.startsWith('Dr.') ? profile.doctor_name : `Dr. ${profile.doctor_name}`)
               : (profile?.doctor?.first_name 
                   ? `Dr. ${profile.doctor.first_name} ${profile.doctor.last_name || ''}`.trim() 
-                  : 'Dr. Assigned Doctor')));
+                  : 'Assigned Practitioner')));
 
   return (
     <ProtectedRoute userType="user">
@@ -621,7 +621,7 @@ export default function UserConsultPage() {
               doctor={{
                 name: doctorDisplayName,
                 professional_title: doctorInfo?.professional_title || doctorInfo?.title,
-                title: doctorInfo?.title || 'BAMS · Integrative Doctor',
+                title: doctorInfo?.title || 'BAMS · Integrative Practitioner',
                 specialty: doctorInfo?.field && doctorInfo.field.length > 0 
                   ? getHealthFieldLabels(doctorInfo.field).join(', ') 
                   : (doctorInfo?.specialty || 'Integrative Health & Wellness'),
@@ -668,7 +668,7 @@ export default function UserConsultPage() {
                 {activeAppointment && (
                   <div className="bg-black/30 border border-white/10 rounded-2xl p-4 text-left space-y-2.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-white/60 uppercase tracking-wider font-medium">Doctor</span>
+                      <span className="text-white/60 uppercase tracking-wider font-medium">Practitioner</span>
                       <span className="font-semibold text-white">
                         {activeAppointment.doctor_name || doctorDisplayName}
                       </span>
@@ -728,11 +728,11 @@ export default function UserConsultPage() {
 
                 <div className="bg-black/30 border border-white/10 rounded-2xl p-4 text-left space-y-2.5 text-xs text-white">
                   <div className="flex items-center justify-between">
-                    <span className="text-white/60 uppercase tracking-wider font-medium">Doctor</span>
+                    <span className="text-white/60 uppercase tracking-wider font-medium">Practitioner</span>
                     <span className="font-semibold">
                       {appointmentToCancel.doctor_name?.startsWith('Dr.') 
                         ? appointmentToCancel.doctor_name 
-                        : `Dr. ${appointmentToCancel.doctor_name || 'Assigned Doctor'}`}
+                        : (appointmentToCancel.doctor_name ? `Dr. ${appointmentToCancel.doctor_name}` : 'Assigned Practitioner')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -878,10 +878,10 @@ export default function UserConsultPage() {
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold text-white">Finding your perfect match</h3>
                 <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-                  We are currently looking for the best doctor specializing in your selected topic for you.
+                  We are currently looking for the best practitioner specializing in your selected topic for you.
                 </p>
                 <p className="text-xs text-white/50 pt-1">
-                  You will be notified as soon as a doctor is assigned.
+                  You will be notified as soon as a practitioner is assigned.
                 </p>
               </div>
               <div className="space-y-3 pt-2">
@@ -906,14 +906,14 @@ export default function UserConsultPage() {
           {hasDoctor && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-                My Doctor
+                My Practitioner
               </h2>
               <div className="bg-[#1B1A18]/65 border border-white/20 rounded-[22px] shadow-lg p-5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div 
                     onClick={() => setShowDoctorModal(true)}
                     className="flex items-center gap-3.5 cursor-pointer group transition hover:opacity-90"
-                    title="View Doctor Profile"
+                    title="View Practitioner Profile"
                   >
                     <div className="w-14 h-14 rounded-full border-2 border-[#FFD3AC] bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center transition group-hover:scale-105">
                       {doctorInfo?.profile_picture ? (
@@ -1089,7 +1089,7 @@ export default function UserConsultPage() {
                       <div className="min-w-0 pr-3">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-bold text-sm text-white truncate">
-                            {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : `Dr. ${appointment.doctor_name || 'Assigned Doctor'}`}
+                            {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : (appointment.doctor_name ? `Dr. ${appointment.doctor_name}` : 'Assigned Practitioner')}
                           </h4>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusInfo.badgeClass}`}>
                             <span className={`w-1.5 h-1.5 rounded-full mr-1 ${statusInfo.dotClass}`} />

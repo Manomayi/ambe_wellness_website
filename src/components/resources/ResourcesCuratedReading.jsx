@@ -12,7 +12,7 @@ export default function ResourcesCuratedReading({ onDownload }) {
           </p>
 
           <h2 className="font-heading !text-4xl sm:!text-[2.75rem] md:!text-5xl !text-charcoal !font-normal !leading-tight text-center sm:col-start-2">
-            Doctor-curated reading.
+            Practitioner-curated reading.
           </h2>
 
           <button

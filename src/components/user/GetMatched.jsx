@@ -167,7 +167,7 @@ export default function GetMatched() {
               {loading ? (
                 <span className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#1A1A1A] mr-2" />
-                  Matching you with the perfect doctor...
+                  Matching you with the perfect practitioner...
                 </span>
               ) : (
                 'Find My Healthcare Provider'

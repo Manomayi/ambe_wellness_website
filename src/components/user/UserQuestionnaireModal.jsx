@@ -1508,7 +1508,7 @@ export default function UserQuestionnaireModal({
             {showSpecialtyAlert && (
               <div className="bg-amber-950/70 border border-amber-500/50 rounded-2xl p-4 flex items-center gap-3 text-xs font-medium text-amber-200 animate-pulse">
                 <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
-                <span>Please select your health specialty to continue. This is required to match you with a doctor.</span>
+                <span>Please select your health specialty to continue. This is required to match you with a practitioner.</span>
               </div>
             )}
 

@@ -71,7 +71,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
           return {
             matched: true,
             doctor: existingDoctor,
-            message: "User already has an assigned doctor.",
+            message: "User already has an assigned practitioner.",
           };
         }
       }
@@ -110,7 +110,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
         return {
           matched: false,
           doctor: null,
-          message: "No doctor is currently available for instant booking. Our medical team will assign a specialist for you shortly."
+          message: "No practitioner is currently available for instant booking. Our medical team will assign a specialist for you shortly."
         };
       }
     }
@@ -157,7 +157,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
       return {
         matched: false,
         doctor: null,
-        message: "We are currently looking for the best doctor specializing in your selected topic for you. You will be notified as soon as a doctor is assigned."
+        message: "We are currently looking for the best practitioner specializing in your selected topic for you. You will be notified as soon as a practitioner is assigned."
       };
     }
 
@@ -192,7 +192,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
     // Add user to doctor's users subcollection
     const userDoc = await getDoc(doc(db, "users", userId));
     const uData = userDoc.exists() ? userDoc.data() : {};
-    const userFullName = `${uData.first_name || ""} ${uData.last_name || ""}`.trim() || "Patient";
+    const userFullName = `${uData.first_name || ""} ${uData.last_name || ""}`.trim() || "Client";
 
     await setDoc(doc(db, "doctors", doctorId, "users", userId), {
       uid: userId,
@@ -213,7 +213,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
       user_photo_url: uData.profile_picture || "",
       user_id: userId,
       is_first_consultation_completed: uData.is_first_consultation_completed || false,
-      last_message: "New patient connected",
+      last_message: "New client connected",
       last_message_timestamp: serverTimestamp(),
       last_message_sender_uid: "system",
       last_message_read_by_doctor: false,
@@ -223,7 +223,7 @@ export async function matchUserWithDoctor(userId, preferredField = "general_heal
     return {
       matched: true,
       doctor: doctorObject,
-      message: "Doctor matched successfully!"
+      message: "Practitioner matched successfully!"
     };
   } catch (error) {
     console.error("Error in matchUserWithDoctor:", error);

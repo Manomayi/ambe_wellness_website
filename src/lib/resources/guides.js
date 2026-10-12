@@ -30,7 +30,7 @@ export const RESOURCE_GUIDES = [
     imageAlt: "Clean body care",
     title: "Clean Body Care: What to Use & What to Avoid",
     summary:
-      "A doctor-curated guide to non-toxic personal care — from deodorants to skincare, shampoo to sunscreen.",
+      "A practitioner-curated guide to non-toxic personal care — from deodorants to skincare, shampoo to sunscreen.",
     downloadTitle: "Clean Body Care Guide",
   },
   {
@@ -50,7 +50,7 @@ export const RESOURCE_GUIDES = [
     imageAlt: "Detox guide",
     title: "Seasonal Detox Protocol: Spring & Fall Reset",
     summary:
-      "A gentle, doctor-guided cleanse you can do at home — no fasting required, no extreme protocols.",
+      "A gentle, practitioner-guided cleanse you can do at home — no fasting required, no extreme protocols.",
     downloadTitle: "Seasonal Detox Protocol",
   },
   {

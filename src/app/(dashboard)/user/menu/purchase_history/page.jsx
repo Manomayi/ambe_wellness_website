@@ -300,7 +300,7 @@ export default function PurchaseHistoryPage() {
             canRequestRefund,
             consultDoc,
             consultationDate: apptTime,
-            doctorName: consultDoc?.doctor_name || 'Assigned Doctor',
+            doctorName: consultDoc?.doctor_name || 'Assigned Practitioner',
           };
 
           const rawRefundStatus = (data.refund_status || '').toLowerCase();
@@ -501,9 +501,9 @@ export default function PurchaseHistoryPage() {
           })
         : 'N/A';
 
-      const doctorName = eligibility?.doctorName || 'Assigned Doctor';
+      const doctorName = eligibility?.doctorName || 'Assigned Practitioner';
       const formattedDoctor =
-        doctorName && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')
+        doctorName !== 'Assigned Practitioner' && !doctorName.toLowerCase().startsWith('dr.') && !doctorName.toLowerCase().startsWith('dr ')
           ? `Dr. ${doctorName}`
           : doctorName;
 
@@ -511,7 +511,7 @@ export default function PurchaseHistoryPage() {
         id: targetConsultationId,
         userId: currentUser.uid,
         user_id: currentUser.uid,
-        userName: currentUser.displayName || 'Patient',
+        userName: currentUser.displayName || 'Client',
         userEmail: currentUser.email || '',
         paymentId: paymentId,
         payment_id: paymentId,
@@ -538,7 +538,7 @@ export default function PurchaseHistoryPage() {
             changedBy: currentUser.uid,
             role: 'patient',
             timestamp: new Date().toISOString(),
-            note: 'Refund request submitted by patient from purchase history',
+            note: 'Refund request submitted by client from purchase history',
           },
         ],
       };
@@ -1026,7 +1026,7 @@ export default function PurchaseHistoryPage() {
                   <div className="text-xs text-white/80 space-y-1.5 bg-black/20 p-4 rounded-xl border border-white/10">
                     <p>
                       <span className="font-semibold text-white">Practitioner:</span>{' '}
-                      {selectedRefundItem.refundEligibility?.doctorName || 'Assigned Doctor'}
+                      {selectedRefundItem.refundEligibility?.doctorName || 'Assigned Practitioner'}
                     </p>
                     {selectedRefundItem.refundEligibility?.consultationDate && (
                       <p>

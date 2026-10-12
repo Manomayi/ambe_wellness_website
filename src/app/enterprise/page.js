@@ -94,7 +94,7 @@ export default function Enterprise() {
                   >
                     <Image
                       src="/images/enterprise/image51.png"
-                      alt="Doctor with health metrics"
+                      alt="Practitioner with health metrics"
                       fill
                       className="object-cover"
                       priority

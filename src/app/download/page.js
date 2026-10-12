@@ -6,7 +6,7 @@ import { APP_STORE_URL, PLAY_STORE_URL } from "@/lib/site-config";
 export const metadata = {
   title: "Download the App | Ambé Wellness",
   description:
-    "Download the Ambé Wellness app for iOS and Android. Consultations, your wellness plan, and messaging with your integrative doctor — all in your pocket.",
+    "Download the Ambé Wellness app for iOS and Android. Consultations, your wellness plan, and messaging with your integrative practitioner — all in your pocket.",
   alternates: { canonical: "https://ambewellness.com/download" },
   openGraph: {
     title: "Download the App | Ambé Wellness",
@@ -35,7 +35,7 @@ export default function DownloadPage() {
           </h1>
           <p className="text-base mb-10" style={{ color: "#353535" }}>
             Consultations, your wellness plan, and messaging with your integrative
-            doctor — all in the Ambé app.
+            practitioner — all in the Ambé app.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a

@@ -177,7 +177,7 @@ export default function DoctorMessagesPage() {
             <ChatBubbleLeftRightIcon className="h-14 w-14 text-gray-500 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-white mb-1 font-sans">No Messages Yet</h3>
             <p className="text-gray-400 max-w-sm mx-auto text-sm font-sans">
-              Your patient conversations will appear here once you start messaging with them.
+              Your client conversations will appear here once you start messaging with them.
             </p>
           </div>
         ) : (
@@ -225,7 +225,7 @@ export default function DoctorMessagesPage() {
                       </h3>
                       <p className="text-sm text-gray-400 font-sans truncate mt-0.5">
                         {isYou && <span className="text-[#FFD3AC]">You: </span>}
-                        {chat.last_message || 'New patient matched'}
+                        {chat.last_message || 'New client matched'}
                       </p>
                     </div>
 

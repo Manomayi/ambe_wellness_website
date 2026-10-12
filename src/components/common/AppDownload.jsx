@@ -66,7 +66,7 @@ export default function AppDownload() {
             </div>
             <p className="text-sm sm:text-base" style={{ color: "#353535" }}>
               Consultations, your wellness plan, and messaging with your
-              integrative doctor — all in the Ambé app.
+              integrative practitioner — all in the Ambé app.
             </p>
           </div>
 

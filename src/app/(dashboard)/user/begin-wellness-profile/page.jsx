@@ -56,7 +56,7 @@ export default function BeginWellnessProfilePage() {
               questionnaire so we can understand your unique constitution.
             </p>
             <p>
-              Your doctor will review your answers with you during your video consult,
+              Your practitioner will review your answers with you during your video consult,
               and you&apos;ll receive a personalized report with herbal, dietary, and
               movement guidance you can return to anytime.
             </p>

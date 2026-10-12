@@ -82,7 +82,7 @@ export async function POST(request) {
                   <td style="padding: 36px 32px 28px 32px;">
                     <h2 style="margin: 0 0 16px 0; color: #1A1A1A; font-size: 20px; font-weight: 600; line-height: 1.3;">Your Ambe Wellness Guides</h2>
                     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #2A2A2A;">
-                      Thank you for requesting the Ambe Wellness guides. Our doctor-curated Clean Living Guide set is attached below.
+                      Thank you for requesting the Ambe Wellness guides. Our practitioner-curated Clean Living Guide set is attached below.
                     </p>
                     <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #2A2A2A;">
                       Your 8-guide PDF library is attached directly to this email.
@@ -111,7 +111,7 @@ export async function POST(request) {
 
     const textContent = `Your Ambe Wellness Guides (PDF)
 
-Thank you for requesting the Ambe Wellness guides. Our doctor-curated Clean Living Guide set is attached below.
+Thank you for requesting the Ambe Wellness guides. Our practitioner-curated Clean Living Guide set is attached below.
 
 Your 8-guide PDF library is attached directly to this email.
 

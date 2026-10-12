@@ -66,7 +66,7 @@ export default function Resources() {
             </p>
 
             <p className="font-heading italic !text-ambe-gold text-lg sm:text-xl">
-              Curated by integrative doctors. Rooted in tradition.
+              Curated by integrative practitioners. Rooted in tradition.
             </p>
           </div>
         </div>
