@@ -12,6 +12,8 @@ import { Elements, PaymentElement, ExpressCheckoutElement, useStripe, useElement
 import { useRemotePaymentConfig } from "@/lib/remoteConfig";
 import { startPayPalCheckout } from "@/lib/paypal";
 import { recordContribution } from "@/lib/contributionService";
+import { functions } from "@/lib/firebase/config";
+import { httpsCallable } from "firebase/functions";
 
 function StripePostContributionApplePayForm({ amount, paymentIntentId, onSuccess }) {
   const stripe = useStripe();
@@ -304,25 +306,53 @@ function ConsultationFeedbackPageContent() {
     // Initialize Stripe intent
     setLoadingIntent(true);
     try {
-      const res = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let secret = "";
+      let pId = "";
+
+      // 1. Primary: Firebase Cloud Function createPaymentIntent (dynamically switches test/live key based on isTestMode)
+      try {
+        const createPaymentIntentFn = httpsCallable(functions, "createPaymentIntent");
+        const fbRes = await createPaymentIntentFn({
           amount: Math.round(amount * 100),
           currency: "usd",
-          userId: user.uid,
-          doctorId: effectiveDoctorUid,
-          doctorName: effectiveDoctorName,
           type: "contribution_after",
-          description: `Post-Consultation Contribution - $${amount}`,
           isTestMode: Boolean(isTestMode),
-        }),
-      });
+        });
+        if (fbRes.data?.clientSecret) {
+          secret = fbRes.data.clientSecret;
+          pId = fbRes.data.paymentIntentId || "";
+        }
+      } catch (fbErr) {
+        console.warn("createPaymentIntent Cloud Function fallback:", fbErr);
+      }
 
-      const data = await res.json();
-      if (data.clientSecret) {
-        setClientSecret(data.clientSecret);
-        setPaymentIntentId(data.paymentIntentId || "");
+      // 2. Fallback to API route if needed
+      if (!secret) {
+        const res = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: Math.round(amount * 100),
+            currency: "usd",
+            userId: user.uid,
+            doctorId: effectiveDoctorUid,
+            doctorName: effectiveDoctorName,
+            type: "contribution_after",
+            description: `Post-Consultation Contribution - $${amount}`,
+            isTestMode: Boolean(isTestMode),
+          }),
+        });
+
+        const data = await res.json();
+        if (data.clientSecret) {
+          secret = data.clientSecret;
+          pId = data.paymentIntentId || "";
+        }
+      }
+
+      if (secret) {
+        setClientSecret(secret);
+        setPaymentIntentId(pId);
       }
     } catch (err) {
       console.error("Error initializing payment:", err);

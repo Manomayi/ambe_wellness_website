@@ -7,6 +7,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import { startPayPalCheckout } from "@/lib/paypal";
 import { recordContribution } from "@/lib/contributionService";
 import PaymentProcessingOverlay from "@/components/common/PaymentProcessingOverlay";
+import { functions } from "@/lib/firebase/config";
+import { httpsCallable } from "firebase/functions";
 
 function ContributionApplePayForm({
   amount,
@@ -258,27 +260,55 @@ export default function ContributionView({
     // Initialize Stripe Payment Intent
     setLoadingIntent(true);
     try {
-      const res = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let secret = "";
+      let pId = "";
+
+      // 1. Primary: Firebase Cloud Function createPaymentIntent (dynamically switches test/live key based on isTestMode)
+      try {
+        const createPaymentIntentFn = httpsCallable(functions, "createPaymentIntent");
+        const fbRes = await createPaymentIntentFn({
           amount: Math.round(amount * 100),
           currency: "usd",
-          userId: user.uid,
-          doctorId: doctorInfo?.uid || doctorInfo?.id || "",
-          doctorName: doctorInfo ? `Dr. ${doctorInfo.first_name || ""} ${doctorInfo.last_name || ""}`.trim() : "",
           type: "contribution_before",
-          description: `Consultation Contribution - $${amount}`,
           isTestMode: Boolean(isTestMode),
-        }),
-      });
+        });
+        if (fbRes.data?.clientSecret) {
+          secret = fbRes.data.clientSecret;
+          pId = fbRes.data.paymentIntentId || "";
+        }
+      } catch (fbErr) {
+        console.warn("createPaymentIntent Cloud Function fallback:", fbErr);
+      }
 
-      const data = await res.json();
-      if (data.clientSecret) {
-        setClientSecret(data.clientSecret);
-        setPaymentIntentId(data.paymentIntentId || "");
-      } else {
-        setErrorMessage(data.error || "Failed to initialize payment.");
+      // 2. Fallback to API route if needed
+      if (!secret) {
+        const res = await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: Math.round(amount * 100),
+            currency: "usd",
+            userId: user.uid,
+            doctorId: doctorInfo?.uid || doctorInfo?.id || "",
+            doctorName: doctorInfo ? `Dr. ${doctorInfo.first_name || ""} ${doctorInfo.last_name || ""}`.trim() : "",
+            type: "contribution_before",
+            description: `Consultation Contribution - $${amount}`,
+            isTestMode: Boolean(isTestMode),
+          }),
+        });
+
+        const data = await res.json();
+        if (data.clientSecret) {
+          secret = data.clientSecret;
+          pId = data.paymentIntentId || "";
+        } else {
+          setErrorMessage(data.error || "Failed to initialize payment.");
+        }
+      }
+
+      if (secret) {
+        setClientSecret(secret);
+        setPaymentIntentId(pId);
       }
     } catch (e) {
       console.error("Error creating payment intent:", e);

@@ -15,6 +15,7 @@ const FALLBACK_LIVE_PUBLISHABLE_KEY =
 let cachedConfig = {
   isTestMode: false,
   testingStripeKey: "",
+  liveStripeKey: "",
   effectiveStripePublishableKey: FALLBACK_LIVE_PUBLISHABLE_KEY,
   initialized: false,
 };
@@ -24,7 +25,7 @@ let stripePromiseCache = new Map();
 /**
  * Loads and returns a cached Stripe Promise for the given publishable key.
  */
-export function getStripePromise(isTestMode = false, testingStripeKey = "") {
+export function getStripePromise(isTestMode = false, testingStripeKey = "", liveStripeKey = "") {
   let key = FALLBACK_LIVE_PUBLISHABLE_KEY;
 
   if (isTestMode) {
@@ -33,8 +34,11 @@ export function getStripePromise(isTestMode = false, testingStripeKey = "") {
         ? testingStripeKey.trim()
         : FALLBACK_TEST_PUBLISHABLE_KEY;
   } else {
-    // In live mode, verify that the key is live
-    key = FALLBACK_LIVE_PUBLISHABLE_KEY;
+    // In live mode, use Remote Config live_stripe_key if set, else fallback
+    key =
+      (liveStripeKey && liveStripeKey.trim().length > 0)
+        ? liveStripeKey.trim()
+        : FALLBACK_LIVE_PUBLISHABLE_KEY;
   }
 
   if (!stripePromiseCache.has(key)) {
@@ -65,20 +69,23 @@ export async function fetchRemotePaymentConfig() {
     remoteConfig.defaultConfig = {
       isTestMode: false,
       testing_stripe_key: "",
+      live_stripe_key: "",
     };
 
     await fetchAndActivate(remoteConfig);
 
     const isTestMode = getBoolean(remoteConfig, "isTestMode");
     const testingStripeKey = getString(remoteConfig, "testing_stripe_key").trim();
+    const liveStripeKey = getString(remoteConfig, "live_stripe_key").trim();
 
     const effectiveStripePublishableKey = isTestMode
-      ? testingStripeKey || FALLBACK_TEST_PUBLISHABLE_KEY
-      : FALLBACK_LIVE_PUBLISHABLE_KEY;
+      ? (testingStripeKey || FALLBACK_TEST_PUBLISHABLE_KEY)
+      : (liveStripeKey || FALLBACK_LIVE_PUBLISHABLE_KEY);
 
     cachedConfig = {
       isTestMode,
       testingStripeKey,
+      liveStripeKey,
       effectiveStripePublishableKey,
       initialized: true,
     };
@@ -123,11 +130,12 @@ export function useRemotePaymentConfig() {
     };
   }, []);
 
-  const stripePromise = getStripePromise(config.isTestMode, config.testingStripeKey);
+  const stripePromise = getStripePromise(config.isTestMode, config.testingStripeKey, config.liveStripeKey);
 
   return {
     isTestMode: config.isTestMode,
     testingStripeKey: config.testingStripeKey,
+    liveStripeKey: config.liveStripeKey,
     effectiveStripePublishableKey: config.effectiveStripePublishableKey,
     stripePromise,
     loading,
