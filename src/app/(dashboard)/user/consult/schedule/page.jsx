@@ -997,7 +997,7 @@ function ScheduleConsultationContent() {
             appointment_id: finalApptId,
             doctor_id: resolvedDoctorUid || '',
             doctor_name: finalDocName,
-            refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
+            refund_policy: 'Full $50 refund within 30 days via in-app request (Menu → Refund). 50% ($25) if missed.',
             payment_intent_id: finalIntentId,
           };
           if (!pSnap.exists() || (!pSnap.data()?.created && !pSnap.data()?.created_at)) {
@@ -1796,7 +1796,7 @@ function ScheduleConsultationContent() {
                   </>
                 ) : (
                   <>
-                    A <strong>$50 deposit</strong> is required to secure each consultation booking. This deposit goes towards your custom remedies after your consultation.
+                    A <strong>$50 refundable deposit</strong> is required to secure each consultation booking.
                   </>
                 )}
               </p>
@@ -1807,14 +1807,7 @@ function ScheduleConsultationContent() {
                   </li>
                 )}
                 <li>
-                  <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
-                  <a 
-                    href="mailto:info@ambewellness.com" 
-                    className="font-semibold text-[#FFD3AC] underline hover:text-white"
-                  >
-                    info@ambewellness.com
-                  </a>{' '}
-                  within 30 days of the appointment date.
+                  <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit within 30 days of the appointment date, right from your account — go to <strong>Menu → Refund</strong>, select your consultation and click <strong>Request Refund</strong>.
                 </li>
                 <li>
                   <strong>Missed Consultation / No-Show Policy:</strong> If you do not join the scheduled video consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.

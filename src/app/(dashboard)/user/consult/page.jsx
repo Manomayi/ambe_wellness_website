@@ -744,11 +744,7 @@ export default function UserConsultPage() {
                 </div>
 
                 <div className="p-3.5 bg-black/20 border border-white/10 rounded-xl text-xs text-white/80 text-left leading-relaxed">
-                  <strong className="text-[#FFD3AC]">Refund Policy:</strong> You can request a full refund for your $50 deposit by emailing{' '}
-                  <a href="mailto:info@ambewellness.com" className="font-semibold text-[#FFD3AC] underline hover:text-white">
-                    info@ambewellness.com
-                  </a>{' '}
-                  within 30 days of the appointment. If missed without joining, only 50% ($25) of the deposit is refunded.
+                  <strong className="text-[#FFD3AC]">Refund Policy:</strong> You can request a full refund for your $50 deposit within 30 days of the appointment — go to <strong>Menu → Refund</strong>, select your consultation and click <strong>Request Refund</strong>. If missed without joining, only 50% ($25) of the deposit is refunded.
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row gap-3">

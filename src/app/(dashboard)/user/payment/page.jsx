@@ -61,7 +61,7 @@ function CheckoutForm({ user, paymentIntentId }) {
               status: 'succeeded',
               type: 'subscription',
               description: 'Consultation Deposit & Membership Subscription',
-              refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
+              refund_policy: 'Full $50 refund within 30 days via in-app request (Menu → Refund). 50% ($25) if missed.',
               created: serverTimestamp(),
               payment_intent_id: intentId,
             }, { merge: true });
@@ -159,7 +159,7 @@ function ApplePayDepositForm({ user, paymentIntentId }) {
               status: 'succeeded',
               type: 'subscription',
               description: 'Consultation Deposit & Membership Subscription',
-              refund_policy: 'Full $50 refund within 30 days via info@ambewellness.com. 50% ($25) if missed.',
+              refund_policy: 'Full $50 refund within 30 days via in-app request (Menu → Refund). 50% ($25) if missed.',
               created: serverTimestamp(),
               payment_intent_id: intentId,
             }, { merge: true });
@@ -346,18 +346,11 @@ export default function UserPaymentPage() {
             Deposit & Refund Policy
           </div>
           <p className="leading-relaxed text-[#353535]">
-            To secure your spot, a <strong>$50 deposit</strong> is required for each consultation that will go towards your custom remedies after your consultation.
+            To secure your spot, a <strong>$50 refundable deposit</strong> is required for each consultation.
           </p>
           <ul className="list-disc list-inside space-y-1 text-[#353535] pt-1">
             <li>
-              <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit by emailing{' '}
-              <a 
-                href="mailto:info@ambewellness.com" 
-                className="font-semibold text-[#C2691C] underline hover:text-[#1A1A1A]"
-              >
-                info@ambewellness.com
-              </a>{' '}
-              within 30 days of the appointment date.
+              <strong>30-Day Full Refund:</strong> You can request a full refund for the $50 deposit within 30 days of the appointment date, right from your account — go to <strong>Menu → Refund</strong>, select your consultation and click <strong>Request Refund</strong>.
             </li>
             <li>
               <strong>Missed Consultation Policy:</strong> If you do not join the scheduled consultation, only <strong>50% ($25)</strong> of the deposit will be refunded.

@@ -14,7 +14,7 @@ import {
 import { doc, getDoc, onSnapshot, deleteDoc, collection, getDocs, setDoc, updateDoc, serverTimestamp, arrayUnion, increment } from 'firebase/firestore';
 import { db, functions } from '@/lib/firebase/config';
 import { httpsCallable } from 'firebase/functions';
-import { useRemotePaymentConfig } from '@/lib/remoteConfig';
+import { useRemotePaymentConfig, getStripePromise } from '@/lib/remoteConfig';
 import BackButton from '@/components/common/BackButton';
 
 // Set to false in .env (or Vercel environment variables) if you only want backend Stripe webhooks to write to Firestore
@@ -180,6 +180,10 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement
         onReady={() => setIsReady(true)}
+        onLoadError={(event) => {
+          console.error("Stripe PaymentElement error:", event);
+          setMessage(event?.error?.message || "Failed to load payment input. Please try refreshing.");
+        }}
         options={{
           layout: "tabs",
           wallets: {
@@ -377,9 +381,10 @@ function PaymentPageContent() {
   const clientSecret = searchParams.get('client_secret');
   const paymentIntentId = searchParams.get('payment_intent');
   const selectedMethod = searchParams.get('method') || 'stripe';
-  const paramTestMode = searchParams.get('test_mode') === 'true';
-  const { isTestMode: remoteTestMode, stripePromise, loading: configLoading } = useRemotePaymentConfig();
-  const isTestMode = paramTestMode || remoteTestMode;
+  const hasParamTestMode = searchParams.has('test_mode');
+  const { isTestMode: remoteTestMode, testingStripeKey, liveStripeKey, loading: configLoading } = useRemotePaymentConfig();
+  const isTestMode = hasParamTestMode ? (searchParams.get('test_mode') === 'true') : remoteTestMode;
+  const stripePromise = getStripePromise(isTestMode, testingStripeKey, liveStripeKey);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

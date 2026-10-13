@@ -7,7 +7,8 @@ import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 function QuestionnaireContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnToHomeOnSkip = searchParams.get("returnToHome") === "true";
+  const fromHome = searchParams.get("returnToHome") === "true";
+  const extendedOnly = searchParams.get("section") === "extended";
   const fromResults =
     searchParams.get("from") === "results" ||
     searchParams.get("fromResults") === "true";
@@ -20,12 +21,11 @@ function QuestionnaireContent() {
     <div className="min-h-screen">
       <UserQuestionnaireModal
         fromResults={fromResults}
-        returnToHomeOnSkip={returnToHomeOnSkip}
+        fromHome={fromHome}
+        extendedOnly={extendedOnly}
         onSkip={(targetPath) => {
           if (fromResults) {
             router.replace("/user/menu/questionnaire/results");
-          } else if (returnToHomeOnSkip) {
-            router.replace("/user/home");
           } else if (targetPath) {
             router.replace(targetPath);
           } else {

@@ -3,13 +3,22 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useState, useEffect } from "react";
 
 // Default Fallback Keys matching Firebase project ambe-wellness
+const ENV_TEST_KEY =
+  (process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY?.startsWith("pk_test_") && process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY) ||
+  (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_test_") && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) ||
+  null;
+
+const ENV_LIVE_KEY =
+  (process.env.NEXT_PUBLIC_STRIPE_LIVE_PUBLISHABLE_KEY?.startsWith("pk_live_") && process.env.NEXT_PUBLIC_STRIPE_LIVE_PUBLISHABLE_KEY) ||
+  (process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_live_") && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) ||
+  null;
+
 const FALLBACK_TEST_PUBLISHABLE_KEY =
-  process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY ||
+  ENV_TEST_KEY ||
   "pk_test_51TFo7UFYfVYw61GifAx6LqxD0ok2yrudljWQbPBKwbp4s7IjbUZxD9Nbi0WMmcKtLSdoK185xVpx1jj5flCeStYg006ZxayVkR";
 
 const FALLBACK_LIVE_PUBLISHABLE_KEY =
-  process.env.NEXT_PUBLIC_STRIPE_LIVE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+  ENV_LIVE_KEY ||
   "pk_live_51PygcsJtXe5lZA1x441sD0qxQUpG8zKsczl49Tow4TDsvjjlprbRcnBbQZQz6pzb1esYoUwiCIbAWJI9DD9HW0rR00tOPRKxE8";
 
 let cachedConfig = {
@@ -26,17 +35,17 @@ let stripePromiseCache = new Map();
  * Loads and returns a cached Stripe Promise for the given publishable key.
  */
 export function getStripePromise(isTestMode = false, testingStripeKey = "", liveStripeKey = "") {
-  let key = FALLBACK_LIVE_PUBLISHABLE_KEY;
+  let key;
 
   if (isTestMode) {
     key =
-      (testingStripeKey && testingStripeKey.trim().length > 0)
+      (testingStripeKey && testingStripeKey.trim().startsWith("pk_test_"))
         ? testingStripeKey.trim()
         : FALLBACK_TEST_PUBLISHABLE_KEY;
   } else {
-    // In live mode, use Remote Config live_stripe_key if set, else fallback
+    // In live mode, use Remote Config live_stripe_key if set with pk_live_, else fallback
     key =
-      (liveStripeKey && liveStripeKey.trim().length > 0)
+      (liveStripeKey && liveStripeKey.trim().startsWith("pk_live_"))
         ? liveStripeKey.trim()
         : FALLBACK_LIVE_PUBLISHABLE_KEY;
   }
@@ -79,8 +88,8 @@ export async function fetchRemotePaymentConfig() {
     const liveStripeKey = getString(remoteConfig, "live_stripe_key").trim();
 
     const effectiveStripePublishableKey = isTestMode
-      ? (testingStripeKey || FALLBACK_TEST_PUBLISHABLE_KEY)
-      : (liveStripeKey || FALLBACK_LIVE_PUBLISHABLE_KEY);
+      ? (testingStripeKey.startsWith("pk_test_") ? testingStripeKey : FALLBACK_TEST_PUBLISHABLE_KEY)
+      : (liveStripeKey.startsWith("pk_live_") ? liveStripeKey : FALLBACK_LIVE_PUBLISHABLE_KEY);
 
     cachedConfig = {
       isTestMode,

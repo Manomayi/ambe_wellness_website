@@ -485,7 +485,7 @@ export default function UserAppointmentPage() {
                 <li>• Test your camera and microphone</li>
                 <li>• Find a quiet, well-lit space</li>
                 <li>• Have any relevant medical information ready</li>
-                <li>• <strong className="text-white">Attendance & Refund Policy:</strong> Please join your call on time. If you do not attend the scheduled consultation, only 50% ($25) of the deposit is refunded. For refund inquiries within 30 days, contact <a href="mailto:info@ambewellness.com" className="text-[#FFD3AC] underline font-semibold">info@ambewellness.com</a>.</li>
+                <li>• <strong className="text-white">Attendance & Refund Policy:</strong> Please join your call on time. If you do not attend the scheduled consultation, only 50% ($25) of the deposit is refunded. To request a refund within 30 days, go to <strong className="text-white">Menu → Refund</strong> and click <strong className="text-white">Request Refund</strong> on your consultation.</li>
               </ul>
             </div>
           </div>

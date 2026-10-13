@@ -666,8 +666,9 @@ export default function UserQuestionnaireModal({
   onClose,
   onSkip,
   fromBooking = false,
-  returnToHomeOnSkip = false,
+  fromHome = false,
   fromResults = false,
+  extendedOnly = false,
 }) {
   const router = useRouter();
   const { user, profile } = useAuth();
@@ -1064,13 +1065,17 @@ export default function UserQuestionnaireModal({
   const isSpecialtyAnswered = Boolean(selectedHealthField);
   const isConditionsAnswered = selectedConditions.size > 0 || noneConditions;
   const answeredExtendedCount = Object.keys(extendedAnswers).length;
-  const totalQuestionsCount = DOSHA_QUESTIONS.length + (hasInitialSpecialty ? 0 : 1) + 1 + allExtendedSingleQuestions.length;
-  const totalAnsweredCount = answeredDoshaCount + (!hasInitialSpecialty && isSpecialtyAnswered ? 1 : 0) + (isConditionsAnswered ? 1 : 0) + answeredExtendedCount;
+  // Extended-only mode hides the constitution part, but only once it has been completed
+  const isExtendedOnly = extendedOnly && profile?.is_free_questionnaire_completed === true;
+  // Number of sections shown before the medical history section
+  const partsBeforeMedical = (isExtendedOnly ? 0 : 1) + (hasInitialSpecialty ? 0 : 1);
+  const totalQuestionsCount = (isExtendedOnly ? 0 : DOSHA_QUESTIONS.length) + (hasInitialSpecialty ? 0 : 1) + 1 + allExtendedSingleQuestions.length;
+  const totalAnsweredCount = (isExtendedOnly ? 0 : answeredDoshaCount) + (!hasInitialSpecialty && isSpecialtyAnswered ? 1 : 0) + (isConditionsAnswered ? 1 : 0) + answeredExtendedCount;
   const percentComplete = Math.min(100, Math.round((totalAnsweredCount / totalQuestionsCount) * 100));
 
   const areAllDoshaAnswered = answeredDoshaCount === DOSHA_QUESTIONS.length;
   const areAllExtendedAnswered = answeredExtendedCount >= allExtendedSingleQuestions.length && isConditionsAnswered;
-  const isFullyCompleted = areAllDoshaAnswered && (hasInitialSpecialty || isSpecialtyAnswered) && areAllExtendedAnswered;
+  const isFullyCompleted = (isExtendedOnly || areAllDoshaAnswered) && (hasInitialSpecialty || isSpecialtyAnswered) && areAllExtendedAnswered;
 
   // Skip handler: jump to specialty if not selected; otherwise save draft and finish
   const handleSkip = async () => {
@@ -1109,7 +1114,8 @@ export default function UserQuestionnaireModal({
       const batch = writeBatch(db);
 
       // 1. If user answered all dosha questions: score and write dosha questionnaire doc
-      if (areAllDoshaAnswered) {
+      //    (skipped in extended-only mode so the saved constitution report is left untouched)
+      if (!isExtendedOnly && areAllDoshaAnswered) {
         let vata = 0, pitta = 0, kapha = 0;
         for (let i = 0; i < 48; i++) {
           const sel = doshaAnswers[i];
@@ -1182,7 +1188,7 @@ export default function UserQuestionnaireModal({
 
       const userDocUpdate = {
         preferred_health: prefHealthKey,
-        is_free_questionnaire_completed: areAllDoshaAnswered,
+        ...(!isExtendedOnly && { is_free_questionnaire_completed: areAllDoshaAnswered }),
         is_extended_questionnaire_completed: areAllExtendedAnswered,
         questionnaire_consent: {
           accepted_at: serverTimestamp(),
@@ -1190,10 +1196,8 @@ export default function UserQuestionnaireModal({
         }
       };
 
-      if (areAllDoshaAnswered) {
-        userDocUpdate.dosha_draft_answers = deleteField();
-      } else {
-        userDocUpdate.dosha_draft_answers = partialDosha;
+      if (!isExtendedOnly) {
+        userDocUpdate.dosha_draft_answers = areAllDoshaAnswered ? deleteField() : partialDosha;
       }
 
       if (areAllExtendedAnswered) {
@@ -1251,8 +1255,13 @@ export default function UserQuestionnaireModal({
       let targetPath;
       if (fromResults) {
         targetPath = "/user/menu/questionnaire/results";
-      } else if (isSkip && returnToHomeOnSkip) {
-        targetPath = "/user/home";
+      } else if (fromHome) {
+        // Opened from the home page: show the report once the constitution part
+        // is done (saved or skipped), otherwise go back home. Extended-only mode
+        // always returns home, since the report has already been shown.
+        targetPath = !isExtendedOnly && areAllDoshaAnswered
+          ? "/user/menu/questionnaire/results?from=home"
+          : "/user/home";
       } else if (hasAssignedDoctor || Boolean(profile?.doctor?.uid)) {
         targetPath = "/user/consult/schedule";
       } else {
@@ -1376,99 +1385,106 @@ export default function UserQuestionnaireModal({
             className="text-2xl sm:text-3xl font-semibold text-white leading-tight"
             style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
           >
-            Personalized Constitutional Assessment &amp; Health Profile
+            {isExtendedOnly
+              ? "Your Health Assessment"
+              : "Personalized Constitutional Assessment & Health Profile"}
           </h1>
           <p className="text-xs sm:text-sm text-white/75 leading-relaxed">
-            Complete all sections below to receive your personalized constitution report, or choose your health specialty to book your specialist consultation.
+            {isExtendedOnly
+              ? "Your constitution report is ready. Answer the remaining health questions so your practitioner has your full picture."
+              : "Complete all sections below to receive your personalized constitution report, or choose your health specialty to book your specialist consultation."}
           </p>
         </div>
 
         {/* ================================================================ */}
         {/* SECTION 1: CONSTITUTION & DOSHA ASSESSMENT (48 QUESTIONS)        */}
+        {/* Hidden in extended-only mode                                     */}
         {/* ================================================================ */}
-        <section className="space-y-6">
-          <div className="space-y-1 border-b border-white/10 pb-4">
-            <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-              PART 1
-            </span>
-            <h2
-              className="text-2xl sm:text-3xl font-medium text-white"
-              style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
-            >
-              Constitution &amp; Dosha Profile
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-400">
-              Answer these 48 questions based on your lifelong baseline tendencies to determine your unique Vata, Pitta, and Kapha constitution.
-            </p>
-          </div>
+        {!isExtendedOnly && (
+          <section className="space-y-6">
+            <div className="space-y-1 border-b border-white/10 pb-4">
+              <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
+                PART 1
+              </span>
+              <h2
+                className="text-2xl sm:text-3xl font-medium text-white"
+                style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}
+              >
+                Constitution &amp; Dosha Profile
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-400">
+                Answer these 48 questions based on your lifelong baseline tendencies to determine your unique Vata, Pitta, and Kapha constitution.
+              </p>
+            </div>
 
-          {categories.map((catName) => {
-            const catQuestions = DOSHA_QUESTIONS.map((q, originalIdx) => ({ ...q, originalIdx }))
-              .filter((q) => q.category === catName);
+            {categories.map((catName) => {
+              const catQuestions = DOSHA_QUESTIONS.map((q, originalIdx) => ({ ...q, originalIdx }))
+                .filter((q) => q.category === catName);
 
-            return (
-              <div key={catName} className="space-y-3 pt-2">
-                <h3 className="text-sm sm:text-base font-bold text-[#FFD3AC] tracking-wide">
-                  {catName}
-                </h3>
-                <div className="space-y-3.5">
-                  {catQuestions.map(({ question, options, originalIdx }) => {
-                    const selectedOpt = doshaAnswers[originalIdx];
-                    const isAnswered = selectedOpt !== null && selectedOpt !== undefined;
-                    return (
-                      <div
-                        key={originalIdx}
-                        className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition ${
-                          isAnswered
-                            ? "bg-white/[0.04] border-[#FFD3AC]/30"
-                            : "bg-white/[0.02] border-white/10"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
+              return (
+                <div key={catName} className="space-y-3 pt-2">
+                  <h3 className="text-sm sm:text-base font-bold text-[#FFD3AC] tracking-wide">
+                    {catName}
+                  </h3>
+                  <div className="space-y-3.5">
+                    {catQuestions.map(({ question, options, originalIdx }) => {
+                      const selectedOpt = doshaAnswers[originalIdx];
+                      const isAnswered = selectedOpt !== null && selectedOpt !== undefined;
+                      return (
+                        <div
+                          key={originalIdx}
+                          className={`rounded-2xl p-4 sm:p-5 space-y-3 border transition ${
                             isAnswered
-                              ? "bg-[#FFD3AC]/20 border-[#FFD3AC] text-[#FFD3AC]"
-                              : "bg-white/10 border-white/20 text-white/80"
-                          }`}>
-                            {originalIdx + 1}
-                          </span>
-                          <h4 className="font-semibold text-white text-[15px] sm:text-base font-sans">
-                            {question}
-                          </h4>
-                        </div>
+                              ? "bg-white/[0.04] border-[#FFD3AC]/30"
+                              : "bg-white/[0.02] border-white/10"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className={`w-6.5 h-6.5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
+                              isAnswered
+                                ? "bg-[#FFD3AC]/20 border-[#FFD3AC] text-[#FFD3AC]"
+                                : "bg-white/10 border-white/20 text-white/80"
+                            }`}>
+                              {originalIdx + 1}
+                            </span>
+                            <h4 className="font-semibold text-white text-[15px] sm:text-base font-sans">
+                              {question}
+                            </h4>
+                          </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-                          {options.map((optText, optIdx) => {
-                            const isSelected = selectedOpt === optIdx;
-                            return (
-                              <button
-                                key={optIdx}
-                                type="button"
-                                onClick={() => handleSelectDosha(originalIdx, optIdx)}
-                                className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
-                                  isSelected
-                                    ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
-                                    : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
-                                }`}
-                              >
-                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                                  isSelected ? "border-[#FFD3AC] bg-[#FFD3AC]" : "border-white/30"
-                                }`}>
-                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]" />}
-                                </div>
-                                <span className="flex-1">{optText}</span>
-                              </button>
-                            );
-                          })}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                            {options.map((optText, optIdx) => {
+                              const isSelected = selectedOpt === optIdx;
+                              return (
+                                <button
+                                  key={optIdx}
+                                  type="button"
+                                  onClick={() => handleSelectDosha(originalIdx, optIdx)}
+                                  className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
+                                    isSelected
+                                      ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
+                                      : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
+                                  }`}
+                                >
+                                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                    isSelected ? "border-[#FFD3AC] bg-[#FFD3AC]" : "border-white/30"
+                                  }`}>
+                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]" />}
+                                  </div>
+                                  <span className="flex-1">{optText}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </section>
+              );
+            })}
+          </section>
+        )}
 
         {/* ================================================================ */}
         {/* SECTION 2: AREA OF FOCUS / SPECIALTY (MANDATORY TO MATCH DOCTOR) */}
@@ -1486,7 +1502,7 @@ export default function UserQuestionnaireModal({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
               <div>
                 <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-                  PART 2
+                  PART {partsBeforeMedical}
                 </span>
                 <h2
                   className="text-2xl sm:text-3xl font-medium text-white mt-1"
@@ -1548,7 +1564,7 @@ export default function UserQuestionnaireModal({
         <section className="space-y-4">
           <div className="border-b border-white/10 pb-4 space-y-1">
             <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-              PART {hasInitialSpecialty ? "2" : "3"}
+              PART {partsBeforeMedical + 1}
             </span>
             <h2
               className="text-2xl sm:text-3xl font-medium text-white"
@@ -1620,7 +1636,7 @@ export default function UserQuestionnaireModal({
         <section className="space-y-4">
           <div className="border-b border-white/10 pb-4 space-y-1">
             <span className="text-xs uppercase tracking-widest font-bold text-[#FFD3AC]">
-              PART {hasInitialSpecialty ? "3" : "4"}
+              PART {partsBeforeMedical + 2}
             </span>
             <h2
               className="text-2xl sm:text-3xl font-medium text-white"
@@ -1652,7 +1668,8 @@ export default function UserQuestionnaireModal({
                         ? "bg-[#FFD3AC]/20 border-[#FFD3AC] text-[#FFD3AC]"
                         : "bg-white/10 border-white/20 text-white/80"
                     }`}>
-                      {DOSHA_QUESTIONS.length + idx + 1}
+                      {/* Continue after the constitution questions, or start at 1 when they are hidden */}
+                      {(isExtendedOnly ? 0 : DOSHA_QUESTIONS.length) + idx + 1}
                     </span>
                     <h4 className="font-semibold text-white text-[15px] sm:text-base font-sans">{q.question}</h4>
                   </div>
@@ -1701,7 +1718,7 @@ export default function UserQuestionnaireModal({
               ? "Saving..."
               : isFullyCompleted
               ? "COMPLETE ASSESSMENT"
-              : areAllDoshaAnswered
+              : !isExtendedOnly && areAllDoshaAnswered
               ? (hasInitialSpecialty || selectedHealthField ? "SAVE & VIEW RESULTS" : "SELECT SPECIALTY & CONTINUE")
               : (hasInitialSpecialty || selectedHealthField ? "SAVE & CONTINUE" : "SELECT SPECIALTY & CONTINUE")}
           </button>

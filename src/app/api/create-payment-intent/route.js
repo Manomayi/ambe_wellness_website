@@ -6,9 +6,17 @@ export async function POST(request) {
     const body = await request.json().catch(() => ({}));
     const isTestMode = Boolean(body.isTestMode);
 
-    const secretKey = isTestMode
-      ? (process.env.STRIPE_SECRET_KEY_TEST || process.env.STRIPE_SECRET_KEY || "").trim()
-      : (process.env.STRIPE_SECRET_KEY || "").trim();
+    const envTestKey =
+      (process.env.STRIPE_SECRET_KEY_TEST?.startsWith("sk_test_") && process.env.STRIPE_SECRET_KEY_TEST) ||
+      (process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_") && process.env.STRIPE_SECRET_KEY) ||
+      "";
+
+    const envLiveKey =
+      (process.env.STRIPE_SECRET_KEY_LIVE?.startsWith("sk_live_") && process.env.STRIPE_SECRET_KEY_LIVE) ||
+      (process.env.STRIPE_SECRET_KEY?.startsWith("sk_live_") && process.env.STRIPE_SECRET_KEY) ||
+      "";
+
+    const secretKey = isTestMode ? envTestKey : envLiveKey;
 
     if (!secretKey) {
       return NextResponse.json(

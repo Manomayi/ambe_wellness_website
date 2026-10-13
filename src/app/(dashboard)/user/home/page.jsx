@@ -19,8 +19,6 @@ export default function UserHomePage() {
   const displayName = profile?.first_name || user?.displayName?.split(" ")[0] || "there";
   const isFreeCompleted = profile?.is_free_questionnaire_completed === true;
   const isExtendedCompleted = profile?.is_extended_questionnaire_completed === true;
-  const bothQuestionnairesCompleted = isFreeCompleted && isExtendedCompleted;
-  const isQuestionnaireCompleted = bothQuestionnairesCompleted;
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -316,7 +314,7 @@ export default function UserHomePage() {
           {/* Constitution Report Card (Flutter _buildMadeForYouSection - Card 2) */}
           <div
             onClick={() => {
-              if (bothQuestionnairesCompleted) {
+              if (isFreeCompleted) {
                 router.push("/user/menu/questionnaire/results?from=home");
               } else {
                 router.push("/user/menu/questionnaire?returnToHome=true");
@@ -335,19 +333,19 @@ export default function UserHomePage() {
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                 }}
               >
-                {bothQuestionnairesCompleted
+                {isFreeCompleted
                   ? "Your Constitution Report"
                   : "Complete Your Constitution Assessment"}
               </h3>
               <p className="text-[#B5AFA8] text-xs sm:text-[13px] font-sans leading-relaxed mt-1.5">
-                {bothQuestionnairesCompleted
+                {isFreeCompleted
                   ? "Review your personalized results and recommendations."
                   : "Complete your questionnaire to unlock your personalized constitution report."}
               </p>
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              {bothQuestionnairesCompleted && (
+              {isFreeCompleted && (
                 <span className="px-2.5 py-1 rounded-full border border-[#CCA776] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
                   READY
                 </span>
@@ -363,6 +361,47 @@ export default function UserHomePage() {
               </svg>
             </div>
           </div>
+
+          {/* Extended questions are asked for separately once the report is out */}
+          {isFreeCompleted && !isExtendedCompleted && (
+            <div
+              onClick={() => router.push("/user/menu/questionnaire?returnToHome=true&section=extended")}
+              className="
+                bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
+                cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+                flex items-center justify-between gap-3
+              "
+            >
+              <div className="flex-1">
+                <h3
+                  className="text-lg sm:text-xl font-semibold text-[#F7F4EE]"
+                  style={{
+                    fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                  }}
+                >
+                  Complete Your Health Assessment
+                </h3>
+                <p className="text-[#B5AFA8] text-xs sm:text-[13px] font-sans leading-relaxed mt-1.5">
+                  Your constitution report is ready. Finish the remaining health questions so your practitioner has your full picture.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="px-2.5 py-1 rounded-full border border-[#CCA776] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
+                  PENDING
+                </span>
+                <svg
+                  className="w-5 h-5 text-[#B5AFA8]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Coming soon Section (Flutter _buildComingSoonSection) */}
