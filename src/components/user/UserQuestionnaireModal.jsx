@@ -760,6 +760,19 @@ export default function UserQuestionnaireModal({
     return [...ACTIVITY_QUESTIONS, ...filteredLifestyleQuestions];
   }, [filteredLifestyleQuestions]);
 
+  // Lock body scroll when questionnaire/modal is mounted to prevent iOS Safari hit-test desynchronization
+  useEffect(() => {
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+    };
+  }, []);
+
   // Load existing draft answers and completed questionnaire data on mount
   useEffect(() => {
     if (!user?.uid) {
@@ -1306,68 +1319,79 @@ export default function UserQuestionnaireModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1E1E1E] overflow-y-auto flex flex-col justify-between text-white font-sans">
+    <div
+      className="fixed inset-0 z-50 bg-[#1E1E1E] overflow-y-auto flex flex-col text-white font-sans [overscroll-behavior-y:contain] [touch-action:pan-y]"
+      style={{
+        WebkitOverflowScrolling: "touch",
+        transform: "translate3d(0, 0, 0)",
+      }}
+    >
       <BackgroundVideo opacity={0.25} />
 
-      {/* Sticky Top Header matching Mobile App */}
-      <div className="sticky top-0 z-30 bg-[#1B1A18]/95 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-3.5 shadow-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/images/logos/ambe_logo.png"
-              alt="AMBÉ"
-              width={100}
-              height={30}
-              className="w-[85px] sm:w-[105px] h-auto object-contain cursor-pointer"
-              priority
-              onClick={() => {
-                if (onClose) onClose();
-                else router.push("/user/home");
-              }}
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleSkip}
-              disabled={isSaving}
-              className="text-xs font-bold text-[#FFD3AC] border border-[#FFD3AC]/50 rounded-full px-5 py-1.5 hover:bg-[#FFD3AC]/10 transition cursor-pointer"
-            >
-              Skip
-            </button>
-
-            {onClose && (
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSaving}
-                className="p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 cursor-pointer"
-                title="Close"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Progress Bar Row directly below top bar matching Mobile App */}
-      <div className="sticky top-[58px] z-20 bg-black/40 backdrop-blur-md border-b border-white/10 px-4 sm:px-8 py-2.5">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <span className="text-xs sm:text-sm font-medium text-white/85">
-            {totalAnsweredCount} of {totalQuestionsCount} completed
-          </span>
-          <div className="flex items-center gap-2.5">
-            <div className="w-20 sm:w-28 h-1.5 bg-white/15 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#FFD3AC] transition-all duration-300 rounded-full"
-                style={{ width: `${percentComplete}%` }}
+      {/* Unified Sticky Top Header matching Mobile App */}
+      <div
+        className="sticky top-0 z-30 bg-[#1B1A18] border-b border-white/10 shadow-md"
+        style={{ transform: "translate3d(0, 0, 0)" }}
+      >
+        <div className="px-4 sm:px-8 py-3.5">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/images/logos/ambe_logo.png"
+                alt="AMBÉ"
+                width={100}
+                height={30}
+                className="w-[85px] sm:w-[105px] h-auto object-contain cursor-pointer"
+                priority
+                onClick={() => {
+                  if (onClose) onClose();
+                  else router.push("/user/home");
+                }}
               />
             </div>
-            <span className="text-xs sm:text-sm font-bold text-[#FFD3AC]">
-              {percentComplete}%
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={isSaving}
+                className="text-xs font-bold text-[#FFD3AC] border border-[#FFD3AC]/50 rounded-full px-5 py-1.5 md:hover:bg-[#FFD3AC]/10 active:bg-[#FFD3AC]/20 transition cursor-pointer touch-manipulation"
+              >
+                Skip
+              </button>
+
+              {onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={isSaving}
+                  className="p-1 text-gray-400 md:hover:text-white transition-colors rounded-full md:hover:bg-white/10 active:bg-white/15 cursor-pointer touch-manipulation"
+                  title="Close"
+                >
+                  <XMarkIcon className="w-5 h-5 pointer-events-none" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Bar Row directly inside unified top header */}
+        <div className="bg-black/40 border-t border-white/10 px-4 sm:px-8 py-2.5">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            <span className="text-xs sm:text-sm font-medium text-white/85">
+              {totalAnsweredCount} of {totalQuestionsCount} completed
             </span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-20 sm:w-28 h-1.5 bg-white/15 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#FFD3AC] transition-all duration-300 rounded-full"
+                  style={{ width: `${percentComplete}%` }}
+                />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-[#FFD3AC]">
+                {percentComplete}%
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -1460,18 +1484,18 @@ export default function UserQuestionnaireModal({
                                   key={optIdx}
                                   type="button"
                                   onClick={() => handleSelectDosha(originalIdx, optIdx)}
-                                  className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
+                                  className={`p-3 sm:p-3.5 rounded-xl text-left border text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 select-none touch-manipulation active:scale-[0.99] transition-colors ${
                                     isSelected
                                       ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
-                                      : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
+                                      : "border-white/10 bg-white/5 text-white/80 active:bg-white/10 md:hover:bg-white/10 md:hover:border-white/20 md:hover:text-white"
                                   }`}
                                 >
-                                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 pointer-events-none ${
                                     isSelected ? "border-[#FFD3AC] bg-[#FFD3AC]" : "border-white/30"
                                   }`}>
                                     {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]" />}
                                   </div>
-                                  <span className="flex-1">{optText}</span>
+                                  <span className="flex-1 pointer-events-none">{optText}</span>
                                 </button>
                               );
                             })}
@@ -1536,13 +1560,13 @@ export default function UserQuestionnaireModal({
                     key={hf.key}
                     type="button"
                     onClick={() => handleSelectSpecialty(hf.key)}
-                    className={`p-4 rounded-2xl text-left border transition cursor-pointer flex flex-col justify-between space-y-2 ${
+                    className={`p-4 rounded-2xl text-left border cursor-pointer flex flex-col justify-between space-y-2 select-none touch-manipulation active:scale-[0.99] transition-colors ${
                       isSelected
                         ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-white shadow-sm"
-                        : "border-white/10 bg-white/5 text-white/90 hover:bg-white/10 hover:border-white/20"
+                        : "border-white/10 bg-white/5 text-white/90 active:bg-white/10 md:hover:bg-white/10 md:hover:border-white/20"
                     }`}
                   >
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center justify-between w-full pointer-events-none">
                       <span className={`font-bold text-base ${isSelected ? "text-[#FFD3AC]" : "text-white"}`}>{hf.label}</span>
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-xs ${
                         isSelected ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]" : "border-white/30 text-transparent"
@@ -1550,7 +1574,7 @@ export default function UserQuestionnaireModal({
                         ✓
                       </div>
                     </div>
-                    <p className={`text-xs leading-snug ${isSelected ? "text-white/80" : "text-gray-300"}`}>{hf.desc}</p>
+                    <p className={`text-xs leading-snug pointer-events-none ${isSelected ? "text-white/80" : "text-gray-300"}`}>{hf.desc}</p>
                   </button>
                 );
               })}
@@ -1586,14 +1610,14 @@ export default function UserQuestionnaireModal({
                     key={condition}
                     type="button"
                     onClick={() => handleToggleCondition(condition)}
-                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13.5px] sm:text-sm font-medium transition cursor-pointer text-left border ${
+                    className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13.5px] sm:text-sm font-medium cursor-pointer text-left border select-none touch-manipulation active:scale-[0.98] transition-colors ${
                       isSelected
                         ? "bg-[#FFD3AC]/25 border-[#FFD3AC] text-[#FFD3AC] font-semibold"
-                        : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
+                        : "bg-white/5 border-white/10 text-white/80 active:bg-white/10 md:hover:bg-white/10 md:hover:text-white"
                     }`}
                   >
                     <span
-                      className={`w-4 h-4 rounded-full flex items-center justify-center border text-[10px] ${
+                      className={`w-4 h-4 rounded-full flex items-center justify-center border text-[10px] pointer-events-none ${
                         isSelected
                           ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]"
                           : "border-white/30 text-transparent bg-transparent"
@@ -1601,7 +1625,7 @@ export default function UserQuestionnaireModal({
                     >
                       ✓
                     </span>
-                    <span>{condition}</span>
+                    <span className="pointer-events-none">{condition}</span>
                   </button>
                 );
               })}
@@ -1609,14 +1633,14 @@ export default function UserQuestionnaireModal({
               <button
                 type="button"
                 onClick={handleToggleNoneConditions}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13.5px] sm:text-sm font-semibold transition cursor-pointer border ${
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13.5px] sm:text-sm font-semibold cursor-pointer border select-none touch-manipulation active:scale-[0.98] transition-colors ${
                   noneConditions
                     ? "bg-[#FFD3AC]/25 border-[#FFD3AC] text-[#FFD3AC]"
-                    : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:text-white"
+                    : "bg-white/5 border-white/10 text-white/80 active:bg-white/10 md:hover:bg-white/10 md:hover:text-white"
                 }`}
               >
                 <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center border text-[10px] ${
+                  className={`w-4 h-4 rounded-full flex items-center justify-center border text-[10px] pointer-events-none ${
                     noneConditions
                       ? "bg-[#FFD3AC] border-[#FFD3AC] text-[#1E1E1E]"
                       : "border-white/30 text-transparent bg-transparent"
@@ -1624,7 +1648,7 @@ export default function UserQuestionnaireModal({
                 >
                   ✓
                 </span>
-                <span>None of the above</span>
+                <span className="pointer-events-none">None of the above</span>
               </button>
             </div>
           </div>
@@ -1682,18 +1706,18 @@ export default function UserQuestionnaireModal({
                           key={optText}
                           type="button"
                           onClick={() => handleSelectExtendedSingle(q.id, optText)}
-                          className={`p-3 sm:p-3.5 rounded-xl text-left border transition text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 ${
+                          className={`p-3 sm:p-3.5 rounded-xl text-left border text-sm sm:text-sm font-medium cursor-pointer flex items-center gap-3 select-none touch-manipulation active:scale-[0.99] transition-colors ${
                             isSelected
                               ? "border-[#FFD3AC] bg-[#FFD3AC]/20 text-[#FFD3AC] font-semibold shadow-xs"
-                              : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white"
+                              : "border-white/10 bg-white/5 text-white/80 active:bg-white/10 md:hover:bg-white/10 md:hover:border-white/20 md:hover:text-white"
                           }`}
                         >
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 pointer-events-none ${
                             isSelected ? "border-[#FFD3AC] bg-[#FFD3AC]" : "border-white/30"
                           }`}>
                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#1E1E1E]" />}
                           </div>
-                          <span className="flex-1">{optText}</span>
+                          <span className="flex-1 pointer-events-none">{optText}</span>
                         </button>
                       );
                     })}
@@ -1706,13 +1730,16 @@ export default function UserQuestionnaireModal({
       </main>
 
       {/* Sticky Bottom Action Bar matching Mobile App */}
-      <div className="sticky bottom-0 z-30 bg-[#1B1A18]/95 backdrop-blur-md border-t border-white/10 px-4 sm:px-8 py-3.5 shadow-2xl">
+      <div
+        className="sticky bottom-0 z-30 bg-[#1B1A18] border-t border-white/10 px-4 sm:px-8 py-3.5 shadow-2xl safe-area-pb"
+        style={{ transform: "translate3d(0, 0, 0)" }}
+      >
         <div className="max-w-4xl mx-auto space-y-2 text-center">
           <button
             type="button"
             onClick={handleSaveAndContinue}
             disabled={isSaving}
-            className="w-full py-4 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase shadow-md transition cursor-pointer disabled:opacity-50"
+            className="w-full py-4 bg-[#FFD3AC] md:hover:bg-[#ffe0c4] active:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase shadow-md transition cursor-pointer disabled:opacity-50 touch-manipulation active:scale-[0.99]"
           >
             {isSaving
               ? "Saving..."
@@ -1722,7 +1749,7 @@ export default function UserQuestionnaireModal({
               ? (hasInitialSpecialty || selectedHealthField ? "SAVE & VIEW RESULTS" : "SELECT SPECIALTY & CONTINUE")
               : (hasInitialSpecialty || selectedHealthField ? "SAVE & CONTINUE" : "SELECT SPECIALTY & CONTINUE")}
           </button>
-          <p className="text-[11px] sm:text-xs text-white/60">
+          <p className="text-[11px] sm:text-xs text-white/60 pointer-events-none">
             There&apos;s no wrong answer — just choose whatever feels most true for you.
           </p>
         </div>
