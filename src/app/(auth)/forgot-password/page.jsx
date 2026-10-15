@@ -148,7 +148,7 @@ export default function ForgotPasswordPage() {
             Remember your password?{" "}
             <Link
               href="/login"
-              className="text-[#FFD3AC] font-semibold hover:underline ml-1"
+              className="text-[#FFD3AC] font-semibold md:hover:underline ml-1 touch-manipulation active:opacity-70"
             >
               Sign in
             </Link>

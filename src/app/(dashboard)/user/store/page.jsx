@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
@@ -35,12 +35,17 @@ import ProductCard from '@/components/user/store/ProductCard';
 import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
 import FilterModal from '@/components/user/store/FilterModal';
 
+// In-memory cache so switching tabs to/from Shop renders immediately with zero loader delay
+let cachedStoreProducts = null;
+let cachedStoreCategories = null;
+
 export default function UserStorePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !cachedStoreProducts || cachedStoreProducts.length === 0);
   const [search, setSearch] = useState('');
-  const [products, setProducts] = useState([]);
+  const deferredSearch = useDeferredValue(search);
+  const [products, setProducts] = useState(() => cachedStoreProducts || []);
   const [cartCount, setCartCount] = useState(0);
 
   // Product Details Modal
@@ -129,6 +134,7 @@ export default function UserStorePage() {
           .filter((c) => c.name.length > 0);
 
         setCategories(firestoreCats);
+        cachedStoreCategories = firestoreCats;
       },
       (error) => {
         if (error?.code !== 'permission-denied') {
@@ -140,9 +146,17 @@ export default function UserStorePage() {
     return () => unsubCategories();
   }, []);
 
-  // Fetch Products
+  // Fetch Products with safety timeout to prevent hanging loader on Safari
   useEffect(() => {
-    fetchProducts();
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
+    fetchProducts().finally(() => {
+      clearTimeout(safetyTimer);
+    });
+
+    return () => clearTimeout(safetyTimer);
   }, []);
 
   async function fetchProducts() {
@@ -288,6 +302,7 @@ export default function UserStorePage() {
         }
       }
 
+      cachedStoreProducts = items;
       setProducts(items);
       setLoading(false);
     } catch (error) {
@@ -343,9 +358,9 @@ export default function UserStorePage() {
     return categories.find(c => c.id === expandedCategoryId) || null;
   }, [categories, expandedCategoryId]);
 
-  // Filter & Sort
+  // Filter & Sort using deferredSearch to keep typing fluid on Safari
   const filteredAndSortedProducts = useMemo(() => {
-    const searchLower = search.toLowerCase().trim();
+    const searchLower = (deferredSearch || '').toLowerCase().trim();
 
     const filtered = products.filter(p => {
       if (p.isActive === false) return false;
@@ -384,7 +399,7 @@ export default function UserStorePage() {
       // 'None': default catalog order
       return 0;
     });
-  }, [products, search, selectedCategory, sortOption]);
+  }, [products, deferredSearch, selectedCategory, sortOption]);
 
   if (loading) {
     return (
@@ -440,7 +455,7 @@ export default function UserStorePage() {
               </div>
             </div>
 
-            {/* Search Bar - White rounded pill matching Flutter */}
+            {/* Search Bar - White rounded pill matching Flutter with 16px font to prevent Safari auto-zoom */}
             <div className="bg-white rounded-full flex items-center px-4 py-2.5 sm:py-3 shadow-md">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 shrink-0 mr-3" />
             <input
@@ -448,7 +463,7 @@ export default function UserStorePage() {
               placeholder="Search for anything..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-transparent text-gray-900 placeholder:text-gray-400 text-sm focus:outline-none"
+              className="w-full bg-transparent text-gray-900 placeholder:text-gray-400 text-base focus:outline-none"
             />
           </div>
 

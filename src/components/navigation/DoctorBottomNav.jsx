@@ -107,19 +107,19 @@ export default function DoctorBottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none outline-none focus:outline-none focus:ring-0 [-webkit-tap-highlight-color:transparent]"
+              className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none touch-manipulation active:scale-[0.96] outline-none focus:outline-none focus:ring-0 [-webkit-tap-highlight-color:transparent]"
             >
               <div
-                className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 ${
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 pointer-events-none ${
                   isActive
                     ? "bg-[#FFD3AC] text-[#1E1E1E]"
-                    : "text-gray-400 group-hover:text-white"
+                    : "text-gray-400 md:group-hover:text-white"
                 }`}
               >
                 {isActive ? item.iconActive : item.iconInactive}
               </div>
               <span
-                className={`text-[10px] font-sans font-semibold tracking-wider mt-0.5 transition-colors ${
+                className={`text-[10px] font-sans font-semibold tracking-wider mt-0.5 transition-colors pointer-events-none ${
                   isActive ? "text-[#FFD3AC]" : "text-gray-400"
                 }`}
               >

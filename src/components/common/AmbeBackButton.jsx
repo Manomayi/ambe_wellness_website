@@ -30,9 +30,10 @@ export default function AmbeBackButton({
       style={{ width: `${size}px`, height: `${size}px` }}
       className={`
         flex items-center justify-center rounded-full
-        bg-[#2D2D30]/90 hover:bg-[#3D3D42] text-[#FFD3AC]
+        bg-[#2D2D30]/90 md:hover:bg-[#3D3D42] text-[#FFD3AC]
         border border-white/10 transition-colors shadow-sm
         cursor-pointer focus:outline-none select-none
+        touch-manipulation active:scale-[0.95]
         ${className}
       `}
     >
@@ -41,6 +42,7 @@ export default function AmbeBackButton({
         style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
         fill="currentColor"
         viewBox="0 0 24 24"
+        className="pointer-events-none"
       >
         <path d="M16 19V5l-11 7z" />
       </svg>
@@ -72,9 +74,10 @@ export function AmbeCloseButton({
       style={{ width: `${size}px`, height: `${size}px` }}
       className={`
         flex items-center justify-center rounded-full
-        bg-[#2D2D30]/90 hover:bg-[#3D3D42] text-[#FFD3AC]
+        bg-[#2D2D30]/90 md:hover:bg-[#3D3D42] text-[#FFD3AC]
         border border-white/10 transition-colors shadow-sm
         cursor-pointer focus:outline-none select-none
+        touch-manipulation active:scale-[0.95]
         ${className}
       `}
     >
@@ -83,6 +86,7 @@ export function AmbeCloseButton({
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
+        className="pointer-events-none"
       >
         <path
           strokeLinecap="round"

@@ -84,6 +84,15 @@ input[type="submit"] {
     border-color: color-mix(in srgb, var(--ambe-charcoal) 20%, transparent);
   }
 
+  /* CRITICAL FOR IOS SAFARI: 16px minimum font size prevents unwanted page auto-zoom & typing jump */
+  @media screen and (max-width: 768px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
   input:focus,
   textarea:focus,
   select:focus {

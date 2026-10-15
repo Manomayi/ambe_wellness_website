@@ -31,16 +31,20 @@ import CancelConsultationModal from "@/components/doctor/CancelConsultationModal
 import RescheduleConsultationModal from "@/components/doctor/RescheduleConsultationModal";
 import AccountVerificationRequired from "@/components/doctor/AccountVerificationRequired";
 
+// In-memory cache for instant tab loading on Safari
+let cachedDoctorRawAppointments = null;
+let cachedDoctorReportsToFinish = null;
+
 export default function DoctorConsultationsPage() {
   const router = useRouter();
   const { user, profile, isVerifiedDoctor, loading: authLoading } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pendingAppointments, setPendingAppointments] = useState([]);
   const [currentAppointments, setCurrentAppointments] = useState([]);
-  const [rawAppointments, setRawAppointments] = useState([]);
+  const [rawAppointments, setRawAppointments] = useState(cachedDoctorRawAppointments || []);
   const [tick, setTick] = useState(0);
-  const [reportsToFinish, setReportsToFinish] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reportsToFinish, setReportsToFinish] = useState(cachedDoctorReportsToFinish || []);
+  const [loading, setLoading] = useState(!cachedDoctorRawAppointments && !cachedDoctorReportsToFinish);
   const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
   const [cancelAppointment, setCancelAppointment] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -130,7 +134,14 @@ export default function DoctorConsultationsPage() {
   };
 
   useEffect(() => {
-    if (!user) return;
+    // Safety timer to prevent perpetual loading spinner in Safari
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
+    if (!user) {
+      return () => clearTimeout(safetyTimer);
+    }
 
     // Listen to upcoming appointments without restrictive where query
     const upcomingCol = collection(db, 'doctors', user.uid, 'appointments_upcoming');
@@ -157,11 +168,15 @@ export default function DoctorConsultationsPage() {
           return timeA - timeB;
         });
 
+        cachedDoctorRawAppointments = appointments;
         setRawAppointments(appointments);
+        setLoading(false);
       },
       (error) => {
-        if (error?.code === 'permission-denied') return;
-        console.error('Error listening to upcoming appointments:', error);
+        if (error?.code !== 'permission-denied') {
+          console.error('Error listening to upcoming appointments:', error);
+        }
+        setLoading(false);
       }
     );
 
@@ -186,17 +201,22 @@ export default function DoctorConsultationsPage() {
           }
           activeReports.push({ id: repId, ...repData });
         });
+        cachedDoctorReportsToFinish = activeReports;
         setReportsToFinish(activeReports);
         setLoading(false);
+        clearTimeout(safetyTimer);
       },
       (error) => {
-        if (error?.code === 'permission-denied') return;
-        console.error('Error listening to reports to finish:', error);
+        if (error?.code !== 'permission-denied') {
+          console.error('Error listening to reports to finish:', error);
+        }
         setLoading(false);
+        clearTimeout(safetyTimer);
       }
     );
 
     return () => {
+      clearTimeout(safetyTimer);
       unsubscribeUpcoming();
       unsubscribeReports();
     };

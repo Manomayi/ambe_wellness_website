@@ -79,7 +79,7 @@ export default function BeginWellnessProfilePage() {
           <button
             type="button"
             onClick={() => router.push("/user/menu/questionnaire")}
-            className="w-full py-4 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase shadow-xl transition cursor-pointer"
+            className="w-full py-4 bg-[#FFD3AC] md:hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full font-bold text-sm tracking-wider uppercase shadow-xl transition cursor-pointer touch-manipulation active:scale-[0.98] select-none"
           >
             BEGIN MY WELLNESS PROFILE
           </button>

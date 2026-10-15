@@ -427,7 +427,7 @@ export default function DoctorSchedulePage() {
                     role="switch"
                     aria-checked={isAvailableNow}
                     onClick={handleToggleInstantAvailability}
-                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none touch-manipulation ${
                       isAvailableNow ? 'bg-[#00E676]' : 'bg-white/20'
                     }`}
                   >
@@ -470,8 +470,8 @@ export default function DoctorSchedulePage() {
             <label className="text-xs font-semibold text-white/60 tracking-wider uppercase block">
               TIMEZONE
             </label>
-            <div className="relative bg-white rounded-2xl px-4 py-3.5 border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer hover:border-gray-300 transition">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="relative bg-white rounded-2xl px-4 py-3.5 border border-gray-200 flex items-center justify-between shadow-sm cursor-pointer md:hover:border-gray-300 transition touch-manipulation">
+              <div className="flex items-center gap-3 min-w-0 pointer-events-none">
                 <ClockIcon className="w-6 h-6 text-[#FF9E54] shrink-0" />
                 <div className="min-w-0">
                   <div className="text-base font-bold text-black font-sans leading-tight truncate">
@@ -482,7 +482,7 @@ export default function DoctorSchedulePage() {
                   </div>
                 </div>
               </div>
-              <ChevronDownIcon className="w-5 h-5 text-[#FF9E54] shrink-0 ml-2" />
+              <ChevronDownIcon className="w-5 h-5 text-[#FF9E54] shrink-0 ml-2 pointer-events-none" />
               <select
                 value={timezone}
                 onChange={handleTimezoneChange}
@@ -510,10 +510,10 @@ export default function DoctorSchedulePage() {
                     key={day}
                     type="button"
                     onClick={() => handleDayToggle(day)}
-                    className={`capitalize px-5 py-2.5 rounded-full text-sm transition-all cursor-pointer ${
+                    className={`capitalize px-5 py-2.5 rounded-full text-sm transition-all cursor-pointer touch-manipulation active:scale-[0.96] ${
                       isSelected
                         ? 'bg-[#FFD3AC] text-[#1E1E1E] font-bold border-2 border-[#FFD3AC] shadow-md shadow-[#FFD3AC]/30'
-                        : 'bg-white text-black font-medium border border-gray-300 hover:bg-gray-50'
+                        : 'bg-white text-black font-medium border border-gray-300 md:hover:bg-gray-50'
                     }`}
                   >
                     {day}
@@ -544,7 +544,7 @@ export default function DoctorSchedulePage() {
                 role="switch"
                 aria-checked={useSameHours}
                 onClick={handleToggleSameHours}
-                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none touch-manipulation ${
                   useSameHours ? 'bg-[#FFD3AC]' : 'bg-white/20'
                 }`}
               >
@@ -648,7 +648,7 @@ export default function DoctorSchedulePage() {
               type="button"
               onClick={handleSave}
               disabled={loading}
-              className="w-full bg-[#FFD3AC] hover:bg-[#ffe2c8] active:scale-[0.99] text-[#1E1E1E] font-bold py-4 rounded-full transition-all uppercase tracking-wider shadow-xl text-base sm:text-lg cursor-pointer flex items-center justify-center disabled:opacity-60"
+              className="w-full bg-[#FFD3AC] md:hover:bg-[#ffe2c8] active:scale-[0.99] text-[#1E1E1E] font-bold py-4 rounded-full transition-all uppercase tracking-wider shadow-xl text-base sm:text-lg cursor-pointer flex items-center justify-center disabled:opacity-60 touch-manipulation select-none"
             >
               {saved ? "SAVED!" : loading ? "SAVING..." : "SET SCHEDULE & CONTINUE"}
             </button>

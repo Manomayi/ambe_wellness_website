@@ -832,9 +832,9 @@ export default function SignUpPage() {
           {/* Name */}
           <div
             onClick={() => handleJumpToStep(2)}
-            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer md:hover:bg-gray-50 transition shadow-sm touch-manipulation active:scale-[0.98]"
           >
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0 pointer-events-none">
               <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
@@ -844,7 +844,7 @@ export default function SignUpPage() {
                   : "Name not set"}
               </span>
             </div>
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
           </div>
@@ -852,9 +852,9 @@ export default function SignUpPage() {
           {/* Date of Birth */}
           <div
             onClick={() => handleJumpToStep(2)}
-            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer md:hover:bg-gray-50 transition shadow-sm touch-manipulation active:scale-[0.98]"
           >
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0 pointer-events-none">
               <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
@@ -865,7 +865,7 @@ export default function SignUpPage() {
                 {getFormattedDOB()}
               </span>
             </div>
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
           </div>
@@ -873,9 +873,9 @@ export default function SignUpPage() {
           {/* Email */}
           <div
             onClick={() => handleJumpToStep(2)}
-            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer md:hover:bg-gray-50 transition shadow-sm touch-manipulation active:scale-[0.98]"
           >
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0 pointer-events-none">
               <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
               </svg>
@@ -883,7 +883,7 @@ export default function SignUpPage() {
                 {formData.email || "Email not set"}
               </span>
             </div>
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
           </div>
@@ -891,9 +891,9 @@ export default function SignUpPage() {
           {/* Phone */}
           <div
             onClick={() => handleJumpToStep(3)}
-            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition shadow-sm"
+            className="w-full bg-white rounded-full px-5 py-4 flex items-center justify-between cursor-pointer md:hover:bg-gray-50 transition shadow-sm touch-manipulation active:scale-[0.98]"
           >
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5 min-w-0 pointer-events-none">
               <svg className="w-5 h-5 text-[#FFD3AC] shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
               </svg>
@@ -901,7 +901,7 @@ export default function SignUpPage() {
                 {formData.phone || "Phone not set"}
               </span>
             </div>
-            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-400 shrink-0 ml-2 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
             </svg>
           </div>
@@ -909,7 +909,7 @@ export default function SignUpPage() {
 
         {/* Agreements / Terms Checkbox */}
         <div className="pt-3">
-          <label className="flex items-start gap-3 cursor-pointer group select-none">
+          <label className="flex items-start gap-3 cursor-pointer group select-none touch-manipulation">
             <input
               type="checkbox"
               checked={termsAccepted}
@@ -917,7 +917,7 @@ export default function SignUpPage() {
                 setTermsAccepted(e.target.checked);
                 if (errors.terms) setErrors(prev => ({ ...prev, terms: '' }));
               }}
-              className="mt-1 w-5 h-5 rounded border-2 border-white/60 checked:bg-[#FFD3AC] checked:border-[#FFD3AC] text-[#1E1E1E] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#FFD3AC]"
+              className="mt-1 w-5 h-5 rounded border-2 border-white/60 checked:bg-[#FFD3AC] checked:border-[#FFD3AC] text-[#1E1E1E] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#FFD3AC] touch-manipulation"
             />
             <span className="text-white text-sm font-sans leading-relaxed">
               {isDoctor ? "I accept & sign the " : "I accept the "}
@@ -971,24 +971,25 @@ export default function SignUpPage() {
                 className={`
                   h-36 sm:h-40 rounded-[20px] p-3 sm:p-4 flex flex-col items-center justify-center
                   cursor-pointer transition-all duration-200 select-none shadow-md
+                  touch-manipulation active:scale-[0.98]
                   ${
                     formData.userType === "user"
                       ? "bg-[#FFD3AC] text-black ring-2 ring-[#FFD3AC]"
-                      : "bg-white text-black hover:bg-gray-50"
+                      : "bg-white text-black md:hover:bg-gray-50"
                   }
                 `}
               >
                 <div
                   className={`
-                    w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3
+                    w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 pointer-events-none
                     ${formData.userType === "user" ? "bg-black/80 text-[#FFD3AC]" : "bg-black text-white"}
                   `}
                 >
-                  <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 sm:w-7 sm:h-7 pointer-events-none" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                   </svg>
                 </div>
-                <span className="font-semibold text-sm sm:text-base font-sans tracking-tight">
+                <span className="font-semibold text-sm sm:text-base font-sans tracking-tight pointer-events-none">
                   I&apos;m a Client
                 </span>
               </div>
@@ -999,24 +1000,25 @@ export default function SignUpPage() {
                 className={`
                   h-36 sm:h-40 rounded-[20px] p-3 sm:p-4 flex flex-col items-center justify-center
                   cursor-pointer transition-all duration-200 select-none shadow-md
+                  touch-manipulation active:scale-[0.98]
                   ${
                     formData.userType === "doctor"
                       ? "bg-[#FFD3AC] text-black ring-2 ring-[#FFD3AC]"
-                      : "bg-white text-black hover:bg-gray-50"
+                      : "bg-white text-black md:hover:bg-gray-50"
                   }
                 `}
               >
                 <div
                   className={`
-                    w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3
+                    w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 pointer-events-none
                     ${formData.userType === "doctor" ? "bg-black/80 text-[#FFD3AC]" : "bg-black text-white"}
                   `}
                 >
-                  <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 sm:w-7 sm:h-7 pointer-events-none" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8-2h4v2h-4V4zm8 16H4V8h16v12zm-9-2h2v-3h3v-2h-3V9h-2v3H8v2h3z" />
                   </svg>
                 </div>
-                <span className="font-semibold text-sm sm:text-base font-sans tracking-tight">
+                <span className="font-semibold text-sm sm:text-base font-sans tracking-tight pointer-events-none">
                   I&apos;m a Practitioner
                 </span>
               </div>
@@ -1378,16 +1380,17 @@ export default function SignUpPage() {
                     onClick={() => toggleSpecialization(value)}
                     className={`
                       w-full p-3.5 px-4 text-left rounded-2xl text-[15px] transition-all duration-150 cursor-pointer border flex items-center justify-between
+                      touch-manipulation active:scale-[0.98]
                       ${
                         sel
                           ? "bg-[#FFD3AC] text-[#1E1E1E] border-[#FFD3AC] font-semibold shadow-sm"
-                          : "bg-white text-[#1E1E1E] border-gray-200 font-medium hover:bg-gray-50"
+                          : "bg-white text-[#1E1E1E] border-gray-200 font-medium md:hover:bg-gray-50"
                       }
                     `}
                   >
-                    <span>{label}</span>
+                    <span className="pointer-events-none">{label}</span>
                     <div
-                      className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ml-3 transition-colors ${
+                      className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ml-3 transition-colors pointer-events-none ${
                         sel
                           ? "bg-black text-white"
                           : "border-2 border-gray-400 bg-white"
@@ -1409,16 +1412,17 @@ export default function SignUpPage() {
                 onClick={toggleCustomSpecialization}
                 className={`
                   w-full p-3.5 px-4 text-left rounded-2xl text-[15px] transition-all duration-150 cursor-pointer border flex items-center justify-between
+                  touch-manipulation active:scale-[0.98]
                   ${
                     showCustomSpecialization
                       ? "bg-[#FFD3AC] text-[#1E1E1E] border-[#FFD3AC] font-semibold shadow-sm"
-                      : "bg-white text-[#1E1E1E] border-gray-200 font-medium hover:bg-gray-50"
+                      : "bg-white text-[#1E1E1E] border-gray-200 font-medium md:hover:bg-gray-50"
                   }
                 `}
               >
-                <span>Other (Please specify)</span>
+                <span className="pointer-events-none">Other (Please specify)</span>
                 <div
-                  className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ml-3 transition-colors ${
+                  className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ml-3 transition-colors pointer-events-none ${
                     showCustomSpecialization
                       ? "bg-black text-white"
                       : "border-2 border-gray-400 bg-white"
@@ -1520,19 +1524,20 @@ export default function SignUpPage() {
                         onClick={() => toggleProfessionalTitle(t)}
                         className={`
                           px-4 py-2 rounded-full text-xs sm:text-sm transition-all duration-150 cursor-pointer flex items-center gap-1.5 border
+                          touch-manipulation active:scale-[0.96]
                           ${
                             sel
                               ? "bg-[#FFD3AC] text-[#1E1E1E] font-bold border-[#FFD3AC] shadow-sm"
-                              : "bg-transparent border-white/30 text-white font-medium hover:border-white/60"
+                              : "bg-transparent border-white/30 text-white font-medium md:hover:border-white/60"
                           }
                         `}
                       >
                         {sel && (
-                          <svg className="w-3.5 h-3.5 text-[#1E1E1E] shrink-0" fill="none" stroke="currentColor" strokeWidth={2.8} viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 text-[#1E1E1E] shrink-0 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2.8} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
                         )}
-                        <span>{t}</span>
+                        <span className="pointer-events-none">{t}</span>
                       </button>
                     );
                   })}

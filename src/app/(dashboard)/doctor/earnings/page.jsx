@@ -32,11 +32,13 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 
+let cachedEarningsSummary = null;
+
 export default function DoctorEarningsPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState(EMPTY_SUMMARY);
+  const [loading, setLoading] = useState(() => !cachedEarningsSummary);
+  const [summary, setSummary] = useState(() => cachedEarningsSummary || EMPTY_SUMMARY);
 
   // Ledger state
   const [entries, setEntries] = useState([]);
@@ -52,8 +54,13 @@ export default function DoctorEarningsPage() {
   // 1. Auth & Realtime Doctor Summary Listener
   useEffect(() => {
     let unsubDoc = null;
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (!user) {
+        clearTimeout(safetyTimer);
         router.push('/login');
         return;
       }
@@ -64,15 +71,19 @@ export default function DoctorEarningsPage() {
       unsubDoc = onSnapshot(
         doctorRef,
         (snap) => {
+          clearTimeout(safetyTimer);
           if (snap.exists()) {
             const data = snap.data();
-            setSummary(normaliseSummary(data.earnings_summary));
+            const norm = normaliseSummary(data.earnings_summary);
+            cachedEarningsSummary = norm;
+            setSummary(norm);
           } else {
             setSummary(EMPTY_SUMMARY);
           }
           setLoading(false);
         },
         (err) => {
+          clearTimeout(safetyTimer);
           if (err?.code === 'permission-denied') return;
           console.error('Error listening to doctor summary:', err);
           setLoading(false);
@@ -81,6 +92,7 @@ export default function DoctorEarningsPage() {
     });
 
     return () => {
+      clearTimeout(safetyTimer);
       unsubAuth();
       if (unsubDoc) unsubDoc();
     };
@@ -308,10 +320,10 @@ export default function DoctorEarningsPage() {
                     <button
                       key={f.key}
                       onClick={() => handleFilterChange(f)}
-                      className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition whitespace-nowrap cursor-pointer ${
+                      className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition whitespace-nowrap cursor-pointer touch-manipulation active:scale-95 ${
                         active
                           ? 'bg-[#FFD3AC] text-[#1E1E1E] shadow-sm'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                          : 'text-white/70 md:hover:text-white md:hover:bg-white/10'
                       }`}
                     >
                       {f.label}
@@ -349,9 +361,9 @@ export default function DoctorEarningsPage() {
                   <div
                     key={entry.id}
                     onClick={() => setSelectedEntry(entry)}
-                    className="p-3.5 sm:p-5 flex items-start sm:items-center justify-between gap-3 sm:gap-4 hover:bg-white/5 transition cursor-pointer group"
+                    className="p-3.5 sm:p-5 flex items-start sm:items-center justify-between gap-3 sm:gap-4 md:hover:bg-white/5 transition cursor-pointer group touch-manipulation active:scale-[0.99]"
                   >
-                    <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
+                    <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1 pointer-events-none">
                       <div
                         className={`p-2 sm:p-2.5 rounded-full flex-shrink-0 mt-0.5 ${
                           isCredit
@@ -557,7 +569,7 @@ export default function DoctorEarningsPage() {
               <div className="pt-2">
                 <button
                   onClick={() => setSelectedEntry(null)}
-                  className="w-full py-3 bg-[#FFD3AC] hover:bg-[#FFD3AC]/90 text-[#1E1E1E] rounded-full text-sm font-bold transition cursor-pointer"
+                  className="w-full py-3 bg-[#FFD3AC] md:hover:bg-[#FFD3AC]/90 text-[#1E1E1E] rounded-full text-sm font-bold transition cursor-pointer touch-manipulation active:scale-[0.98]"
                 >
                   Close
                 </button>

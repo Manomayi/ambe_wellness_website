@@ -32,11 +32,11 @@ export default function AmbeButton({
         px-8 py-3.5 rounded-full text-[16px] font-semibold tracking-[0.03em]
         transition-all duration-200 cursor-pointer select-none
         disabled:opacity-50 disabled:cursor-not-allowed
-        active:scale-[0.98]
+        touch-manipulation active:scale-[0.98]
         ${
           isOutlined
-            ? "border-2 border-[#FFD3AC] text-[#FFD3AC] bg-transparent hover:bg-[#FFD3AC]/10"
-            : "bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe2c7] shadow-sm"
+            ? "border-2 border-[#FFD3AC] text-[#FFD3AC] bg-transparent md:hover:bg-[#FFD3AC]/10"
+            : "bg-[#FFD3AC] text-[#1E1E1E] md:hover:bg-[#ffe2c7] shadow-sm"
         }
         ${className}
       `}

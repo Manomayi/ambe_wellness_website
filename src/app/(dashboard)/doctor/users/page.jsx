@@ -36,9 +36,11 @@ export default function DoctorUserProfilesPage() {
   useEffect(() => {
     let unsubUsers = null;
     let unsubUpcoming = null;
+    const safetyTimer = setTimeout(() => setLoading(false), 2500);
 
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        clearTimeout(safetyTimer);
         router.push('/login');
         return;
       }
@@ -71,11 +73,14 @@ export default function DoctorUserProfilesPage() {
 
             setPatients(list);
             setLoading(false);
+            clearTimeout(safetyTimer);
           },
           (error) => {
-            if (error?.code === 'permission-denied') return;
-            console.error('Error listening to patients collection:', error);
+            if (error?.code !== 'permission-denied') {
+              console.error('Error listening to patients collection:', error);
+            }
             setLoading(false);
+            clearTimeout(safetyTimer);
           }
         );
 
@@ -107,6 +112,7 @@ export default function DoctorUserProfilesPage() {
     });
 
     return () => {
+      clearTimeout(safetyTimer);
       unsubAuth();
       if (unsubUsers) unsubUsers();
       if (unsubUpcoming) unsubUpcoming();
@@ -260,7 +266,7 @@ export default function DoctorUserProfilesPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search clients..."
-            className="w-full pl-11 pr-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] transition font-sans"
+            className="w-full pl-11 pr-4 py-2.5 bg-[#2D2D30] border border-white/10 rounded-full text-base sm:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#FFD3AC] transition font-sans"
           />
         </div>
 
@@ -273,10 +279,10 @@ export default function DoctorUserProfilesPage() {
                 key={filter}
                 type="button"
                 onClick={() => setSelectedFilter(filter)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition font-sans cursor-pointer ${
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition font-sans cursor-pointer touch-manipulation active:scale-95 ${
                   isSelected
                     ? 'bg-[#FFD3AC] text-[#1E1E1E] shadow-sm'
-                    : 'bg-[#2D2D30] text-gray-300 border border-white/10 hover:bg-[#3D3D42]'
+                    : 'bg-[#2D2D30] text-gray-300 border border-white/10 md:hover:bg-[#3D3D42]'
                 }`}
               >
                 {filter}
@@ -289,8 +295,8 @@ export default function DoctorUserProfilesPage() {
       {/* Patients List */}
       {filteredPatients.length === 0 ? (
         <div className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-12 text-center">
-          <UserGroupIcon className="h-14 w-14 text-gray-500 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-white font-sans">
+          <UserGroupIcon className="h-14 w-14 text-gray-500 mx-auto mb-3 pointer-events-none" />
+          <h3 className="text-lg font-semibold text-white font-sans pointer-events-none">
             {searchQuery
               ? 'No matching clients found'
               : selectedFilter === 'Upcoming'
@@ -299,7 +305,7 @@ export default function DoctorUserProfilesPage() {
               ? 'No new clients today'
               : 'No clients yet'}
           </h3>
-          <p className="text-gray-400 text-sm mt-1 font-sans max-w-md mx-auto">
+          <p className="text-gray-400 text-sm mt-1 font-sans max-w-md mx-auto pointer-events-none">
             {searchQuery
               ? 'Try adjusting your search query or clear the filter.'
               : 'When clients are matched or complete consultations with you, they will appear here.'}
@@ -320,6 +326,7 @@ export default function DoctorUserProfilesPage() {
             return (
               <button
                 key={patient.uid}
+                type="button"
                 onClick={() =>
                   router.push(
                     `/doctor/users/${patient.uid}?name=${encodeURIComponent(
@@ -327,41 +334,41 @@ export default function DoctorUserProfilesPage() {
                     )}`
                   )
                 }
-                className="w-full bg-[#1B1A18]/80 border border-white/10 hover:border-[#FFD3AC]/40 rounded-2xl p-4 sm:p-5 flex items-center justify-between text-left transition group cursor-pointer"
+                className="w-full bg-[#1B1A18]/80 border border-white/10 md:hover:border-[#FFD3AC]/40 rounded-2xl p-4 sm:p-5 flex items-center justify-between text-left transition group cursor-pointer touch-manipulation active:scale-[0.98]"
               >
-                <div className="flex items-center space-x-3.5 min-w-0">
+                <div className="flex items-center space-x-3.5 min-w-0 pointer-events-none">
                   {patient.profile_picture ? (
                     <img
                       src={patient.profile_picture}
                       alt={patient.name || 'Client'}
-                      className="h-12 w-12 rounded-full object-cover border-2 border-[#FFD3AC] shrink-0"
+                      className="h-12 w-12 rounded-full object-cover border-2 border-[#FFD3AC] shrink-0 pointer-events-none"
                     />
                   ) : (
-                    <div className="h-12 w-12 rounded-full bg-[#2D2D30] border-2 border-[#FFD3AC] flex items-center justify-center text-[#FFD3AC] font-bold text-sm shrink-0">
+                    <div className="h-12 w-12 rounded-full bg-[#2D2D30] border-2 border-[#FFD3AC] flex items-center justify-center text-[#FFD3AC] font-bold text-sm shrink-0 pointer-events-none">
                       {initials}
                     </div>
                   )}
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-base text-white truncate group-hover:text-[#FFD3AC] transition font-sans">
+                  <div className="min-w-0 pointer-events-none">
+                    <div className="flex items-center gap-2 pointer-events-none">
+                      <span className="font-semibold text-base text-white truncate md:group-hover:text-[#FFD3AC] transition font-sans pointer-events-none">
                         {patient.name || 'Unknown'}
                       </span>
                       {hasUpcoming && (
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0 font-sans">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0 font-sans pointer-events-none">
                           Upcoming
                         </span>
                       )}
                     </div>
                     {patient.email && (
-                      <p className="text-xs text-gray-400 truncate mt-0.5 font-sans">
+                      <p className="text-xs text-gray-400 truncate mt-0.5 font-sans pointer-events-none">
                         {patient.email}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <ChevronRightIcon className="h-5 w-5 text-[#FFD3AC] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
+                <ChevronRightIcon className="h-5 w-5 text-[#FFD3AC] md:group-hover:translate-x-1 transition-transform shrink-0 ml-2 pointer-events-none" />
               </button>
             );
           })}

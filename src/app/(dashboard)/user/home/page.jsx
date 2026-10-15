@@ -163,14 +163,14 @@ export default function UserHomePage() {
             {/* Notification Bell (mobile view matching Flutter) */}
             <Link
               href="/user/notifications"
-              className="md:hidden relative w-11 h-11 rounded-full bg-[#1B1A18]/80 border border-white/15 flex items-center justify-center text-[#FFD3AC] hover:bg-white/10 transition shadow-sm active:scale-95 shrink-0"
+              className="md:hidden relative w-11 h-11 rounded-full bg-[#1B1A18]/80 border border-white/15 flex items-center justify-center text-[#FFD3AC] md:hover:bg-white/10 transition shadow-sm touch-manipulation active:scale-95 shrink-0"
               aria-label="Notifications"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <svg className="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
               {unreadNotifCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm">
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm pointer-events-none">
                   {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
                 </span>
               )}
@@ -191,7 +191,7 @@ export default function UserHomePage() {
                 shadow-[0_4px_20px_rgba(255,211,172,0.12)]
                 px-5 py-4 sm:px-6 sm:py-5 rounded-[26px]
                 cursor-pointer transition-all duration-200 hover:border-[#FFD3AC] hover:shadow-[0_6px_24px_rgba(255,211,172,0.2)] active:scale-[0.99]
-                select-none group
+                touch-manipulation select-none group
               "
             >
               <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
@@ -232,7 +232,7 @@ export default function UserHomePage() {
               inline-flex items-center justify-between gap-5 sm:gap-6
               bg-[#FFD3AC] text-[#1E1E1E] px-5 py-4 sm:px-5.5 sm:py-4.5 rounded-[26px]
               cursor-pointer transition-all duration-200 hover:shadow-lg active:scale-[0.99]
-              select-none
+              touch-manipulation select-none
             "
           >
             <div>
@@ -253,7 +253,7 @@ export default function UserHomePage() {
             </div>
 
             {/* Black circle arrow */}
-            <div className="w-10 h-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center flex-shrink-0 shadow-sm pointer-events-none">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -283,15 +283,16 @@ export default function UserHomePage() {
             onClick={() => router.push("/user/store")}
             className="
               bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
-              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md active:scale-[0.99]
+              touch-manipulation
             "
           >
-            <div className="inline-block px-3.5 py-1 rounded-full bg-[#FFD3AC] text-[#1E1E1E] text-[11px] font-bold tracking-wider font-sans uppercase mb-4">
+            <div className="inline-block px-3.5 py-1 rounded-full bg-[#FFD3AC] text-[#1E1E1E] text-[11px] font-bold tracking-wider font-sans uppercase mb-4 pointer-events-none">
               RECOMMENDED
             </div>
 
             <h3
-              className="text-xl sm:text-2xl font-semibold text-[#F7F4EE] leading-snug mb-2"
+              className="text-xl sm:text-2xl font-semibold text-[#F7F4EE] leading-snug mb-2 pointer-events-none"
               style={{
                 fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               }}
@@ -299,11 +300,11 @@ export default function UserHomePage() {
               Personalized remedies, made just for you
             </h3>
 
-            <p className="text-[#B5AFA8] text-xs sm:text-[13.5px] font-sans leading-relaxed mb-4">
+            <p className="text-[#B5AFA8] text-xs sm:text-[13.5px] font-sans leading-relaxed mb-4 pointer-events-none">
               Herbal protocols and wellness products chosen for your constitution.
             </p>
 
-            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans">
+            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans pointer-events-none">
               <span>Explore the Shop</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -322,8 +323,8 @@ export default function UserHomePage() {
             }}
             className="
               bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
-              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
-              flex items-center justify-between gap-3
+              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md active:scale-[0.99]
+              touch-manipulation flex items-center justify-between gap-3
             "
           >
             <div className="flex-1">
@@ -368,11 +369,11 @@ export default function UserHomePage() {
               onClick={() => router.push("/user/menu/questionnaire?returnToHome=true&section=extended")}
               className="
                 bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
-                cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
-                flex items-center justify-between gap-3
+                cursor-pointer transition-all duration-200 md:hover:border-[#FFD3AC]/60 md:hover:shadow-md
+                flex items-center justify-between gap-3 touch-manipulation active:scale-[0.99]
               "
             >
-              <div className="flex-1">
+              <div className="flex-1 pointer-events-none">
                 <h3
                   className="text-lg sm:text-xl font-semibold text-[#F7F4EE]"
                   style={{
@@ -386,7 +387,7 @@ export default function UserHomePage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0 pointer-events-none">
                 <span className="px-2.5 py-1 rounded-full border border-[#CCA776] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
                   PENDING
                 </span>
@@ -420,17 +421,18 @@ export default function UserHomePage() {
             onClick={() => router.push("/user/courses")}
             className="
               bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
-              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+              cursor-pointer transition-all duration-200 md:hover:border-[#FFD3AC]/60 md:hover:shadow-md
+              touch-manipulation active:scale-[0.99]
             "
           >
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end mb-2 pointer-events-none">
               <span className="px-2.5 py-1 rounded-full border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
                 COMING SOON
               </span>
             </div>
 
             <h3
-              className="text-2xl sm:text-3xl font-semibold text-[#F7F4EE] mb-3"
+              className="text-2xl sm:text-3xl font-semibold text-[#F7F4EE] mb-3 pointer-events-none"
               style={{
                 fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               }}
@@ -438,7 +440,7 @@ export default function UserHomePage() {
               Yoga &amp; Meditation Classes
             </h3>
 
-            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans">
+            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans pointer-events-none">
               <span>Start your journey</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -451,17 +453,18 @@ export default function UserHomePage() {
             onClick={() => router.push("/user/membership")}
             className="
               bg-[#1B1A18]/65 border border-white/20 rounded-[22px] p-5 sm:p-6
-              cursor-pointer transition-all duration-200 hover:border-[#FFD3AC]/60 hover:shadow-md
+              cursor-pointer transition-all duration-200 md:hover:border-[#FFD3AC]/60 md:hover:shadow-md
+              touch-manipulation active:scale-[0.99]
             "
           >
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end mb-2 pointer-events-none">
               <span className="px-2.5 py-1 rounded-full border border-[#FFD3AC] text-[#FFD3AC] text-[11px] font-bold tracking-widest font-sans uppercase">
                 COMING SOON
               </span>
             </div>
 
             <h3
-              className="text-2xl sm:text-3xl font-semibold text-[#F7F4EE] mb-3"
+              className="text-2xl sm:text-3xl font-semibold text-[#F7F4EE] mb-3 pointer-events-none"
               style={{
                 fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               }}
@@ -469,7 +472,7 @@ export default function UserHomePage() {
               Membership
             </h3>
 
-            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans">
+            <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E59C5E] font-sans pointer-events-none">
               <span>Quality holistic care, for everyone</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />

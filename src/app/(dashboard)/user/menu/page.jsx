@@ -21,12 +21,12 @@ export default function UserMenuPage() {
   const { signOut } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState({
-    name: "",
-    email: "",
-    photoURL: "",
-  });
+  const [loading, setLoading] = useState(!auth.currentUser);
+  const [profile, setProfile] = useState(() => ({
+    name: auth.currentUser?.displayName || "",
+    email: auth.currentUser?.email || "",
+    photoURL: auth.currentUser?.photoURL || "",
+  }));
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {

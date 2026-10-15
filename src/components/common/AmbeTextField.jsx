@@ -47,7 +47,7 @@ const AmbeTextField = forwardRef(function AmbeTextField({
           onKeyDown={onKeyDown}
           className={`
             w-full bg-white text-[#1E1E1E] placeholder:text-gray-400
-            text-[15px] font-sans rounded-full
+            text-base sm:text-[15px] font-sans rounded-full
             py-3.5 transition-all duration-200 outline-none
             border border-transparent focus:border-[#FFD3AC] focus:ring-1 focus:ring-[#FFD3AC]
             ${leadingIcon ? "pl-12" : "pl-5"}

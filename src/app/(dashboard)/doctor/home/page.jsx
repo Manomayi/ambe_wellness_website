@@ -242,7 +242,7 @@ export default function DoctorHomePage() {
               ) : (
                 <Link
                   href="/doctor/menu/verification"
-                  className="inline-flex items-center px-3.5 py-1.5 rounded-full border border-amber-500/50 text-amber-300 text-xs font-sans font-medium tracking-wide hover:bg-amber-500/10 transition"
+                  className="inline-flex items-center px-3.5 py-1.5 rounded-full border border-amber-500/50 text-amber-300 text-xs font-sans font-medium tracking-wide md:hover:bg-amber-500/10 transition touch-manipulation active:scale-95"
                 >
                   Pending
                 </Link>
@@ -251,14 +251,14 @@ export default function DoctorHomePage() {
               {/* Notification Bell (mobile view matching Flutter) */}
               <Link
                 href="/doctor/notifications"
-                className="md:hidden relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1B1A18]/80 border border-white/15 flex items-center justify-center text-[#FFD3AC] hover:bg-white/10 transition shadow-sm active:scale-95 shrink-0"
+                className="md:hidden relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1B1A18]/80 border border-white/15 flex items-center justify-center text-[#FFD3AC] md:hover:bg-white/10 transition shadow-sm touch-manipulation active:scale-95 shrink-0"
                 aria-label="Notifications"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <svg className="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
                 {unreadNotifCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm">
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#E59C5E] text-[10px] font-bold text-[#1E1E1E] shadow-sm pointer-events-none">
                     {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
                   </span>
                 )}
@@ -311,7 +311,7 @@ export default function DoctorHomePage() {
               {!isVerifiedDoctor && (
                 <Link
                   href="/doctor/menu/verification"
-                  className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 hover:bg-[#ffe3c9] transition shadow-md group"
+                  className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 md:hover:bg-[#ffe3c9] transition shadow-md group touch-manipulation active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -322,7 +322,7 @@ export default function DoctorHomePage() {
                         Your account is currently under review
                       </p>
                     </div>
-                    <svg className="w-6 h-6 text-[#1E1E1E] group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-[#1E1E1E] group-hover:translate-x-1 transition-transform pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -333,7 +333,7 @@ export default function DoctorHomePage() {
               {!isScheduleSet && (
                 <Link
                   href="/doctor/schedule"
-                  className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 hover:bg-[#ffe3c9] transition shadow-md group"
+                  className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 md:hover:bg-[#ffe3c9] transition shadow-md group touch-manipulation active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -344,7 +344,7 @@ export default function DoctorHomePage() {
                         Set your schedule to start accepting consultations
                       </p>
                     </div>
-                    <svg className="w-6 h-6 text-[#1E1E1E] group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-[#1E1E1E] group-hover:translate-x-1 transition-transform pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -355,7 +355,7 @@ export default function DoctorHomePage() {
               {reportsToFinish.length > 0 && (
                 <Link
                   href="/doctor/consultations/reports"
-                  className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 hover:bg-[#ffe3c9] transition shadow-md group"
+                  className="block bg-[#FFD3AC] text-[#1E1E1E] rounded-[22px] p-5 md:hover:bg-[#ffe3c9] transition shadow-md group touch-manipulation active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -366,7 +366,7 @@ export default function DoctorHomePage() {
                         You have {reportsToFinish.length} {reportsToFinish.length > 1 ? 'reports' : 'report'} to finish
                       </p>
                     </div>
-                    <svg className="w-6 h-6 text-[#1E1E1E] group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-[#1E1E1E] group-hover:translate-x-1 transition-transform pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>

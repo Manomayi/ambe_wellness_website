@@ -16,21 +16,26 @@ import UserMenuItem, { UserMenuSection } from '@/components/common/UserMenuItem'
 import AmbeButton from '@/components/common/AmbeButton';
 import { useAuth } from '@/contexts/AuthContext';
 
+let cachedDoctorProfile = null;
+
 export default function DoctorMenuPage() {
   const router = useRouter();
   const { signOut } = useAuth();
   const fileInputRef = useRef(null);
 
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    photoURL: null,
-  });
+  const [loading, setLoading] = useState(!cachedDoctorProfile && !auth.currentUser);
+  const [profile, setProfile] = useState(() => cachedDoctorProfile || ({
+    name: auth.currentUser?.displayName ? `Dr. ${auth.currentUser.displayName}` : 'Practitioner',
+    email: auth.currentUser?.email || '',
+    photoURL: auth.currentUser?.photoURL || null,
+  }));
 
   useEffect(() => {
+    const safetyTimer = setTimeout(() => setLoading(false), 2500);
+
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        clearTimeout(safetyTimer);
         router.push('/login');
       } else {
         let photo = user.photoURL || null;
@@ -49,15 +54,21 @@ export default function DoctorMenuPage() {
           console.error('Error fetching doctor doc:', e);
         }
 
-        setProfile({
+        const profData = {
           name: name || user.displayName || 'Practitioner',
           email: user.email || '',
           photoURL: photo || null,
-        });
+        };
+        cachedDoctorProfile = profData;
+        setProfile(profData);
         setLoading(false);
+        clearTimeout(safetyTimer);
       }
     });
-    return () => unsub();
+    return () => {
+      clearTimeout(safetyTimer);
+      unsub();
+    };
   }, [router]);
 
   const handlePhotoClick = () => fileInputRef.current?.click();

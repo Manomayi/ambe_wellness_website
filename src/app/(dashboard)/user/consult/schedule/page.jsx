@@ -1528,10 +1528,10 @@ function ScheduleConsultationContent() {
                   type="button"
                   onClick={handlePrevMonth}
                   disabled={!canGoPrevMonth()}
-                  className="p-1.5 rounded-full hover:bg-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed transition cursor-pointer"
+                  className="p-1.5 rounded-full md:hover:bg-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed transition cursor-pointer touch-manipulation active:scale-95"
                   aria-label="Previous Month"
                 >
-                  <ChevronLeftIcon className="w-5 h-5 text-white" />
+                  <ChevronLeftIcon className="w-5 h-5 text-white pointer-events-none" />
                 </button>
                 <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
                   {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -1540,10 +1540,10 @@ function ScheduleConsultationContent() {
                   type="button"
                   onClick={handleNextMonth}
                   disabled={!canGoNextMonth()}
-                  className="p-1.5 rounded-full hover:bg-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed transition cursor-pointer"
+                  className="p-1.5 rounded-full md:hover:bg-white/10 text-white disabled:opacity-20 disabled:cursor-not-allowed transition cursor-pointer touch-manipulation active:scale-95"
                   aria-label="Next Month"
                 >
-                  <ChevronRightIcon className="w-5 h-5 text-white" />
+                  <ChevronRightIcon className="w-5 h-5 text-white pointer-events-none" />
                 </button>
               </div>
 
@@ -1568,19 +1568,19 @@ function ScheduleConsultationContent() {
                         type="button"
                         onClick={() => isAvailable && handleDateSelect(date)}
                         disabled={!isAvailable}
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex flex-col items-center justify-center transition relative ${
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex flex-col items-center justify-center transition relative touch-manipulation active:scale-[0.92] ${
                           isSelected
                             ? 'bg-[#FFD3AC] text-[#1E1E1E] font-bold shadow-[0_0_12px_rgba(255,211,172,0.45)]'
                             : isToday
-                            ? 'border border-[#FFD3AC] text-[#FFD3AC] font-semibold hover:bg-white/5'
+                            ? 'border border-[#FFD3AC] text-[#FFD3AC] font-semibold md:hover:bg-white/5'
                             : isAvailable
-                            ? 'text-white font-medium hover:bg-white/10 cursor-pointer'
+                            ? 'text-white font-medium md:hover:bg-white/10 cursor-pointer'
                             : 'text-white/20 cursor-not-allowed'
                         }`}
                       >
-                        <span className="text-xs sm:text-sm">{date.getDate()}</span>
+                        <span className="text-xs sm:text-sm pointer-events-none">{date.getDate()}</span>
                         {isAvailable && !isSelected && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#FFD3AC] absolute bottom-1" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FFD3AC] absolute bottom-1 pointer-events-none" />
                         )}
                       </button>
                     </div>
@@ -1619,14 +1619,14 @@ function ScheduleConsultationContent() {
                           key="instant"
                           type="button"
                           onClick={() => setSelectedSlot(slot)}
-                          className={`h-12 rounded-2xl flex items-center justify-center gap-1.5 transition font-semibold text-xs border-2 cursor-pointer ${
+                          className={`h-12 rounded-2xl flex items-center justify-center gap-1.5 transition font-semibold text-xs border-2 cursor-pointer touch-manipulation active:scale-[0.96] ${
                             isSelected
                               ? 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]'
-                              : 'bg-[#2D2D30] border-emerald-500 text-white hover:bg-emerald-500/20'
+                              : 'bg-[#2D2D30] border-emerald-500 text-white md:hover:bg-emerald-500/20'
                           }`}
                         >
-                          <BoltIcon className="w-4 h-4 text-white" />
-                          <span>Available Now</span>
+                          <BoltIcon className="w-4 h-4 text-white pointer-events-none" />
+                          <span className="pointer-events-none">Available Now</span>
                         </button>
                       );
                     }
@@ -1636,15 +1636,15 @@ function ScheduleConsultationContent() {
                         key={index}
                         type="button"
                         onClick={() => setSelectedSlot(slot)}
-                        className={`h-12 rounded-2xl flex flex-col items-center justify-center transition border cursor-pointer ${
+                        className={`h-12 rounded-2xl flex flex-col items-center justify-center transition border cursor-pointer touch-manipulation active:scale-[0.96] ${
                           isSelected
                             ? 'bg-[#FFD3AC] border-2 border-[#FFD3AC] text-[#1E1E1E] font-bold shadow-[0_0_14px_rgba(255,211,172,0.45)]'
-                            : 'bg-[#2D2D30]/65 border-white/10 hover:border-white/30 text-white font-semibold'
+                            : 'bg-[#2D2D30]/65 border-white/10 md:hover:border-white/30 text-white font-semibold'
                         }`}
                       >
-                        <span className="text-xs sm:text-sm font-semibold">{slot.userDisplay}</span>
+                        <span className="text-xs sm:text-sm font-semibold pointer-events-none">{slot.userDisplay}</span>
                         {doctorTimezone && userTimezone && doctorTimezone !== userTimezone && (
-                          <span className={`text-[10px] ${isSelected ? 'text-[#1E1E1E]/75' : 'text-white/40'}`}>
+                          <span className={`text-[10px] pointer-events-none ${isSelected ? 'text-[#1E1E1E]/75' : 'text-white/40'}`}>
                             ({slot.doctorDisplay})
                           </span>
                         )}
@@ -1665,7 +1665,7 @@ function ScheduleConsultationContent() {
                 type="button"
                 disabled={!selectedSlot || scheduling}
                 onClick={handleProceedFromSchedule}
-                className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm tracking-wider uppercase transition shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-[#FFD3AC] md:hover:bg-[#ffe0c4] text-[#1E1E1E] py-4 rounded-full font-bold text-sm tracking-wider uppercase transition shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer touch-manipulation active:scale-[0.98] select-none"
               >
                 {scheduling ? (
                   <>

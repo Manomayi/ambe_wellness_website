@@ -152,7 +152,7 @@ export default function LoginPage() {
           <div className="text-right pt-1">
             <Link
               href="/forgot-password"
-              className="text-sm font-sans text-[#FFD3AC] hover:underline transition-opacity"
+              className="text-sm font-sans text-[#FFD3AC] md:hover:underline transition-opacity touch-manipulation active:opacity-70"
             >
               Forgot your password?
             </Link>
@@ -184,7 +184,7 @@ export default function LoginPage() {
           Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="text-[#FFD3AC] font-semibold hover:underline underline-offset-4 ml-1 inline-block"
+            className="text-[#FFD3AC] font-semibold md:hover:underline underline-offset-4 ml-1 inline-block touch-manipulation active:opacity-70"
           >
             Register here
           </Link>

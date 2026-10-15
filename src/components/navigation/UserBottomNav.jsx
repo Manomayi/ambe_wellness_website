@@ -106,20 +106,20 @@ export default function UserBottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none"
+              className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none touch-manipulation active:scale-[0.96] outline-none"
             >
               {/* Flutter-style circular pill indicator */}
               <div
-                className={`flex items-center justify-center w-12 h-8 rounded-full transition-all duration-200 ${
+                className={`flex items-center justify-center w-12 h-8 rounded-full transition-all duration-200 pointer-events-none ${
                   isActive
                     ? "bg-[#FFD3AC] text-[#1E1E1E]"
-                    : "text-[#9E9E9E] group-hover:text-white"
+                    : "text-[#9E9E9E] md:group-hover:text-white"
                 }`}
               >
                 {isActive ? item.iconActive : item.iconInactive}
               </div>
               <span
-                className={`text-[10px] font-sans font-semibold tracking-wider mt-0.5 transition-colors ${
+                className={`text-[10px] font-sans font-semibold tracking-wider mt-0.5 transition-colors pointer-events-none ${
                   isActive ? "text-[#FFD3AC]" : "text-[#9E9E9E]"
                 }`}
               >

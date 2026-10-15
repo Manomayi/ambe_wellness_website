@@ -74,13 +74,18 @@ const getHealthFieldLabels = (keys) => {
   return keys.map(key => getHealthFieldLabel(key));
 };
 
+// Module-level cache to make tab-switching instant (0ms delay) and prevent Safari spinner hangs
+let cachedUpcomingAppointments = null;
+let cachedPastAppointments = null;
+let cachedDoctorInfo = null;
+
 export default function UserConsultPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
-  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-  const [pastAppointments, setPastAppointments] = useState([]);
-  const [doctorInfo, setDoctorInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [upcomingAppointments, setUpcomingAppointments] = useState(cachedUpcomingAppointments || []);
+  const [pastAppointments, setPastAppointments] = useState(cachedPastAppointments || []);
+  const [doctorInfo, setDoctorInfo] = useState(cachedDoctorInfo || null);
+  const [loading, setLoading] = useState(!cachedUpcomingAppointments && !cachedPastAppointments);
   const [cancellingId, setCancellingId] = useState(null);
   const [checkingInstant, setCheckingInstant] = useState(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
@@ -301,7 +306,14 @@ export default function UserConsultPage() {
   };
 
   useEffect(() => {
-    if (!user) return;
+    // Safety timer to prevent perpetual loading spinner in Safari
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
+    if (!user) {
+      return () => clearTimeout(safetyTimer);
+    }
 
     // Listen to upcoming appointments without restrictive where filter
     // (matching Flutter app so active & in-progress appointments show immediately)
@@ -342,11 +354,14 @@ export default function UserConsultPage() {
           const timeB = b.time?.toDate ? b.time.toDate().getTime() : (b.time ? new Date(b.time).getTime() : 0);
           return timeA - timeB;
         });
+        cachedUpcomingAppointments = validUpcoming;
         setUpcomingAppointments(validUpcoming);
+        setLoading(false);
       },
       (err) => {
-        if (err?.code === 'permission-denied') return;
-        console.error('Error listening to upcoming appointments:', err);
+        if (err?.code !== 'permission-denied') {
+          console.error('Error listening to upcoming appointments:', err);
+        }
       }
     );
 
@@ -375,17 +390,23 @@ export default function UserConsultPage() {
           }
         });
 
-        setPastAppointments(Object.values(uniqueMap));
+        const dedupedPast = Object.values(uniqueMap);
+        cachedPastAppointments = dedupedPast;
+        setPastAppointments(dedupedPast);
         setLoading(false);
+        clearTimeout(safetyTimer);
       },
       (err) => {
-        if (err?.code === 'permission-denied') return;
-        console.error('Error listening to past appointments:', err);
+        if (err?.code !== 'permission-denied') {
+          console.error('Error listening to past appointments:', err);
+        }
         setLoading(false);
+        clearTimeout(safetyTimer);
       }
     );
 
     return () => {
+      clearTimeout(safetyTimer);
       unsubscribeUpcoming();
       unsubscribePast();
     };
@@ -401,7 +422,9 @@ export default function UserConsultPage() {
     try {
       const doctorDoc = await getDoc(doc(db, 'doctors', doctorUid));
       if (doctorDoc.exists()) {
-        setDoctorInfo(doctorDoc.data());
+        const docData = doctorDoc.data();
+        cachedDoctorInfo = docData;
+        setDoctorInfo(docData);
       }
     } catch (error) {
       console.error('Error fetching doctor info:', error);
@@ -802,16 +825,16 @@ export default function UserConsultPage() {
                       type="button"
                       onClick={() => setSelectedSpecialty(spec.value)}
                       disabled={matchingSpecialty}
-                      className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      className={`flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border text-left transition-all cursor-pointer touch-manipulation active:scale-[0.98] ${
                         isSelected
                           ? "bg-[#FFD3AC]/15 border-[#FFD3AC] text-[#FFD3AC] font-semibold"
-                          : "bg-white/5 border-white/10 text-white hover:border-white/20 hover:bg-white/10"
+                          : "bg-white/5 border-white/10 text-white md:hover:border-white/20 md:hover:bg-white/10"
                       }`}
                     >
-                      <span className="text-xl flex-shrink-0">{spec.icon}</span>
-                      <span className="text-sm sm:text-base flex-1">{spec.label}</span>
+                      <span className="text-xl flex-shrink-0 pointer-events-none">{spec.icon}</span>
+                      <span className="text-sm sm:text-base flex-1 pointer-events-none">{spec.label}</span>
                       <div
-                        className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${
+                        className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors pointer-events-none ${
                           isSelected
                             ? "border-[#FFD3AC] bg-[#FFD3AC] text-[#1E1E1E]"
                             : "border-white/30 bg-transparent"
@@ -837,11 +860,11 @@ export default function UserConsultPage() {
                   type="button"
                   onClick={handleConfirmSpecialty}
                   disabled={matchingSpecialty}
-                  className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 px-6 rounded-full text-sm sm:text-base font-bold transition cursor-pointer shadow-md disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2"
+                  className="w-full bg-[#FFD3AC] md:hover:bg-[#ffe0c4] text-[#1E1E1E] py-3.5 px-6 rounded-full text-sm sm:text-base font-bold transition cursor-pointer shadow-md disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2 touch-manipulation active:scale-[0.98]"
                 >
                   {matchingSpecialty ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin pointer-events-none" />
                       Matching Specialist...
                     </>
                   ) : selectedSpecialty ? (
@@ -856,7 +879,7 @@ export default function UserConsultPage() {
                     type="button"
                     onClick={() => setShowQuestionnaireModal(true)}
                     disabled={matchingSpecialty}
-                    className="text-xs sm:text-sm text-[#FFD3AC] hover:text-white underline transition cursor-pointer font-medium"
+                    className="text-xs sm:text-sm text-[#FFD3AC] md:hover:text-white underline transition cursor-pointer font-medium touch-manipulation active:opacity-70"
                   >
                     Or complete the full health questionnaire (48 questions)
                   </button>
@@ -908,10 +931,10 @@ export default function UserConsultPage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div 
                     onClick={() => setShowDoctorModal(true)}
-                    className="flex items-center gap-3.5 cursor-pointer group transition hover:opacity-90"
+                    className="flex items-center gap-3.5 cursor-pointer group transition md:hover:opacity-90 touch-manipulation active:scale-[0.98]"
                     title="View Practitioner Profile"
                   >
-                    <div className="w-14 h-14 rounded-full border-2 border-[#FFD3AC] bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center transition group-hover:scale-105">
+                    <div className="w-14 h-14 rounded-full border-2 border-[#FFD3AC] bg-neutral-800 overflow-hidden shrink-0 flex items-center justify-center transition group-hover:scale-105 pointer-events-none">
                       {doctorInfo?.profile_picture ? (
                         <img 
                           src={doctorInfo.profile_picture} 
@@ -924,7 +947,7 @@ export default function UserConsultPage() {
                         </span>
                       )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 pointer-events-none">
                       <h3 className="font-bold text-lg text-white leading-tight truncate group-hover:text-[#FFD3AC] transition flex items-center gap-1.5">
                         <span>{doctorDisplayName}</span>
                         <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FFD3AC]/15 text-[#FFD3AC] font-medium hidden sm:inline-block">
@@ -945,20 +968,20 @@ export default function UserConsultPage() {
                     <button
                       onClick={() => router.push('/user/consult/message_doctor')}
                       disabled={!canMessage}
-                      className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
+                      className={`flex-1 sm:flex-initial flex items-center justify-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer touch-manipulation active:scale-95 ${
                         canMessage 
-                          ? 'bg-white/10 text-white hover:bg-white/20 border border-white/20' 
+                          ? 'bg-white/10 text-white md:hover:bg-white/20 border border-white/20' 
                           : 'bg-white/5 text-white/40 cursor-not-allowed border border-white/10'
                       }`}
                     >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1.5 text-[#FFD3AC]" />
+                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1.5 text-[#FFD3AC] pointer-events-none" />
                       Message
                     </button>
                     <button
                       onClick={handleScheduleClick}
-                      className="flex-1 sm:flex-initial flex items-center justify-center bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-xs"
+                      className="flex-1 sm:flex-initial flex items-center justify-center bg-[#FFD3AC] md:hover:bg-[#ffe0c4] text-[#1E1E1E] px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-xs touch-manipulation active:scale-95"
                     >
-                      <CalendarIcon className="h-4 w-4 mr-1.5" />
+                      <CalendarIcon className="h-4 w-4 mr-1.5 pointer-events-none" />
                       Schedule
                     </button>
                   </div>
@@ -1015,15 +1038,15 @@ export default function UserConsultPage() {
                           {isNow ? (
                             <button
                               onClick={() => router.push(`/user/consult/appointment/${appointment.id}`)}
-                              className="flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md bg-black text-white hover:bg-neutral-800"
+                              className="flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md bg-black text-white md:hover:bg-neutral-800 touch-manipulation active:scale-95"
                             >
-                              <VideoCameraIcon className="h-4 w-4 mr-1.5" />
+                              <VideoCameraIcon className="h-4 w-4 mr-1.5 pointer-events-none" />
                               Join
                             </button>
                           ) : (
                             <button
                               onClick={() => handleRescheduleClick(appointment)}
-                              className="px-6 py-2.5 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-xs"
+                              className="px-6 py-2.5 bg-[#FFD3AC] md:hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-xs touch-manipulation active:scale-95"
                             >
                               Edit
                             </button>
@@ -1036,9 +1059,9 @@ export default function UserConsultPage() {
                           <button
                             onClick={() => setAppointmentToCancel(appointment)}
                             disabled={cancellingId === appointment.id}
-                            className="text-xs text-white/70 hover:text-white transition cursor-pointer inline-flex items-center gap-1"
+                            className="text-xs text-white/70 md:hover:text-white transition cursor-pointer inline-flex items-center gap-1 touch-manipulation active:opacity-70"
                           >
-                            <XCircleIcon className="h-3.5 w-3.5" />
+                            <XCircleIcon className="h-3.5 w-3.5 pointer-events-none" />
                             Cancel Appointment
                           </button>
                         </div>
@@ -1068,7 +1091,7 @@ export default function UserConsultPage() {
                 </h2>
                 <button
                   onClick={() => router.push('/user/consult/history')}
-                  className="text-xs font-semibold text-[#FFD3AC] hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#FFD3AC] md:hover:underline cursor-pointer touch-manipulation active:opacity-70"
                 >
                   See All
                 </button>
@@ -1079,10 +1102,10 @@ export default function UserConsultPage() {
                   return (
                     <div 
                       key={appointment.id}
-                      className="bg-[#1B1A18]/65 border border-white/15 rounded-[20px] p-4 sm:p-5 hover:border-[#FFD3AC]/50 transition cursor-pointer flex items-center justify-between"
+                      className="bg-[#1B1A18]/65 border border-white/15 rounded-[20px] p-4 sm:p-5 md:hover:border-[#FFD3AC]/50 transition cursor-pointer flex items-center justify-between touch-manipulation active:scale-[0.99]"
                       onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
                     >
-                      <div className="min-w-0 pr-3">
+                      <div className="min-w-0 pr-3 pointer-events-none">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-bold text-sm text-white truncate">
                             {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : (appointment.doctor_name ? `Dr. ${appointment.doctor_name}` : 'Assigned Practitioner')}
@@ -1096,7 +1119,7 @@ export default function UserConsultPage() {
                           {formatAppointmentTime(appointment.time)}
                         </p>
                       </div>
-                      <ChevronRightIcon className="w-5 h-5 text-white/40 shrink-0" />
+                      <ChevronRightIcon className="w-5 h-5 text-white/40 shrink-0 pointer-events-none" />
                     </div>
                   );
                 })}

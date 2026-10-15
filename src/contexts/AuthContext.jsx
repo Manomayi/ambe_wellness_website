@@ -27,7 +27,13 @@ export function AuthProvider({ children }) {
   const verificationUnsubscribeRef = useRef(null);
 
   useEffect(() => {
+    // Safety timeout: Never leave the entire app stuck on the full-screen loader indefinitely
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      clearTimeout(safetyTimer);
       if (profileUnsubscribeRef.current) {
         profileUnsubscribeRef.current();
         profileUnsubscribeRef.current = null;
@@ -38,11 +44,19 @@ export function AuthProvider({ children }) {
       }
 
       if (currentUser) {
-        // Check if user is doctor
-        const doctorDoc = await getDoc(doc(db, 'doctors', currentUser.uid)).catch(() => ({ exists: () => false }));
-        const isDoctor = doctorDoc && doctorDoc.exists && doctorDoc.exists();
-        
+        // Fast-path set user so child pages know authentication is active
         setUser(currentUser);
+
+        // Check if user is doctor (capped to avoid hanging in Safari)
+        let isDoctor = false;
+        try {
+          const doctorDoc = await Promise.race([
+            getDoc(doc(db, 'doctors', currentUser.uid)),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+          ]).catch(() => ({ exists: () => false }));
+          isDoctor = Boolean(doctorDoc && doctorDoc.exists && doctorDoc.exists());
+        } catch (_) {}
+
         setUserType(isDoctor ? 'doctor' : 'user');
         
         // Set up real-time profile listener
@@ -57,9 +71,10 @@ export function AuthProvider({ children }) {
             setLoading(false);
           },
           (error) => {
-            // Silently ignore permission-denied on logout
-            if (error?.code === 'permission-denied') return;
-            console.warn('Profile listener note:', error?.message || error);
+            // Silently ignore permission-denied on logout, but always release loading
+            if (error?.code !== 'permission-denied') {
+              console.warn('Profile listener note:', error?.message || error);
+            }
             setProfile(null);
             setLoading(false);
           }
@@ -77,9 +92,9 @@ export function AuthProvider({ children }) {
               }
             },
             (error) => {
-              // Silently ignore permission-denied on logout
-              if (error?.code === 'permission-denied') return;
-              console.warn('Verification listener note:', error?.message || error);
+              if (error?.code !== 'permission-denied') {
+                console.warn('Verification listener note:', error?.message || error);
+              }
               setVerification(null);
             }
           );
@@ -93,7 +108,19 @@ export function AuthProvider({ children }) {
       }
     });
 
+    // Safari tab visibility recovery: when switching back from another tab
+    const handleVisibilityChange = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        if (auth.currentUser && !user) {
+          setUser(auth.currentUser);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
+      clearTimeout(safetyTimer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       unsubscribeAuth();
       if (profileUnsubscribeRef.current) {
         profileUnsubscribeRef.current();

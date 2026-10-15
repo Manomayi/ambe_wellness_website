@@ -21,15 +21,17 @@ import {
 import CancelConsultationModal from "@/components/doctor/CancelConsultationModal";
 import RescheduleConsultationModal from "@/components/doctor/RescheduleConsultationModal";
 
+let cachedUpcomingSectionApts = null;
+
 export default function DoctorUpcomingConsultationsSection() {
   const router = useRouter();
   const { user } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [pendingAppointments, setPendingAppointments] = useState([]);
   const [currentAppointments, setCurrentAppointments] = useState([]);
-  const [rawAppointments, setRawAppointments] = useState([]);
+  const [rawAppointments, setRawAppointments] = useState(() => cachedUpcomingSectionApts || []);
   const [tick, setTick] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !cachedUpcomingSectionApts);
   const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
   const [cancelAppointment, setCancelAppointment] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
@@ -165,6 +167,10 @@ export default function DoctorUpcomingConsultationsSection() {
   useEffect(() => {
     if (!user) return;
 
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
     const upcomingCol = collection(
       db,
       "doctors",
@@ -175,6 +181,7 @@ export default function DoctorUpcomingConsultationsSection() {
     const unsubscribe = onSnapshot(
       upcomingCol,
       (snapshot) => {
+        clearTimeout(safetyTimer);
         const appointments = snapshot.docs.map((d) => ({
           id: d.id,
           ...d.data(),
@@ -194,17 +201,22 @@ export default function DoctorUpcomingConsultationsSection() {
           return timeA - timeB;
         });
 
+        cachedUpcomingSectionApts = appointments;
         setRawAppointments(appointments);
         setLoading(false);
       },
       (error) => {
+        clearTimeout(safetyTimer);
         if (error?.code === "permission-denied") return;
         console.error("Error listening to upcoming appointments:", error);
         setLoading(false);
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, [user]);
 
   useEffect(() => {
@@ -314,7 +326,7 @@ export default function DoctorUpcomingConsultationsSection() {
         {hasAnyAppointments && (
           <button
             onClick={() => router.push("/doctor/consultations")}
-            className="text-xs text-[#FFD3AC] hover:underline font-sans font-medium"
+            className="text-xs text-[#FFD3AC] md:hover:underline font-sans font-medium touch-manipulation active:opacity-70 cursor-pointer"
           >
             View All
           </button>
@@ -363,7 +375,7 @@ export default function DoctorUpcomingConsultationsSection() {
                           {appointment.user_name || "Client"}
                         </h4>
                         <p className="text-black/75 flex items-center mt-1 text-sm font-sans">
-                          <ClockIcon className="h-4 w-4 mr-1 text-[#1E1E1E]" />
+                          <ClockIcon className="h-4 w-4 mr-1 text-[#1E1E1E] pointer-events-none" />
                           {formatAppointmentTime(appointment.time)}
                         </p>
                       </div>
@@ -373,9 +385,9 @@ export default function DoctorUpcomingConsultationsSection() {
                             `/doctor/consultations/appointment/${appointment.id}`
                           )
                         }
-                        className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm hover:bg-black transition shadow cursor-pointer"
+                        className="flex items-center justify-center gap-2 bg-[#1E1E1E] text-[#FFD3AC] px-6 py-2.5 rounded-full font-semibold font-sans text-sm md:hover:bg-black transition shadow cursor-pointer touch-manipulation active:scale-95"
                       >
-                        <VideoCameraIcon className="h-4 w-4" />
+                        <VideoCameraIcon className="h-4 w-4 pointer-events-none" />
                         JOIN CALL
                       </button>
                     </div>
@@ -404,18 +416,18 @@ export default function DoctorUpcomingConsultationsSection() {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div
-                        className="cursor-pointer"
+                        className="cursor-pointer touch-manipulation active:opacity-75"
                         onClick={() =>
                           router.push(
                             `/doctor/consultations/appointment/${appointment.id}`
                           )
                         }
                       >
-                        <h4 className="font-semibold text-base text-white hover:text-[#FFD3AC] transition font-sans">
+                        <h4 className="font-semibold text-base text-white md:hover:text-[#FFD3AC] transition font-sans">
                           {appointment.user_name || "Client"}
                         </h4>
                         <p className="text-gray-400 flex items-center mt-1 text-xs font-sans">
-                          <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC]" />
+                          <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC] pointer-events-none" />
                           {formatAppointmentTime(appointment.time)}
                         </p>
                       </div>
@@ -426,19 +438,19 @@ export default function DoctorUpcomingConsultationsSection() {
                               `/doctor/consultations/appointment/${appointment.id}`
                             )
                           }
-                          className="px-4 py-1.5 bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe3c9] rounded-full transition cursor-pointer font-semibold text-xs"
+                          className="px-4 py-1.5 bg-[#FFD3AC] text-[#1E1E1E] md:hover:bg-[#ffe3c9] rounded-full transition cursor-pointer font-semibold text-xs touch-manipulation active:scale-95"
                         >
                           Details
                         </button>
                         <button
                           onClick={() => handleReschedule(appointment)}
-                          className="px-4 py-1.5 bg-[#2D2D30] text-white border border-white/10 hover:bg-[#3D3D42] rounded-full transition cursor-pointer text-xs"
+                          className="px-4 py-1.5 bg-[#2D2D30] text-white border border-white/10 md:hover:bg-[#3D3D42] rounded-full transition cursor-pointer text-xs touch-manipulation active:scale-95"
                         >
                           Reschedule
                         </button>
                         <button
                           onClick={() => handleCancel(appointment)}
-                          className="px-4 py-1.5 bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 rounded-full transition cursor-pointer text-xs"
+                          className="px-4 py-1.5 bg-red-500/15 text-red-300 border border-red-500/30 md:hover:bg-red-500/25 rounded-full transition cursor-pointer text-xs touch-manipulation active:scale-95"
                         >
                           Cancel
                         </button>
@@ -460,22 +472,22 @@ export default function DoctorUpcomingConsultationsSection() {
                 {upcomingAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-4 sm:p-5 hover:border-white/20 transition"
+                    className="bg-[#1B1A18]/80 border border-white/10 rounded-2xl p-4 sm:p-5 md:hover:border-white/20 transition"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div
-                        className="cursor-pointer"
+                        className="cursor-pointer touch-manipulation active:opacity-75"
                         onClick={() =>
                           router.push(
                             `/doctor/consultations/appointment/${appointment.id}`
                           )
                         }
                       >
-                        <h4 className="font-semibold text-base text-white hover:text-[#FFD3AC] transition font-sans">
+                        <h4 className="font-semibold text-base text-white md:hover:text-[#FFD3AC] transition font-sans">
                           {appointment.user_name || "Client"}
                         </h4>
                         <p className="text-gray-400 flex items-center mt-1 text-xs font-sans">
-                          <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC]" />
+                          <ClockIcon className="h-3.5 w-3.5 mr-1 text-[#FFD3AC] pointer-events-none" />
                           {formatAppointmentTime(appointment.time)}
                         </p>
                       </div>
@@ -486,19 +498,19 @@ export default function DoctorUpcomingConsultationsSection() {
                               `/doctor/consultations/appointment/${appointment.id}`
                             )
                           }
-                          className="px-4 py-1.5 bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe3c9] rounded-full transition cursor-pointer font-semibold text-xs"
+                          className="px-4 py-1.5 bg-[#FFD3AC] text-[#1E1E1E] md:hover:bg-[#ffe3c9] rounded-full transition cursor-pointer font-semibold text-xs touch-manipulation active:scale-95"
                         >
                           Details
                         </button>
                         <button
                           onClick={() => handleReschedule(appointment)}
-                          className="px-4 py-1.5 bg-[#2D2D30] text-white border border-white/10 hover:bg-[#3D3D42] rounded-full transition cursor-pointer text-xs"
+                          className="px-4 py-1.5 bg-[#2D2D30] text-white border border-white/10 md:hover:bg-[#3D3D42] rounded-full transition cursor-pointer text-xs touch-manipulation active:scale-95"
                         >
                           Reschedule
                         </button>
                         <button
                           onClick={() => handleCancel(appointment)}
-                          className="px-4 py-1.5 bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 rounded-full transition cursor-pointer text-xs"
+                          className="px-4 py-1.5 bg-red-500/15 text-red-300 border border-red-500/30 md:hover:bg-red-500/25 rounded-full transition cursor-pointer text-xs touch-manipulation active:scale-95"
                         >
                           Cancel
                         </button>

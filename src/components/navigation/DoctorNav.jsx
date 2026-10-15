@@ -112,7 +112,13 @@ export default function DoctorNav() {
 
   return (
     <>
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-[#1B1A18]/90 backdrop-blur-md border-b border-white/10 select-none w-full shadow-sm">
+      <header 
+        className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-[#1B1A18]/90 backdrop-blur-md border-b border-white/10 select-none w-full shadow-sm"
+        style={{
+          transform: "translate3d(0, 0, 0)",
+          WebkitTransform: "translate3d(0, 0, 0)",
+        }}
+      >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           {/* App Logo */}
           <Link href="/doctor/home" className="flex items-center gap-2.5">
@@ -137,10 +143,10 @@ export default function DoctorNav() {
                 <Link
                   key={href}
                   href={href}
-                  className={`relative px-2 py-1 text-sm font-sans font-medium transition-colors ${
+                  className={`relative px-2 py-1 text-sm font-sans font-medium transition-colors touch-manipulation ${
                     isActive
                       ? 'text-[#FFD3AC] font-semibold'
-                      : 'text-gray-300 hover:text-white'
+                      : 'text-gray-300 md:hover:text-white'
                   }`}
                 >
                   {label}

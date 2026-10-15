@@ -263,7 +263,7 @@ function VerifyEmailContent() {
         <button
           type="button"
           onClick={handleSignOut}
-          className="text-xs font-sans text-gray-400 hover:text-white transition-colors cursor-pointer"
+          className="text-xs font-sans text-gray-400 md:hover:text-white transition-colors cursor-pointer touch-manipulation active:opacity-70"
         >
           Sign out &amp; start over
         </button>
