@@ -18,23 +18,25 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { db, storage } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
-import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon, XMarkIcon, PaperClipIcon, DocumentTextIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 
 export default function ChatWindow({ 
   chatId, 
   recipientName, 
-  recipientId,
-  canSendMessage,
-  isDoctor,
-  hideHeader = false,
-  onMessagesSeen,
+  recipientId, 
+  canSendMessage, 
+  isDoctor, 
+  hideHeader = false, 
+  onMessagesSeen, 
 }) {
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(null);
+  const [uploadingFile, setUploadingFile] = useState(null);
   const [convertingHeic, setConvertingHeic] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [sending, setSending] = useState(false);
@@ -44,6 +46,7 @@ export default function ChatWindow({
   const initialScrollDoneRef = useRef(false);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const fileInputDocRef = useRef(null);
 
   const scrollToBottom = (behavior = 'auto') => {
     if (messagesContainerRef.current) {
@@ -109,10 +112,10 @@ export default function ChatWindow({
   }, [messages.length]);
 
   useEffect(() => {
-    if (uploadingImage) {
+    if (uploadingImage || uploadingFile) {
       scrollToBottom('smooth');
     }
-  }, [uploadingImage]);
+  }, [uploadingImage, uploadingFile]);
 
   const markMessagesAsRead = async (messagesToMark) => {
     try {
@@ -206,6 +209,8 @@ export default function ChatWindow({
       return;
     }
 
+    removeSelectedFile();
+
     if (isHeic) {
       setConvertingHeic(true);
       try {
@@ -230,23 +235,66 @@ export default function ChatWindow({
     }
     setSelectedImage(null);
     setImagePreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so the same file can be re-selected if removed
+    e.target.value = '';
+
+    const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+    if (file.size > MAX_FILE_SIZE) {
+      alert('File size exceeds the 25MB limit. Please select a smaller file.');
+      return;
+    }
+
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'heic', 'heif', 'svg'];
+    if (ext && imageExtensions.includes(ext)) {
+      alert('Images cannot be selected as documents. Please use the image attachment button.');
+      return;
+    }
+
+    removeSelectedImage();
+    setSelectedFile(file);
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputDocRef.current) {
+      fileInputDocRef.current.value = '';
+    }
   };
 
   const sendMessage = async (e) => {
     e.preventDefault();
     const messageText = newMessage.trim();
-    if ((!messageText && !selectedImage) || sending || !canSendMessage) return;
+    if ((!messageText && !selectedImage && !selectedFile) || sending || !canSendMessage) return;
     
     setSending(true);
     const imageToUpload = selectedImage;
+    const fileToUpload = selectedFile;
     const previewToRevoke = imagePreviewUrl;
 
     if (imageToUpload && previewToRevoke) {
       setUploadingImage({ url: previewToRevoke, caption: messageText });
     }
+    if (fileToUpload) {
+      setUploadingFile({
+        name: fileToUpload.name,
+        size: fileToUpload.size,
+        caption: messageText,
+      });
+    }
 
     setNewMessage('');
     setSelectedImage(null);
+    setSelectedFile(null);
     setImagePreviewUrl(null);
     setTimeout(scrollToBottom, 50);
     
@@ -262,6 +310,23 @@ export default function ChatWindow({
         imageUrl = await getDownloadURL(uploadResult.ref);
       }
 
+      let fileUrl = null;
+      let fileName = null;
+      let fileSize = null;
+      let fileType = null;
+      if (fileToUpload) {
+        const timestamp = Date.now();
+        const cleanFileName = fileToUpload.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const docStorageRef = storageRef(storage, `chats/${chatId}/files/${timestamp}_${cleanFileName}`);
+        const uploadResult = await uploadBytes(docStorageRef, fileToUpload, {
+          contentType: fileToUpload.type || 'application/octet-stream',
+        });
+        fileUrl = await getDownloadURL(uploadResult.ref);
+        fileName = fileToUpload.name;
+        fileSize = fileToUpload.size;
+        fileType = fileToUpload.name.split('.').pop()?.toLowerCase() || '';
+      }
+
       const messageData = {
         sender_uid: user.uid,
         timestamp: serverTimestamp(),
@@ -272,6 +337,12 @@ export default function ChatWindow({
       if (imageUrl) {
         messageData.image_url = imageUrl;
         messageData.type = 'image';
+      } else if (fileUrl) {
+        messageData.file_url = fileUrl;
+        messageData.file_name = fileName;
+        messageData.file_size = fileSize;
+        messageData.file_type = fileType;
+        messageData.type = 'file';
       } else {
         messageData.type = 'text';
       }
@@ -279,21 +350,27 @@ export default function ChatWindow({
       // Add message to Firestore
       await addDoc(collection(db, 'chats', chatId, 'messages'), messageData);
       
-      const lastMsgDisplay = messageText || (imageUrl ? '📷 Photo' : '');
+      // Immediately clear sending/uploading indicators
+      setUploadingImage(null);
+      setUploadingFile(null);
+      setSending(false);
 
-      // Update chat metadata
+      const lastMsgDisplay = messageText || (fileUrl ? `📄 ${fileName}` : (imageUrl ? '📷 Photo' : ''));
+
+      // Update chat metadata in background
+      const metadataTasks = [];
       const chatRef = doc(db, 'chats', chatId);
-      await setDoc(chatRef, {
+      metadataTasks.push(setDoc(chatRef, {
         last_message: lastMsgDisplay,
         last_message_time: serverTimestamp(),
         last_message_timestamp: serverTimestamp(),
         last_message_sender_uid: user.uid,
-      }, { merge: true });
+      }, { merge: true }));
       
       // Update doctor's chat metadata if user is sending
       if (!isDoctor && recipientId) {
         const doctorChatRef = doc(db, 'doctors', recipientId, 'chats', chatId);
-        await setDoc(doctorChatRef, {
+        metadataTasks.push(setDoc(doctorChatRef, {
           chat_id: chatId,
           user_uid: user.uid,
           user_name: user.displayName || 'User',
@@ -304,21 +381,25 @@ export default function ChatWindow({
           last_message_time: serverTimestamp(),
           last_message_read_by_doctor: false,
           unread_count: increment(1),
-        }, { merge: true });
+        }, { merge: true }));
       }
 
       // If doctor is sending, update doctor's own chat metadata too
       if (isDoctor) {
         const doctorChatRef = doc(db, 'doctors', user.uid, 'chats', chatId);
-        await setDoc(doctorChatRef, {
+        metadataTasks.push(setDoc(doctorChatRef, {
           chat_id: chatId,
           last_message: lastMsgDisplay,
           last_message_sender_uid: user.uid,
           last_message_timestamp: serverTimestamp(),
           last_message_time: serverTimestamp(),
           last_message_read_by_doctor: true,
-        }, { merge: true });
+        }, { merge: true }));
       }
+
+      Promise.all(metadataTasks).catch((err) =>
+        console.warn('Error updating chat metadata in background:', err)
+      );
 
       if (previewToRevoke) {
         URL.revokeObjectURL(previewToRevoke);
@@ -331,8 +412,12 @@ export default function ChatWindow({
         setSelectedImage(imageToUpload);
         setImagePreviewUrl(previewToRevoke);
       }
+      if (fileToUpload) {
+        setSelectedFile(fileToUpload);
+      }
     } finally {
       setUploadingImage(null);
+      setUploadingFile(null);
       setSending(false);
     }
   };
@@ -396,13 +481,13 @@ export default function ChatWindow({
         ref={messagesContainerRef}
         className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 [scrollbar-width:thin] [scrollbar-color:#3D3D42_transparent]"
       >
-        {Object.keys(groupedMessages).length === 0 && !uploadingImage ? (
+        {Object.keys(groupedMessages).length === 0 && !uploadingImage && !uploadingFile ? (
           <div className="flex items-center justify-center h-full text-center p-6">
             <div className="bg-[#2D2D30]/85 border border-white/10 rounded-2xl p-6 max-w-sm backdrop-blur-md shadow-xl">
               <p className="text-sm font-semibold text-white mb-1">Direct Message Channel</p>
               <p className="text-xs text-white/70">
                 {canSendMessage
-                  ? 'Send a message or photo to begin your conversation.'
+                  ? 'Send a message, photo, or document to begin your conversation.'
                   : 'Complete your first video consultation to unlock direct messaging.'}
               </p>
             </div>
@@ -430,7 +515,7 @@ export default function ChatWindow({
             ))}
 
             {/* Optimistic Uploading Image Bubble */}
-            {uploadingImage && (
+            {uploadingImage && !messages.some(m => m.sender_uid === user?.uid && m.image_url && (!m.timestamp || (Date.now() - (m.timestamp?.toMillis ? m.timestamp.toMillis() : Date.now()) < 15000))) && (
               <div className="flex justify-end mb-2.5">
                 <div className="max-w-[85%] sm:max-w-[70%] shadow-lg p-1 bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl rounded-br-xs">
                   <div className="relative overflow-hidden rounded-xl">
@@ -455,6 +540,34 @@ export default function ChatWindow({
                     <div className="px-2.5 pt-2 pb-1">
                       <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
                         {uploadingImage.caption}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Optimistic Uploading File Bubble */}
+            {uploadingFile && !messages.some(m => m.sender_uid === user?.uid && m.file_name === uploadingFile.name) && (
+              <div className="flex justify-end mb-2.5">
+                <div className="max-w-[85%] sm:max-w-[70%] shadow-lg p-2.5 bg-[#FFD3AC] text-[#1E1E1E] rounded-2xl rounded-br-xs min-w-[220px]">
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/10 border border-black/10">
+                    <div className="w-10 h-10 rounded-lg bg-black/20 flex items-center justify-center shrink-0">
+                      <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-[#1E1E1E] truncate">
+                        {uploadingFile.name}
+                      </p>
+                      <p className="text-[10px] text-black/60 font-medium">
+                        {formatFileSize(uploadingFile.size)} • Sending...
+                      </p>
+                    </div>
+                  </div>
+                  {uploadingFile.caption && uploadingFile.caption.trim() && (
+                    <div className="px-1 pt-2 pb-0.5">
+                      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
+                        {uploadingFile.caption}
                       </p>
                     </div>
                   )}
@@ -495,6 +608,33 @@ export default function ChatWindow({
         </div>
       )}
 
+      {/* Selected File Preview */}
+      {selectedFile && (
+        <div className="px-4 py-2.5 border-t border-white/10 bg-[#1E1E1E]/95 backdrop-blur-md flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-[#2D2D30] border border-white/15 flex items-center justify-center text-[#FFD3AC] shrink-0">
+              <DocumentTextIcon className="w-6 h-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-white truncate max-w-[200px] sm:max-w-xs">
+                {selectedFile.name}
+              </p>
+              <p className="text-[10px] text-[#FFD3AC]">
+                {formatFileSize(selectedFile.size)} • Document attached • Ready to send
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={removeSelectedFile}
+            className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
+            aria-label="Remove document"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
       {/* Processing HEIC notification */}
       {convertingHeic && (
         <div className="px-4 py-2 bg-black/60 backdrop-blur-md border-t border-[#FFD3AC]/30 text-xs text-[#FFD3AC] flex items-center gap-2">
@@ -517,16 +657,34 @@ export default function ChatWindow({
             onChange={handleImageSelect}
             className="hidden"
           />
+          <input
+            ref={fileInputDocRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.zip,.rar,.7z,.tar,.gz,.json,.xml"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
           <div className="flex items-center gap-2 max-w-4xl mx-auto">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={sending || convertingHeic}
               className="w-11 h-11 bg-white/10 hover:bg-white/15 border border-white/15 text-[#FFD3AC] rounded-full disabled:opacity-40 transition flex items-center justify-center flex-shrink-0 cursor-pointer"
-              title="Attach image"
-              aria-label="Attach image"
+              title="Attach photo"
+              aria-label="Attach photo"
             >
               <PhotoIcon className="w-5 h-5 text-[#FFD3AC]" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fileInputDocRef.current?.click()}
+              disabled={sending || convertingHeic}
+              className="w-11 h-11 bg-white/10 hover:bg-white/15 border border-white/15 text-[#FFD3AC] rounded-full disabled:opacity-40 transition flex items-center justify-center flex-shrink-0 cursor-pointer"
+              title="Attach document or file"
+              aria-label="Attach document or file"
+            >
+              <PaperClipIcon className="w-5 h-5 text-[#FFD3AC]" />
             </button>
 
             <textarea
@@ -539,13 +697,13 @@ export default function ChatWindow({
                   sendMessage(e);
                 }
               }}
-              placeholder={selectedImage ? "Add a caption..." : "Type a message..."}
+              placeholder={selectedImage ? "Add a caption..." : selectedFile ? "Add a note with this file..." : "Type a message..."}
               className="flex-1 px-4 py-2.5 text-base sm:text-sm bg-white/10 border border-white/15 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-white placeholder-white/50 leading-relaxed"
               rows={1}
             />
             <button
               type="submit"
-              disabled={(!newMessage.trim() && !selectedImage) || sending || convertingHeic}
+              disabled={(!newMessage.trim() && !selectedImage && !selectedFile) || sending || convertingHeic}
               className="w-11 h-11 bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1E1E1E] rounded-full disabled:opacity-40 disabled:cursor-not-allowed transition shadow-md flex items-center justify-center flex-shrink-0 cursor-pointer"
               aria-label="Send message"
             >
@@ -596,12 +754,108 @@ export default function ChatWindow({
   );
 }
 
+// File size formatter
+function formatFileSize(bytes) {
+  if (!bytes || bytes <= 0) return '0 B';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getFileExtension(filename = '') {
+  return filename.split('.').pop()?.toLowerCase() || '';
+}
+
+function getFileBadgeStyle(ext) {
+  switch (ext) {
+    case 'pdf':
+      return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', label: 'PDF' };
+    case 'doc':
+    case 'docx':
+      return { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', label: 'DOC' };
+    case 'xls':
+    case 'xlsx':
+    case 'csv':
+      return { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30', label: ext.toUpperCase() };
+    case 'ppt':
+    case 'pptx':
+      return { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30', label: 'PPT' };
+    case 'zip':
+    case 'rar':
+    case '7z':
+    case 'tar':
+    case 'gz':
+      return { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30', label: 'ZIP' };
+    case 'txt':
+    case 'json':
+    case 'xml':
+      return { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', label: ext.toUpperCase() };
+    default:
+      return { bg: 'bg-[#FFD3AC]/20', text: 'text-[#FFD3AC]', border: 'border-[#FFD3AC]/30', label: ext ? ext.toUpperCase().slice(0, 4) : 'FILE' };
+  }
+}
+
+function FileMessageCard({ message, isOwn }) {
+  const fileName = message.file_name || 'Document';
+  const fileSize = formatFileSize(message.file_size);
+  const ext = message.file_type || getFileExtension(fileName);
+  const badge = getFileBadgeStyle(ext);
+
+  return (
+    <a
+      href={message.file_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      download={fileName}
+      className={`group flex items-center gap-3 p-2.5 rounded-xl transition ${
+        isOwn
+          ? 'bg-black/10 hover:bg-black/15 border border-black/10 text-[#1E1E1E]'
+          : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white'
+      }`}
+    >
+      <div
+        className={`w-11 h-11 rounded-lg flex flex-col items-center justify-center shrink-0 border ${
+          isOwn ? 'bg-black/15 border-black/20 text-[#1E1E1E]' : `${badge.bg} ${badge.border} ${badge.text}`
+        }`}
+      >
+        <DocumentTextIcon className="w-5 h-5 mb-0.5" />
+        <span className="text-[9px] font-bold tracking-wider leading-none">
+          {badge.label}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0 pr-1">
+        <p className="text-xs font-semibold truncate leading-tight">
+          {fileName}
+        </p>
+        <p
+          className={`text-[10px] mt-0.5 ${
+            isOwn ? 'text-black/60' : 'text-white/50'
+          }`}
+        >
+          {fileSize}
+        </p>
+      </div>
+      <div
+        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition ${
+          isOwn
+            ? 'bg-[#1E1E1E] text-[#FFD3AC] group-hover:scale-105'
+            : 'bg-[#FFD3AC] text-[#1E1E1E] group-hover:scale-105'
+        }`}
+        title="Download file"
+      >
+        <ArrowDownTrayIcon className="w-4 h-4" />
+      </div>
+    </a>
+  );
+}
+
 // Message Bubble Component with Ambé Theme
 function MessageBubble({ message, isOwn, time, onImageClick, onImageLoad }) {
   const hasImage = !!message.image_url;
+  const hasFile = !!message.file_url || message.type === 'file' || message.type === 'document';
   const hasText = !!(message.text && message.text.trim());
 
-  if (!hasImage && !hasText) return null;
+  if (!hasImage && !hasFile && !hasText) return null;
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2.5`}>
@@ -611,6 +865,8 @@ function MessageBubble({ message, isOwn, time, onImageClick, onImageLoad }) {
             ? 'p-1'
             : hasImage && hasText
             ? 'p-1'
+            : hasFile
+            ? 'p-2'
             : 'px-4 py-2.5'
         } ${
           isOwn
@@ -637,7 +893,7 @@ function MessageBubble({ message, isOwn, time, onImageClick, onImageLoad }) {
         ) : (
           <>
             {hasImage && (
-              <div className="overflow-hidden rounded-xl">
+              <div className="overflow-hidden rounded-xl mb-1.5">
                 <img
                   src={message.image_url}
                   alt="Chat attachment"
@@ -648,7 +904,12 @@ function MessageBubble({ message, isOwn, time, onImageClick, onImageLoad }) {
                 />
               </div>
             )}
-            <div className={hasImage ? 'px-2.5 pt-2 pb-1' : ''}>
+            {hasFile && (
+              <div className="min-w-[220px] max-w-[320px]">
+                <FileMessageCard message={message} isOwn={isOwn} />
+              </div>
+            )}
+            <div className={hasImage || hasFile ? 'px-1 pt-1.5 pb-0.5' : ''}>
               {hasText && (
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed font-normal">
                   {message.text}
@@ -660,6 +921,7 @@ function MessageBubble({ message, isOwn, time, onImageClick, onImageLoad }) {
                 }`}
               >
                 {time}
+                {isOwn && <span className="text-[11px] ml-1 opacity-90">✓✓</span>}
               </p>
             </div>
           </>

@@ -16,7 +16,7 @@ import {
 } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { auth, db, storage } from '@/lib/firebase/config'
-import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, PhotoIcon, XMarkIcon, PaperClipIcon, DocumentTextIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import AmbeBackButton from '@/components/common/AmbeBackButton'
 
@@ -35,20 +35,23 @@ export default function MessageUserClient() {
   const [sending, setSending] = useState(false)
   const [selectedImage, setSelectedImage] = useState(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
   const [uploadingImage, setUploadingImage] = useState(null)
+  const [uploadingFile, setUploadingFile] = useState(null)
   const [convertingHeic, setConvertingHeic] = useState(false)
   const [fullscreenImage, setFullscreenImage] = useState(null)
 
   const containerRef = useRef(null)
   const endRef = useRef(null)
   const fileInputRef = useRef(null)
+  const fileInputDocRef = useRef(null)
   const BATCH = 15
 
   useEffect(() => {
-    if (uploadingImage) {
+    if (uploadingImage || uploadingFile) {
       endRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [uploadingImage])
+  }, [uploadingImage, uploadingFile])
 
   // 1) Auth + initial batch
   useEffect(() => {
@@ -135,6 +138,8 @@ export default function MessageUserClient() {
       return
     }
 
+    removeSelectedFile()
+
     if (isHeic) {
       setConvertingHeic(true)
       try {
@@ -157,23 +162,64 @@ export default function MessageUserClient() {
     if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl)
     setSelectedImage(null)
     setImagePreviewUrl(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+
+    const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25 MB
+    if (file.size > MAX_FILE_SIZE) {
+      alert('File size exceeds the 25MB limit. Please select a smaller file.')
+      return
+    }
+
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'heic', 'heif', 'svg']
+    if (ext && imageExtensions.includes(ext)) {
+      alert('Images cannot be selected as documents. Please use the image attachment button.')
+      return
+    }
+
+    removeSelectedImage()
+    setSelectedFile(file)
+  }
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null)
+    if (fileInputDocRef.current) {
+      fileInputDocRef.current.value = ''
+    }
   }
 
   // 5) send
   const handleSend = async () => {
     const trimmed = text.trim()
-    if ((!trimmed && !selectedImage) || !user || !chatId || sending) return
+    if ((!trimmed && !selectedImage && !selectedFile) || !user || !chatId || sending) return
     setSending(true)
 
     const imgToUpload = selectedImage
+    const fileToUpload = selectedFile
     const previewToRevoke = imagePreviewUrl
 
     if (imgToUpload && previewToRevoke) {
       setUploadingImage({ url: previewToRevoke, caption: trimmed })
     }
+    if (fileToUpload) {
+      setUploadingFile({
+        name: fileToUpload.name,
+        size: fileToUpload.size,
+        caption: trimmed,
+      })
+    }
 
     setText('')
     setSelectedImage(null)
+    setSelectedFile(null)
     setImagePreviewUrl(null)
     setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
 
@@ -189,6 +235,23 @@ export default function MessageUserClient() {
         imageUrl = await getDownloadURL(uploadResult.ref)
       }
 
+      let fileUrl = null
+      let fileName = null
+      let fileSize = null
+      let fileType = null
+      if (fileToUpload) {
+        const timestamp = Date.now()
+        const cleanFileName = fileToUpload.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+        const docStorageRef = storageRef(storage, `chats/${chatId}/files/${timestamp}_${cleanFileName}`)
+        const uploadResult = await uploadBytes(docStorageRef, fileToUpload, {
+          contentType: fileToUpload.type || 'application/octet-stream',
+        })
+        fileUrl = await getDownloadURL(uploadResult.ref)
+        fileName = fileToUpload.name
+        fileSize = fileToUpload.size
+        fileType = fileToUpload.name.split('.').pop()?.toLowerCase() || ''
+      }
+
       const col = collection(db, 'chats', chatId, 'messages')
       const msgData = {
         sender_uid: user.uid,
@@ -198,11 +261,20 @@ export default function MessageUserClient() {
       if (imageUrl) {
         msgData.image_url = imageUrl
         msgData.type = 'image'
+      } else if (fileUrl) {
+        msgData.file_url = fileUrl
+        msgData.file_name = fileName
+        msgData.file_size = fileSize
+        msgData.file_type = fileType
+        msgData.type = 'file'
       } else {
         msgData.type = 'text'
       }
 
       await addDoc(col, msgData)
+      setUploadingImage(null)
+      setUploadingFile(null)
+      setSending(false)
 
       if (previewToRevoke) URL.revokeObjectURL(previewToRevoke)
     } catch (err) {
@@ -212,8 +284,12 @@ export default function MessageUserClient() {
         setSelectedImage(imgToUpload)
         setImagePreviewUrl(previewToRevoke)
       }
+      if (fileToUpload) {
+        setSelectedFile(fileToUpload)
+      }
     } finally {
       setUploadingImage(null)
+      setUploadingFile(null)
       setSending(false)
     }
   }
@@ -248,13 +324,14 @@ export default function MessageUserClient() {
           const isUser = msg.sender_uid === user?.uid
           const time = msg.timestamp?.toDate?.().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) || ''
           const hasImage = !!msg.image_url;
+          const hasFile = !!msg.file_url || msg.type === 'file' || msg.type === 'document';
           const hasText = !!(msg.text && msg.text.trim());
-          if (!hasImage && !hasText) return null;
+          if (!hasImage && !hasFile && !hasText) return null;
 
           return (
             <div key={msg.id} className={`mb-2 flex ${isUser?'justify-end':'justify-start'}`}>
               <div className={`max-w-xs sm:max-w-md ${
-                hasImage && !hasText ? 'p-1' : hasImage && hasText ? 'p-1' : 'px-4 py-2.5'
+                hasImage && !hasText ? 'p-1' : hasImage && hasText ? 'p-1' : hasFile ? 'p-2' : 'px-4 py-2.5'
               } rounded-2xl ${
                 isUser?'bg-[#FFD3AC] text-[#1E1E1E] rounded-br-xs':'bg-[#262626] text-white border border-white/15 rounded-bl-xs'
               }`}>
@@ -276,7 +353,7 @@ export default function MessageUserClient() {
                 ) : (
                   <>
                     {hasImage && (
-                      <div className="overflow-hidden rounded-xl">
+                      <div className="overflow-hidden rounded-xl mb-1.5">
                         <img
                           src={msg.image_url}
                           alt="Chat Attachment"
@@ -286,9 +363,17 @@ export default function MessageUserClient() {
                         />
                       </div>
                     )}
-                    <div className={hasImage ? 'px-2.5 pt-2 pb-1' : ''}>
+                    {hasFile && (
+                      <div className="min-w-[220px] max-w-[320px]">
+                        <FileMessageCard message={msg} isOwn={isUser} />
+                      </div>
+                    )}
+                    <div className={hasImage || hasFile ? 'px-1 pt-1.5 pb-0.5' : ''}>
                       {hasText && <p className="break-words text-sm leading-relaxed">{msg.text}</p>}
-                      <p className={`text-[10px] mt-1 ${isUser ? 'text-black/60' : 'text-white/50'} text-right`}>{time}</p>
+                      <p className={`text-[10px] mt-1 ${isUser ? 'text-black/60' : 'text-white/50'} text-right`}>
+                        {time}
+                        {isUser && <span className="text-[11px] ml-1 opacity-90">✓✓</span>}
+                      </p>
                     </div>
                   </>
                 )}
@@ -298,7 +383,7 @@ export default function MessageUserClient() {
         })}
 
         {/* Optimistic uploading image bubble */}
-        {uploadingImage && (
+        {uploadingImage && !messages.some(m => m.sender_uid === user?.uid && m.image_url && (!m.timestamp || (Date.now() - (m.timestamp?.toMillis ? m.timestamp.toMillis() : Date.now()) < 15000))) && (
           <div className="mb-2 flex justify-end">
             <div className="max-w-xs sm:max-w-md p-1 rounded-2xl bg-[#FFD3AC] text-[#1E1E1E] rounded-br-xs shadow-lg">
               <div className="relative overflow-hidden rounded-xl">
@@ -327,6 +412,32 @@ export default function MessageUserClient() {
             </div>
           </div>
         )}
+
+        {/* Optimistic uploading file bubble */}
+        {uploadingFile && !messages.some(m => m.sender_uid === user?.uid && m.file_name === uploadingFile.name) && (
+          <div className="mb-2 flex justify-end">
+            <div className="max-w-xs sm:max-w-md p-2.5 rounded-2xl bg-[#FFD3AC] text-[#1E1E1E] rounded-br-xs shadow-lg min-w-[220px]">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/10 border border-black/10">
+                <div className="w-10 h-10 rounded-lg bg-black/20 flex items-center justify-center shrink-0">
+                  <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-[#1E1E1E] truncate">
+                    {uploadingFile.name}
+                  </p>
+                  <p className="text-[10px] text-black/60 font-medium">
+                    {formatFileSize(uploadingFile.size)} • Sending...
+                  </p>
+                </div>
+              </div>
+              {uploadingFile.caption && uploadingFile.caption.trim() && (
+                <div className="px-1 pt-2 pb-0.5">
+                  <p className="break-words text-sm leading-relaxed">{uploadingFile.caption}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <div ref={endRef}/>
       </div>
 
@@ -341,6 +452,24 @@ export default function MessageUserClient() {
             </div>
           </div>
           <button type="button" onClick={removeSelectedImage} className="p-1 text-white/70 hover:text-white cursor-pointer">
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
+      {/* Selected File Preview */}
+      {selectedFile && (
+        <div className="px-4 py-2 bg-[#1E1E1E]/95 backdrop-blur-md border-t border-white/10 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-xl bg-[#2D2D30] border border-white/15 flex items-center justify-center text-[#FFD3AC] shrink-0">
+              <DocumentTextIcon className="w-6 h-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold truncate text-white">{selectedFile.name}</p>
+              <p className="text-[10px] text-[#FFD3AC]">{formatFileSize(selectedFile.size)} • Document attached • Ready to send</p>
+            </div>
+          </div>
+          <button type="button" onClick={removeSelectedFile} className="p-1 text-white/70 hover:text-white cursor-pointer">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
@@ -362,14 +491,30 @@ export default function MessageUserClient() {
           onChange={handleImageSelect}
           className="hidden"
         />
+        <input
+          ref={fileInputDocRef}
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.zip,.rar,.7z,.tar,.gz,.json,.xml"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={sending || convertingHeic}
           className="w-11 h-11 bg-white/10 hover:bg-white/15 border border-white/15 text-[#FFD3AC] rounded-full transition cursor-pointer flex-shrink-0 flex items-center justify-center"
-          title="Attach image"
+          title="Attach photo"
         >
           <PhotoIcon className="w-5 h-5 text-[#FFD3AC]" />
+        </button>
+        <button
+          type="button"
+          onClick={() => fileInputDocRef.current?.click()}
+          disabled={sending || convertingHeic}
+          className="w-11 h-11 bg-white/10 hover:bg-white/15 border border-white/15 text-[#FFD3AC] rounded-full transition cursor-pointer flex-shrink-0 flex items-center justify-center"
+          title="Attach document or file"
+        >
+          <PaperClipIcon className="w-5 h-5 text-[#FFD3AC]" />
         </button>
         <textarea rows={1}
                   value={text}
@@ -381,8 +526,8 @@ export default function MessageUserClient() {
                     }
                   }}
                   className="flex-1 resize-none px-4 py-2.5 text-sm bg-white/10 border border-white/15 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FFD3AC] focus:border-[#FFD3AC] text-white placeholder-white/50"
-                  placeholder={selectedImage ? "Add a caption…" : "Type a message…"}/>
-        <button onClick={handleSend} disabled={(!text.trim() && !selectedImage) || sending || convertingHeic}
+                  placeholder={selectedImage ? "Add a caption…" : selectedFile ? "Add a note with this file…" : "Type a message…"}/>
+        <button onClick={handleSend} disabled={(!text.trim() && !selectedImage && !selectedFile) || sending || convertingHeic}
                 className={`w-11 h-11 rounded-full transition flex items-center justify-center flex-shrink-0 cursor-pointer ${
                   sending?'bg-white/20 text-white':'bg-[#FFD3AC] text-[#1E1E1E] hover:bg-[#ffe0c4]'
                 }`}>
@@ -413,5 +558,100 @@ export default function MessageUserClient() {
         </div>
       )}
     </div>
+  )
+}
+
+// File size formatter
+function formatFileSize(bytes) {
+  if (!bytes || bytes <= 0) return '0 B'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function getFileExtension(filename = '') {
+  return filename.split('.').pop()?.toLowerCase() || ''
+}
+
+function getFileBadgeStyle(ext) {
+  switch (ext) {
+    case 'pdf':
+      return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', label: 'PDF' }
+    case 'doc':
+    case 'docx':
+      return { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', label: 'DOC' }
+    case 'xls':
+    case 'xlsx':
+    case 'csv':
+      return { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30', label: ext.toUpperCase() }
+    case 'ppt':
+    case 'pptx':
+      return { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30', label: 'PPT' }
+    case 'zip':
+    case 'rar':
+    case '7z':
+    case 'tar':
+    case 'gz':
+      return { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30', label: 'ZIP' }
+    case 'txt':
+    case 'json':
+    case 'xml':
+      return { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', label: ext.toUpperCase() }
+    default:
+      return { bg: 'bg-[#FFD3AC]/20', text: 'text-[#FFD3AC]', border: 'border-[#FFD3AC]/30', label: ext ? ext.toUpperCase().slice(0, 4) : 'FILE' }
+  }
+}
+
+function FileMessageCard({ message, isOwn }) {
+  const fileName = message.file_name || 'Document'
+  const fileSize = formatFileSize(message.file_size)
+  const ext = message.file_type || getFileExtension(fileName)
+  const badge = getFileBadgeStyle(ext)
+
+  return (
+    <a
+      href={message.file_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      download={fileName}
+      className={`group flex items-center gap-3 p-2.5 rounded-xl transition ${
+        isOwn
+          ? 'bg-black/10 hover:bg-black/15 border border-black/10 text-[#1E1E1E]'
+          : 'bg-white/5 hover:bg-white/10 border border-white/10 text-white'
+      }`}
+    >
+      <div
+        className={`w-11 h-11 rounded-lg flex flex-col items-center justify-center shrink-0 border ${
+          isOwn ? 'bg-black/15 border-black/20 text-[#1E1E1E]' : `${badge.bg} ${badge.border} ${badge.text}`
+        }`}
+      >
+        <DocumentTextIcon className="w-5 h-5 mb-0.5" />
+        <span className="text-[9px] font-bold tracking-wider leading-none">
+          {badge.label}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0 pr-1">
+        <p className="text-xs font-semibold truncate leading-tight">
+          {fileName}
+        </p>
+        <p
+          className={`text-[10px] mt-0.5 ${
+            isOwn ? 'text-black/60' : 'text-white/50'
+          }`}
+        >
+          {fileSize}
+        </p>
+      </div>
+      <div
+        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition ${
+          isOwn
+            ? 'bg-[#1E1E1E] text-[#FFD3AC] group-hover:scale-105'
+            : 'bg-[#FFD3AC] text-[#1E1E1E] group-hover:scale-105'
+        }`}
+        title="Download file"
+      >
+        <ArrowDownTrayIcon className="w-4 h-4" />
+      </div>
+    </a>
   )
 }
