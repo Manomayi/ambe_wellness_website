@@ -15,6 +15,7 @@ function ContributionApplePayForm({
   paymentIntentId,
   user,
   doctorInfo,
+  isTestMode = false,
   onSuccess,
   onError,
   onProcessingChange,
@@ -52,10 +53,19 @@ function ContributionApplePayForm({
         if (onProcessingChange) onProcessingChange(false);
       } else if (
         result.paymentIntent &&
-        (result.paymentIntent.status === "succeeded" ||
-          result.paymentIntent.status === "processing")
+        result.paymentIntent.status === "succeeded"
       ) {
         const intentId = result.paymentIntent.id || paymentIntentId;
+        // Verify payment server-side via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, "confirmPaymentSuccess");
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn("confirmPaymentSuccess Apple Pay contribution warning:", confErr);
+        }
         await onSuccess(intentId);
       } else {
         if (onError) onError("Payment was not completed.");
@@ -116,6 +126,7 @@ function StripeContributionCheckoutForm({
   paymentIntentId,
   user,
   doctorInfo,
+  isTestMode = false,
   onSuccess,
   onError,
   onProcessingChange,
@@ -148,10 +159,19 @@ function StripeContributionCheckoutForm({
         if (onProcessingChange) onProcessingChange(false);
       } else if (
         result.paymentIntent &&
-        (result.paymentIntent.status === "succeeded" ||
-          result.paymentIntent.status === "processing")
+        result.paymentIntent.status === "succeeded"
       ) {
         const intentId = result.paymentIntent.id || paymentIntentId;
+        // Verify payment server-side via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, "confirmPaymentSuccess");
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn("confirmPaymentSuccess contribution warning:", confErr);
+        }
         await onSuccess(intentId);
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
@@ -668,6 +688,7 @@ export default function ContributionView({
                         paymentIntentId={paymentIntentId}
                         user={user}
                         doctorInfo={doctorInfo}
+                        isTestMode={isTestMode}
                         onSuccess={(intentId) => handlePaymentCompleted(intentId, "apple_pay")}
                         onError={(err) => setErrorMessage(err)}
                         onProcessingChange={setIsProcessingPayment}
@@ -705,6 +726,7 @@ export default function ContributionView({
                       paymentIntentId={paymentIntentId}
                       user={user}
                       doctorInfo={doctorInfo}
+                      isTestMode={isTestMode}
                       onSuccess={(intentId) => handlePaymentCompleted(intentId, "card")}
                       onError={(err) => setErrorMessage(err)}
                       onProcessingChange={setIsProcessingPayment}

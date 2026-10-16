@@ -70,6 +70,7 @@ function ConsultationPaymentForm({
   selectedDate, 
   paymentIntentId, 
   totalAmount = 50,
+  isTestMode = false,
   onSuccess,
   onProcessingChange,
 }) {
@@ -107,9 +108,19 @@ function ConsultationPaymentForm({
         if (onProcessingChange) onProcessingChange(false);
       } else if (
         result.paymentIntent && 
-        (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')
+        result.paymentIntent.status === 'succeeded'
       ) {
         const intentId = result.paymentIntent.id || paymentIntentId;
+        // Verify payment server-side with Stripe via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, 'confirmPaymentSuccess');
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn('confirmPaymentSuccess warning:', confErr);
+        }
         await onSuccess(intentId);
       } else {
         setErrorMsg(result.paymentIntent?.status ? `Payment was not completed (status: ${result.paymentIntent.status}). Please try again.` : 'Payment was not completed. Please try again.');
@@ -156,7 +167,7 @@ function ConsultationPaymentForm({
   );
 }
 
-function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate, paymentIntentId, onSuccess, onProcessingChange }) {
+function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate, paymentIntentId, isTestMode = false, onSuccess, onProcessingChange }) {
   const stripe = useStripe();
   const elements = useElements();
   const [errorMsg, setErrorMsg] = useState('');
@@ -192,9 +203,19 @@ function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate
         if (onProcessingChange) onProcessingChange(false);
       } else if (
         result.paymentIntent && 
-        (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')
+        result.paymentIntent.status === 'succeeded'
       ) {
         const intentId = result.paymentIntent.id || paymentIntentId;
+        // Verify payment server-side with Stripe via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, 'confirmPaymentSuccess');
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn('confirmPaymentSuccess Apple Pay warning:', confErr);
+        }
         await onSuccess(intentId);
       } else {
         setErrorMsg(
@@ -827,10 +848,19 @@ function ScheduleConsultationContent() {
 
   const handlePaymentSuccessAndSchedule = async (intentId, options = {}) => {
     if (!selectedSlot || !user) return;
-    setScheduling(true);
 
     const isWaived = Boolean(options.waivedDeposit);
     const contribAmount = options.contributionAmount || 0;
+
+    // Strict validation: non-waived appointments require a real verified payment ID (Stripe pi_ or PayPal order ID)
+    if (!isWaived && (!intentId || typeof intentId !== 'string' || intentId.startsWith('deposit_') || intentId.trim().length < 5)) {
+      console.error('Cannot schedule appointment: missing verified payment ID', intentId);
+      alert('Payment could not be verified. Please complete payment before scheduling.');
+      setScheduling(false);
+      return;
+    }
+
+    setScheduling(true);
 
     try {
       const isInstantSlot = Boolean(selectedSlot?.isInstant);
@@ -913,7 +943,12 @@ function ScheduleConsultationContent() {
           }
         } catch (_) {}
       }
-      const finalIntentId = effectiveIntentId || `deposit_${Date.now()}`;
+      const finalIntentId = effectiveIntentId || (isWaived ? (options.contributionId || '') : null);
+      if (!isWaived && !finalIntentId) {
+        console.error('Payment intent missing for non-waived deposit');
+        setScheduling(false);
+        return;
+      }
 
       // 4. Ensure payment_id is linked back to the upcoming appointment and shared consultation doc
       const pendingContrib = profile?.pending_contribution;
@@ -1871,6 +1906,7 @@ function ScheduleConsultationContent() {
                         selectedDate={selectedDate}
                         paymentIntentId={paymentIntentId}
                         totalAmount={50 + (Number(selectedContributionAmount) || 0)}
+                        isTestMode={isTestMode}
                         onSuccess={handlePaymentSuccessAndSchedule}
                         onProcessingChange={setIsProcessingDepositPayment}
                       />
@@ -1903,6 +1939,7 @@ function ScheduleConsultationContent() {
                         selectedSlot={selectedSlot}
                         selectedDate={selectedDate}
                         paymentIntentId={paymentIntentId}
+                        isTestMode={isTestMode}
                         onSuccess={handlePaymentSuccessAndSchedule}
                         onProcessingChange={setIsProcessingDepositPayment}
                       />

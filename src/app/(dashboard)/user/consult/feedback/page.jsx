@@ -15,7 +15,12 @@ import { recordContribution } from "@/lib/contributionService";
 import { functions } from "@/lib/firebase/config";
 import { httpsCallable } from "firebase/functions";
 
-function StripePostContributionApplePayForm({ amount, paymentIntentId, onSuccess }) {
+function StripePostContributionApplePayForm({
+  amount,
+  paymentIntentId,
+  isTestMode = false,
+  onSuccess,
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -48,10 +53,19 @@ function StripePostContributionApplePayForm({ amount, paymentIntentId, onSuccess
         setProcessing(false);
       } else if (
         result.paymentIntent &&
-        (result.paymentIntent.status === "succeeded" ||
-          result.paymentIntent.status === "processing")
+        result.paymentIntent.status === "succeeded"
       ) {
         const intentId = result.paymentIntent.id || paymentIntentId;
+        // Verify payment server-side via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, "confirmPaymentSuccess");
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn("confirmPaymentSuccess Apple Pay feedback warning:", confErr);
+        }
         await onSuccess(intentId);
       } else {
         setErrorMsg("Payment was not completed.");
@@ -111,7 +125,12 @@ function StripePostContributionApplePayForm({ amount, paymentIntentId, onSuccess
   );
 }
 
-function StripePostContributionForm({ amount, paymentIntentId, onSuccess }) {
+function StripePostContributionForm({
+  amount,
+  paymentIntentId,
+  isTestMode = false,
+  onSuccess,
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -138,10 +157,20 @@ function StripePostContributionForm({ amount, paymentIntentId, onSuccess }) {
         setProcessing(false);
       } else if (
         result.paymentIntent &&
-        (result.paymentIntent.status === "succeeded" ||
-          result.paymentIntent.status === "processing")
+        result.paymentIntent.status === "succeeded"
       ) {
-        await onSuccess(result.paymentIntent.id || paymentIntentId);
+        const intentId = result.paymentIntent.id || paymentIntentId;
+        // Verify payment server-side via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, "confirmPaymentSuccess");
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn("confirmPaymentSuccess card feedback warning:", confErr);
+        }
+        await onSuccess(intentId);
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
         setProcessing(false);
@@ -698,6 +727,7 @@ function ConsultationFeedbackPageContent() {
                         <StripePostContributionApplePayForm
                           amount={activeContribAmount}
                           paymentIntentId={paymentIntentId}
+                          isTestMode={isTestMode}
                           onSuccess={(intentId) =>
                             handleContributionSuccess(intentId, "apple_pay")
                           }
@@ -732,6 +762,7 @@ function ConsultationFeedbackPageContent() {
                       <StripePostContributionForm
                         amount={activeContribAmount}
                         paymentIntentId={paymentIntentId}
+                        isTestMode={isTestMode}
                         onSuccess={(intentId) =>
                           handleContributionSuccess(intentId, "card")
                         }

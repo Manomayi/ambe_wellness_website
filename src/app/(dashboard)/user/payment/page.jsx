@@ -23,7 +23,7 @@ import { startPayPalCheckout } from "@/lib/paypal";
 const ENABLE_CLIENT_SIDE_FALLBACK_WRITE = process.env.NEXT_PUBLIC_ENABLE_CLIENT_PURCHASE_WRITE !== 'false';
 
 
-function CheckoutForm({ user, paymentIntentId }) {
+function CheckoutForm({ user, paymentIntentId, isTestMode = false }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -47,37 +47,25 @@ function CheckoutForm({ user, paymentIntentId }) {
       if (result.error) {
         setErrorMsg(result.error.message || "Payment confirmation failed.");
         setProcessing(false);
-      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         const intentId = result.paymentIntent.id || paymentIntentId;
         
-        if (ENABLE_CLIENT_SIDE_FALLBACK_WRITE && user && intentId) {
-          try {
-            // 1. Record in users/{uid}/purchases
-            const purchaseRef = doc(db, 'users', user.uid, 'purchases', intentId);
-            await setDoc(purchaseRef, {
-              id: intentId,
-              amount: 50.00,
-              currency: 'USD',
-              status: 'succeeded',
-              type: 'subscription',
-              description: 'Consultation Deposit & Membership Subscription',
-              refund_policy: 'Full $50 refund within 30 days via in-app request (Menu → Refund). 50% ($25) if missed.',
-              created: serverTimestamp(),
-              payment_intent_id: intentId,
-            }, { merge: true });
-
-            // 2. Set subscription active
-            await updateDoc(doc(db, 'users', user.uid), {
-              'subscription.active': true,
-              'subscription.status': 'active',
-              'subscription.deposit_paid': true,
-            }).catch(() => {});
-          } catch (pErr) {
-            console.error('Error saving subscription purchase fallback:', pErr);
-          }
+        // Confirm payment with backend Stripe check
+        try {
+          const functions = getFunctions(undefined, "us-central1");
+          const confirmFn = httpsCallable(functions, "confirmPaymentSuccess");
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn("confirmPaymentSuccess warning:", confErr);
         }
 
         router.push("/user/consult/schedule");
+      } else {
+        setErrorMsg("Payment was not completed. Please try again.");
+        setProcessing(false);
       }
     } catch (err) {
       console.error('Payment confirm error:', err);
@@ -116,7 +104,7 @@ function CheckoutForm({ user, paymentIntentId }) {
   );
 }
 
-function ApplePayDepositForm({ user, paymentIntentId }) {
+function ApplePayDepositForm({ user, paymentIntentId, isTestMode = false }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -146,35 +134,25 @@ function ApplePayDepositForm({ user, paymentIntentId }) {
       if (result.error) {
         setErrorMsg(result.error.message || "Payment confirmation failed.");
         setProcessing(false);
-      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         const intentId = result.paymentIntent.id || paymentIntentId;
         
-        if (ENABLE_CLIENT_SIDE_FALLBACK_WRITE && user && intentId) {
-          try {
-            const purchaseRef = doc(db, 'users', user.uid, 'purchases', intentId);
-            await setDoc(purchaseRef, {
-              id: intentId,
-              amount: 50.00,
-              currency: 'USD',
-              status: 'succeeded',
-              type: 'subscription',
-              description: 'Consultation Deposit & Membership Subscription',
-              refund_policy: 'Full $50 refund within 30 days via in-app request (Menu → Refund). 50% ($25) if missed.',
-              created: serverTimestamp(),
-              payment_intent_id: intentId,
-            }, { merge: true });
-
-            await updateDoc(doc(db, 'users', user.uid), {
-              'subscription.active': true,
-              'subscription.status': 'active',
-              'subscription.deposit_paid': true,
-            }).catch(() => {});
-          } catch (pErr) {
-            console.error('Error saving subscription purchase fallback:', pErr);
-          }
+        // Confirm payment with backend Stripe check
+        try {
+          const functions = getFunctions(undefined, "us-central1");
+          const confirmFn = httpsCallable(functions, "confirmPaymentSuccess");
+          await confirmFn({
+            paymentIntentId: intentId,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn("confirmPaymentSuccess Apple Pay warning:", confErr);
         }
 
         router.push("/user/consult/schedule");
+      } else {
+        setErrorMsg("Payment was not completed. Please try again.");
+        setProcessing(false);
       }
     } catch (err) {
       console.error('Payment confirm error:', err);
@@ -391,7 +369,7 @@ export default function UserPaymentPage() {
                 } 
               }}
             >
-              <CheckoutForm user={user} paymentIntentId={paymentIntentId} />
+              <CheckoutForm user={user} paymentIntentId={paymentIntentId} isTestMode={isTestMode} />
             </Elements>
           )
         ) : paymentMethod === "apple_pay" ? (
@@ -414,7 +392,7 @@ export default function UserPaymentPage() {
                 } 
               }}
             >
-              <ApplePayDepositForm user={user} paymentIntentId={paymentIntentId} />
+              <ApplePayDepositForm user={user} paymentIntentId={paymentIntentId} isTestMode={isTestMode} />
             </Elements>
           )
         ) : (

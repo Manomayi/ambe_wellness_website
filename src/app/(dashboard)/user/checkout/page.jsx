@@ -54,6 +54,7 @@ function ApplePayCheckoutInline({
   user,
   cartItems,
   referralCreditsToUse,
+  isTestMode = false,
   onSuccess,
 }) {
   const stripe = useStripe();
@@ -142,10 +143,22 @@ function ApplePayCheckoutInline({
       if (result.error) {
         setMessage(result.error.message || "Apple Pay payment failed.");
         setIsProcessing(false);
-      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         setMessage("Payment successful! Completing your order...");
         const finalAmount = result.paymentIntent.amount ? (result.paymentIntent.amount / 100) : null;
         const finalCurrency = result.paymentIntent.currency || 'USD';
+
+        // Confirm order server-side with Stripe via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, 'confirmPaymentSuccess');
+          await confirmFn({
+            paymentIntentId: result.paymentIntent.id,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn('confirmPaymentSuccess Apple Pay warning:', confErr);
+        }
+
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
         setMessage("Payment was not completed.");
@@ -1018,6 +1031,7 @@ export default function UserCheckoutPage() {
                   user={user}
                   cartItems={cartItems}
                   referralCreditsToUse={referralCreditsToUse}
+                  isTestMode={isTestMode}
                   onSuccess={() => router.push('/user/checkout/success')}
                 />
               </Elements>

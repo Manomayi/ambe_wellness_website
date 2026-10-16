@@ -38,7 +38,7 @@ async function runReferralCompletion(orderId) {
 }
 
 
-function CheckoutForm({ clientSecret, paymentIntentId }) {
+function CheckoutForm({ clientSecret, paymentIntentId, isTestMode = false }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -160,10 +160,22 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
           setMessage("An unexpected error occurred. Please try again.");
         }
         setIsProcessing(false);
-      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         setMessage("Payment successful! Completing your order...");
         const finalAmount = result.paymentIntent.amount ? (result.paymentIntent.amount / 100) : null;
         const finalCurrency = result.paymentIntent.currency || 'USD';
+
+        // Confirm order server-side with Stripe via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, 'confirmPaymentSuccess');
+          await confirmFn({
+            paymentIntentId: result.paymentIntent.id,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn('confirmPaymentSuccess warning:', confErr);
+        }
+
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
         setMessage("Payment was not completed. Status: " + (result.paymentIntent?.status || 'unknown'));
@@ -209,7 +221,7 @@ function CheckoutForm({ clientSecret, paymentIntentId }) {
   );
 }
 
-function ApplePayCheckoutForm({ clientSecret, paymentIntentId }) {
+function ApplePayCheckoutForm({ clientSecret, paymentIntentId, isTestMode = false }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -302,10 +314,22 @@ function ApplePayCheckoutForm({ clientSecret, paymentIntentId }) {
       if (result.error) {
         setMessage(result.error.message || "Apple Pay payment failed.");
         setIsProcessing(false);
-      } else if (result.paymentIntent && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
         setMessage("Payment successful! Completing your order...");
         const finalAmount = result.paymentIntent.amount ? (result.paymentIntent.amount / 100) : null;
         const finalCurrency = result.paymentIntent.currency || 'USD';
+
+        // Confirm order server-side with Stripe via confirmPaymentSuccess
+        try {
+          const confirmFn = httpsCallable(functions, 'confirmPaymentSuccess');
+          await confirmFn({
+            paymentIntentId: result.paymentIntent.id,
+            isTestMode: Boolean(isTestMode),
+          });
+        } catch (confErr) {
+          console.warn('confirmPaymentSuccess Apple Pay warning:', confErr);
+        }
+
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
         setMessage("Payment was not completed.");
@@ -431,9 +455,9 @@ function PaymentPageContent() {
 
         <Elements options={options} stripe={stripePromise}>
           {selectedMethod === 'apple_pay' ? (
-            <ApplePayCheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} />
+            <ApplePayCheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} isTestMode={isTestMode} />
           ) : (
-            <CheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} />
+            <CheckoutForm clientSecret={clientSecret} paymentIntentId={paymentIntentId} isTestMode={isTestMode} />
           )}
         </Elements>
 
