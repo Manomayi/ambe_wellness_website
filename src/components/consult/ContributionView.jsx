@@ -197,7 +197,7 @@ function StripeContributionCheckoutForm({
       <button
         type="submit"
         disabled={processing || !stripe || !elements || !isReady}
-        className="w-full bg-[#FFD3AC] text-[#1A1A1A] hover:bg-white font-semibold py-3.5 px-6 rounded-full transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#FFD3AC]"
+        className="w-full bg-[#FFD3AC] text-[#1A1A1A] hover:bg-white font-semibold py-3.5 px-6 rounded-full transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#FFD3AC] touch-manipulation active:scale-[0.98] shadow-lg"
       >
         {processing ? (
           <>
@@ -587,13 +587,17 @@ export default function ContributionView({
       {/* Payment Selection Modal */}
       {showCheckoutModal && (
         <div
-          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-4 sm:p-6 transition-all"
+          className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-3 sm:p-6 transition-all"
+          style={{
+            paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))",
+            paddingBottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
+          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowCheckoutModal(false);
           }}
         >
           <div
-            className="bg-[#1E1E1E] border border-white/15 rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[85vh] my-auto"
+            className="bg-[#1E1E1E] border border-white/15 rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[85dvh] sm:max-h-[88vh] my-auto animate-in fade-in zoom-in duration-200 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -602,14 +606,14 @@ export default function ContributionView({
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
                   Select Payment Method
                 </h3>
-                <p className="text-[#FFD3AC] text-xs sm:text-sm font-semibold">
+                <p className="text-[#FFD3AC] text-xs sm:text-sm font-semibold mt-0.5">
                   Total Contribution: ${activeAmount} USD
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCheckoutModal(false)}
-                className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition"
+                className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition touch-manipulation active:scale-95"
                 aria-label="Close"
               >
                 ✕
@@ -617,15 +621,15 @@ export default function ContributionView({
             </div>
 
             {/* Scrollable Modal Content */}
-            <div className="overflow-y-auto space-y-5 flex-1 pr-1 -mr-1 mt-4 pb-6 overscroll-contain">
+            <div className="overflow-y-auto space-y-4 sm:space-y-5 flex-1 min-h-0 pr-1 -mr-1 mt-4 pb-4 overscroll-contain">
               {/* Method Tabs */}
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("card")}
-                  className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
+                  className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition touch-manipulation active:scale-95 ${
                     paymentMethod === "card"
-                      ? "bg-[#FFD3AC] text-black font-semibold"
+                      ? "bg-[#FFD3AC] text-black font-semibold shadow-sm"
                       : "bg-[#282828] text-white/70 hover:text-white"
                   }`}
                 >

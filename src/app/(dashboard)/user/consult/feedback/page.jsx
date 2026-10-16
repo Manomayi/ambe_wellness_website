@@ -183,7 +183,7 @@ function StripePostContributionForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 pb-2">
       <PaymentElement onReady={() => setIsReady(true)} />
       {errorMsg && (
         <div className="bg-red-950/60 border border-red-500/50 text-red-200 text-xs p-3 rounded-xl">
@@ -193,7 +193,7 @@ function StripePostContributionForm({
       <button
         type="submit"
         disabled={processing || !stripe || !elements || !isReady}
-        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1A1A1A] font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-[#FFD3AC] hover:bg-[#ffe0c4] text-[#1A1A1A] font-bold py-3.5 px-6 rounded-full transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation active:scale-[0.98] shadow-lg"
       >
         {processing ? (
           <>
@@ -628,29 +628,33 @@ function ConsultationFeedbackPageContent() {
         {/* Payment Modal */}
         {showPaymentModal && (
           <div
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md overflow-y-auto flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all"
+            className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md overflow-y-auto flex items-center justify-center p-3 sm:p-6 transition-all"
+            style={{
+              paddingTop: "max(1rem, env(safe-area-inset-top, 1rem))",
+              paddingBottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
+            }}
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowPaymentModal(false);
             }}
           >
             <div
-              className="bg-[#1E1E1E] border border-white/15 rounded-t-3xl sm:rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] my-0 sm:my-auto"
+              className="bg-[#1E1E1E] border border-white/15 rounded-3xl p-5 sm:p-8 max-w-md w-full shadow-2xl flex flex-col max-h-[85dvh] sm:max-h-[88vh] my-auto animate-in fade-in zoom-in duration-200 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
               <div className="flex justify-between items-center border-b border-white/10 pb-4 shrink-0">
                 <div>
-                  <h3 className="font-serif text-2xl font-bold text-white">
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
                     Select Payment Method
                   </h3>
-                  <p className="text-[#FFD3AC] text-sm font-semibold">
+                  <p className="text-[#FFD3AC] text-xs sm:text-sm font-semibold mt-0.5">
                     Contribution: ${activeContribAmount} USD
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowPaymentModal(false)}
-                  className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition"
+                  className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition touch-manipulation active:scale-95"
                   aria-label="Close"
                 >
                   ✕
@@ -658,15 +662,15 @@ function ConsultationFeedbackPageContent() {
               </div>
 
               {/* Scrollable Content Body */}
-              <div className="overflow-y-auto space-y-5 flex-1 pr-1 -mr-1 mt-4">
+              <div className="overflow-y-auto space-y-4 sm:space-y-5 flex-1 min-h-0 pr-1 -mr-1 mt-4 pb-2 overscroll-contain">
                 {/* Tabs */}
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("card")}
-                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
+                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition touch-manipulation active:scale-95 ${
                       paymentMethod === "card"
-                        ? "bg-[#FFD3AC] text-black font-semibold"
+                        ? "bg-[#FFD3AC] text-black font-semibold shadow-sm"
                         : "bg-[#282828] text-white/70 hover:text-white"
                     }`}
                   >
@@ -676,9 +680,9 @@ function ConsultationFeedbackPageContent() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("apple_pay")}
-                      className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-1.5 ${
+                      className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition flex items-center justify-center gap-1.5 touch-manipulation active:scale-95 ${
                         paymentMethod === "apple_pay"
-                          ? "bg-[#FFD3AC] text-black font-semibold"
+                          ? "bg-[#FFD3AC] text-black font-semibold shadow-sm"
                           : "bg-[#282828] text-white/70 hover:text-white"
                       }`}
                     >
@@ -691,9 +695,9 @@ function ConsultationFeedbackPageContent() {
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("paypal")}
-                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition ${
+                    className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition touch-manipulation active:scale-95 ${
                       paymentMethod === "paypal"
-                        ? "bg-[#FFD3AC] text-black font-semibold"
+                        ? "bg-[#FFD3AC] text-black font-semibold shadow-sm"
                         : "bg-[#282828] text-white/70 hover:text-white"
                     }`}
                   >
@@ -770,12 +774,12 @@ function ConsultationFeedbackPageContent() {
                     </Elements>
                   )
                 ) : (
-                  <div className="space-y-4 py-4">
+                  <div className="space-y-4 py-4 pb-2">
                     <button
                       type="button"
                       onClick={handlePayPalCheckout}
                       disabled={paypalProcessing}
-                      className="w-full bg-[#0070BA] hover:bg-[#005ea6] text-white font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2 shadow-lg"
+                      className="w-full bg-[#0070BA] hover:bg-[#005ea6] text-white font-bold py-3.5 px-6 rounded-full transition flex items-center justify-center gap-2 shadow-lg touch-manipulation active:scale-[0.98]"
                     >
                       {paypalProcessing ? (
                         <>

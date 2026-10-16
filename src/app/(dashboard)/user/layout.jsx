@@ -37,7 +37,7 @@ export default function UserLayout({ children }) {
 
       {/* Main Content Area */}
       <main
-        className={`relative z-10 flex-1 min-h-0 w-full ${
+        className={`relative flex-1 min-h-0 w-full ${
           isChatPage
             ? "h-full overflow-hidden pb-0 flex flex-col"
             : "pb-24 md:pb-12"
