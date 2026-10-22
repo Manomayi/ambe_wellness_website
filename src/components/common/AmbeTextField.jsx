@@ -3,6 +3,7 @@
 import React, { useState, forwardRef } from "react";
 
 const AmbeTextField = forwardRef(function AmbeTextField({
+  id,
   type = "text",
   name,
   value,
@@ -35,6 +36,7 @@ const AmbeTextField = forwardRef(function AmbeTextField({
 
         <input
           ref={ref}
+          id={id || name}
           type={effectiveType}
           name={name}
           value={value}

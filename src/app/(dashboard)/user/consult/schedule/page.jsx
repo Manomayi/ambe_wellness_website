@@ -9,6 +9,7 @@ import {
   collection, 
   query, 
   where, 
+  limit,
   getDocs, 
   doc, 
   getDoc, 
@@ -544,6 +545,15 @@ function ScheduleConsultationContent() {
     }
   }, [resolvedDoctorUid]);
 
+  // Legacy PayPal redirect target: the server books the appointment on capture,
+  // so send the Client to the Consult tab where it shows up.
+  const isLegacyPayPalSuccess = searchParams.get('paypal_success') === 'true';
+  useEffect(() => {
+    if (isLegacyPayPalSuccess) {
+      router.replace('/user/consult');
+    }
+  }, [isLegacyPayPalSuccess, router]);
+
   // When pressing browser back button from schedule page, navigate to /user/home
   useEffect(() => {
     const handlePopState = () => {
@@ -757,11 +767,18 @@ function ScheduleConsultationContent() {
       // 1. Try Firebase Cloud Function createPaymentIntent (dynamically switches test/live key based on isTestMode)
       try {
         const fn = httpsCallable(functions, "createPaymentIntent");
+        const isInstantSlot = Boolean(selectedSlot?.isInstant);
         const fbRes = await fn({
           amount: amountInCents,
           currency: "usd",
           type: "consultation",
           isTestMode: Boolean(isTestMode),
+          doctor_uid: resolvedDoctorUid || "",
+          doctor_name: docName,
+          appointment_time: selectedSlot?.time ? selectedSlot.time.getTime() : Date.now(),
+          user_timezone: userTimezone || "America/New_York",
+          doctor_timezone: doctorTimezone || "America/New_York",
+          is_instant: isInstantSlot,
         });
         if (fbRes.data?.clientSecret) {
           setClientSecret(fbRes.data.clientSecret);
@@ -814,16 +831,32 @@ function ScheduleConsultationContent() {
     setPaypalProcessing(true);
 
     try {
-      const totalAmount = 50.0 + (Number(selectedContributionAmount) || 0);
+      const docName = doctorInfo ? `Dr. ${doctorInfo.first_name || ''} ${doctorInfo.last_name || ''}`.trim() : "Healthcare Provider";
+      const contributionAmount = Number(selectedContributionAmount) || 0;
+      const totalAmount = 50.0 + contributionAmount;
       const amountInCents = Math.round(totalAmount * 100);
+      const isInstantSlot = Boolean(selectedSlot?.isInstant);
+      // Same rule as handlePaymentSuccessAndSchedule: instant bookings start in 2 minutes
+      const appointmentTimeMillis = isInstantSlot
+        ? Date.now() + 2 * 60 * 1000
+        : (selectedSlot?.time ? selectedSlot.time.getTime() : Date.now());
 
+      // Called synchronously from the click handler so the PayPal window opens
+      // before any await (Safari blocks popups opened after an await).
       await startPayPalCheckout({
         amountCents: amountInCents,
         type: "consultation",
         isTestMode: Boolean(isTestMode),
-        onSuccess: async ({ orderId }) => {
+        contributionAmount,
+        doctorUid: resolvedDoctorUid || "",
+        doctorName: docName,
+        appointmentTime: appointmentTimeMillis,
+        userTimezone: userTimezone || "America/New_York",
+        doctorTimezone: doctorTimezone || "America/New_York",
+        isInstant: isInstantSlot,
+        onSuccess: async ({ orderId, data }) => {
           setIsProcessingDepositPayment(true);
-          await handlePaymentSuccessAndSchedule(orderId);
+          await handlePaymentSuccessAndSchedule(orderId, { paypalCapture: data });
           setPaypalProcessing(false);
           setIsProcessingDepositPayment(false);
         },
@@ -847,10 +880,30 @@ function ScheduleConsultationContent() {
 
 
   const handlePaymentSuccessAndSchedule = async (intentId, options = {}) => {
-    if (!selectedSlot || !user) return;
+    if (!user) return;
+
+    // PayPal capture already booked the appointment server-side (appointment,
+    // consultations doc, purchase, contribution records, user flags) — nothing
+    // left to write here.
+    const serverBookedApptId = options.paypalCapture?.appointmentId || null;
+    if (serverBookedApptId) {
+      console.log("Appointment booked by server on PayPal capture:", serverBookedApptId);
+      try {
+        // No-op if the server already cleared it
+        await consumePendingContribution(user.uid, serverBookedApptId);
+      } catch (consumeErr) {
+        console.warn("Could not consume pending contribution:", consumeErr);
+      }
+      setBookingSuccess(true);
+      router.replace('/user/consult');
+      return;
+    }
+
+    if (!selectedSlot) return;
 
     const isWaived = Boolean(options.waivedDeposit);
     const contribAmount = options.contributionAmount || 0;
+    const serverRecordedContribution = Boolean(options.paypalCapture?.contributionRecorded);
 
     // Strict validation: non-waived appointments require a real verified payment ID (Stripe pi_ or PayPal order ID)
     if (!isWaived && (!intentId || typeof intentId !== 'string' || intentId.startsWith('deposit_') || intentId.trim().length < 5)) {
@@ -872,31 +925,59 @@ function ScheduleConsultationContent() {
         : (profile?.doctor_name || "Healthcare Provider");
       const userFullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || user.displayName || 'Client';
 
-      // 1. Schedule Appointment via Cloud Function
-      let scheduledSuccessfully = false;
-      let finalApptId = `appt_${Date.now()}_${user.uid.substring(0, 5)}`;
-      let finalDocName = docName;
-
+      // 1. Check if server auto-booked the consultation via webhook or capturePayPalOrder
+      let autoBookedApptId = null;
       try {
-        const scheduleAppointment = httpsCallable(functions, 'scheduleAppointment');
-        const result = await scheduleAppointment({
-          appointmentTime: appointmentTimeMillis,
-          userTimezone: userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-          doctorTimezone: doctorTimezone || 'America/New_York',
-        });
-        if (result.data?.success) {
-          scheduledSuccessfully = true;
-          if (result.data.appointmentId) {
-            finalApptId = result.data.appointmentId;
-          }
-          if (result.data.doctorName) {
-            finalDocName = result.data.doctorName.startsWith('Dr.') 
-              ? result.data.doctorName 
-              : `Dr. ${result.data.doctorName}`;
+        const upcomingSnap = await getDocs(
+          query(collection(db, 'users', user.uid, 'appointments_upcoming'), limit(5))
+        );
+        for (const docSnap of upcomingSnap.docs) {
+          const d = docSnap.data();
+          if (d.payment_id === intentId || d.payment_intent_id === intentId) {
+            autoBookedApptId = docSnap.id;
+            break;
           }
         }
-      } catch (fnErr) {
-        console.warn('Cloud function schedule error, executing Firestore fallback:', fnErr);
+        if (!autoBookedApptId && intentId) {
+          const purchaseSnap = await getDoc(doc(db, 'users', user.uid, 'purchases', intentId));
+          if (purchaseSnap.exists() && purchaseSnap.data()?.consultation_id) {
+            autoBookedApptId = purchaseSnap.data().consultation_id;
+          }
+        }
+      } catch (checkErr) {
+        console.warn("Could not check server auto-booked appt:", checkErr);
+      }
+
+      let scheduledSuccessfully = false;
+      let finalApptId = autoBookedApptId || `appt_${Date.now()}_${user.uid.substring(0, 5)}`;
+      let finalDocName = docName;
+
+      if (autoBookedApptId) {
+        console.log("Appointment already auto-booked on server:", autoBookedApptId);
+        scheduledSuccessfully = true;
+      } else {
+        try {
+          const scheduleAppointment = httpsCallable(functions, 'scheduleAppointment');
+          const result = await scheduleAppointment({
+            appointmentTime: appointmentTimeMillis,
+            isInstant: isInstantSlot,
+            userTimezone: userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+            doctorTimezone: doctorTimezone || 'America/New_York',
+          });
+          if (result.data?.success) {
+            scheduledSuccessfully = true;
+            if (result.data.appointmentId) {
+              finalApptId = result.data.appointmentId;
+            }
+            if (result.data.doctorName) {
+              finalDocName = result.data.doctorName.startsWith('Dr.') 
+                ? result.data.doctorName 
+                : `Dr. ${result.data.doctorName}`;
+            }
+          }
+        } catch (fnErr) {
+          console.warn('Cloud function schedule error, executing Firestore fallback:', fnErr);
+        }
       }
 
       // 2. Fallback direct Firestore write if Cloud Function failed
@@ -1020,9 +1101,13 @@ function ScheduleConsultationContent() {
         try {
           const purchaseRef = doc(db, 'users', user.uid, 'purchases', finalIntentId);
           const pSnap = await getDoc(purchaseRef);
+          // The server writes the real charged total (deposit + contribution);
+          // only default to the $50 deposit when no amount exists yet.
+          const existingAmount = pSnap.exists() ? pSnap.data()?.amount : undefined;
+          const hasExistingAmount = existingAmount !== undefined && existingAmount !== null;
           const purchaseData = {
             id: finalIntentId,
-            amount: 50.00,
+            ...(hasExistingAmount ? {} : { amount: 50.00 }),
             currency: 'USD',
             status: 'succeeded',
             type: 'consultation',
@@ -1045,7 +1130,8 @@ function ScheduleConsultationContent() {
         }
 
         // If combined contribution was paid alongside deposit, record contribution
-        if (selectedContributionAmount > 0) {
+        // (unless the PayPal capture already wrote the contribution records)
+        if (selectedContributionAmount > 0 && !serverRecordedContribution) {
           try {
             await recordContribution({
               user,
@@ -1745,11 +1831,18 @@ function ScheduleConsultationContent() {
             <ContributionView
               user={user}
               doctorInfo={doctorInfo}
+              doctorUid={resolvedDoctorUid}
+              userTimezone={userTimezone}
+              doctorTimezone={doctorTimezone}
               selectedSlot={selectedSlot}
               isTestMode={isTestMode}
               stripePromise={stripePromise}
-              onSuccessSchedule={(paymentId, amount) =>
-                handlePaymentSuccessAndSchedule(paymentId, { waivedDeposit: true, contributionAmount: amount })
+              onSuccessSchedule={(paymentId, amount, paypalCapture) =>
+                handlePaymentSuccessAndSchedule(paymentId, {
+                  waivedDeposit: true,
+                  contributionAmount: amount,
+                  ...(paypalCapture ? { paypalCapture } : {}),
+                })
               }
               onProceedToDeposit={(contribAmt) => {
                 setSelectedContributionAmount(Number(contribAmt || 0));

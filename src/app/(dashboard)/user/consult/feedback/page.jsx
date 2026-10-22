@@ -399,8 +399,9 @@ function ConsultationFeedbackPageContent() {
         amountCents: Math.round(activeContribAmount * 100),
         type: "contribution_after",
         isTestMode: Boolean(isTestMode),
-        onSuccess: async ({ orderId }) => {
-          await handleContributionSuccess(orderId, "paypal");
+        consultationId: consultationId || undefined,
+        onSuccess: async ({ orderId, data }) => {
+          await handleContributionSuccess(orderId, "paypal", data);
           setPaypalProcessing(false);
         },
         onError: (err) => {
@@ -418,21 +419,24 @@ function ConsultationFeedbackPageContent() {
     }
   };
 
-  const handleContributionSuccess = async (paymentId, method = "card") => {
+  const handleContributionSuccess = async (paymentId, method = "card", paypalCapture = null) => {
     setShowPaymentModal(false);
     setContribSuccess(true);
 
     try {
-      await recordContribution({
-        user,
-        amount: activeContribAmount,
-        type: "after_consultation",
-        paymentMethod: method,
-        paymentId,
-        consultationId: consultationId || null,
-        doctorUid: effectiveDoctorUid,
-        doctorName: effectiveDoctorName,
-      });
+      // PayPal capture may already have written the contribution records server-side
+      if (!paypalCapture?.contributionRecorded) {
+        await recordContribution({
+          user,
+          amount: activeContribAmount,
+          type: "after_consultation",
+          paymentMethod: method,
+          paymentId,
+          consultationId: consultationId || null,
+          doctorUid: effectiveDoctorUid,
+          doctorName: effectiveDoctorName,
+        });
+      }
     } catch (err) {
       console.error("Error recording contribution:", err);
     }

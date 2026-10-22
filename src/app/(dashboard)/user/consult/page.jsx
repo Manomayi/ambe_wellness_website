@@ -19,6 +19,7 @@ import { httpsCallable } from 'firebase/functions';
 import { db, functions } from "@/lib/firebase/config";
 import { matchUserWithDoctor } from "@/lib/doctorMatching";
 import { getConsultationStatusInfo } from "@/lib/consultationStatus";
+import { reconcilePayPalOrders } from "@/lib/paypal";
 import UserQuestionnaireModal from "@/components/user/UserQuestionnaireModal";
 import ExtendedQuestionnaireModal from "@/components/user/ExtendedQuestionnaireModal";
 import DoctorProfileModal from "@/components/common/DoctorProfileModal";
@@ -81,7 +82,7 @@ let cachedDoctorInfo = null;
 
 export default function UserConsultPage() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, userType } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState(cachedUpcomingAppointments || []);
   const [pastAppointments, setPastAppointments] = useState(cachedPastAppointments || []);
   const [doctorInfo, setDoctorInfo] = useState(cachedDoctorInfo || null);
@@ -417,6 +418,18 @@ export default function UserConsultPage() {
       fetchDoctorInfo(resolvedDoctorUid);
     }
   }, [resolvedDoctorUid]);
+
+  // Finish any PayPal orders the Client approved but never returned from
+  // (fire-and-forget; a booked appointment shows up via the listeners above).
+  const reconciledUidRef = useRef(null);
+  useEffect(() => {
+    if (!user?.uid || userType !== 'user') return;
+    if (reconciledUidRef.current === user.uid) return;
+    reconciledUidRef.current = user.uid;
+    reconcilePayPalOrders().catch((err) => {
+      console.warn('reconcilePayPalOrders skipped:', err?.message || err);
+    });
+  }, [user?.uid, userType]);
 
   const fetchDoctorInfo = async (doctorUid) => {
     try {

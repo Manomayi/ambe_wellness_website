@@ -29,6 +29,7 @@ export default function SignUpPage() {
 
   const addressInputRef = useRef(null);
   const autocompleteRef = useRef(null);
+  const passwordInputRef = useRef(null);
   const GOOGLE_PLACES_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY || 'AIzaSyAAtJdwmMY3CwRUye-9tud_RjUhJ5lDC1A';
 
   // Form data
@@ -276,6 +277,18 @@ export default function SignUpPage() {
     const shuffled = pwd.split('').sort(() => 0.5 - Math.random()).join('');
     updateFormData('password', shuffled);
     updateFormData('confirmPassword', shuffled);
+    setErrors(prev => ({ ...prev, password: '', confirmPassword: '' }));
+
+    // Focus and dispatch events so browser password managers detect the credential entry
+    setTimeout(() => {
+      if (passwordInputRef.current) {
+        try {
+          passwordInputRef.current.focus({ preventScroll: true });
+          passwordInputRef.current.dispatchEvent(new Event('input', { bubbles: true }));
+          passwordInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (_) {}
+      }
+    }, 50);
   };
 
   const validateStep = () => {
@@ -396,6 +409,19 @@ export default function SignUpPage() {
 
   const handleNext = () => {
     if (validateStep()) {
+      if (step === 4) {
+        // Trigger PasswordCredential API if supported (Chrome, Chromium, Edge)
+        if (typeof window !== 'undefined' && window.PasswordCredential && navigator.credentials?.store) {
+          try {
+            const cred = new window.PasswordCredential({
+              id: formData.email,
+              password: formData.password,
+            });
+            navigator.credentials.store(cred).catch(() => {});
+          } catch (_) {}
+        }
+      }
+
       if (editingFromConfirmation) {
         setEditingFromConfirmation(false);
         setStep(getStepCount());
@@ -405,9 +431,22 @@ export default function SignUpPage() {
       if (step === getStepCount()) {
         handleSubmit();
       } else {
-        setStep(prev => prev + 1);
+        if (step === 4) {
+          // Allow a brief frame for browser form submission heuristics (Safari iOS/macOS)
+          // to process the credentials before unmounting Step 4
+          setTimeout(() => {
+            setStep(prev => prev + 1);
+          }, 120);
+        } else {
+          setStep(prev => prev + 1);
+        }
       }
     }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    handleNext();
   };
 
   const handleBack = () => {
@@ -1311,17 +1350,26 @@ export default function SignUpPage() {
             <input
               type="text"
               name="username"
+              id="username"
               value={formData.email}
               autoComplete="username"
-              readOnly
-              className="sr-only"
+              onChange={(e) => updateFormData("email", e.target.value)}
               tabIndex={-1}
-              aria-hidden="true"
+              style={{
+                position: "absolute",
+                width: "1px",
+                height: "1px",
+                opacity: 0.001,
+                pointerEvents: "none",
+                zIndex: -1,
+              }}
             />
 
             <AmbeTextField
+              ref={passwordInputRef}
               type="password"
-              name="new-password"
+              name="password"
+              id="password"
               placeholder="Password (min 8 characters)"
               autoComplete="new-password"
               value={formData.password}
@@ -1338,7 +1386,8 @@ export default function SignUpPage() {
 
             <AmbeTextField
               type="password"
-              name="confirm-password"
+              name="confirmPassword"
+              id="confirmPassword"
               placeholder="Confirm Password"
               autoComplete="new-password"
               value={formData.confirmPassword}
@@ -1786,8 +1835,8 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col justify-center">
+        {/* Main Content Form */}
+        <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col justify-center">
           {error && (
             <div className="bg-red-950/70 border border-red-500/50 rounded-2xl p-3 text-center mb-4">
               <p className="text-xs text-red-300 font-sans">{error}</p>
@@ -1799,7 +1848,7 @@ export default function SignUpPage() {
           {/* Bottom Button matching Flutter AmbeButton */}
           <div className="pt-6 flex justify-center">
             <AmbeButton
-              onClick={handleNext}
+              type="submit"
               loading={loading}
               className="w-full sm:w-[260px]"
             >
@@ -1810,7 +1859,7 @@ export default function SignUpPage() {
                 : "NEXT"}
             </AmbeButton>
           </div>
-        </div>
+        </form>
 
         {/* Already have account */}
         <div className="text-center pt-6 pb-2">

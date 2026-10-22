@@ -215,6 +215,9 @@ function StripeContributionCheckoutForm({
 export default function ContributionView({
   user,
   doctorInfo,
+  doctorUid,
+  userTimezone,
+  doctorTimezone,
   selectedSlot,
   isTestMode = false,
   stripePromise,
@@ -346,14 +349,33 @@ export default function ContributionView({
     }
     setPaypalProcessing(true);
 
+    // Booking details let the server book the appointment itself on capture
+    // ($49+ contribution waives the deposit).
+    const isInstantSlot = Boolean(selectedSlot?.isInstant);
+    const appointmentTimeMillis = isInstantSlot
+      ? Date.now() + 2 * 60 * 1000
+      : (selectedSlot?.time ? selectedSlot.time.getTime() : Date.now());
+    const practitionerUid = doctorUid || doctorInfo?.uid || doctorInfo?.id || "";
+    const practitionerName = doctorInfo
+      ? `Dr. ${doctorInfo.first_name || ""} ${doctorInfo.last_name || ""}`.trim()
+      : "Healthcare Provider";
+
     try {
+      // Called synchronously from the click handler so the PayPal window opens
+      // before any await (Safari blocks popups opened after an await).
       await startPayPalCheckout({
         amountCents: Math.round(activeAmount * 100),
         type: "contribution_before",
         isTestMode: Boolean(isTestMode),
-        onSuccess: async ({ orderId }) => {
+        doctorUid: practitionerUid,
+        doctorName: practitionerName,
+        appointmentTime: appointmentTimeMillis,
+        userTimezone: userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
+        doctorTimezone: doctorTimezone || doctorInfo?.timezone || "America/New_York",
+        isInstant: isInstantSlot,
+        onSuccess: async ({ orderId, data }) => {
           setIsProcessingPayment(true);
-          await handlePaymentCompleted(orderId, "paypal");
+          await handlePaymentCompleted(orderId, "paypal", data);
           setPaypalProcessing(false);
         },
         onError: (err) => {
@@ -374,9 +396,18 @@ export default function ContributionView({
     }
   };
 
-  const handlePaymentCompleted = async (paymentId, method = "card") => {
+  const handlePaymentCompleted = async (paymentId, method = "card", paypalCapture = null) => {
     setShowCheckoutModal(false);
     setIsProcessingPayment(true);
+
+    // PayPal capture already booked the appointment and wrote the contribution
+    // records server-side: skip recordContribution. The schedule page's handler
+    // sees appointmentId, skips scheduling and goes straight to Consult.
+    if (paypalCapture?.appointmentId) {
+      await onSuccessSchedule(paymentId, activeAmount, paypalCapture);
+      return;
+    }
+
     try {
       await recordContribution({
         user,

@@ -776,11 +776,15 @@ export default function UserCheckoutPage() {
       });
 
       if (paymentMethod === 'paypal') {
+        // Called before any await so the PayPal window opens inside the click
+        // (Safari blocks popups opened after an await).
         await startPayPalCheckout({
           amountCents: Math.round(total * 100),
           type: 'store',
           referralCreditsToUse: referralCreditsToUse,
           isTestMode: Boolean(isTestMode),
+          taxAmount: Number(tax.toFixed(2)),
+          shippingAmount: Number(shipping.toFixed(2)),
           onSuccess: async () => {
             router.push('/user/checkout/success');
           },
