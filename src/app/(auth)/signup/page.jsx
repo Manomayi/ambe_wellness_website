@@ -276,6 +276,7 @@ export default function SignUpPage() {
     const shuffled = pwd.split('').sort(() => 0.5 - Math.random()).join('');
     updateFormData('password', shuffled);
     updateFormData('confirmPassword', shuffled);
+    setErrors(prev => ({ ...prev, password: '', confirmPassword: '' }));
   };
 
   const validateStep = () => {
@@ -396,6 +397,24 @@ export default function SignUpPage() {
 
   const handleNext = () => {
     if (validateStep()) {
+      if (step === 4) {
+        // Submit background credential form with new email & password so browser captures them together
+        try {
+          const form = document.getElementById('hidden_credential_form');
+          const userField = document.getElementById('hidden_save_username');
+          const passField = document.getElementById('hidden_save_password');
+          if (userField && formData.email) {
+            userField.value = formData.email.trim();
+          }
+          if (passField && formData.password) {
+            passField.value = formData.password;
+          }
+          if (form) {
+            form.submit();
+          }
+        } catch (_) {}
+      }
+
       if (editingFromConfirmation) {
         setEditingFromConfirmation(false);
         setStep(getStepCount());
@@ -405,7 +424,14 @@ export default function SignUpPage() {
       if (step === getStepCount()) {
         handleSubmit();
       } else {
-        setStep(prev => prev + 1);
+        if (step === 4) {
+          // Allow frame for background form submission event to register with browser before changing step
+          setTimeout(() => {
+            setStep(prev => prev + 1);
+          }, 80);
+        } else {
+          setStep(prev => prev + 1);
+        }
       }
     }
   };
@@ -1307,21 +1333,30 @@ export default function SignUpPage() {
               </button>
             </div>
 
-            {/* Hidden username input for password manager auto-save linking */}
+            {/* Username input for password manager auto-save linking */}
             <input
               type="text"
               name="username"
-              value={formData.email}
+              id="username"
+              value={formData.email || ""}
               autoComplete="username"
-              readOnly
-              className="sr-only"
               tabIndex={-1}
-              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: "-9999px",
+                left: "-9999px",
+                width: "1px",
+                height: "1px",
+                opacity: 0.001,
+                pointerEvents: "none",
+              }}
+              readOnly
             />
 
             <AmbeTextField
               type="password"
-              name="new-password"
+              name="password"
+              id="password"
               placeholder="Password (min 8 characters)"
               autoComplete="new-password"
               value={formData.password}
@@ -1338,7 +1373,8 @@ export default function SignUpPage() {
 
             <AmbeTextField
               type="password"
-              name="confirm-password"
+              name="confirmPassword"
+              id="confirmPassword"
               placeholder="Confirm Password"
               autoComplete="new-password"
               value={formData.confirmPassword}
@@ -1825,6 +1861,39 @@ export default function SignUpPage() {
           </p>
         </div>
       </div>
+
+      {/* Background iframe & form for Step 4 credential submission (stays mounted across all steps) */}
+      <iframe
+        name="hidden_credential_iframe"
+        id="hidden_credential_iframe"
+        style={{ position: "fixed", top: "-9999px", left: "-9999px", width: "1px", height: "1px", opacity: 0.001, pointerEvents: "none" }}
+        aria-hidden="true"
+        title="credential-iframe"
+      />
+      <form
+        id="hidden_credential_form"
+        action="about:blank"
+        method="POST"
+        target="hidden_credential_iframe"
+        style={{ position: "fixed", top: "-9999px", left: "-9999px", width: "1px", height: "1px", opacity: 0.001, pointerEvents: "none" }}
+      >
+        <input
+          type="text"
+          name="username"
+          id="hidden_save_username"
+          value={formData.email || ""}
+          autoComplete="username"
+          onChange={() => {}}
+        />
+        <input
+          type="password"
+          name="password"
+          id="hidden_save_password"
+          value={formData.password || ""}
+          autoComplete="new-password"
+          onChange={() => {}}
+        />
+      </form>
 
       {loading && <ProfileCreationAnimation />}
     </>
