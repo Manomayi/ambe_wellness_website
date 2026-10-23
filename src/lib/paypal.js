@@ -32,6 +32,26 @@ function closePopup(popup) {
 }
 
 /**
+ * Records a client-side checkout lifecycle event into the order's timeline
+ * in Firestore and Cloud Logging. Fire-and-forget; never throws.
+ */
+export async function logPayPalClientEvent(orderId, event, { url = null, details = null } = {}) {
+  if (!orderId || !event) return;
+  try {
+    const logFn = httpsCallable(functions, "logPayPalClientEvent");
+    await logFn({
+      orderId,
+      event,
+      platform: "Web",
+      url,
+      details,
+    });
+  } catch (err) {
+    // Fire-and-forget; never disrupt UI
+  }
+}
+
+/**
  * Opens the PayPal checkout window immediately with a "Connecting to PayPal…"
  * placeholder. MUST be called synchronously inside the user's click handler
  * (before any `await`), otherwise Safari's popup blocker will block it.
@@ -152,6 +172,10 @@ export async function startPayPalCheckout({
     }
 
     ({ orderId, approveUrl } = result.data);
+    logPayPalClientEvent(orderId, "CHECKOUT_INITIATED", {
+      url: approveUrl,
+      details: { type, amountCents, popupPreOpened: isPopupUsable(popup) },
+    });
   } catch (err) {
     console.error("[PayPal] Error starting checkout:", err);
     closePopup(popup);
@@ -169,16 +193,19 @@ export async function startPayPalCheckout({
   // 2. Fallback to redirect if the popup was blocked (or closed already)
   if (!isPopupUsable(popup)) {
     console.warn("[PayPal] Popup blocked, redirecting in same window");
+    logPayPalClientEvent(orderId, "REDIRECT_SAME_TAB", { url: approveUrl });
     window.location.href = approveUrl;
     return;
   }
 
   // 3. Send the pre-opened window to PayPal
   try {
+    logPayPalClientEvent(orderId, "POPUP_NAVIGATED", { url: approveUrl });
     popup.location.href = approveUrl;
   } catch (navErr) {
     console.warn("[PayPal] Could not navigate popup, redirecting in same window:", navErr);
     closePopup(popup);
+    logPayPalClientEvent(orderId, "REDIRECT_SAME_TAB_FALLBACK", { url: approveUrl });
     window.location.href = approveUrl;
     return;
   }
@@ -223,6 +250,9 @@ function watchPayPalPopup({ popup, orderId, onSuccess, onError, onCancel }) {
     cleanup();
     closePopup(popup);
     clearPendingPayPalOrder();
+    logPayPalClientEvent(orderId, "CLIENT_SETTLED_SUCCESS", {
+      details: { appointmentId: data?.appointmentId, type: data?.type },
+    });
     if (!onSuccess) return;
     try {
       await onSuccess({ orderId, data });
@@ -237,6 +267,9 @@ function watchPayPalPopup({ popup, orderId, onSuccess, onError, onCancel }) {
     settled = true;
     cleanup();
     closePopup(popup);
+    logPayPalClientEvent(orderId, "CLIENT_SETTLED_ERROR", {
+      details: { error: err?.message || String(err) },
+    });
     if (onError) onError(err);
   };
 
@@ -245,6 +278,7 @@ function watchPayPalPopup({ popup, orderId, onSuccess, onError, onCancel }) {
     settled = true;
     cleanup();
     clearPendingPayPalOrder();
+    logPayPalClientEvent(orderId, "CLIENT_SETTLED_CANCEL");
     if (onCancel) onCancel();
   };
 
@@ -281,6 +315,9 @@ function watchPayPalPopup({ popup, orderId, onSuccess, onError, onCancel }) {
     ) {
       approvalMessageReceived = true;
       stopPolling();
+      logPayPalClientEvent(orderId, "POPUP_POSTMESSAGE_APPROVAL", {
+        details: { eventOrderId: event.data?.orderId },
+      });
       try {
         const captureRes = await captureFn({ orderId });
         await settleSuccess(captureRes.data);
@@ -297,6 +334,7 @@ function watchPayPalPopup({ popup, orderId, onSuccess, onError, onCancel }) {
         settleError(capErr);
       }
     } else if (event.data?.type === "PAYPAL_CANCELLED") {
+      logPayPalClientEvent(orderId, "POPUP_POSTMESSAGE_CANCEL");
       settleCancel();
     }
   };

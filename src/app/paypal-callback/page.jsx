@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { capturePayPal } from "@/lib/paypal";
+import { capturePayPal, logPayPalClientEvent } from "@/lib/paypal";
 
 const PENDING_ORDER_KEY = "pending_paypal_order_id";
 const PENDING_TYPE_KEY = "pending_paypal_type";
@@ -85,6 +85,12 @@ function PayPalCallbackContent() {
     const orderId = searchParams.get("token") || searchParams.get("orderId") || pending.orderId;
     const type = searchParams.get("type") || pending.type || "store";
 
+    if (orderId) {
+      logPayPalClientEvent(orderId, "CALLBACK_PAGE_LOADED", {
+        details: { status, type, hasOpener: Boolean(window.opener) },
+      });
+    }
+
     if (status === "cancel") {
       setStatusText("Payment was cancelled.");
       if (window.opener) {
@@ -133,11 +139,15 @@ function PayPalCallbackContent() {
 
         if (data?.success) {
           clearPendingPayPal();
+          logPayPalClientEvent(orderId, "CALLBACK_DIRECT_CAPTURE_SUCCESS", {
+            details: { appointmentId: data?.appointmentId, type: data?.type || type },
+          });
           router.replace(successPathForType(data.type || type));
           return;
         }
 
         if (data?.pending) {
+          logPayPalClientEvent(orderId, "CALLBACK_DIRECT_CAPTURE_PENDING");
           setNextPath(followUpPathForType(type));
           setStatusText(PENDING_APPROVAL_MESSAGE);
           setPhase("pending");
@@ -147,6 +157,9 @@ function PayPalCallbackContent() {
         throw new Error("Unexpected response from PayPal service.");
       } catch (err) {
         console.error("Direct capture error:", err);
+        logPayPalClientEvent(orderId, "CALLBACK_DIRECT_CAPTURE_ERROR", {
+          details: { error: err?.message || String(err), code: err?.code },
+        });
         if (err?.code === "functions/unauthenticated") {
           setStatusText(
             "Your PayPal payment was received. Please sign in to Ambé Wellness — we'll finish processing it automatically, so you don't need to pay again."
