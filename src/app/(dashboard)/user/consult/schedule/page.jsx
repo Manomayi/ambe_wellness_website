@@ -1541,7 +1541,9 @@ function ScheduleConsultationContent() {
   }
 
   // 4. If Already Has Active Consultation & Not in Reschedule Mode -> Guard View
-  if (hasActiveAppointment && !isRescheduleParam && !scheduling && !bookingSuccess) {
+  // (not while a payment is processing: the server books the consultation the
+  // moment payment succeeds, before this page has finished its own flow)
+  if (hasActiveAppointment && !isRescheduleParam && !scheduling && !bookingSuccess && !isProcessingDepositPayment) {
     return (
       <ProtectedRoute userType="user">
         <div className="max-w-2xl mx-auto space-y-6">
