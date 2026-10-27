@@ -273,7 +273,7 @@ export default function NotificationsPage() {
       }
     }
 
-    if (type === 'refund_approved' || type === 'refund_declined' || title.includes('refund')) {
+    if (type === 'refund_approved' || type === 'refund_declined' || type === 'refund_failed' || title.includes('refund')) {
       router.push('/user/menu/refunds');
       return;
     }
@@ -326,6 +326,7 @@ export default function NotificationsPage() {
         return <LifebuoyIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'refund_approved':
       case 'refund_declined':
+      case 'refund_failed':
         return <ReceiptRefundIcon className="w-5 h-5 text-[#FFD3AC]" />;
       case 'doctor_recommendation':
       case 'consultation_report':

@@ -565,6 +565,18 @@ export default function UserRefundsPage() {
             <CheckCircleIcon className="w-3.5 h-3.5 mr-1" /> Refunded
           </span>
         );
+      case 'refund_pending':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+            <ClockIcon className="w-3.5 h-3.5 mr-1" /> Refund Processing
+          </span>
+        );
+      case 'refund_failed':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
+            <XCircleIcon className="w-3.5 h-3.5 mr-1" /> Refund Failed
+          </span>
+        );
       default:
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-white/70 border border-white/10">
@@ -801,6 +813,33 @@ export default function UserRefundsPage() {
                         <span>Decline Reason</span>
                       </p>
                       <p className="text-red-200/90">{req.declineReason}</p>
+                    </div>
+                  )}
+
+                  {/* Refund sent, payment provider still processing it */}
+                  {currentStatus === 'refund_pending' && req && (
+                    <div className="p-3 bg-sky-500/15 rounded-xl border border-sky-500/30 text-xs space-y-1">
+                      <p className="font-bold text-sky-300 flex items-center space-x-1.5">
+                        <ClockIcon className="w-4 h-4 text-sky-400 shrink-0" />
+                        <span>Refund Processing</span>
+                      </p>
+                      <p className="text-sky-200/90">
+                        Your refund of ${(Number(req.refundableAmount) || 50.0).toFixed(2)} has been sent and is being processed by the payment provider. We will notify you once it completes.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Payment provider rejected the refund */}
+                  {currentStatus === 'refund_failed' && req && (
+                    <div className="p-3 bg-red-500/15 rounded-xl border border-red-500/30 text-xs space-y-1">
+                      <p className="font-bold text-red-300 flex items-center space-x-1 mb-1">
+                        <XCircleIcon className="w-4 h-4 text-red-400" />
+                        <span>Refund Could Not Be Completed</span>
+                      </p>
+                      <p className="text-red-200/90">
+                        Reason: {req.refundFailureReason || 'The payment provider could not complete the refund.'}
+                      </p>
+                      <p className="text-white/60">Your money is safe. Our team will contact you to arrange your refund.</p>
                     </div>
                   )}
 

@@ -219,6 +219,7 @@ export default function PurchaseHistoryPage() {
         data.status;
 
       let declineReason = (data.decline_reason || data.declineReason || '').trim();
+      let refundFailureReason = (data.refund_failure_reason || '').trim();
 
       const consultationId = data.consultation_id || data.appointment_id || null;
       const paymentIntentId = data.payment_intent_id || data.payment_id || null;
@@ -260,6 +261,13 @@ export default function PurchaseHistoryPage() {
             productStatus = 'Refund Declined';
             if (refundReq.declineReason) {
               declineReason = refundReq.declineReason.trim();
+            }
+          } else if (reqStatus === 'refund_pending') {
+            productStatus = 'Refund Processing';
+          } else if (reqStatus === 'refund_failed') {
+            productStatus = 'Refund Failed';
+            if (refundReq.refundFailureReason) {
+              refundFailureReason = refundReq.refundFailureReason.trim();
             }
           } else if (reqStatus === 'refunded') {
             const is50 = refundReq.refundableAmount === 25 || refundReq.isNoShow === true;
@@ -304,7 +312,11 @@ export default function PurchaseHistoryPage() {
           };
 
           const rawRefundStatus = (data.refund_status || '').toLowerCase();
-          if (
+          if (rawRefundStatus === 'refund_failed') {
+            productStatus = 'Refund Failed';
+          } else if (rawRefundStatus === 'refund_pending') {
+            productStatus = 'Refund Processing';
+          } else if (
             rawRefundStatus === 'waiting_for_approval' ||
             rawRefundStatus === 'waitingforapproval' ||
             rawRefundStatus === 'requested'
@@ -333,7 +345,11 @@ export default function PurchaseHistoryPage() {
         }
       } else {
         const rawRefundStatus = (data.refund_status || '').toLowerCase();
-        if (
+        if (rawRefundStatus === 'refund_failed') {
+          productStatus = 'Refund Failed';
+        } else if (rawRefundStatus === 'refund_pending') {
+          productStatus = 'Refund Processing';
+        } else if (
           rawRefundStatus === 'declined' ||
           (productStatus && productStatus.toLowerCase().includes('decline'))
         ) {
@@ -351,6 +367,7 @@ export default function PurchaseHistoryPage() {
         currency: (data.currency || 'USD').toUpperCase(),
         status: productStatus,
         declineReason: declineReason,
+        refundFailureReason: refundFailureReason,
         paymentStatus: data.status || 'succeeded',
         type: orderType,
         description: data.description || '',
@@ -442,8 +459,11 @@ export default function PurchaseHistoryPage() {
 
   const getStatusBadgeColor = (statusStr) => {
     const s = (statusStr || '').toLowerCase();
-    if (s.includes('decline')) {
+    if (s.includes('decline') || s.includes('failed')) {
       return 'text-rose-400 bg-rose-500/20 border-rose-500/30';
+    }
+    if (s === 'refund processing') {
+      return 'text-sky-400 bg-sky-500/20 border-sky-500/30';
     }
     if (s.includes('waiting') || s.includes('approval') || s.includes('request')) {
       return 'text-amber-400 bg-amber-500/20 border-amber-500/30';
@@ -616,6 +636,7 @@ export default function PurchaseHistoryPage() {
                 shipDate,
                 trackingNumber,
                 declineReason,
+                refundFailureReason,
                 refundReq,
                 refundEligibility,
               } = purchaseItem;
@@ -680,6 +701,13 @@ export default function PurchaseHistoryPage() {
                   {status === 'Refund Declined' && declineReason && (
                     <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200">
                       <strong className="text-rose-300">Decline Reason:</strong> {declineReason}
+                    </div>
+                  )}
+
+                  {status === 'Refund Failed' && !refundReq && (
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200">
+                      <strong className="text-rose-300">Refund Failed:</strong>{' '}
+                      {refundFailureReason || 'The payment provider could not complete the refund.'} Our team will contact you.
                     </div>
                   )}
 
@@ -812,6 +840,26 @@ export default function PurchaseHistoryPage() {
                           {refundReq.status === 'declined' && (
                             <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200">
                               <strong className="text-rose-300">Decline Reason:</strong> {declineReason || refundReq.declineReason || 'No reason provided.'}
+                            </div>
+                          )}
+
+                          {refundReq.status === 'refund_pending' && (
+                            <div className="bg-sky-500/10 border border-sky-500/20 rounded-xl p-3 text-xs text-sky-200 flex items-center gap-2">
+                              <ClockIcon className="w-4 h-4 text-sky-400 shrink-0" />
+                              <span>
+                                Refund Processing (${(refundReq.refundableAmount ?? 50).toFixed(2)}) — we will notify you once it completes.
+                              </span>
+                            </div>
+                          )}
+
+                          {refundReq.status === 'refund_failed' && (
+                            <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-200 space-y-1">
+                              <p className="font-bold text-rose-300">Refund Could Not Be Completed</p>
+                              <p>
+                                <strong className="text-rose-300">Reason:</strong>{' '}
+                                {refundFailureReason || refundReq.refundFailureReason || 'The payment provider could not complete the refund.'}
+                              </p>
+                              <p className="text-white/50 text-[11px]">Your money is safe. Our team will contact you to arrange your refund.</p>
                             </div>
                           )}
 
