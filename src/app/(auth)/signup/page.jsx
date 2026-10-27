@@ -257,28 +257,6 @@ export default function SignUpPage() {
     setErrors(prev => ({ ...prev, professionalTitles: '', customProfessionalTitle: '' }));
   };
 
-  const generateStrongPassword = () => {
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const numbers = '0123456789';
-    const special = '@#$%^&+=!';
-    const allChars = lowercase + uppercase + numbers + special;
-
-    let pwd = '';
-    pwd += lowercase[Math.floor(Math.random() * lowercase.length)];
-    pwd += uppercase[Math.floor(Math.random() * uppercase.length)];
-    pwd += numbers[Math.floor(Math.random() * numbers.length)];
-    pwd += special[Math.floor(Math.random() * special.length)];
-
-    for (let i = pwd.length; i < 12; i++) {
-      pwd += allChars[Math.floor(Math.random() * allChars.length)];
-    }
-    const shuffled = pwd.split('').sort(() => 0.5 - Math.random()).join('');
-    updateFormData('password', shuffled);
-    updateFormData('confirmPassword', shuffled);
-    setErrors(prev => ({ ...prev, password: '', confirmPassword: '' }));
-  };
-
   const validateStep = () => {
     const newErrors = {};
     const isDoctor = formData.userType === 'doctor';
@@ -1293,20 +1271,6 @@ export default function SignUpPage() {
             <p className="text-gray-400 text-xs sm:text-sm text-center mb-4 font-sans">
               Your password must be at least 8 characters and include uppercase, numbers, and special characters.
             </p>
-
-            {/* Generate Strong Password Button */}
-            <div className="flex justify-center mb-2">
-              <button
-                type="button"
-                onClick={generateStrongPassword}
-                className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#FFD3AC]/70 text-[#FFD3AC] hover:bg-[#FFD3AC]/10 text-xs font-semibold tracking-wide transition cursor-pointer"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Generate Strong Password
-              </button>
-            </div>
 
             {/* Username input for password manager auto-save linking */}
             <input
