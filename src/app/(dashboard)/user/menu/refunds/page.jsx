@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase/config';
+import { auth, db, functions } from '@/lib/firebase/config';
+import { httpsCallable } from 'firebase/functions';
 import {
   decideRefund,
   formatSeconds,
@@ -18,7 +19,6 @@ import {
   where,
   doc,
   setDoc,
-  serverTimestamp,
 } from 'firebase/firestore';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
@@ -443,69 +443,20 @@ export default function UserRefundsPage() {
             : String(selectedItem.consultationDate))
         : 'N/A';
 
-      const reqId = selectedItem.consultationId;
-      const refPayload = {
-        id: reqId,
-        userId: currentUser.uid,
-        user_id: currentUser.uid,
-        userName: currentUser.displayName || 'Client',
-        userEmail: currentUser.email || '',
+      // The server works out the refundable amount from the consultation and
+      // payment records and writes the request itself. This page used to
+      // write the request straight to Firestore with an amount calculated
+      // here, and the admin's auto-refund paid whatever it said.
+      const submitRefundRequest = httpsCallable(functions, 'submitRefundRequest');
+      await submitRefundRequest({
         paymentId: selectedItem.paymentId,
-        payment_id: selectedItem.paymentId,
-        consultationId: reqId,
-        consultation_id: reqId,
+        consultationId: selectedItem.consultationId,
         doctorName: selectedItem.doctorName || 'Assigned Practitioner',
-        doctor_name: selectedItem.doctorName || 'Assigned Practitioner',
         consultationDate: consultationDateStr,
-        depositAmount: selectedItem.depositAmount,
-        refundableAmount: selectedItem.calculatedRefund,
-        isNoShow: selectedItem.isNoShow,
-        refundPolicy: selectedItem.policyText,
-        consultationStatus: selectedItem.consultationStatus || (selectedItem.isCancelled ? 'cancelled_by_user' : null),
-        isCancelled: selectedItem.isCancelled || false,
-        cancelledBy: selectedItem.cancelledBy || (selectedItem.consultationStatus === 'cancelled_by_user' ? 'user' : (selectedItem.consultationStatus === 'cancelled_by_doctor' ? 'doctor' : null)),
-        cancelledAt: selectedItem.cancelledAt || null,
-        cancelledInAdvance: selectedItem.isCancelled || false,
-        userJoined: selectedItem.userJoined === true,
-        userJoinedAt: selectedItem.userJoinedAt || null,
-        doctorJoined: selectedItem.doctorJoined === true,
-        doctorJoinedAt: selectedItem.doctorJoinedAt || null,
-        callDuration: selectedItem.callDuration || null,
-        callEndedAt: selectedItem.callEndedAt || null,
-        callEndedBy: selectedItem.callEndedBy || null,
-        status: 'waiting_for_approval',
         patientMessage: patientMessage.trim(),
-        receiptUrl: receiptUrl || null,
-        receiptStoragePath: receiptStoragePath || null,
-        declineReason: null,
-        submittedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        auditTrail: [
-          {
-            status: 'waiting_for_approval',
-            changedBy: currentUser.uid,
-            role: 'patient',
-            timestamp: new Date().toISOString(),
-            note: 'Refund request submitted by client',
-          },
-        ],
-      };
-
-      await setDoc(doc(db, 'consultations', reqId), {
-        refund_status: 'waiting_for_approval',
-        ...(selectedItem.consultationStatus ? { status: selectedItem.consultationStatus } : {}),
-        ...(selectedItem.cancelledBy ? { cancelled_by: selectedItem.cancelledBy } : {}),
-        ...(selectedItem.cancelledAt ? { cancelled_at: selectedItem.cancelledAt } : {}),
-        refundable_amount: selectedItem.calculatedRefund,
-        patient_message: patientMessage.trim(),
-        ...(receiptUrl ? { receipt_url: receiptUrl } : {}),
-        ...(receiptStoragePath ? { receipt_storage_path: receiptStoragePath } : {}),
-        refund_submitted_at: serverTimestamp(),
-        is_no_show: selectedItem.isNoShow,
-      }, { merge: true });
-
-      await setDoc(doc(db, 'refundRequests', reqId), refPayload, { merge: true });
+        receiptUrl,
+        receiptStoragePath,
+      });
 
       setSelectedItem(null);
       setShowSuccessModal(true);
@@ -759,7 +710,8 @@ export default function UserRefundsPage() {
                     </div>
                   ) : null}
 
-                  {/* 30-Day deadline status */}
+                  {/* 30-Day deadline status, only while a refund can still be requested */}
+                  {!req && (
                   <div className="text-xs flex items-center justify-between text-white/60 pt-1">
                     {item.isWithin30Days ? (
                       <p>
@@ -775,6 +727,7 @@ export default function UserRefundsPage() {
                       </span>
                     )}
                   </div>
+                  )}
 
                   {/* Waiting for Approval Box */}
                   {currentStatus === 'waiting_for_approval' && req && (

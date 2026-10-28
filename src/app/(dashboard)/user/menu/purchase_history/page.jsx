@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, db } from '@/lib/firebase/config';
+import { auth, db, functions } from '@/lib/firebase/config';
+import { httpsCallable } from 'firebase/functions';
 import { onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
@@ -527,57 +528,18 @@ export default function PurchaseHistoryPage() {
           ? `Dr. ${doctorName}`
           : doctorName;
 
-      const refPayload = {
-        id: targetConsultationId,
-        userId: currentUser.uid,
-        user_id: currentUser.uid,
-        userName: currentUser.displayName || 'Client',
-        userEmail: currentUser.email || '',
-        paymentId: paymentId,
-        payment_id: paymentId,
+      // The server works out the refundable amount from the consultation and
+      // payment records and writes the request itself (it used to be written
+      // here, with an amount calculated in the browser). paymentId is the
+      // purchase record's id, which is what the server looks up.
+      const submitRefundRequest = httpsCallable(functions, 'submitRefundRequest');
+      await submitRefundRequest({
+        paymentId: selectedRefundItem.id || paymentId,
         consultationId: targetConsultationId,
-        consultation_id: targetConsultationId,
         doctorName: formattedDoctor,
-        doctor_name: formattedDoctor,
         consultationDate: consultationDateStr,
-        depositAmount: 50.0,
-        refundableAmount: eligibility?.refundableAmount ?? 50.0,
-        isNoShow: eligibility?.isNoShow ?? false,
-        refundPolicy: eligibility?.policyText || 'Full deposit refund eligible.',
-        status: 'waiting_for_approval',
         patientMessage: refundPatientMessage.trim(),
-        receiptUrl: null,
-        receiptStoragePath: null,
-        declineReason: null,
-        submittedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        auditTrail: [
-          {
-            status: 'waiting_for_approval',
-            changedBy: currentUser.uid,
-            role: 'patient',
-            timestamp: new Date().toISOString(),
-            note: 'Refund request submitted by client from purchase history',
-          },
-        ],
-      };
-
-      // 1. Update/set consultation record
-      await setDoc(
-        doc(db, 'consultations', targetConsultationId),
-        {
-          refund_status: 'waiting_for_approval',
-          refundable_amount: eligibility?.refundableAmount ?? 50.0,
-          patient_message: refundPatientMessage.trim(),
-          refund_submitted_at: serverTimestamp(),
-          is_no_show: eligibility?.isNoShow ?? false,
-        },
-        { merge: true }
-      );
-
-      // 2. Set refundRequests record
-      await setDoc(doc(db, 'refundRequests', targetConsultationId), refPayload, { merge: true });
+      });
 
       // 3. Update purchase document under users/{uid}/purchases
       if (selectedRefundItem.id) {
