@@ -464,7 +464,7 @@ export default function NotificationsPage() {
                       </div>
 
                       {body && (
-                        <p className="text-xs sm:text-sm text-white/60 mt-1 line-clamp-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-white/60 mt-1 leading-relaxed whitespace-pre-line break-words">
                           {body}
                         </p>
                       )}
