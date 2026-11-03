@@ -9,7 +9,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
 } from 'firebase/auth';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import WebLayoutWrapper from '@/components/common/WebLayoutWrapper';
 import AmbeBackButton from '@/components/common/AmbeBackButton';
 import {
@@ -86,7 +86,23 @@ export default function DeleteAccountPage() {
       const cred = EmailAuthProvider.credential(email.trim(), password);
       await reauthenticateWithCredential(currentUser, cred);
 
-      // 2. Delete user, doctor, and verification documents from Firestore
+      // 2. Mark and clean user, doctor, and verification documents from Firestore
+      try {
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          status: 'deleted',
+          is_deleted: true,
+          deleted_at: serverTimestamp(),
+        });
+      } catch (_) {}
+
+      try {
+        await updateDoc(doc(db, 'doctors', currentUser.uid), {
+          status: 'deleted',
+          is_deleted: true,
+          deleted_at: serverTimestamp(),
+        });
+      } catch (_) {}
+
       try {
         await deleteDoc(doc(db, 'users', currentUser.uid));
       } catch (err) {
