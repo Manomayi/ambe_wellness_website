@@ -50,6 +50,7 @@ export default function ProductDetailSheet({ product, open, onClose, onBuy, onAd
     if (onBuy) {
       onBuy(product);
     } else {
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("routeNavigationStart"));
       router.push("/signup");
     }
   };
@@ -59,6 +60,7 @@ export default function ProductDetailSheet({ product, open, onClose, onBuy, onAd
     if (onAddToCart) {
       onAddToCart(product);
     } else {
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("routeNavigationStart"));
       router.push("/signup");
     }
   };

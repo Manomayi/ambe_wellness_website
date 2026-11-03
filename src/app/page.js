@@ -315,7 +315,8 @@ export default function Home() {
 
                 <Link
                   href={CONSULT_HREF}
-                  className="btn-primary inline-flex w-full sm:w-auto px-10 sm:px-14 py-3.5 sm:py-4 text-base tracking-wide cursor-pointer text-center justify-center font-semibold"
+                  prefetch={false}
+                  className="btn-primary inline-flex w-full sm:w-auto px-10 sm:px-14 py-3.5 sm:py-4 text-base tracking-wide cursor-pointer text-center justify-center font-semibold touch-manipulation active:scale-[0.98]"
                 >
                   BOOK FREE CONSULT NOW
                 </Link>
@@ -339,9 +340,10 @@ export default function Home() {
                         <Link
                           key={`${cat.label}-${i}`}
                           href="/shop"
+                          prefetch={false}
                           aria-hidden={isDuplicate ? true : undefined}
                           tabIndex={isDuplicate ? -1 : undefined}
-                          className="flex-none bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform"
+                          className="flex-none bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform touch-manipulation"
                         >
                           <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mb-1 relative">
                             <Image

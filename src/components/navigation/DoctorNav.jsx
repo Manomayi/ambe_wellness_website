@@ -121,7 +121,7 @@ export default function DoctorNav() {
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           {/* App Logo */}
-          <Link href="/doctor/home" className="flex items-center gap-2.5">
+          <Link href="/doctor/home" prefetch={false} className="flex items-center gap-2.5 touch-manipulation">
             <Image
               src="/images/logos/ambe_logo.png"
               alt="AMBÉ"
@@ -143,6 +143,7 @@ export default function DoctorNav() {
                 <Link
                   key={href}
                   href={href}
+                  prefetch={false}
                   className={`relative px-2 py-1 text-sm font-sans font-medium transition-colors touch-manipulation ${
                     isActive
                       ? 'text-[#FFD3AC] font-semibold'

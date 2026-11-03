@@ -140,10 +140,12 @@ export default function ShopClient({ products: initialProducts = [] }) {
   }, []);
 
   function handleBuy(product) {
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("routeNavigationStart"));
     router.push("/signup");
   }
 
   function handleAddToCart(product) {
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("routeNavigationStart"));
     router.push("/signup");
   }
 
@@ -302,7 +304,7 @@ export default function ShopClient({ products: initialProducts = [] }) {
                 remedy protocol for your specific constitution — no guesswork.
               </p>
             </div>
-            <Link href={CONSULT_HREF} className="shop-btn">
+            <Link href={CONSULT_HREF} prefetch={false} className="shop-btn touch-manipulation">
               Book Free Consult
             </Link>
           </div>

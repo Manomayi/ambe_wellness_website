@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import ClientAuthProvider from "@/components/auth/ClientAuthProvider";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import AyurvedaDisclaimerModal from "@/components/common/AyurvedaDisclaimerModal";
+import TopProgressBar from "@/components/common/TopProgressBar";
 import { buildPageMetadata } from "@/lib/metadata";
 import { Cormorant_Garamond, Jost } from "next/font/google";
 import "./globals.css";
@@ -56,6 +58,9 @@ export default function RootLayout({ children }) {
     >
       <body className={`${jost.className} antialiased`} suppressHydrationWarning>
         <ClientAuthProvider>
+          <Suspense fallback={null}>
+            <TopProgressBar />
+          </Suspense>
           {children}
           <AyurvedaDisclaimerModal />
           <CookieConsentBanner />

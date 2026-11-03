@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -9,6 +9,11 @@ import ambeLogo from '../../../public/images/logos/ambe_logo.png';
 export default function Navigation({ light = false, sticky = false, className = '' }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Automatically close mobile menu when navigating to a new route
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   const linkColor = (path) => {
     if (pathname === path) return "#C8996A";
@@ -27,7 +32,7 @@ export default function Navigation({ light = false, sticky = false, className = 
         <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <Link href="/">
+            <Link href="/" prefetch={false} className="touch-manipulation">
               <Image
                 src={ambeLogo}
                 alt="AMBE"
@@ -38,7 +43,7 @@ export default function Navigation({ light = false, sticky = false, className = 
             
             {/* Mobile menu button */}
             <button 
-              className="md:hidden relative z-[60] p-2 rounded-lg focus:outline-none transition-colors"
+              className="md:hidden relative z-[60] p-2 rounded-lg focus:outline-none transition-colors touch-manipulation"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
               style={{ color: mobileMenuOpen ? "#353535" : navText }}
@@ -58,7 +63,8 @@ export default function Navigation({ light = false, sticky = false, className = 
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm lg:text-base xl:text-lg font-medium whitespace-nowrap transition-colors hover:text-[#C8996A]"
+                  prefetch={false}
+                  className="text-sm lg:text-base xl:text-lg font-medium whitespace-nowrap transition-colors md:hover:text-[#C8996A] touch-manipulation cursor-pointer"
                   style={{ color: linkColor(link.href) }}
                 >
                   {link.label}
@@ -66,10 +72,11 @@ export default function Navigation({ light = false, sticky = false, className = 
               ))}
               <Link
                 href="/download"
-                className={`border px-3.5 lg:px-5 xl:px-6 py-1.5 lg:py-2 rounded-full text-sm lg:text-base xl:text-lg font-medium transition-colors whitespace-nowrap ${
+                prefetch={false}
+                className={`border px-3.5 lg:px-5 xl:px-6 py-1.5 lg:py-2 rounded-full text-sm lg:text-base xl:text-lg font-medium transition-colors whitespace-nowrap touch-manipulation cursor-pointer ${
                   light
-                    ? "border-charcoal text-charcoal hover:bg-charcoal hover:text-white"
-                    : "border-white hover:bg-white hover:text-black"
+                    ? "border-charcoal text-charcoal md:hover:bg-charcoal md:hover:text-white"
+                    : "border-white md:hover:bg-white md:hover:text-black"
                 }`}
                 style={{ color: light ? "#353535" : "white" }}
               >
@@ -84,7 +91,8 @@ export default function Navigation({ light = false, sticky = false, className = 
               
               <Link
                 href="/login"
-                className="text-sm lg:text-base xl:text-lg font-medium transition-colors hover:text-[#C8996A]"
+                prefetch={false}
+                className="text-sm lg:text-base xl:text-lg font-medium transition-colors md:hover:text-[#C8996A] touch-manipulation cursor-pointer"
                 style={{ color: navText }}
               >
                 Sign in
@@ -97,13 +105,16 @@ export default function Navigation({ light = false, sticky = false, className = 
       {/* Mobile menu - Full screen overlay sliding from right */}
       <div 
         className={`md:hidden fixed inset-0 z-[55] bg-white transform transition-transform duration-300 ease-in-out ${
-          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          mobileMenuOpen 
+            ? 'translate-x-0 pointer-events-auto visible' 
+            : 'translate-x-full pointer-events-none invisible'
         }`}
+        aria-hidden={!mobileMenuOpen}
       >
         <div className="flex flex-col h-full">
           {/* Mobile menu header with close button */}
           <div className="flex justify-between items-center px-6 py-4 border-b" style={{ borderColor: '#F4F1EA' }}>
-            <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/" prefetch={false} onClick={() => setMobileMenuOpen(false)} className="touch-manipulation">
               <Image
                 src={ambeLogo}
                 alt="AMBE"
@@ -113,6 +124,7 @@ export default function Navigation({ light = false, sticky = false, className = 
             <button 
               onClick={() => setMobileMenuOpen(false)}
               aria-label="Close menu"
+              className="touch-manipulation"
               style={{ color: '#353535' }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +140,8 @@ export default function Navigation({ light = false, sticky = false, className = 
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-2xl font-light"
+                  prefetch={false}
+                  className="text-2xl font-light touch-manipulation cursor-pointer py-1"
                   style={{ color: pathname === link.href ? '#C8996A' : '#353535' }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -137,7 +150,8 @@ export default function Navigation({ light = false, sticky = false, className = 
               ))}
               <Link
                 href="/download"
-                className="border px-6 py-3 rounded-full text-lg hover:text-white transition-colors w-fit"
+                prefetch={false}
+                className="border px-6 py-3 rounded-full text-lg md:hover:text-white transition-colors w-fit touch-manipulation cursor-pointer"
                 style={{ borderColor: "#FFD3AC", backgroundColor: "#FFD3AC", color: "#353535" }}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -145,7 +159,8 @@ export default function Navigation({ light = false, sticky = false, className = 
               </Link>
               <Link
                 href="/login"
-                className="text-lg font-light pt-2"
+                prefetch={false}
+                className="text-lg font-light pt-2 touch-manipulation cursor-pointer"
                 style={{ color: '#353535' }}
                 onClick={() => setMobileMenuOpen(false)}
               >

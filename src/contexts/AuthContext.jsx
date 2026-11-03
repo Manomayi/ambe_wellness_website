@@ -27,6 +27,11 @@ export function AuthProvider({ children }) {
   const verificationUnsubscribeRef = useRef(null);
 
   useEffect(() => {
+    // Safety timeout: Never leave the entire app stuck on loading indefinitely in Safari
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       if (profileUnsubscribeRef.current) {
         profileUnsubscribeRef.current();
@@ -41,14 +46,17 @@ export function AuthProvider({ children }) {
         // Fast-path set user so child pages know authentication is active
         setUser(currentUser);
 
-        // Check if user is a doctor by custom claim or doctors collection document
+        // Check if user is a doctor by custom claim or doctors collection document (capped to avoid hanging in Safari)
         let isDoctor = false;
         try {
           const tokenResult = await currentUser.getIdTokenResult().catch(() => null);
           if (tokenResult?.claims?.doctor === true || tokenResult?.claims?.role === 'doctor') {
             isDoctor = true;
           } else {
-            const doctorDoc = await getDoc(doc(db, 'doctors', currentUser.uid));
+            const doctorDoc = await Promise.race([
+              getDoc(doc(db, 'doctors', currentUser.uid)),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+            ]).catch(() => ({ exists: () => false }));
             isDoctor = Boolean(doctorDoc && doctorDoc.exists && doctorDoc.exists());
           }
         } catch (roleError) {
@@ -65,6 +73,7 @@ export function AuthProvider({ children }) {
 
           const checkDoctorReady = () => {
             if (profileResolved && verificationResolved) {
+              clearTimeout(safetyTimer);
               setLoading(false);
             }
           };
@@ -120,6 +129,7 @@ export function AuthProvider({ children }) {
               } else {
                 setProfile(null);
               }
+              clearTimeout(safetyTimer);
               setLoading(false);
             },
             (error) => {
@@ -127,11 +137,13 @@ export function AuthProvider({ children }) {
                 console.warn('User profile listener note:', error?.message || error);
               }
               setProfile(null);
+              clearTimeout(safetyTimer);
               setLoading(false);
             }
           );
         }
       } else {
+        clearTimeout(safetyTimer);
         setUser(null);
         setUserType(null);
         setProfile(null);
@@ -151,6 +163,7 @@ export function AuthProvider({ children }) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      clearTimeout(safetyTimer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       unsubscribeAuth();
       if (profileUnsubscribeRef.current) {

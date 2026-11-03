@@ -106,6 +106,7 @@ export default function UserBottomNav() {
             <Link
               key={item.label}
               href={item.href}
+              prefetch={false}
               className="flex flex-col items-center justify-center flex-1 py-1 transition-all group select-none touch-manipulation active:scale-[0.96] outline-none"
             >
               {/* Flutter-style circular pill indicator */}

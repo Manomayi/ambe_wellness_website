@@ -12,11 +12,11 @@ export default function Button({
   type = 'button',
   href,
 }) {
-  const baseStyles = 'px-20 py-3 rounded-full font-medium transition-all duration-200 text-center inline-block';
+  const baseStyles = 'px-20 py-3 rounded-full font-medium transition-all duration-200 text-center inline-block touch-manipulation select-none active:scale-[0.98]';
   
   const variantStyles = {
-    primary: `bg-[#FFD3AC] text-[#353535] hover:bg-[#353535] hover:text-white`,
-    light: `bg-[#FFD3AC] text-[#353535] hover:bg-white hover:text-[#353535]`,
+    primary: `bg-[#FFD3AC] text-[#353535] md:hover:bg-[#353535] md:hover:text-white`,
+    light: `bg-[#FFD3AC] text-[#353535] md:hover:bg-white md:hover:text-[#353535]`,
   };
   
   const widthStyles = fullWidth ? 'w-full' : '';
@@ -25,7 +25,7 @@ export default function Button({
 
   if (href) {
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} prefetch={false} className={classes}>
         {children}
       </Link>
     );

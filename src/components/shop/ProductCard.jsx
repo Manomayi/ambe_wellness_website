@@ -51,6 +51,7 @@ export default function ProductCard({ product, onBuy, onAddToCart, loading }) {
     if (onBuy) {
       onBuy(product);
     } else {
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("routeNavigationStart"));
       router.push("/signup");
     }
   };
@@ -60,6 +61,7 @@ export default function ProductCard({ product, onBuy, onAddToCart, loading }) {
     if (onAddToCart) {
       onAddToCart(product);
     } else {
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("routeNavigationStart"));
       router.push("/signup");
     }
   };
