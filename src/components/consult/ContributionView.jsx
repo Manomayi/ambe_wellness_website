@@ -66,6 +66,8 @@ function ContributionApplePayForm({
         } catch (confErr) {
           console.warn("confirmPaymentSuccess Apple Pay contribution warning:", confErr);
         }
+        setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
         await onSuccess(intentId);
       } else {
         if (onError) onError("Payment was not completed.");
@@ -172,6 +174,8 @@ function StripeContributionCheckoutForm({
         } catch (confErr) {
           console.warn("confirmPaymentSuccess contribution warning:", confErr);
         }
+        setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
         await onSuccess(intentId);
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
@@ -400,15 +404,15 @@ export default function ContributionView({
     setShowCheckoutModal(false);
     setIsProcessingPayment(true);
 
-    // PayPal capture already booked the appointment and wrote the contribution
-    // records server-side: skip recordContribution. The schedule page's handler
-    // sees appointmentId, skips scheduling and goes straight to Consult.
-    if (paypalCapture?.appointmentId) {
-      await onSuccessSchedule(paymentId, activeAmount, paypalCapture);
-      return;
-    }
-
     try {
+      // PayPal capture already booked the appointment and wrote the contribution
+      // records server-side: skip recordContribution. The schedule page's handler
+      // sees appointmentId, skips scheduling and goes straight to Consult.
+      if (paypalCapture?.appointmentId) {
+        await onSuccessSchedule(paymentId, activeAmount, paypalCapture);
+        return;
+      }
+
       await recordContribution({
         user,
         amount: activeAmount,
@@ -424,6 +428,8 @@ export default function ContributionView({
     } catch (err) {
       console.error("Error recording contribution:", err);
       await onSuccessSchedule(paymentId, activeAmount);
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -850,7 +856,10 @@ export default function ContributionView({
 
       {/* Full-screen Payment Processing Overlay matching mobile app */}
       {isProcessingPayment && (
-        <PaymentProcessingOverlay />
+        <PaymentProcessingOverlay
+          onDismiss={() => setIsProcessingPayment(false)}
+          fallbackUrl="/user/consult"
+        />
       )}
     </div>
   );

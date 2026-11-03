@@ -159,6 +159,7 @@ function ApplePayCheckoutInline({
           console.warn('confirmPaymentSuccess Apple Pay warning:', confErr);
         }
 
+        setIsProcessing(false);
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
         setMessage("Payment was not completed.");
@@ -167,6 +168,8 @@ function ApplePayCheckoutInline({
     } catch (err) {
       console.error('Apple Pay confirm error:', err);
       setMessage("Payment failed. Please try again.");
+      setIsProcessing(false);
+    } finally {
       setIsProcessing(false);
     }
   };

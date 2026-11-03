@@ -93,7 +93,7 @@ const cellBorders = {
 };
 
 export default function NutritionistTable() {
-  const [compareMode, setCompareMode] = useState("rd"); // "rd" | "nutritionist" | "all"
+  const [compareMode, setCompareMode] = useState("all"); // "all" | "rd" | "nutritionist"
 
   return (
     <div className="w-full">
@@ -108,6 +108,17 @@ export default function NutritionistTable() {
             Compare Ayurvedic Practitioner with:
           </p>
           <div className="bg-[#F6F1EA] p-1 rounded-xl flex gap-1 border border-[#E9E1D4]">
+            <button
+              type="button"
+              onClick={() => setCompareMode("all")}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                compareMode === "all"
+                  ? "bg-[#353535] text-white shadow-xs"
+                  : "text-[#535353] hover:text-[#353535]"
+              }`}
+            >
+              All 3
+            </button>
             <button
               type="button"
               onClick={() => setCompareMode("rd")}
@@ -129,17 +140,6 @@ export default function NutritionistTable() {
               }`}
             >
               vs. Nutritionist
-            </button>
-            <button
-              type="button"
-              onClick={() => setCompareMode("all")}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                compareMode === "all"
-                  ? "bg-[#353535] text-white shadow-xs"
-                  : "text-[#535353] hover:text-[#353535]"
-              }`}
-            >
-              All 3
             </button>
           </div>
         </div>

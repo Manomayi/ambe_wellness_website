@@ -122,6 +122,8 @@ function ConsultationPaymentForm({
         } catch (confErr) {
           console.warn('confirmPaymentSuccess warning:', confErr);
         }
+        setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
         await onSuccess(intentId);
       } else {
         setErrorMsg(result.paymentIntent?.status ? `Payment was not completed (status: ${result.paymentIntent.status}). Please try again.` : 'Payment was not completed. Please try again.');
@@ -217,6 +219,8 @@ function ConsultationApplePayForm({ user, doctorInfo, selectedSlot, selectedDate
         } catch (confErr) {
           console.warn('confirmPaymentSuccess Apple Pay warning:', confErr);
         }
+        setProcessing(false);
+        if (onProcessingChange) onProcessingChange(false);
         await onSuccess(intentId);
       } else {
         setErrorMsg(
@@ -880,7 +884,10 @@ function ScheduleConsultationContent() {
 
 
   const handlePaymentSuccessAndSchedule = async (intentId, options = {}) => {
-    if (!user) return;
+    if (!user) {
+      setIsProcessingDepositPayment(false);
+      return;
+    }
 
     // PayPal capture already booked the appointment server-side (appointment,
     // consultations doc, purchase, contribution records, user flags) — nothing
@@ -895,11 +902,18 @@ function ScheduleConsultationContent() {
         console.warn("Could not consume pending contribution:", consumeErr);
       }
       setBookingSuccess(true);
-      router.replace('/user/consult');
+      setIsProcessingDepositPayment(false);
+      setScheduling(false);
+      setTimeout(() => {
+        window.location.href = '/user/consult';
+      }, 500);
       return;
     }
 
-    if (!selectedSlot) return;
+    if (!selectedSlot) {
+      setIsProcessingDepositPayment(false);
+      return;
+    }
 
     const isWaived = Boolean(options.waivedDeposit);
     const contribAmount = options.contributionAmount || 0;
@@ -910,6 +924,7 @@ function ScheduleConsultationContent() {
       console.error('Cannot schedule appointment: missing verified payment ID', intentId);
       alert('Payment could not be verified. Please complete payment before scheduling.');
       setScheduling(false);
+      setIsProcessingDepositPayment(false);
       return;
     }
 
@@ -1028,6 +1043,7 @@ function ScheduleConsultationContent() {
       if (!isWaived && !finalIntentId) {
         console.error('Payment intent missing for non-waived deposit');
         setScheduling(false);
+        setIsProcessingDepositPayment(false);
         return;
       }
 
@@ -1153,12 +1169,17 @@ function ScheduleConsultationContent() {
       await consumePendingContribution(user.uid, finalApptId);
 
       setBookingSuccess(true);
-      router.replace('/user/consult');
+      setIsProcessingDepositPayment(false);
+      setScheduling(false);
+      setTimeout(() => {
+        window.location.href = '/user/consult';
+      }, 500);
     } catch (error) {
       console.error('Error completing booking:', error);
       alert('Your payment was processed, but we encountered an issue finalizing your appointment. Please contact info@ambewellness.com with your receipt.');
     } finally {
       setScheduling(false);
+      setIsProcessingDepositPayment(false);
     }
   };
 
@@ -2089,7 +2110,13 @@ function ScheduleConsultationContent() {
 
         {/* Full-screen Payment Processing Overlay matching mobile app */}
         {(isProcessingDepositPayment || (scheduling && !isRescheduleParam)) && (
-          <PaymentProcessingOverlay />
+          <PaymentProcessingOverlay
+            onDismiss={() => {
+              setIsProcessingDepositPayment(false);
+              setScheduling(false);
+            }}
+            fallbackUrl="/user/consult"
+          />
         )}
       </WebLayoutWrapper>
     </ProtectedRoute>

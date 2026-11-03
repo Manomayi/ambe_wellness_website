@@ -31,7 +31,7 @@ import {
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
 import ProductDetailsModal from '@/components/user/store/ProductDetailsModal';
-import { fetchProductForModal } from '@/lib/shop/productModalHelper';
+import { fetchProductForModal, normalizeProduct } from '@/lib/shop/productModalHelper';
 
 export default function UserCartPage() {
   const router = useRouter();
@@ -49,15 +49,46 @@ export default function UserCartPage() {
   const [transitioningToCheckout, setTransitioningToCheckout] = useState(false);
 
   const handleOpenProductDetails = async (item) => {
+    if (!item) return;
+
+    const rawId = item.productId || item.product_id || item.id || '';
+    const rawName = item.productName || item.product_name || item.name || '';
+
+    // 1. Instant optimistic modal opening with cart item data (0ms response, buttery smooth)
+    const initialProd = normalizeProduct(rawId, {
+      ...item,
+      product_name: rawName,
+      imageUrl: item.imageUrl || item.image_url || item.image,
+      selectedSize: item.size,
+      selectedQuantity: item.quantity,
+    });
+
+    setSelectedProductForModal(initialProd);
+
+    // 2. Enrich in background with full composition/benefits/packs from Firestore/cache
     try {
-      const prod = await fetchProductForModal(
-        item.productId || item.product_id || item.id,
-        item.productName || item.product_name,
-        item
-      );
-      setSelectedProductForModal(prod);
+      const fullProd = await fetchProductForModal(rawId, rawName, item);
+      if (fullProd) {
+        setSelectedProductForModal((prev) => {
+          if (!prev) return null;
+          // Ensure the user hasn't switched to another product or closed
+          const currentId = prev.id;
+          const currentName = prev.name || prev.product_name;
+          if (
+            currentId === rawId ||
+            (rawName && currentName?.toLowerCase() === rawName.toLowerCase())
+          ) {
+            return {
+              ...fullProd,
+              selectedSize: item.size || prev.selectedSize,
+              selectedQuantity: item.quantity || prev.selectedQuantity,
+            };
+          }
+          return prev;
+        });
+      }
     } catch (e) {
-      console.error('Error opening product details:', e);
+      console.error('Error enriching product details:', e);
     }
   };
 
@@ -222,18 +253,28 @@ export default function UserCartPage() {
                 return (
                   <div
                     key={item.id}
+                    onClick={() => handleOpenProductDetails(item)}
                     className={`bg-[#2D2D30]/85 border ${
                       item.doctor_recommended ? 'border-[#FFD3AC]/40' : 'border-white/10'
-                    } rounded-2xl p-5 shadow-xl backdrop-blur-md space-y-3 transition`}
+                    } hover:border-[#FFD3AC]/50 active:scale-[0.995] rounded-2xl p-5 shadow-xl backdrop-blur-md space-y-3 transition-all duration-150 cursor-pointer group`}
+                    style={{ touchAction: 'manipulation' }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleOpenProductDetails(item);
+                      }
+                    }}
+                    aria-label={`View details for ${item.productName || item.product_name}`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <h3
-                        onClick={() => handleOpenProductDetails(item)}
-                        className="font-bold text-base text-white leading-snug hover:text-[#FFD3AC] transition cursor-pointer inline-flex items-center gap-1.5 group"
+                        className="font-bold text-base text-white leading-snug group-hover:text-[#FFD3AC] transition-colors inline-flex items-center gap-1.5"
                         title="Click to view product details"
                       >
                         <span>{item.productName || item.product_name}</span>
-                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-[#FFD3AC] opacity-0 group-hover:opacity-100 transition shrink-0" />
+                        <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-white/40 group-hover:text-[#FFD3AC] opacity-60 group-hover:opacity-100 transition-all shrink-0" />
                       </h3>
                       {item.doctor_recommended && (
                         <span className="bg-[#FFD3AC] text-[#1E1E1E] text-[10px] font-bold px-2.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">
@@ -242,7 +283,7 @@ export default function UserCartPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap text-xs text-white/70">
+                    <div className="flex items-center gap-2 flex-wrap text-xs text-white/70 group-hover:text-white/90 transition-colors">
                       {Boolean(
                         (item.has_multiple_sizes ||
                           (item.size && !['standard', 'default', 'n/a', 'none', '1', 'regular'].includes(item.size.trim().toLowerCase()))) &&
@@ -250,22 +291,31 @@ export default function UserCartPage() {
                         item.size.trim()
                       ) && (
                         <>
-                          <span>Size: {item.size}</span>
+                          <span className="group-hover:text-white transition-colors">Size: {item.size}</span>
                           <span className="text-white/30">•</span>
                         </>
                       )}
-                      <span className="font-semibold text-white">Price: ${unitPrice.toFixed(2)}</span>
+                      <span className="font-semibold text-white group-hover:text-[#FFD3AC] transition-colors">
+                        Price: ${unitPrice.toFixed(2)}
+                      </span>
                       {hasDiscount && (
                         <span className="text-white/40 line-through">${mrp.toFixed(2)}</span>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-1">
+                    <div
+                      className="flex items-center justify-between pt-1 cursor-default"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
                       {/* Quantity pill control */}
                       <div className="bg-[#FFD3AC] rounded-full flex items-center px-1.5 py-0.5 shadow-md">
                         <button
                           type="button"
-                          onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, (item.quantity || 1) - 1);
+                          }}
                           disabled={(item.quantity || 1) <= 1}
                           className="p-1.5 text-[#1E1E1E] disabled:opacity-30 cursor-pointer active:scale-75 transition-transform"
                           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
@@ -278,7 +328,10 @@ export default function UserCartPage() {
                         </span>
                         <button
                           type="button"
-                          onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateQuantity(item.id, (item.quantity || 1) + 1);
+                          }}
                           className="p-1.5 text-[#1E1E1E] cursor-pointer active:scale-75 transition-transform"
                           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                           aria-label="Increase quantity"
@@ -289,8 +342,13 @@ export default function UserCartPage() {
 
                       {/* Remove item button */}
                       <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-red-400 hover:text-red-300 p-2 transition cursor-pointer"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeItem(item.id);
+                        }}
+                        className="text-red-400 hover:text-red-300 p-2 transition cursor-pointer active:scale-90"
+                        style={{ touchAction: 'manipulation' }}
                         aria-label="Remove item"
                       >
                         <TrashIcon className="h-5 w-5" />
@@ -384,6 +442,8 @@ export default function UserCartPage() {
           {selectedProductForModal && (
             <ProductDetailsModal
               product={selectedProductForModal}
+              displaySize={selectedProductForModal.selectedSize || selectedProductForModal.size}
+              displayQuantity={selectedProductForModal.selectedQuantity || selectedProductForModal.quantity}
               onClose={() => setSelectedProductForModal(null)}
             />
           )}

@@ -78,6 +78,39 @@ export function normalizeProduct(id, data = {}) {
   };
 }
 
+// In-memory cache for normalized products and store documents to avoid repeated Firestore queries
+const modalProductCache = new Map();
+let cachedStoreDocs = null;
+let pendingStoreDocsPromise = null;
+
+function rememberProduct(keyId, keyName, product) {
+  if (!product) return;
+  const cleanId = (keyId || '').trim().toLowerCase();
+  const cleanName = (keyName || '').trim().toLowerCase();
+  if (cleanId && cleanName) modalProductCache.set(`${cleanId}::${cleanName}`, product);
+  if (cleanId) modalProductCache.set(`${cleanId}::`, product);
+  if (cleanName) modalProductCache.set(`::${cleanName}`, product);
+}
+
+async function getStoreDocs() {
+  if (cachedStoreDocs) return cachedStoreDocs;
+  if (pendingStoreDocsPromise) return pendingStoreDocsPromise;
+
+  pendingStoreDocsPromise = (async () => {
+    try {
+      const allStore = await getDocs(query(collection(db, 'store'), limit(50)));
+      cachedStoreDocs = allStore.docs;
+      return cachedStoreDocs;
+    } catch (_) {
+      return [];
+    } finally {
+      pendingStoreDocsPromise = null;
+    }
+  })();
+
+  return pendingStoreDocsPromise;
+}
+
 /**
  * Loads a product for the ProductDetailsModal by productId or productName.
  * Searches the 'store' collection and nested store product arrays.
@@ -86,6 +119,18 @@ export function normalizeProduct(id, data = {}) {
 export async function fetchProductForModal(productId, productName, fallbackData = {}) {
   const cleanId = (productId || '').trim();
   const cleanName = (productName || fallbackData.product_name || fallbackData.name || '').trim();
+  const cacheKey = `${cleanId.toLowerCase()}::${cleanName.toLowerCase()}`;
+
+  // Check in-memory cache first for instant 0ms return
+  if (modalProductCache.has(cacheKey)) {
+    return modalProductCache.get(cacheKey);
+  }
+  if (cleanId && modalProductCache.has(`${cleanId.toLowerCase()}::`)) {
+    return modalProductCache.get(`${cleanId.toLowerCase()}::`);
+  }
+  if (cleanName && modalProductCache.has(`::${cleanName.toLowerCase()}`)) {
+    return modalProductCache.get(`::${cleanName.toLowerCase()}`);
+  }
 
   // 1. Try productId if available and valid
   if (cleanId && cleanId !== 'ID_TBD') {
@@ -94,7 +139,9 @@ export async function fetchProductForModal(productId, productName, fallbackData 
       if (snap.exists() && snap.data()) {
         const d = snap.data();
         if (d.product_name || d.name) {
-          return normalizeProduct(snap.id, d);
+          const norm = normalizeProduct(snap.id, d);
+          rememberProduct(cleanId, cleanName || norm.name, norm);
+          return norm;
         }
       }
     } catch (_) {}
@@ -112,7 +159,9 @@ export async function fetchProductForModal(productId, productName, fallbackData 
               return cleanId.includes(pName) || (cleanName && pName.toLowerCase() === cleanName.toLowerCase());
             });
             if (found) {
-              return normalizeProduct(cleanId, { ...found, shop_id: shopDocId });
+              const norm = normalizeProduct(cleanId, { ...found, shop_id: shopDocId });
+              rememberProduct(cleanId, cleanName || norm.name, norm);
+              return norm;
             }
           }
         }
@@ -126,7 +175,9 @@ export async function fetchProductForModal(productId, productName, fallbackData 
       const q = query(collection(db, 'store'), where('product_name', '==', cleanName), limit(1));
       const qSnap = await getDocs(q);
       if (!qSnap.empty) {
-        return normalizeProduct(qSnap.docs[0].id, qSnap.docs[0].data());
+        const norm = normalizeProduct(qSnap.docs[0].id, qSnap.docs[0].data());
+        rememberProduct(cleanId || qSnap.docs[0].id, cleanName, norm);
+        return norm;
       }
     } catch (_) {}
   }
@@ -134,29 +185,37 @@ export async function fetchProductForModal(productId, productName, fallbackData 
   // 3. Scan 'store' collection docs for nested products array or name match
   if (cleanName) {
     try {
-      const allStore = await getDocs(query(collection(db, 'store'), limit(50)));
-      for (const dSnap of allStore.docs) {
+      const storeDocs = await getStoreDocs();
+      for (const dSnap of storeDocs) {
         const d = dSnap.data();
         if (d.is_active === false || d.isActive === false) continue;
         if (Array.isArray(d.products)) {
-          const found = d.products.find(
-            p => (p.product_name || p.name || '').toLowerCase().trim() === cleanName.toLowerCase().trim()
-          );
-          if (found) {
-            return normalizeProduct(`${dSnap.id}_${found.product_name || found.name}`, {
-              ...found,
+          for (const p of d.products) {
+            const pName = p.product_name || p.name || '';
+            const pNorm = normalizeProduct(`${dSnap.id}_${pName}`, {
+              ...p,
               shop_id: dSnap.id
             });
+            rememberProduct(`${dSnap.id}_${pName}`, pName, pNorm);
           }
-        } else if ((d.product_name || d.name || '').toLowerCase().trim() === cleanName.toLowerCase().trim()) {
-          return normalizeProduct(dSnap.id, d);
+        } else if (d.product_name || d.name) {
+          const dName = d.product_name || d.name;
+          const dNorm = normalizeProduct(dSnap.id, d);
+          rememberProduct(dSnap.id, dName, dNorm);
         }
+      }
+
+      if (modalProductCache.has(cacheKey)) {
+        return modalProductCache.get(cacheKey);
+      }
+      if (cleanName && modalProductCache.has(`::${cleanName.toLowerCase()}`)) {
+        return modalProductCache.get(`::${cleanName.toLowerCase()}`);
       }
     } catch (_) {}
   }
 
   // 4. Construct clean fallback from fallbackData
-  return normalizeProduct(cleanId || `prod_${Date.now()}`, {
+  const fallbackResult = normalizeProduct(cleanId || `prod_${Date.now()}`, {
     product_name: cleanName || 'Ayurvedic Formula',
     price: fallbackData.price ?? 0,
     mrp: fallbackData.mrp ?? fallbackData.original_price ?? fallbackData.originalPrice ?? fallbackData.price ?? 0,
@@ -169,4 +228,7 @@ export async function fetchProductForModal(productId, productName, fallbackData 
     category: fallbackData.category || 'Wellness',
     shop_id: fallbackData.shop_id || fallbackData.shopId || null,
   });
+
+  rememberProduct(cleanId, cleanName, fallbackResult);
+  return fallbackResult;
 }

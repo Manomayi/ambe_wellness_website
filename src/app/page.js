@@ -338,7 +338,7 @@ export default function Home() {
                       return (
                         <Link
                           key={`${cat.label}-${i}`}
-                          href="/membership"
+                          href="/shop"
                           aria-hidden={isDuplicate ? true : undefined}
                           tabIndex={isDuplicate ? -1 : undefined}
                           className="flex-none bg-white rounded-full p-2 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 cursor-pointer hover:scale-105 transition-transform"
@@ -1169,7 +1169,7 @@ export default function Home() {
                       className="font-heading text-xl sm:text-2xl md:text-3xl lg:text-5xl font-light leading-snug mb-6 sm:mb-8"
                       style={{ color: "#353535" }}
                     >
-                      With loving support, we can blossom into
+                      With loving support, we can blossom into{' '}
                       <br className="hidden sm:block" />
                       our full potential.
                     </div>
@@ -1177,7 +1177,7 @@ export default function Home() {
                     {/* Ten trees text */}
                     <p
                       className="text-sm sm:text-base leading-relaxed text-center font-semibold"
-                      style={{ color: "#C2691C" }}
+                      style={{ color: "#FFD3AC" }}
                     >
                       Ten trees planted per member, per month = 120 trees per year
                       per member. Our health depends on the health of Mother Nature — trees are proven to be the #1

@@ -1,12 +1,32 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function PaymentProcessingOverlay({
   title = "Processing Payment",
   subtitle = "Please wait...",
   icon = "payment",
+  onDismiss = null,
+  timeoutSeconds = 12,
+  fallbackUrl = "/user/consult",
 }) {
+  const [showRescue, setShowRescue] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowRescue(true);
+    }, timeoutSeconds * 1000);
+    return () => clearTimeout(timer);
+  }, [timeoutSeconds]);
+
+  const handleRescue = () => {
+    if (onDismiss) {
+      onDismiss();
+    } else if (typeof window !== "undefined") {
+      window.location.href = fallbackUrl;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1E1E1E] select-none text-center px-4">
       {/* Pulsing Icon - Exactly matches Flutter PaymentProcessingOverlay */}
@@ -64,6 +84,22 @@ export default function PaymentProcessingOverlay({
         />
       </div>
 
+      {/* Safety rescue fallback if processing hangs */}
+      {showRescue && (
+        <div className="mt-8 flex flex-col items-center space-y-3 animate-fadeIn">
+          <p className="text-white/60 text-xs max-w-xs">
+            Taking longer than usual? Your transaction may already have finished on the server.
+          </p>
+          <button
+            type="button"
+            onClick={handleRescue}
+            className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold uppercase tracking-wider transition cursor-pointer"
+          >
+            {onDismiss ? "Dismiss" : "Return to Dashboard"}
+          </button>
+        </div>
+      )}
+
       {/* Keyframe animations */}
       <style jsx>{`
         @keyframes pulseScale {
@@ -86,6 +122,16 @@ export default function PaymentProcessingOverlay({
           100% {
             width: 30%;
             margin-left: 100%;
+          }
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
       `}</style>

@@ -62,7 +62,8 @@ function CheckoutForm({ user, paymentIntentId, isTestMode = false }) {
           console.warn("confirmPaymentSuccess warning:", confErr);
         }
 
-        router.push("/user/consult/schedule");
+        setProcessing(false);
+        window.location.href = "/user/consult/schedule";
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
         setProcessing(false);
@@ -70,6 +71,8 @@ function CheckoutForm({ user, paymentIntentId, isTestMode = false }) {
     } catch (err) {
       console.error('Payment confirm error:', err);
       setErrorMsg("An error occurred confirming your payment. Please try again.");
+      setProcessing(false);
+    } finally {
       setProcessing(false);
     }
   };
@@ -149,7 +152,8 @@ function ApplePayDepositForm({ user, paymentIntentId, isTestMode = false }) {
           console.warn("confirmPaymentSuccess Apple Pay warning:", confErr);
         }
 
-        router.push("/user/consult/schedule");
+        setProcessing(false);
+        window.location.href = "/user/consult/schedule";
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
         setProcessing(false);
@@ -157,6 +161,8 @@ function ApplePayDepositForm({ user, paymentIntentId, isTestMode = false }) {
     } catch (err) {
       console.error('Payment confirm error:', err);
       setErrorMsg("An error occurred confirming your payment. Please try again.");
+      setProcessing(false);
+    } finally {
       setProcessing(false);
     }
   };

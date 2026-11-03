@@ -66,6 +66,7 @@ function StripePostContributionApplePayForm({
         } catch (confErr) {
           console.warn("confirmPaymentSuccess Apple Pay feedback warning:", confErr);
         }
+        setProcessing(false);
         await onSuccess(intentId);
       } else {
         setErrorMsg("Payment was not completed.");
@@ -170,6 +171,7 @@ function StripePostContributionForm({
         } catch (confErr) {
           console.warn("confirmPaymentSuccess card feedback warning:", confErr);
         }
+        setProcessing(false);
         await onSuccess(intentId);
       } else {
         setErrorMsg("Payment was not completed. Please try again.");
@@ -442,8 +444,8 @@ function ConsultationFeedbackPageContent() {
     }
 
     setTimeout(() => {
-      router.push("/user/consult");
-    }, 2000);
+      window.location.href = "/user/consult";
+    }, 1500);
   };
 
   const displayRating = hoverRating || rating;

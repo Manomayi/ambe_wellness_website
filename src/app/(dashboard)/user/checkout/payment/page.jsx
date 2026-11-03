@@ -176,6 +176,7 @@ function CheckoutForm({ clientSecret, paymentIntentId, isTestMode = false }) {
           console.warn('confirmPaymentSuccess warning:', confErr);
         }
 
+        setIsProcessing(false);
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
         setMessage("Payment was not completed. Status: " + (result.paymentIntent?.status || 'unknown'));
@@ -184,6 +185,8 @@ function CheckoutForm({ clientSecret, paymentIntentId, isTestMode = false }) {
     } catch (err) {
       console.error('Payment confirmation error:', err);
       setMessage("Payment failed. Please check your payment details and try again.");
+      setIsProcessing(false);
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -286,8 +289,8 @@ function ApplePayCheckoutForm({ clientSecret, paymentIntentId, isTestMode = fals
     }
 
     setTimeout(() => {
-      router.push('/user/checkout/success');
-    }, 1200);
+      window.location.href = '/user/checkout/success';
+    }, 800);
   };
 
   const handleConfirm = async () => {
@@ -330,6 +333,7 @@ function ApplePayCheckoutForm({ clientSecret, paymentIntentId, isTestMode = fals
           console.warn('confirmPaymentSuccess Apple Pay warning:', confErr);
         }
 
+        setIsProcessing(false);
         await completeOrderAndRedirect(finalAmount, finalCurrency);
       } else {
         setMessage("Payment was not completed.");
@@ -338,6 +342,8 @@ function ApplePayCheckoutForm({ clientSecret, paymentIntentId, isTestMode = fals
     } catch (err) {
       console.error('Apple Pay confirm error:', err);
       setMessage("Payment failed. Please try again.");
+      setIsProcessing(false);
+    } finally {
       setIsProcessing(false);
     }
   };
