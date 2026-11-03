@@ -135,7 +135,7 @@ export default function UserHomePage() {
   }, [user?.uid]);
 
   return (
-    <ProtectedRoute allowedRoles={["user"]}>
+    <ProtectedRoute userType="user">
       <div className="w-full space-y-7 pb-10">
         {/* Top Greeting Section matching Flutter UserHomePage */}
         <div className="flex items-start justify-between gap-4 pt-1">

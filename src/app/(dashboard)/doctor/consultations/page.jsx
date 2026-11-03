@@ -134,14 +134,17 @@ export default function DoctorConsultationsPage() {
   };
 
   useEffect(() => {
-    // Safety timer to prevent perpetual loading spinner in Safari
-    const safetyTimer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
-
     if (!user) {
-      return () => clearTimeout(safetyTimer);
+      return;
     }
+
+    let upcomingDone = false;
+    let reportsDone = false;
+    const checkDone = () => {
+      if (upcomingDone && reportsDone) {
+        setLoading(false);
+      }
+    };
 
     // Listen to upcoming appointments without restrictive where query
     const upcomingCol = collection(db, 'doctors', user.uid, 'appointments_upcoming');
@@ -170,13 +173,15 @@ export default function DoctorConsultationsPage() {
 
         cachedDoctorRawAppointments = appointments;
         setRawAppointments(appointments);
-        setLoading(false);
+        upcomingDone = true;
+        checkDone();
       },
       (error) => {
         if (error?.code !== 'permission-denied') {
           console.error('Error listening to upcoming appointments:', error);
         }
-        setLoading(false);
+        upcomingDone = true;
+        checkDone();
       }
     );
 
@@ -203,20 +208,19 @@ export default function DoctorConsultationsPage() {
         });
         cachedDoctorReportsToFinish = activeReports;
         setReportsToFinish(activeReports);
-        setLoading(false);
-        clearTimeout(safetyTimer);
+        reportsDone = true;
+        checkDone();
       },
       (error) => {
         if (error?.code !== 'permission-denied') {
           console.error('Error listening to reports to finish:', error);
         }
-        setLoading(false);
-        clearTimeout(safetyTimer);
+        reportsDone = true;
+        checkDone();
       }
     );
 
     return () => {
-      clearTimeout(safetyTimer);
       unsubscribeUpcoming();
       unsubscribeReports();
     };

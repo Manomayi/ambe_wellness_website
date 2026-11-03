@@ -31,11 +31,8 @@ export default function DoctorMenuPage() {
   }));
 
   useEffect(() => {
-    const safetyTimer = setTimeout(() => setLoading(false), 2500);
-
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        clearTimeout(safetyTimer);
         router.push('/login');
       } else {
         let photo = user.photoURL || null;
@@ -62,11 +59,9 @@ export default function DoctorMenuPage() {
         cachedDoctorProfile = profData;
         setProfile(profData);
         setLoading(false);
-        clearTimeout(safetyTimer);
       }
     });
     return () => {
-      clearTimeout(safetyTimer);
       unsub();
     };
   }, [router]);

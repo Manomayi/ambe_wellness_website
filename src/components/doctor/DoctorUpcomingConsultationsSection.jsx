@@ -167,10 +167,6 @@ export default function DoctorUpcomingConsultationsSection() {
   useEffect(() => {
     if (!user) return;
 
-    const safetyTimer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
-
     const upcomingCol = collection(
       db,
       "doctors",
@@ -181,7 +177,6 @@ export default function DoctorUpcomingConsultationsSection() {
     const unsubscribe = onSnapshot(
       upcomingCol,
       (snapshot) => {
-        clearTimeout(safetyTimer);
         const appointments = snapshot.docs.map((d) => ({
           id: d.id,
           ...d.data(),
@@ -206,7 +201,6 @@ export default function DoctorUpcomingConsultationsSection() {
         setLoading(false);
       },
       (error) => {
-        clearTimeout(safetyTimer);
         if (error?.code === "permission-denied") return;
         console.error("Error listening to upcoming appointments:", error);
         setLoading(false);
@@ -214,7 +208,6 @@ export default function DoctorUpcomingConsultationsSection() {
     );
 
     return () => {
-      clearTimeout(safetyTimer);
       unsubscribe();
     };
   }, [user]);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ProductCard from "@/components/shop/ProductCard";
 import { fetchShopProductsFromFirestore, sortShopProducts } from "@/lib/shop/firestore-products";
@@ -15,6 +16,7 @@ const FAVORITES = "Favorites";
 const SORTS = ["Popularity", "Default Order", "Name: A to Z"];
 
 export default function ShopClient({ products: initialProducts = [] }) {
+  const router = useRouter();
   const { favorites } = useFavorites();
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(initialProducts.length === 0);
@@ -137,28 +139,12 @@ export default function ShopClient({ products: initialProducts = [] }) {
     };
   }, []);
 
-  async function handleBuy(product) {
-    setError("");
-    setLoadingId(product.id);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: product.id }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || "Checkout is unavailable right now.");
-      }
-      window.location.href = data.url;
-      // Safety timeout to reset loading state if user returns or navigation cancels
-      setTimeout(() => {
-        setLoadingId(null);
-      }, 3000);
-    } catch (e) {
-      setError(e.message);
-      setLoadingId(null);
-    }
+  function handleBuy(product) {
+    router.push("/signup");
+  }
+
+  function handleAddToCart(product) {
+    router.push("/signup");
   }
 
   return (
@@ -340,6 +326,7 @@ export default function ShopClient({ products: initialProducts = [] }) {
                   key={`${product.id}-${index}`}
                   product={product}
                   onBuy={handleBuy}
+                  onAddToCart={handleAddToCart}
                   loading={loadingId === product.id}
                 />
               ))}

@@ -36,11 +36,9 @@ export default function DoctorUserProfilesPage() {
   useEffect(() => {
     let unsubUsers = null;
     let unsubUpcoming = null;
-    const safetyTimer = setTimeout(() => setLoading(false), 2500);
 
     const unsubAuth = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        clearTimeout(safetyTimer);
         router.push('/login');
         return;
       }
@@ -73,14 +71,12 @@ export default function DoctorUserProfilesPage() {
 
             setPatients(list);
             setLoading(false);
-            clearTimeout(safetyTimer);
           },
           (error) => {
             if (error?.code !== 'permission-denied') {
               console.error('Error listening to patients collection:', error);
             }
             setLoading(false);
-            clearTimeout(safetyTimer);
           }
         );
 
@@ -112,7 +108,6 @@ export default function DoctorUserProfilesPage() {
     });
 
     return () => {
-      clearTimeout(safetyTimer);
       unsubAuth();
       if (unsubUsers) unsubUsers();
       if (unsubUpcoming) unsubUpcoming();

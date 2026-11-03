@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/shop/firestore-products";
 import ProductDetailSheet from "@/components/shop/ProductDetailSheet";
 import { useFavorites } from "@/lib/shop/favorites";
 
 const FALLBACK_IMAGE = "/images/icons/herbal.png";
 
-export default function ProductCard({ product, onBuy, loading }) {
+export default function ProductCard({ product, onBuy, onAddToCart, loading }) {
+  const router = useRouter();
   const {
     name,
     category,
@@ -43,6 +45,24 @@ export default function ProductCard({ product, onBuy, loading }) {
       openSheet();
     }
   }
+
+  const handleBuy = (e) => {
+    e?.stopPropagation?.();
+    if (onBuy) {
+      onBuy(product);
+    } else {
+      router.push("/signup");
+    }
+  };
+
+  const handleAddToCart = (e) => {
+    e?.stopPropagation?.();
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      router.push("/signup");
+    }
+  };
 
   return (
     <>
@@ -115,14 +135,24 @@ export default function ProductCard({ product, onBuy, loading }) {
             <div className="shop-price-now">{formatPrice(price)}</div>
             {hasDiscount && <div className="shop-price-was">{formatPrice(originalPrice)}</div>}
           </div>
-          <button
-            type="button"
-            className="shop-buy-btn"
-            onClick={() => onBuy?.(product)}
-            disabled={loading}
-          >
-            {loading ? "Redirecting…" : "Buy Now"}
-          </button>
+          <div className="shop-product-actions">
+            <button
+              type="button"
+              className="shop-cart-btn"
+              onClick={handleAddToCart}
+              disabled={loading}
+            >
+              Add to Cart
+            </button>
+            <button
+              type="button"
+              className="shop-buy-btn"
+              onClick={handleBuy}
+              disabled={loading}
+            >
+              Buy Now
+            </button>
+          </div>
         </div>
       </article>
 
@@ -131,8 +161,12 @@ export default function ProductCard({ product, onBuy, loading }) {
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         onBuy={(p) => {
-          onBuy?.(p);
           setSheetOpen(false);
+          handleBuy();
+        }}
+        onAddToCart={(p) => {
+          setSheetOpen(false);
+          handleAddToCart();
         }}
         loading={loading}
       />

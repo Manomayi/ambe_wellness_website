@@ -307,14 +307,17 @@ export default function UserConsultPage() {
   };
 
   useEffect(() => {
-    // Safety timer to prevent perpetual loading spinner in Safari
-    const safetyTimer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
-
     if (!user) {
-      return () => clearTimeout(safetyTimer);
+      return;
     }
+
+    let upcomingDone = false;
+    let pastDone = false;
+    const checkDone = () => {
+      if (upcomingDone && pastDone) {
+        setLoading(false);
+      }
+    };
 
     // Listen to upcoming appointments without restrictive where filter
     // (matching Flutter app so active & in-progress appointments show immediately)
@@ -357,12 +360,15 @@ export default function UserConsultPage() {
         });
         cachedUpcomingAppointments = validUpcoming;
         setUpcomingAppointments(validUpcoming);
-        setLoading(false);
+        upcomingDone = true;
+        checkDone();
       },
       (err) => {
         if (err?.code !== 'permission-denied') {
           console.error('Error listening to upcoming appointments:', err);
         }
+        upcomingDone = true;
+        checkDone();
       }
     );
 
@@ -394,20 +400,19 @@ export default function UserConsultPage() {
         const dedupedPast = Object.values(uniqueMap);
         cachedPastAppointments = dedupedPast;
         setPastAppointments(dedupedPast);
-        setLoading(false);
-        clearTimeout(safetyTimer);
+        pastDone = true;
+        checkDone();
       },
       (err) => {
         if (err?.code !== 'permission-denied') {
           console.error('Error listening to past appointments:', err);
         }
-        setLoading(false);
-        clearTimeout(safetyTimer);
+        pastDone = true;
+        checkDone();
       }
     );
 
     return () => {
-      clearTimeout(safetyTimer);
       unsubscribeUpcoming();
       unsubscribePast();
     };
@@ -1086,65 +1091,67 @@ export default function UserConsultPage() {
             </div>
           )}
 
-          {/* No Upcoming Appointments */}
-          {hasDoctor && upcomingAppointments.length === 0 && !loading && (
-            <div className="py-6 sm:py-8 text-center">
-              <p className="text-white text-base sm:text-lg font-medium">
-                No appointment set
-              </p>
-            </div>
-          )}
-
-          {/* Past Appointments / History */}
-          {pastAppointments.length > 0 && (
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
-                  History
-                </h2>
-                <button
-                  onClick={() => router.push('/user/consult/history')}
-                  className="text-xs font-semibold text-[#FFD3AC] md:hover:underline cursor-pointer touch-manipulation active:opacity-70"
-                >
-                  See All
-                </button>
-              </div>
-              <div className="space-y-2.5">
-                {pastAppointments.slice(0, 5).map((appointment) => {
-                  const statusInfo = getConsultationStatusInfo(appointment);
-                  return (
-                    <div 
-                      key={appointment.id}
-                      className="bg-[#1B1A18]/65 border border-white/15 rounded-[20px] p-4 sm:p-5 md:hover:border-[#FFD3AC]/50 transition cursor-pointer flex items-center justify-between touch-manipulation active:scale-[0.99]"
-                      onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
-                    >
-                      <div className="min-w-0 pr-3 pointer-events-none">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-sm text-white truncate">
-                            {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : (appointment.doctor_name ? `Dr. ${appointment.doctor_name}` : 'Assigned Practitioner')}
-                          </h4>
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusInfo.badgeClass}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1 ${statusInfo.dotClass}`} />
-                            {statusInfo.label}
-                          </span>
-                        </div>
-                        <p className="text-xs text-white/55 mt-1">
-                          {formatAppointmentTime(appointment.time)}
-                        </p>
-                      </div>
-                      <ChevronRightIcon className="w-5 h-5 text-white/40 shrink-0 pointer-events-none" />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-12">
+          {/* Loading or Appointments Content */}
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
               <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#FFD3AC] border-t-transparent"></div>
             </div>
+          ) : (
+            <>
+              {/* No Upcoming Appointments */}
+              {hasDoctor && upcomingAppointments.length === 0 && (
+                <div className="py-6 sm:py-8 text-center">
+                  <p className="text-white text-base sm:text-lg font-medium">
+                    No appointment set
+                  </p>
+                </div>
+              )}
+
+              {/* Past Appointments / History */}
+              {pastAppointments.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                      History
+                    </h2>
+                    <button
+                      onClick={() => router.push('/user/consult/history')}
+                      className="text-xs font-semibold text-[#FFD3AC] md:hover:underline cursor-pointer touch-manipulation active:opacity-70"
+                    >
+                      See All
+                    </button>
+                  </div>
+                  <div className="space-y-2.5">
+                    {pastAppointments.slice(0, 5).map((appointment) => {
+                      const statusInfo = getConsultationStatusInfo(appointment);
+                      return (
+                        <div 
+                          key={appointment.id}
+                          className="bg-[#1B1A18]/65 border border-white/15 rounded-[20px] p-4 sm:p-5 md:hover:border-[#FFD3AC]/50 transition cursor-pointer flex items-center justify-between touch-manipulation active:scale-[0.99]"
+                          onClick={() => router.push(`/user/consult/report/${appointment.id}`)}
+                        >
+                          <div className="min-w-0 pr-3 pointer-events-none">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-bold text-sm text-white truncate">
+                                {appointment.doctor_name?.startsWith('Dr.') ? appointment.doctor_name : (appointment.doctor_name ? `Dr. ${appointment.doctor_name}` : 'Assigned Practitioner')}
+                              </h4>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusInfo.badgeClass}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full mr-1 ${statusInfo.dotClass}`} />
+                                {statusInfo.label}
+                              </span>
+                            </div>
+                            <p className="text-xs text-white/55 mt-1">
+                              {formatAppointmentTime(appointment.time)}
+                            </p>
+                          </div>
+                          <ChevronRightIcon className="w-5 h-5 text-white/40 shrink-0 pointer-events-none" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </WebLayoutWrapper>

@@ -54,13 +54,9 @@ export default function DoctorEarningsPage() {
   // 1. Auth & Realtime Doctor Summary Listener
   useEffect(() => {
     let unsubDoc = null;
-    const safetyTimer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
 
     const unsubAuth = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        clearTimeout(safetyTimer);
         router.push('/login');
         return;
       }
@@ -71,7 +67,6 @@ export default function DoctorEarningsPage() {
       unsubDoc = onSnapshot(
         doctorRef,
         (snap) => {
-          clearTimeout(safetyTimer);
           if (snap.exists()) {
             const data = snap.data();
             const norm = normaliseSummary(data.earnings_summary);
@@ -83,7 +78,6 @@ export default function DoctorEarningsPage() {
           setLoading(false);
         },
         (err) => {
-          clearTimeout(safetyTimer);
           if (err?.code === 'permission-denied') return;
           console.error('Error listening to doctor summary:', err);
           setLoading(false);
@@ -92,7 +86,6 @@ export default function DoctorEarningsPage() {
     });
 
     return () => {
-      clearTimeout(safetyTimer);
       unsubAuth();
       if (unsubDoc) unsubDoc();
     };

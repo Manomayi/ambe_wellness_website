@@ -27,13 +27,7 @@ export function AuthProvider({ children }) {
   const verificationUnsubscribeRef = useRef(null);
 
   useEffect(() => {
-    // Safety timeout: Never leave the entire app stuck on the full-screen loader indefinitely
-    const safetyTimer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
-
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
-      clearTimeout(safetyTimer);
       if (profileUnsubscribeRef.current) {
         profileUnsubscribeRef.current();
         profileUnsubscribeRef.current = null;
@@ -47,55 +41,93 @@ export function AuthProvider({ children }) {
         // Fast-path set user so child pages know authentication is active
         setUser(currentUser);
 
-        // Check if user is doctor (capped to avoid hanging in Safari)
+        // Check if user is a doctor by custom claim or doctors collection document
         let isDoctor = false;
         try {
-          const doctorDoc = await Promise.race([
-            getDoc(doc(db, 'doctors', currentUser.uid)),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
-          ]).catch(() => ({ exists: () => false }));
-          isDoctor = Boolean(doctorDoc && doctorDoc.exists && doctorDoc.exists());
-        } catch (_) {}
+          const tokenResult = await currentUser.getIdTokenResult().catch(() => null);
+          if (tokenResult?.claims?.doctor === true || tokenResult?.claims?.role === 'doctor') {
+            isDoctor = true;
+          } else {
+            const doctorDoc = await getDoc(doc(db, 'doctors', currentUser.uid));
+            isDoctor = Boolean(doctorDoc && doctorDoc.exists && doctorDoc.exists());
+          }
+        } catch (roleError) {
+          console.warn('Could not determine doctor role via direct check:', roleError?.message || roleError);
+        }
 
         setUserType(isDoctor ? 'doctor' : 'user');
         
-        // Set up real-time profile listener
-        profileUnsubscribeRef.current = onSnapshot(
-          doc(db, isDoctor ? 'doctors' : 'users', currentUser.uid),
-          (doc) => {
-            if (doc.exists()) {
-              setProfile({ uid: doc.id, ...doc.data() });
-            } else {
-              setProfile(null);
-            }
-            setLoading(false);
-          },
-          (error) => {
-            // Silently ignore permission-denied on logout, but always release loading
-            if (error?.code !== 'permission-denied') {
-              console.warn('Profile listener note:', error?.message || error);
-            }
-            setProfile(null);
-            setLoading(false);
-          }
-        );
-
-        // Set up real-time verification listener for doctors
         if (isDoctor) {
-          verificationUnsubscribeRef.current = onSnapshot(
-            doc(db, 'verification', currentUser.uid),
-            (doc) => {
-              if (doc.exists()) {
-                setVerification({ uid: doc.id, ...doc.data() });
+          // For doctors, wait for BOTH profile and verification snapshots before releasing loading.
+          // This prevents flashing the review/unverified banner on initial load.
+          let profileResolved = false;
+          let verificationResolved = false;
+
+          const checkDoctorReady = () => {
+            if (profileResolved && verificationResolved) {
+              setLoading(false);
+            }
+          };
+
+          profileUnsubscribeRef.current = onSnapshot(
+            doc(db, 'doctors', currentUser.uid),
+            (docSnap) => {
+              if (docSnap.exists()) {
+                setProfile({ uid: docSnap.id, ...docSnap.data() });
               } else {
-                setVerification(null);
+                setProfile(null);
               }
+              profileResolved = true;
+              checkDoctorReady();
             },
             (error) => {
               if (error?.code !== 'permission-denied') {
-                console.warn('Verification listener note:', error?.message || error);
+                console.warn('Doctor profile listener note:', error?.message || error);
+              }
+              setProfile(null);
+              profileResolved = true;
+              checkDoctorReady();
+            }
+          );
+
+          verificationUnsubscribeRef.current = onSnapshot(
+            doc(db, 'verification', currentUser.uid),
+            (docSnap) => {
+              if (docSnap.exists()) {
+                setVerification({ uid: docSnap.id, ...docSnap.data() });
+              } else {
+                setVerification(null);
+              }
+              verificationResolved = true;
+              checkDoctorReady();
+            },
+            (error) => {
+              if (error?.code !== 'permission-denied') {
+                console.warn('Doctor verification listener note:', error?.message || error);
               }
               setVerification(null);
+              verificationResolved = true;
+              checkDoctorReady();
+            }
+          );
+        } else {
+          // Regular patient profile listener
+          profileUnsubscribeRef.current = onSnapshot(
+            doc(db, 'users', currentUser.uid),
+            (docSnap) => {
+              if (docSnap.exists()) {
+                setProfile({ uid: docSnap.id, ...docSnap.data() });
+              } else {
+                setProfile(null);
+              }
+              setLoading(false);
+            },
+            (error) => {
+              if (error?.code !== 'permission-denied') {
+                console.warn('User profile listener note:', error?.message || error);
+              }
+              setProfile(null);
+              setLoading(false);
             }
           );
         }
@@ -119,7 +151,6 @@ export function AuthProvider({ children }) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearTimeout(safetyTimer);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       unsubscribeAuth();
       if (profileUnsubscribeRef.current) {

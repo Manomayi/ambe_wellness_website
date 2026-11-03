@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/shop/firestore-products";
 import { useFavorites } from "@/lib/shop/favorites";
 
-export default function ProductDetailSheet({ product, open, onClose, onBuy, loading }) {
+export default function ProductDetailSheet({ product, open, onClose, onBuy, onAddToCart, loading }) {
+  const router = useRouter();
   const { isFavorite, toggle } = useFavorites();
   const wished = product ? isFavorite(product.id) : false;
 
@@ -42,6 +44,24 @@ export default function ProductDetailSheet({ product, open, onClose, onBuy, load
   } = product;
 
   const hasDiscount = originalPrice > price;
+
+  const handleBuy = (e) => {
+    e?.stopPropagation?.();
+    if (onBuy) {
+      onBuy(product);
+    } else {
+      router.push("/signup");
+    }
+  };
+
+  const handleAddToCart = (e) => {
+    e?.stopPropagation?.();
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      router.push("/signup");
+    }
+  };
 
   return (
     <div className="shop-sheet-root" role="presentation" onClick={onClose}>
@@ -139,11 +159,19 @@ export default function ProductDetailSheet({ product, open, onClose, onBuy, load
             )}
             <button
               type="button"
-              className="shop-sheet-buy-btn"
-              onClick={() => onBuy?.(product)}
+              className="shop-sheet-cart-btn"
+              onClick={handleAddToCart}
               disabled={loading}
             >
-              {loading ? "Redirecting…" : "Buy Now"}
+              Add to Cart
+            </button>
+            <button
+              type="button"
+              className="shop-sheet-buy-btn"
+              onClick={handleBuy}
+              disabled={loading}
+            >
+              Buy Now
             </button>
           </div>
         </div>

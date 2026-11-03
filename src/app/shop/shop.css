@@ -428,8 +428,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-top: auto;
-  padding: 16px 18px 18px;
+  padding: 14px 16px 16px;
   border-top: 1px solid var(--hairline);
   flex-shrink: 0;
   background: #fff;
@@ -450,23 +451,60 @@
   margin-top: 2px;
 }
 
-.shop-buy-btn {
-  background: var(--near-black);
-  color: #fff;
-  border: none;
+.shop-product-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.shop-cart-btn {
+  background: transparent;
+  color: var(--near-black);
+  border: 1px solid var(--near-black);
   border-radius: 100px;
-  padding: 12px 22px;
+  padding: 9px 13px;
   font-family: var(--font-jost), "Jost", sans-serif;
   font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.8px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   cursor: pointer;
   flex-shrink: 0;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.shop-cart-btn:hover:not(:disabled) {
+  background: var(--near-black);
+  color: #fff;
+}
+
+.shop-cart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shop-buy-btn {
+  background: var(--near-black);
+  color: #fff;
+  border: 1px solid var(--near-black);
+  border-radius: 100px;
+  padding: 9px 15px;
+  font-family: var(--font-jost), "Jost", sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
 .shop-buy-btn:hover:not(:disabled) {
   background: var(--charcoal);
+  border-color: var(--charcoal);
 }
 
 .shop-buy-btn:disabled {
@@ -615,6 +653,32 @@
   color: var(--gold);
   text-decoration: none;
   padding: 10px 12px;
+}
+
+.shop-sheet-cart-btn {
+  background: transparent;
+  color: var(--near-black);
+  border: 1.5px solid var(--near-black);
+  border-radius: 100px;
+  padding: 12.5px 20px;
+  font-family: var(--font-jost), "Jost", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.shop-sheet-cart-btn:hover:not(:disabled) {
+  background: var(--near-black);
+  color: #fff;
+}
+
+.shop-sheet-cart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .shop-sheet-buy-btn {
@@ -815,6 +879,17 @@
 
   .shop-price-now {
     font-size: 18px;
+  }
+
+  .shop-product-footer {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .shop-cart-btn,
+  .shop-buy-btn {
+    padding: 8px 11px;
+    font-size: 10px;
   }
 
   .shop-hero h1 {

@@ -146,17 +146,9 @@ export default function UserStorePage() {
     return () => unsubCategories();
   }, []);
 
-  // Fetch Products with safety timeout to prevent hanging loader on Safari
+  // Fetch Products
   useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      setLoading(false);
-    }, 2500);
-
-    fetchProducts().finally(() => {
-      clearTimeout(safetyTimer);
-    });
-
-    return () => clearTimeout(safetyTimer);
+    fetchProducts();
   }, []);
 
   async function fetchProducts() {
