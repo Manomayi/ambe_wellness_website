@@ -292,8 +292,12 @@ export default function Home() {
                   Tele-Wellness
                 </p>
 
-                <p className="text-ambe-gold font-semibold text-[17px] sm:text-lg tracking-wide mb-6 sm:mb-8">
+                <p className="text-ambe-gold font-semibold text-[17px] sm:text-lg tracking-wide mb-4 sm:mb-5">
                   Developed at Stanford · Est. 2016
+                </p>
+
+                <p className="text-[#FFD3AC] text-base sm:text-lg lg:text-[19px] font-medium leading-relaxed mb-6 sm:mb-8 drop-shadow-xs max-w-xl">
+                  Let specialists choose your supplements for your unique constitution, not the crowd and marketers.
                 </p>
 
                 <ul className="space-y-3 sm:space-y-3.5 mb-8 sm:mb-10">
@@ -329,6 +333,12 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
               {/* Icons Section */}
               <div className="mb-8 sm:mb-10 px-4">
+                <div className="text-center mb-5 sm:mb-6 max-w-4xl mx-auto">
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-ambe-cream font-heading font-light leading-snug">
+                    Let specialists choose your supplements for your unique constitution,{" "}
+                    <span className="text-[#FFD3AC] font-medium italic">not the crowd and marketers.</span>
+                  </p>
+                </div>
                 {/* Auto-revolving at every width — no manual swipe. The list is
                     duplicated so the loop is seamless; the duplicate half is hidden
                     from assistive tech and removed from the tab order. */}
