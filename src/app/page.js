@@ -271,9 +271,9 @@ export default function Home() {
           <div className="pt-24 sm:pt-32 lg:pt-36 pb-8 lg:pb-12">
             <div className="w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16">
               <div className="max-w-xl lg:max-w-2xl">
-                <div className="inline-flex items-center gap-2 border border-ambe-cream/30 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
-                  <span className="w-2 h-2 rounded-full bg-ambe-gold shrink-0" />
-                  <span className="text-xs sm:text-xs tracking-[0.2em] text-ambe-gold uppercase font-semibold">
+                <div className="inline-flex items-center gap-2 border border-[#FFD3AC]/40 rounded-full px-4 py-1.5 mb-6 sm:mb-8">
+                  <span className="w-2 h-2 rounded-full bg-[#FFD3AC] shrink-0" />
+                  <span className="text-xs sm:text-xs tracking-[0.2em] text-[#FFD3AC] uppercase font-semibold">
                     Instant Care
                   </span>
                 </div>
@@ -292,7 +292,7 @@ export default function Home() {
                   Tele-Wellness
                 </p>
 
-                <p className="text-ambe-gold font-semibold text-[17px] sm:text-lg tracking-wide mb-4 sm:mb-5">
+                <p className="text-[#FFD3AC] font-semibold text-[17px] sm:text-lg tracking-wide mb-4 sm:mb-5">
                   Developed at Stanford · Est. 2016
                 </p>
 
@@ -311,7 +311,7 @@ export default function Home() {
                       key={item}
                       className="flex items-start gap-3.5 text-ambe-cream text-[17.5px] sm:text-[18px] lg:text-lg font-normal leading-snug sm:leading-relaxed drop-shadow-xs"
                     >
-                      <span className="mt-[0.5rem] w-2.5 h-2.5 rounded-full bg-ambe-gold shrink-0 shadow-xs" />
+                      <span className="mt-[0.5rem] w-2.5 h-2.5 rounded-full bg-[#FFD3AC] shrink-0 shadow-xs" />
                       <span>{item}</span>
                     </li>
                   ))}
